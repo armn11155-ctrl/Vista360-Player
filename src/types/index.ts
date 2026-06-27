@@ -101,3 +101,16 @@ export interface SolicitudCampana {
   estado: "Pendiente" | "Revisada" | "Convertida" | "Rechazada";
   createdAt?: Timestamp | null;
 }
+
+/** Informe mensual generado automáticamente (ver Vista360 →
+ *  scripts/informe-mensual-clientes.mjs). Colección: informesCliente. */
+export interface InformeCliente {
+  id: string;
+  cliente_id: string;
+  mes: string; // "2026-06"
+  mesLabel: string; // "Junio 2026"
+  url: string;
+  numCampanas: number;
+  numEvidencias: number;
+  createdAt?: Timestamp | null;
+}
