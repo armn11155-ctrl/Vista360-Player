@@ -1,12 +1,16 @@
 import { useState } from "react";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
+import { useInformes } from "../../hooks/useInformes";
 
 interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
   onAbrir: (contrato: Contrato) => void;
   onNueva: () => void;
+  /** Solo visible para la cuenta admin: si ya se envió el informe del mes. */
+  isAdmin?: boolean;
+  clienteId?: string;
 }
 
 const BADGE_STYLE: Record<string, { bg: string; color: string }> = {
@@ -24,10 +28,15 @@ function progreso(c: Contrato): number {
   return Math.round(((hoy - inicio) / (fin - inicio)) * 100);
 }
 
-export default function MisCampanas({ contratos, paneles, onAbrir, onNueva }: Props) {
+export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId }: Props) {
   const [filtro, setFiltro] = useState<"Todas" | "Activa" | "Programada" | "Finalizada">("Todas");
 
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
+
+  const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const informeDelMes =
+    informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
 
   return (
     <div style={{ background: "#F0F2F7", display: "flex", flexDirection: "column", height: "100%" }}>
@@ -55,6 +64,21 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva }: Pr
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 0" }}>
+        {isAdmin && (
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: informeDelMes ? "#F0FDF4" : "#FFF7ED",
+              border: `1px solid ${informeDelMes ? "#BBF7D0" : "#FED7AA"}`,
+              borderRadius: 12, padding: "10px 12px", marginBottom: 14, fontSize: 12,
+              color: informeDelMes ? "#166534" : "#9A3412",
+            }}
+          >
+            {informeDelMes
+              ? `✅ Informe de ${informeDelMes.mesLabel} ya enviado a este cliente`
+              : "⏳ El informe de este mes todavía no se ha generado (se envía solo el día 1)"}
+          </div>
+        )}
         {filtradas.length === 0 && (
           <div className="state-sub" style={{ marginTop: 40 }}>No tienes campañas en esta categoría.</div>
         )}

@@ -4,6 +4,8 @@ import { logout } from "../../config/firebase";
 interface Props {
   cliente: Cliente | null;
   email: string;
+  isAdmin?: boolean;
+  onCambiarCliente?: () => void;
 }
 
 function MenuItem({ icon, label, value, danger, onClick }: { icon: string; label: string; value?: string; danger?: boolean; onClick?: () => void }) {
@@ -19,7 +21,7 @@ function MenuItem({ icon, label, value, danger, onClick }: { icon: string; label
   );
 }
 
-export default function Perfil({ cliente, email }: Props) {
+export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Props) {
   return (
     <div>
       <div className="profile-header">
@@ -30,7 +32,7 @@ export default function Perfil({ cliente, email }: Props) {
         </div>
         <div>
           <div className="profile-name">{cliente?.empresa ?? "Cliente"}</div>
-          <div className="profile-since">{email}</div>
+          <div className="profile-since">{email}{isAdmin ? " · viendo como admin" : ""}</div>
           {cliente?.estado === "Activo" && (
             <div className="verified-badge">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
@@ -49,6 +51,15 @@ export default function Perfil({ cliente, email }: Props) {
           <MenuItem icon="📞" label="Contacto" value={cliente?.contacto} />
           <MenuItem icon="📍" label="Ciudad" value={cliente?.ciudad} />
         </div>
+
+        {isAdmin && (
+          <>
+            <div className="profile-section-title">Admin</div>
+            <div>
+              <MenuItem icon="🔁" label="Cambiar de cliente" onClick={onCambiarCliente} />
+            </div>
+          </>
+        )}
 
         <div className="profile-section-title">Soporte</div>
         <div>

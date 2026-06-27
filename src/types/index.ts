@@ -68,9 +68,14 @@ export interface Panel {
  * Lo crea el dueño con scripts/crear-acceso-cliente.mjs — el cliente
  * nunca se auto-registra. Colección: portalUsers (doc id = uid).
  */
+export type PortalRole = "admin" | "cliente";
+
 export interface PortalUser {
   uid: string;
-  clienteId: string;
+  role: PortalRole;
+  /** Solo presente para role:"cliente". Un admin no tiene uno fijo —
+   *  elige a cuál cliente ver desde el selector dentro de la app. */
+  clienteId?: string;
   email: string;
   nombre?: string;
   createdAt?: Timestamp | null;

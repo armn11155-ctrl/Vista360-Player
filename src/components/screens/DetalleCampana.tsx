@@ -1,15 +1,43 @@
+import { useRef, useState } from "react";
+import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
+import { db } from "../../config/firebase";
+import { subirEvidenciaCloudinary } from "../../config/cloudinary";
 
 interface Props {
   contrato: Contrato;
   panel: Panel | undefined;
   onBack: () => void;
+  /** Solo la cuenta admin puede subir evidencias — el cliente solo mira. */
+  isAdmin: boolean;
 }
 
-export default function DetalleCampana({ contrato, panel, onBack }: Props) {
+export default function DetalleCampana({ contrato, panel, onBack, isAdmin }: Props) {
   const estado = estadoCampana(contrato);
-  const numEvidencias = contrato.fotos_campania?.length ?? 0;
+  const fotos = contrato.fotos_campania ?? [];
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !db) return;
+    setError("");
+    setSubiendo(true);
+    try {
+      const url = await subirEvidenciaCloudinary(file);
+      const fecha = new Date().toISOString().slice(0, 10);
+      await updateDoc(doc(db, "contratos", contrato.id), {
+        fotos_campania: arrayUnion({ url, fecha }),
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir la foto.");
+    } finally {
+      setSubiendo(false);
+    }
+  }
 
   return (
     <div>
@@ -57,8 +85,46 @@ export default function DetalleCampana({ contrato, panel, onBack }: Props) {
           <div className="section-title">Detalle de la campaña</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
             <div>Cara del panel: <strong>{contrato.cara ?? "Ambas / Mural"}</strong></div>
-            <div>Evidencias recibidas: <strong>{numEvidencias}</strong></div>
           </div>
+        </div>
+
+        <div className="card" style={{ marginBottom: 14 }}>
+          <div className="section-title">Evidencias ({fotos.length})</div>
+
+          {fotos.length > 0 ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: isAdmin ? 12 : 0 }}>
+              {fotos.map((f, i) => (
+                <a key={i} href={f.url} target="_blank" rel="noreferrer" style={{ display: "block", position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1" }}>
+                  <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <span style={{ position: "absolute", bottom: 4, left: 4, fontSize: 9, color: "#fff", background: "rgba(0,0,0,0.55)", padding: "2px 6px", borderRadius: 6 }}>
+                    {f.fecha}
+                  </span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="state-sub" style={{ marginBottom: isAdmin ? 12 : 0 }}>Todavía no hay evidencias.</div>
+          )}
+
+          {isAdmin && (
+            <>
+              <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleFile} />
+              {error && <div className="login-error" style={{ marginBottom: 10 }}>{error}</div>}
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={subiendo}
+                style={{
+                  width: "100%", padding: 12, borderRadius: 10,
+                  border: "1px solid #E5E7EB", background: "#F9FAFB",
+                  color: "#111827", fontWeight: 700, fontSize: 13,
+                  cursor: subiendo ? "default" : "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                }}
+              >
+                {subiendo ? "Subiendo…" : "📷 Subir evidencia"}
+              </button>
+            </>
+          )}
         </div>
 
         {panel?.direccion && (

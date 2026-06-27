@@ -2,26 +2,29 @@
 
 Portal web para los **clientes (anunciantes)** de Vista360 — entran con su
 cuenta y ven sus propias campañas: estado, evidencias fotográficas de sus
-anuncios en los paneles, y reportes. Usa el **mismo proyecto de Firebase**
-que [Vista360](https://github.com/armn11155-ctrl/Vista360) (el ERP interno),
+anuncios en los paneles, y reportes mensuales. El dueño también tiene una
+cuenta admin aquí mismo para subir evidencias y revisar cualquier cliente.
+Usa el **mismo proyecto de Firebase** que
+[Vista360](https://github.com/armn11155-ctrl/Vista360) (el ERP interno),
 pero cada cliente solo ve sus propios datos — nunca los de otro cliente ni
-información financiera interna.
+información financiera interna (eso se administra aparte, en Vista360).
 
 ## Cómo funciona
 
-1. El dueño le crea la cuenta a cada cliente con un script (ver más abajo) —
-   **no hay auto-registro**.
-2. El cliente entra con su correo y contraseña.
-3. La app busca su vínculo en `portalUsers/{uid}` para saber a qué
-   `cliente_id` de Vista360 corresponde.
+1. El dueño le crea la cuenta a cada cliente (o a sí mismo, como admin) con
+   un script (ver más abajo) — **no hay auto-registro**.
+2. Inicia sesión con su correo y contraseña.
+3. La app busca su vínculo en `portalUsers/{uid}`: si es `role:"cliente"`,
+   ve directo sus propias campañas. Si es `role:"admin"`, primero elige a
+   qué cliente quiere ver.
 4. Desde ahí, todo lo que ve viene de Firestore en tiempo real:
    - **Inicio**: resumen (campañas activas, pantallas, última evidencia, próximo vencimiento)
-   - **Mis campañas**: sus contratos, con estado derivado de fecha (Activa/Programada/Finalizada)
-   - **Detalle**: info del contrato y del panel
+   - **Mis campañas**: sus contratos, con estado derivado de fecha (Activa/Programada/Finalizada). El admin además ve si el informe del mes ya se envió.
+   - **Detalle**: info de la campaña y del panel, con galería de evidencias. El admin tiene además el botón para subir nuevas.
    - **Evidencias**: las fotos reales de `contrato.fotos_campania`
-   - **Perfil**: datos de su cuenta, cerrar sesión
+   - **Perfil**: datos de la cuenta, cerrar sesión. El admin además puede cambiar de cliente.
    - **Nueva campaña**: formulario que crea una solicitud en `solicitudesCampana` (el dueño la revisa desde Vista360, igual que ya hace con `solicitudesWeb`)
-   - **Reportes**: por ahora es una pantalla "próximamente" — generar PDFs/ZIP reales es la siguiente fase
+   - **Reportes**: lista los informes PDF mensuales reales (los genera Vista360 automáticamente, ver su README)
 
 ## Setup local
 
@@ -52,18 +55,26 @@ cd ../Vista360
 firebase deploy --only firestore:rules
 ```
 
-## Crear el acceso de un cliente nuevo
+## Crear accesos
 
 Con el script `scripts/crear-acceso-cliente.mjs` (en el repo Vista360):
 
 ```bash
-GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json \
-  node scripts/crear-acceso-cliente.mjs <cliente_id> <email> <password-temporal>
+# Cliente — ve solo sus propias campañas
+node --env-file=.env.local scripts/crear-acceso-cliente.mjs <cliente_id> <email>
+
+# Admin (tú) — ve y gestiona TODOS los clientes, puede subir evidencias
+node --env-file=.env.local scripts/crear-acceso-cliente.mjs admin <email>
 ```
 
-Esto crea la cuenta de Firebase Auth del cliente y la vincula a su
-`cliente_id` existente en Vista360 — el cliente ya puede entrar de
-inmediato a Vista360-Player con ese correo y contraseña.
+En ambos casos, Firebase manda automáticamente un correo con un link para
+crear la contraseña — nadie comparte contraseñas en texto plano.
+
+**Diferencia entre las dos cuentas dentro de la app:**
+- **Cliente**: entra directo a sus campañas. Solo puede ver — nunca sube fotos.
+- **Admin**: primero elige a qué cliente quiere ver (selector), y desde ahí
+  puede subir evidencias (botón "📷 Subir evidencia" en el detalle de cada
+  campaña) y ver si el informe mensual de ese cliente ya se envió.
 
 ## Deploy a producción
 

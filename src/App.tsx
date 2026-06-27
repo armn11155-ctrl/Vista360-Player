@@ -6,6 +6,7 @@ import { useContratos } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
 import ConfigMissing from "./components/ConfigMissing";
 import LoginScreen from "./components/LoginScreen";
+import AdminClientPicker from "./components/AdminClientPicker";
 import BottomNav, { type Tab } from "./components/BottomNav";
 import Inicio from "./components/screens/Inicio";
 import MisCampanas from "./components/screens/MisCampanas";
@@ -22,6 +23,9 @@ export default function App() {
   const auth = usePortalAuth();
   const [view, setView] = useState<View>("inicio");
   const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
+  // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
+  // no eligió ninguno -> se le muestra el selector.
+  const [adminClienteId, setAdminClienteId] = useState<string | null>(null);
 
   if (envMissing.length > 0) {
     return <ConfigMissing missing={envMissing} />;
@@ -57,14 +61,40 @@ export default function App() {
   }
 
   // auth.status === "in"
+  if (auth.role === "admin") {
+    if (!adminClienteId) {
+      return (
+        <div className="app-shell">
+          <AdminClientPicker onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }} />
+        </div>
+      );
+    }
+    return (
+      <AuthenticatedApp
+        clienteId={adminClienteId}
+        email={auth.user.email ?? ""}
+        view={view}
+        setView={setView}
+        contratoAbierto={contratoAbierto}
+        setContratoAbierto={setContratoAbierto}
+        isAdmin
+        onCambiarCliente={() => {
+          setAdminClienteId(null);
+          setView("inicio");
+        }}
+      />
+    );
+  }
+
   return (
     <AuthenticatedApp
-      clienteId={auth.clienteId}
+      clienteId={auth.clienteId ?? ""}
       email={auth.user.email ?? ""}
       view={view}
       setView={setView}
       contratoAbierto={contratoAbierto}
       setContratoAbierto={setContratoAbierto}
+      isAdmin={false}
     />
   );
 }
@@ -76,6 +106,8 @@ interface AuthenticatedProps {
   setView: (v: View) => void;
   contratoAbierto: Contrato | null;
   setContratoAbierto: (c: Contrato | null) => void;
+  isAdmin: boolean;
+  onCambiarCliente?: () => void;
 }
 
 function AuthenticatedApp({
@@ -85,6 +117,8 @@ function AuthenticatedApp({
   setView,
   contratoAbierto,
   setContratoAbierto,
+  isAdmin,
+  onCambiarCliente,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
@@ -104,13 +138,13 @@ function AuthenticatedApp({
   if (contratosState.status === "loading") {
     content = (
       <div className="state-screen">
-        <div className="state-title">Cargando tus campañas…</div>
+        <div className="state-title">Cargando campañas…</div>
       </div>
     );
   } else if (contratosState.status === "error") {
     content = (
       <div className="state-screen">
-        <div className="state-title">No se pudieron cargar tus campañas</div>
+        <div className="state-title">No se pudieron cargar las campañas</div>
         <div className="state-sub">{contratosState.message}</div>
       </div>
     );
@@ -133,6 +167,8 @@ function AuthenticatedApp({
             paneles={paneles}
             onAbrir={abrirContrato}
             onNueva={() => setView("nueva")}
+            isAdmin={isAdmin}
+            clienteId={clienteId}
           />
         );
         break;
@@ -142,6 +178,7 @@ function AuthenticatedApp({
             contrato={contratoAbierto}
             panel={paneles[contratoAbierto.panel_id]}
             onBack={() => setView("campanas")}
+            isAdmin={isAdmin}
           />
         ) : null;
         break;
@@ -152,7 +189,9 @@ function AuthenticatedApp({
         content = <Reportes clienteId={clienteId} hayContratos={contratos.length > 0} />;
         break;
       case "perfil":
-        content = <Perfil cliente={cliente} email={email} />;
+        content = (
+          <Perfil cliente={cliente} email={email} isAdmin={isAdmin} onCambiarCliente={onCambiarCliente} />
+        );
         break;
       case "nueva":
         content = (

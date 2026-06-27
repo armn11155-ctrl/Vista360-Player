@@ -2,20 +2,20 @@ import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { auth, db, onUserChange } from "../config/firebase";
-import type { PortalUser } from "../types";
+import type { PortalRole, PortalUser } from "../types";
 
 export type AuthState =
   | { status: "loading" }
   | { status: "out" }
   | { status: "error"; message: string }
-  | { status: "in"; user: User; clienteId: string };
+  | { status: "in"; user: User; role: PortalRole; clienteId: string | null };
 
 /**
  * Cuando el usuario inicia sesión, busca su documento en `portalUsers`
- * (creado por el dueño con el script) para saber a qué cliente
- * corresponde. Si el login es válido pero no existe ese vínculo, algo
- * está mal configurado — se lo decimos claro en vez de dejarlo a
- * medias.
+ * (creado por el dueño con el script) para saber su rol:
+ *   - "cliente": tiene un clienteId fijo, solo ve lo suyo.
+ *   - "admin": clienteId es null — elige a cuál cliente ver desde un
+ *     selector dentro de la app (ver AdminClientPicker).
  */
 export function usePortalAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ status: "loading" });
@@ -41,7 +41,8 @@ export function usePortalAuth(): AuthState {
           return;
         }
         const data = snap.data() as Omit<PortalUser, "uid">;
-        setState({ status: "in", user, clienteId: data.clienteId });
+        const role: PortalRole = data.role ?? "cliente";
+        setState({ status: "in", user, role, clienteId: role === "cliente" ? data.clienteId ?? null : null });
       } catch {
         setState({ status: "error", message: "No se pudo verificar tu cuenta. Intenta de nuevo." });
       }

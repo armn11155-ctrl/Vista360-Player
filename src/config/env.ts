@@ -42,4 +42,10 @@ export const env = {
     appId: values.VITE_FIREBASE_APP_ID ?? "",
   },
   appVersion: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? "0.1.0",
+  // Opcional — solo lo usa la cuenta admin para subir evidencias. Si falta,
+  // el botón de subir muestra un error puntual en vez de bloquear toda la app.
+  cloudinary: {
+    cloudName: (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ?? "",
+    uploadPreset: (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined) ?? "",
+  },
 };
