@@ -1,0 +1,11 @@
+{
+  "name": "Vista360 Player",
+  "short_name": "V360 Player",
+  "description": "Reproductor de contenido digital para paneles Vista360",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": []
+}
