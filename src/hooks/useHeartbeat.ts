@@ -12,7 +12,7 @@ const INTERVAL_MS = 30_000;
  */
 export function useHeartbeat(panelId: string) {
   useEffect(() => {
-    if (!panelId) return;
+    if (!panelId || !db) return;
 
     const ref = doc(db, "playersStatus", panelId);
     const send = (online: boolean) => {

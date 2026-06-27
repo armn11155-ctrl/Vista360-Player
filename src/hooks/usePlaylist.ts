@@ -22,6 +22,10 @@ export function usePlaylist(panelId: string): PlaylistState {
       setState({ status: "empty" });
       return;
     }
+    if (!db) {
+      setState({ status: "error", message: "Firebase no configurado" });
+      return;
+    }
     const ref = doc(db, "contenidoDigital", panelId);
     const unsub = onSnapshot(
       ref,

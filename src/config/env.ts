@@ -1,27 +1,46 @@
 /**
- * Lee y valida las variables de entorno necesarias. Si falta alguna
- * obligatoria, lanza un error descriptivo apenas arranca la app —
- * mejor fallar rápido y claro que tener una pantalla negra muda en
- * un panel físico al que no puedes conectar un teclado.
+ * Lee las variables de entorno de Firebase. A propósito NUNCA lanza un
+ * error aquí (eso dejaría la pantalla en negro sin ninguna pista, ya
+ * que estos dispositivos no tienen consola de desarrollador a la mano).
+ * En vez de eso, junta qué variables faltan en `envMissing` para que
+ * App.tsx pueda mostrarlo directo en pantalla.
  */
-function required(name: string): string {
-  const value = import.meta.env[name as keyof ImportMetaEnv];
-  if (!value) {
-    throw new Error(
-      `[env] Falta la variable ${name}. Copia .env.example a .env.local y completa los valores de Firebase (los mismos que usa Vista360).`
-    );
+const REQUIRED_KEYS = [
+  "VITE_FIREBASE_API_KEY",
+  "VITE_FIREBASE_AUTH_DOMAIN",
+  "VITE_FIREBASE_PROJECT_ID",
+  "VITE_FIREBASE_STORAGE_BUCKET",
+  "VITE_FIREBASE_MESSAGING_SENDER_ID",
+  "VITE_FIREBASE_APP_ID",
+] as const;
+
+function readEnv() {
+  const missing: string[] = [];
+  const values: Record<string, string> = {};
+  for (const key of REQUIRED_KEYS) {
+    const value = import.meta.env[key as keyof ImportMetaEnv];
+    if (!value) {
+      missing.push(key);
+    } else {
+      values[key] = value as string;
+    }
   }
-  return value as string;
+  return { missing, values };
 }
+
+const { missing, values } = readEnv();
+
+/** Lista de variables VITE_FIREBASE_* que faltan. Vacía si todo está bien. */
+export const envMissing: readonly string[] = missing;
 
 export const env = {
   firebase: {
-    apiKey: required("VITE_FIREBASE_API_KEY"),
-    authDomain: required("VITE_FIREBASE_AUTH_DOMAIN"),
-    projectId: required("VITE_FIREBASE_PROJECT_ID"),
-    storageBucket: required("VITE_FIREBASE_STORAGE_BUCKET"),
-    messagingSenderId: required("VITE_FIREBASE_MESSAGING_SENDER_ID"),
-    appId: required("VITE_FIREBASE_APP_ID"),
+    apiKey: values.VITE_FIREBASE_API_KEY ?? "",
+    authDomain: values.VITE_FIREBASE_AUTH_DOMAIN ?? "",
+    projectId: values.VITE_FIREBASE_PROJECT_ID ?? "",
+    storageBucket: values.VITE_FIREBASE_STORAGE_BUCKET ?? "",
+    messagingSenderId: values.VITE_FIREBASE_MESSAGING_SENDER_ID ?? "",
+    appId: values.VITE_FIREBASE_APP_ID ?? "",
   },
   appVersion: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? "0.1.0",
 };

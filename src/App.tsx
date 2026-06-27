@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { ensureSignedIn } from "./config/firebase";
+import { envMissing } from "./config/env";
 import { usePlaylist } from "./hooks/usePlaylist";
 import { useHeartbeat } from "./hooks/useHeartbeat";
 import { useWakeLock } from "./hooks/useWakeLock";
 import PairingScreen from "./components/PairingScreen";
 import EmptyState from "./components/EmptyState";
+import ConfigMissing from "./components/ConfigMissing";
 import Player from "./components/Player";
 
 const STORAGE_KEY = "vista360player.panelId";
@@ -17,7 +19,7 @@ export default function App() {
   useWakeLock();
 
   useEffect(() => {
-    if (!panelId) return;
+    if (!panelId || envMissing.length > 0) return;
     let cancelled = false;
     ensureSignedIn()
       .then(() => {
@@ -38,6 +40,12 @@ export default function App() {
   function handlePaired(id: string) {
     localStorage.setItem(STORAGE_KEY, id);
     setPanelId(id);
+  }
+
+  // Esto va primero que todo lo demás: sin esto configurado, nada
+  // más en la app puede funcionar — mejor decirlo claro de una vez.
+  if (envMissing.length > 0) {
+    return <ConfigMissing missing={envMissing} />;
   }
 
   if (!panelId) {
