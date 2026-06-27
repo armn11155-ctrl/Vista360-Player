@@ -54,10 +54,8 @@ export default function DetalleCampana({ contrato, panel, onBack }: Props) {
         </div>
 
         <div className="card" style={{ marginBottom: 14 }}>
-          <div className="section-title">Información del contrato</div>
+          <div className="section-title">Detalle de la campaña</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
-            <div>Monto: <strong>S/ {contrato.monto?.toLocaleString("es-PE") ?? "—"}</strong></div>
-            <div>Pago: <strong>{contrato.pagado ? "Al día" : "Pendiente"}</strong></div>
             <div>Cara del panel: <strong>{contrato.cara ?? "Ambas / Mural"}</strong></div>
             <div>Evidencias recibidas: <strong>{numEvidencias}</strong></div>
           </div>
