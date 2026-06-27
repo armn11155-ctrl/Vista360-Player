@@ -1,8 +1,7 @@
 /**
  * Lee las variables de entorno de Firebase. A propósito NUNCA lanza un
- * error aquí (eso dejaría la pantalla en negro sin ninguna pista, ya
- * que estos dispositivos no tienen consola de desarrollador a la mano).
- * En vez de eso, junta qué variables faltan en `envMissing` para que
+ * error aquí (eso dejaría la pantalla en blanco sin ninguna pista). En
+ * vez de eso, junta qué variables faltan en `envMissing` para que
  * App.tsx pueda mostrarlo directo en pantalla.
  */
 const REQUIRED_KEYS = [

@@ -1,71 +1,182 @@
-import { useEffect, useState } from "react";
-import { ensureSignedIn } from "./config/firebase";
+import { useState } from "react";
 import { envMissing } from "./config/env";
-import { usePlaylist } from "./hooks/usePlaylist";
-import { useHeartbeat } from "./hooks/useHeartbeat";
-import { useWakeLock } from "./hooks/useWakeLock";
-import PairingScreen from "./components/PairingScreen";
-import EmptyState from "./components/EmptyState";
+import { usePortalAuth } from "./hooks/usePortalAuth";
+import { useCliente } from "./hooks/useCliente";
+import { useContratos } from "./hooks/useContratos";
+import { usePaneles } from "./hooks/usePaneles";
 import ConfigMissing from "./components/ConfigMissing";
-import Player from "./components/Player";
+import LoginScreen from "./components/LoginScreen";
+import BottomNav, { type Tab } from "./components/BottomNav";
+import Inicio from "./components/screens/Inicio";
+import MisCampanas from "./components/screens/MisCampanas";
+import DetalleCampana from "./components/screens/DetalleCampana";
+import Evidencias from "./components/screens/Evidencias";
+import Reportes from "./components/screens/Reportes";
+import Perfil from "./components/screens/Perfil";
+import NuevaCampana from "./components/screens/NuevaCampana";
+import type { Contrato } from "./types";
 
-const STORAGE_KEY = "vista360player.panelId";
+type View = Tab | "detalle" | "nueva";
 
 export default function App() {
-  const [panelId, setPanelId] = useState<string>(() => localStorage.getItem(STORAGE_KEY) ?? "");
-  const [authReady, setAuthReady] = useState(false);
-  const [authError, setAuthError] = useState(false);
+  const auth = usePortalAuth();
+  const [view, setView] = useState<View>("inicio");
+  const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
 
-  useWakeLock();
-
-  useEffect(() => {
-    if (!panelId || envMissing.length > 0) return;
-    let cancelled = false;
-    ensureSignedIn()
-      .then(() => {
-        if (!cancelled) setAuthReady(true);
-      })
-      .catch(() => {
-        if (!cancelled) setAuthError(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [panelId]);
-
-  useHeartbeat(authReady ? panelId : "");
-
-  const playlist = usePlaylist(authReady ? panelId : "");
-
-  function handlePaired(id: string) {
-    localStorage.setItem(STORAGE_KEY, id);
-    setPanelId(id);
-  }
-
-  // Esto va primero que todo lo demás: sin esto configurado, nada
-  // más en la app puede funcionar — mejor decirlo claro de una vez.
   if (envMissing.length > 0) {
     return <ConfigMissing missing={envMissing} />;
   }
 
-  if (!panelId) {
-    return <PairingScreen onPaired={handlePaired} />;
+  if (auth.status === "loading") {
+    return (
+      <div className="app-shell">
+        <div className="state-screen">
+          <div className="state-title">Cargando…</div>
+        </div>
+      </div>
+    );
   }
 
-  if (authError) {
-    return <EmptyState panelId={panelId} reason="error" />;
+  if (auth.status === "out") {
+    return (
+      <div className="app-shell">
+        <LoginScreen onLoggedIn={() => setView("inicio")} />
+      </div>
+    );
   }
 
-  if (!authReady || playlist.status === "loading") {
-    return <EmptyState panelId={panelId} reason="loading" />;
+  if (auth.status === "error") {
+    return (
+      <div className="app-shell">
+        <div className="state-screen">
+          <div className="state-title">No se pudo cargar tu cuenta</div>
+          <div className="state-sub">{auth.message}</div>
+        </div>
+      </div>
+    );
   }
 
-  if (playlist.status === "ready") {
-    // key distinta cuando cambia el contenido o se actualiza →
-    // el Player remonta limpio en vez de mutar una playlist vieja.
-    const key = `${playlist.contenido.id}-${playlist.contenido.updatedAt?.toMillis?.() ?? 0}`;
-    return <Player key={key} contenido={playlist.contenido} />;
+  // auth.status === "in"
+  return (
+    <AuthenticatedApp
+      clienteId={auth.clienteId}
+      email={auth.user.email ?? ""}
+      view={view}
+      setView={setView}
+      contratoAbierto={contratoAbierto}
+      setContratoAbierto={setContratoAbierto}
+    />
+  );
+}
+
+interface AuthenticatedProps {
+  clienteId: string;
+  email: string;
+  view: View;
+  setView: (v: View) => void;
+  contratoAbierto: Contrato | null;
+  setContratoAbierto: (c: Contrato | null) => void;
+}
+
+function AuthenticatedApp({
+  clienteId,
+  email,
+  view,
+  setView,
+  contratoAbierto,
+  setContratoAbierto,
+}: AuthenticatedProps) {
+  const cliente = useCliente(clienteId);
+  const contratosState = useContratos(clienteId);
+  const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
+  const paneles = usePaneles(contratos.map((c) => c.panel_id));
+
+  const showBottomNav = view !== "detalle" && view !== "nueva";
+  const activeTab: Tab = view === "detalle" || view === "nueva" ? "campanas" : view;
+
+  function abrirContrato(c: Contrato) {
+    setContratoAbierto(c);
+    setView("detalle");
   }
 
-  return <EmptyState panelId={panelId} reason={playlist.status === "error" ? "error" : "empty"} />;
+  let content: React.ReactNode = null;
+
+  if (contratosState.status === "loading") {
+    content = (
+      <div className="state-screen">
+        <div className="state-title">Cargando tus campañas…</div>
+      </div>
+    );
+  } else if (contratosState.status === "error") {
+    content = (
+      <div className="state-screen">
+        <div className="state-title">No se pudieron cargar tus campañas</div>
+        <div className="state-sub">{contratosState.message}</div>
+      </div>
+    );
+  } else {
+    switch (view) {
+      case "inicio":
+        content = (
+          <Inicio
+            cliente={cliente}
+            contratos={contratos}
+            paneles={paneles}
+            onGoTo={(tab) => setView(tab)}
+          />
+        );
+        break;
+      case "campanas":
+        content = (
+          <MisCampanas
+            contratos={contratos}
+            paneles={paneles}
+            onAbrir={abrirContrato}
+            onNueva={() => setView("nueva")}
+          />
+        );
+        break;
+      case "detalle":
+        content = contratoAbierto ? (
+          <DetalleCampana
+            contrato={contratoAbierto}
+            panel={paneles[contratoAbierto.panel_id]}
+            onBack={() => setView("campanas")}
+          />
+        ) : null;
+        break;
+      case "evidencias":
+        content = <Evidencias contratos={contratos} paneles={paneles} />;
+        break;
+      case "reportes":
+        content = <Reportes hayContratos={contratos.length > 0} />;
+        break;
+      case "perfil":
+        content = <Perfil cliente={cliente} email={email} />;
+        break;
+      case "nueva":
+        content = (
+          <NuevaCampana
+            clienteId={clienteId}
+            onBack={() => setView("campanas")}
+            onEnviada={() => setView("campanas")}
+          />
+        );
+        break;
+    }
+  }
+
+  return (
+    <div className="app-shell">
+      <div className="screens">
+        <div className="screen active">{content}</div>
+      </div>
+      {showBottomNav && (
+        <BottomNav
+          active={activeTab}
+          onChange={(tab) => setView(tab)}
+        />
+      )}
+    </div>
+  );
 }

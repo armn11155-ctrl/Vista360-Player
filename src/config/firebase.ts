@@ -1,14 +1,12 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import {
-  getFirestore,
-  enableIndexedDbPersistence,
-  type Firestore,
-} from "firebase/firestore";
+import { getFirestore, type Firestore } from "firebase/firestore";
 import {
   getAuth,
-  signInAnonymously,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
   onAuthStateChanged,
   type Auth,
+  type User,
 } from "firebase/auth";
 import { env, envMissing } from "./env";
 
@@ -19,41 +17,32 @@ export let auth: Auth | null = null;
 // Solo inicializamos Firebase si TODAS las variables de entorno están
 // presentes. Si falta alguna, dejamos db/auth en null a propósito —
 // App.tsx detecta esto (vía envMissing) y muestra en pantalla qué
-// variable falta, en vez de que la app truene en silencio con una
-// pantalla negra que nadie puede diagnosticar sin abrir la consola.
+// variable falta, en vez de una pantalla en blanco sin explicación.
 if (envMissing.length === 0) {
   app = initializeApp(env.firebase);
   db = getFirestore(app);
   auth = getAuth(app);
-
-  // Persistencia offline: si el panel pierde internet, sigue mostrando
-  // el último contenido que alcanzó a sincronizar en vez de quedarse
-  // en blanco. Falla silenciosamente en pestañas múltiples / navegadores
-  // sin soporte — no es crítico, solo una mejora de resiliencia.
-  enableIndexedDbPersistence(db).catch(() => {
-    /* no-op: el player sigue funcionando sin cache offline */
-  });
 }
 
 /**
- * Cada dispositivo se autentica de forma anónima — no hay usuario humano
- * frente a la pantalla para escribir credenciales. Las reglas de Firestore
- * distinguen un login anónimo (solo puede leer `contenidoDigital` y
- * escribir su propio `playersStatus`) de un admin humano real.
+ * Cada cliente entra con el email/contraseña que el dueño le creó
+ * desde Vista360 (ver scripts/crear-acceso-cliente.mjs en el repo
+ * Vista360). No hay auto-registro: si no tienes cuenta, no entras.
  */
-export function ensureSignedIn(): Promise<void> {
+export function login(email: string, password: string): Promise<void> {
+  if (!auth) return Promise.reject(new Error("Firebase no está configurado."));
+  return signInWithEmailAndPassword(auth, email, password).then(() => undefined);
+}
+
+export function logout(): Promise<void> {
+  if (!auth) return Promise.resolve();
+  return firebaseSignOut(auth);
+}
+
+export function onUserChange(cb: (user: User | null) => void): () => void {
   if (!auth) {
-    return Promise.reject(new Error("Firebase no está configurado (faltan variables de entorno)."));
+    cb(null);
+    return () => {};
   }
-  const activeAuth = auth;
-  return new Promise((resolve, reject) => {
-    const unsub = onAuthStateChanged(activeAuth, (user) => {
-      unsub();
-      if (user) {
-        resolve();
-        return;
-      }
-      signInAnonymously(activeAuth).then(() => resolve()).catch(reject);
-    }, reject);
-  });
+  return onAuthStateChanged(auth, cb);
 }

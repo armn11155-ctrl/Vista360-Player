@@ -1,38 +1,21 @@
 <!DOCTYPE html>
-<html lang="es" style="background:#000;color-scheme:dark">
+<html lang="es" style="background:#e8eaf0">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0D1629" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <link rel="icon" href="/favicon.ico" sizes="any" />
 
     <title>Vista360 Player</title>
-
-    <style>
-      /* Kiosk: sin scroll, sin selección de texto, sin cursor visible, sin menú contextual nativo */
-      html, body, #root {
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        overflow: hidden;
-        user-select: none;
-        -webkit-user-select: none;
-        cursor: none;
-      }
-      * { box-sizing: border-box; }
-    </style>
   </head>
-  <body oncontextmenu="return false">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

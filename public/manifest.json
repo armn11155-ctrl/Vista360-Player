@@ -1,11 +1,11 @@
 {
-  "name": "Vista360 Player",
+  "name": "Vista360 Player - Portal de clientes",
   "short_name": "V360 Player",
-  "description": "Reproductor de contenido digital para paneles Vista360",
+  "description": "Portal para clientes de Vista360: campañas, evidencias y reportes de tus anuncios.",
   "start_url": "/",
-  "display": "fullscreen",
-  "orientation": "any",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#e8eaf0",
+  "theme_color": "#0D1629",
   "icons": []
 }

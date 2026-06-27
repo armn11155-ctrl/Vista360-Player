@@ -1,38 +1,103 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type ContenidoTipo = "imagen" | "video";
+/**
+ * Estos tipos reflejan los mismos modelos que ya existen en el repo
+ * Vista360 (src/types/index.ts) — el portal lee los datos reales que
+ * el dueño ya administra ahí, no duplica nada.
+ */
 
-export interface ContenidoItem {
-  tipo: ContenidoTipo;
+export type ClienteEstado =
+  | "Activo"
+  | "Por vencer"
+  | "Inactivo"
+  | "En contacto"
+  | "Propuesta enviada"
+  | "Ganado"
+  | "Frío"
+  | "Perdido";
+
+export interface Cliente {
+  id: string;
+  empresa: string;
+  ruc?: string;
+  contacto?: string;
+  celular?: string;
+  email?: string;
+  sector?: string;
+  ciudad?: string;
+  estado: ClienteEstado;
+  ejecutivo?: string;
+  createdAt?: Timestamp | null;
+}
+
+export interface FotoCampania {
   url: string;
-  /** Segundos en pantalla. Para video se usa como tope opcional; si no se
-   *  define, el video se reproduce completo y avanza solo al terminar. */
-  duracionSeg?: number;
-  orden: number;
+  fecha: string;
+}
+
+export interface Contrato {
+  id: string;
+  panel_id: string;
+  cliente_id: string;
+  cara?: "A" | "B" | null;
+  inicio: string; // "YYYY-MM-DD"
+  fin: string; // "YYYY-MM-DD"
+  monto: number;
+  pagado: boolean;
+  fotos_campania?: FotoCampania[];
+  deleted?: boolean;
+  createdAt?: Timestamp | null;
+}
+
+export type PanelEstado = "Disponible" | "Ocupado" | "Mantenimiento" | "Libre";
+
+export interface Panel {
+  id: string;
+  nombre: string;
+  tipo: string;
+  ciudad: string;
+  estado: PanelEstado;
+  lat?: number;
+  lng?: number;
+  direccion?: string;
+  icono?: string;
 }
 
 /**
- * Un documento por panel — el id del documento ES el panel_id, así el
- * player puede suscribirse directo sin necesitar queries ni índices.
- * Colección: contenidoDigital
+ * Vincula una cuenta de Firebase Auth (uid) con un cliente de Vista360.
+ * Lo crea el dueño con scripts/crear-acceso-cliente.mjs — el cliente
+ * nunca se auto-registra. Colección: portalUsers (doc id = uid).
  */
-export interface ContenidoDigital {
-  id: string;
-  panel_id: string;
-  activo: boolean;
-  items: ContenidoItem[];
-  updatedAt?: Timestamp;
+export interface PortalUser {
+  uid: string;
+  clienteId: string;
+  email: string;
+  nombre?: string;
+  createdAt?: Timestamp | null;
 }
 
-/**
- * Heartbeat de cada dispositivo. Un documento por panel (id = panel_id).
- * Colección: playersStatus
- */
-export interface PlayerStatus {
+/** Estado derivado en el cliente a partir de inicio/fin — no se guarda. */
+export type CampanaEstado = "Activa" | "Programada" | "Finalizada";
+
+export function estadoCampana(contrato: Contrato, hoy: Date = new Date()): CampanaEstado {
+  const inicio = new Date(contrato.inicio);
+  const fin = new Date(contrato.fin);
+  if (hoy < inicio) return "Programada";
+  if (hoy > fin) return "Finalizada";
+  return "Activa";
+}
+
+/** Solicitud de nueva campaña enviada por el cliente — el dueño la revisa
+ *  y la convierte en Contrato real desde Vista360, igual que solicitudesWeb.
+ *  Colección: solicitudesCampana */
+export interface SolicitudCampana {
   id: string;
-  panel_id: string;
-  online: boolean;
-  lastSeen: Timestamp;
-  appVersion?: string;
-  userAgent?: string;
+  cliente_id: string;
+  nombre: string;
+  objetivo?: string;
+  presupuesto?: number;
+  ciudades: string[];
+  comentarios?: string;
+  estado: "Pendiente" | "Revisada" | "Convertida" | "Rechazada";
+  createdAt?: Timestamp | null;
 }
