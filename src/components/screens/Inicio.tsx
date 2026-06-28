@@ -36,10 +36,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo }: Props) {
     <div>
       <div className="header-dark">
         <div className="logo-row">
-          <div>
-            <span className="logo-text">VISTA360</span>
-            <span className="logo-sub">PLAYER</span>
-          </div>
+          <img src="/logo-player.png" alt="Vista360 Player" className="header-logo-img" />
           <div className="notif-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />

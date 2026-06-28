@@ -76,6 +76,7 @@
   }
   .logo-text { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 1px; }
   .logo-sub { color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 3px; display: block; text-align: center; }
+  .header-logo-img { height: 24px; display: block; }
   .notif-btn {
     width: 36px; height: 36px;
     background: rgba(255,255,255,0.1);
@@ -735,10 +736,14 @@
     flex-direction: column;
     justify-content: center;
     padding: 32px 28px;
-    background: linear-gradient(160deg, #0D1629 0%, #0D1A35 60%, #0A2060 100%);
+    background-image:
+      linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.72) 55%, rgba(6,12,26,0.92) 100%),
+      url('/login-bg.jpg');
+    background-size: cover;
+    background-position: center;
   }
   .login-logo { text-align: center; margin-bottom: 36px; }
-  .login-logo img { height: 44px; }
+  .login-logo img { height: 56px; max-width: 90%; }
   .login-card {
     background: #fff;
     border-radius: 20px;
@@ -757,6 +762,35 @@
   }
   .login-btn:disabled { opacity: 0.6; cursor: default; }
   .login-foot { text-align: center; font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 18px; }
+
+  /* ===== Versión de escritorio ─────────────────────────────────────────
+     En pantallas anchas, la app deja de ser una columna mobile flotando
+     en medio de un fondo gris vacío: el fondo de Nueva York (el mismo
+     que usa Vista360) cubre todo el viewport y la app se muestra como
+     una ventana flotante centrada, con esquinas redondeadas y sombra,
+     como una app de escritorio real. En mobile no cambia nada. ===== */
+  @media (min-width: 860px) {
+    body {
+      background-image:
+        linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.72) 55%, rgba(6,12,26,0.92) 100%),
+        url('/login-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+    }
+    .app-shell {
+      max-width: 480px;
+      min-height: min(820px, 92vh);
+      max-height: 92vh;
+      border-radius: 28px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      overflow: hidden auto;
+    }
+  }
 
   /* ===== Estados de carga / vacío / config ===== */
   .state-screen {
