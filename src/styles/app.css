@@ -16,7 +16,11 @@
     max-width: 480px;
     min-height: 100vh;
     margin: 0 auto;
-    background: #fff;
+    /* Navy (igual a body/theme-color), no blanco: si algún borde no llega
+       exacto al pixel final (Android sin buen soporte de safe-area, o el
+       rebote de Safari), lo que se vea siempre es el mismo color, nunca
+       un corte visible. */
+    background: #0D1629;
     overflow: hidden;
     position: relative;
     display: flex;
