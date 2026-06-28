@@ -8,7 +8,7 @@ export type AuthState =
   | { status: "loading" }
   | { status: "out" }
   | { status: "error"; message: string }
-  | { status: "in"; user: User; role: PortalRole; clienteId: string | null };
+  | { status: "in"; user: User; role: PortalRole; clienteId: string | null; nombre: string | null };
 
 /**
  * Cuando el usuario inicia sesión, busca su documento en `portalUsers`
@@ -42,7 +42,13 @@ export function usePortalAuth(): AuthState {
         }
         const data = snap.data() as Omit<PortalUser, "uid">;
         const role: PortalRole = data.role ?? "cliente";
-        setState({ status: "in", user, role, clienteId: role === "cliente" ? data.clienteId ?? null : null });
+        setState({
+          status: "in",
+          user,
+          role,
+          clienteId: role === "cliente" ? data.clienteId ?? null : null,
+          nombre: data.nombre ?? null,
+        });
       } catch {
         setState({ status: "error", message: "No se pudo verificar tu cuenta. Intenta de nuevo." });
       }

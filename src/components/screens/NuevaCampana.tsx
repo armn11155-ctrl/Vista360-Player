@@ -8,7 +8,7 @@ interface Props {
   onEnviada: () => void;
 }
 
-const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Cusco"];
+const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Huánuco", "Otra"];
 
 export default function NuevaCampana({ clienteId, onBack, onEnviada }: Props) {
   const [nombre, setNombre] = useState("");

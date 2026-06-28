@@ -862,6 +862,19 @@
     .photo-grid { grid-template-columns: repeat(4, 1fr); }
     .campaign-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-content: start; }
     .campaign-card { margin-bottom: 0; }
+
+    /* "Cambiar de cliente" se ancla al fondo del sidebar en vez de quedar pegado al último tab */
+    .nav-item-switch { margin-top: auto; }
+
+    /* Selector de cliente del admin: versión espaciosa con grid de tarjetas */
+    .admin-picker-header { padding: 48px 56px 40px; }
+    .admin-picker-title { font-size: 28px; }
+    .admin-picker-sub { font-size: 14px; }
+    .admin-picker-search { max-width: 420px; }
+    .admin-picker-body { padding: 36px 56px; }
+    .admin-picker-grid { grid-template-columns: repeat(3, 1fr); max-width: 1080px; margin: 0 auto; }
+    .admin-picker-footer { padding: 20px 56px 32px; display: flex; justify-content: flex-end; }
+    .admin-picker-logout { max-width: 200px; }
   }
 
 
@@ -888,4 +901,92 @@
     padding: 6px 10px;
     border-radius: 8px;
     background: #EFF6FF;
+  }
+
+  /* ===== Banner "estás gestionando la cuenta de X" (Inicio, solo admin) ===== */
+  .admin-context-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(37,99,235,0.18);
+    color: rgba(255,255,255,0.85);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  .admin-context-pill strong { color: #fff; font-weight: 700; }
+  .admin-context-dot { width: 6px; height: 6px; background: #5B9BFF; border-radius: 50%; flex-shrink: 0; }
+
+  /* ===== Selector de cliente del admin (rediseño premium) ===== */
+  .admin-picker-shell { display: flex; flex-direction: column; height: 100%; background: #F0F2F7; }
+  .admin-picker-header { background: #0D1629; padding: 30px 22px 24px; flex-shrink: 0; }
+  .admin-picker-logo { height: 22px; display: block; margin-bottom: 16px; }
+  .admin-picker-badge {
+    display: inline-block;
+    background: rgba(37,99,235,0.2);
+    color: #8FB8FF;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .admin-picker-title { color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .admin-picker-sub { color: rgba(255,255,255,0.55); font-size: 12.5px; margin-bottom: 18px; }
+  .admin-picker-search {
+    display: block;
+    width: 100%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #fff;
+    outline: none;
+  }
+  .admin-picker-search::placeholder { color: rgba(255,255,255,0.4); }
+  .admin-picker-search:focus { border-color: #2563EB; }
+
+  .admin-picker-body { flex: 1; overflow-y: auto; padding: 18px 16px; }
+  .admin-picker-grid { display: flex; flex-direction: column; gap: 10px; }
+  .admin-picker-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .admin-picker-card:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+  .admin-picker-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: #2563EB;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .admin-picker-card-info { flex: 1; min-width: 0; }
+  .admin-picker-card-name { font-size: 14px; font-weight: 700; color: #111827; }
+  .admin-picker-card-city { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+
+  .admin-picker-footer { padding: 14px 16px 20px; flex-shrink: 0; }
+  .admin-picker-logout {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    color: #DC2626;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
   }

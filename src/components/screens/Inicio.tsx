@@ -6,6 +6,8 @@ interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
   onGoTo: (tab: "campanas" | "evidencias" | "reportes" | "nueva") => void;
+  isAdmin?: boolean;
+  adminNombre?: string | null;
 }
 
 function ultimaFoto(contratos: Contrato[]): { foto: FotoCampania; panel?: string } | null {
@@ -25,7 +27,7 @@ function proximoVencimiento(contratos: Contrato[]): Contrato | null {
   return activos[0] ?? null;
 }
 
-export default function Inicio({ cliente, contratos, paneles, onGoTo }: Props) {
+export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter((c) => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map((c) => c.panel_id)).size;
   const ultima = ultimaFoto(contratos);
@@ -45,7 +47,13 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo }: Props) {
           </div>
         </div>
         <div className="greeting">Hola,</div>
-        <div className="greeting-name">{cliente?.empresa ?? "Cliente"} 👋</div>
+        <div className="greeting-name">{isAdmin ? adminNombre || "Admin" : cliente?.empresa ?? "Cliente"} 👋</div>
+        {isAdmin && (
+          <div className="admin-context-pill">
+            <span className="admin-context-dot" />
+            Gestionando la cuenta de <strong>{cliente?.empresa ?? "—"}</strong>
+          </div>
+        )}
         <div className="status-pill">
           <div className="green-dot" style={{ background: todoOk ? "#22C55E" : "#F59E0B" }} />
           {todoOk ? "Todo funcionando" : "Revisa tus campañas"}

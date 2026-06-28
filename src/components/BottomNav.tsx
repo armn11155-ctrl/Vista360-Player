@@ -3,6 +3,8 @@ export type Tab = "inicio" | "campanas" | "evidencias" | "reportes" | "perfil";
 interface Props {
   active: Tab;
   onChange: (tab: Tab) => void;
+  isAdmin?: boolean;
+  onCambiarCliente?: () => void;
 }
 
 const ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
@@ -60,7 +62,7 @@ const ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export default function BottomNav({ active, onChange }: Props) {
+export default function BottomNav({ active, onChange, isAdmin, onCambiarCliente }: Props) {
   return (
     <div className="bottom-nav">
       <div className="sidebar-brand">
@@ -77,6 +79,21 @@ export default function BottomNav({ active, onChange }: Props) {
           <span>{item.label}</span>
         </div>
       ))}
+      {isAdmin && onCambiarCliente && (
+        <div
+          className="nav-item nav-item-switch"
+          onClick={onCambiarCliente}
+          style={{ color: "#9CA3AF", stroke: "#9CA3AF" }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          </svg>
+          <span>Cambiar de cliente</span>
+        </div>
+      )}
     </div>
   );
 }

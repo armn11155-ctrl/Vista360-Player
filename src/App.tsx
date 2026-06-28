@@ -78,6 +78,7 @@ export default function App() {
         contratoAbierto={contratoAbierto}
         setContratoAbierto={setContratoAbierto}
         isAdmin
+        adminNombre={auth.nombre}
         onCambiarCliente={() => {
           setAdminClienteId(null);
           setView("inicio");
@@ -107,6 +108,7 @@ interface AuthenticatedProps {
   contratoAbierto: Contrato | null;
   setContratoAbierto: (c: Contrato | null) => void;
   isAdmin: boolean;
+  adminNombre?: string | null;
   onCambiarCliente?: () => void;
 }
 
@@ -118,6 +120,7 @@ function AuthenticatedApp({
   contratoAbierto,
   setContratoAbierto,
   isAdmin,
+  adminNombre,
   onCambiarCliente,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
@@ -157,6 +160,8 @@ function AuthenticatedApp({
             contratos={contratos}
             paneles={paneles}
             onGoTo={(tab) => setView(tab)}
+            isAdmin={isAdmin}
+            adminNombre={adminNombre}
           />
         );
         break;
@@ -214,6 +219,8 @@ function AuthenticatedApp({
         <BottomNav
           active={activeTab}
           onChange={(tab) => setView(tab)}
+          isAdmin={isAdmin}
+          onCambiarCliente={onCambiarCliente}
         />
       )}
     </div>
