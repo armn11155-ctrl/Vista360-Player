@@ -765,13 +765,19 @@
   .login-foot { text-align: center; font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 18px; }
 
   /* ===== Versión de escritorio ─────────────────────────────────────────
-     En pantallas anchas la app deja de verse como un celular flotando:
-     se convierte en un layout de dashboard real — sidebar oscuro fijo a
-     la izquierda (la barra inferior de mobile, reordenada con CSS) +
-     contenido a la derecha con más aire y más columnas. El fondo de
-     Nueva York cubre todo el viewport. En mobile no cambia nada. ===== */
+     Dos casos distintos en pantallas >=900px:
+     1) Login / pantallas de estado (cargando, error) / selector de cliente
+        del admin → no hay nada que poner en un sidebar todavía, así que
+        siguen viéndose como una tarjeta centrada sobre el fondo de
+        Nueva York (de noche, "city" como el de Vista360).
+     2) Dashboard ya logueado (tiene <div class="screens"> adentro) → la
+        app cubre el 100% del viewport, de borde a borde, como una página
+        web real — nada de tarjeta flotando ni fondo visible alrededor.
+     En mobile no cambia nada (todo vive dentro de este media query). ===== */
   @media (min-width: 900px) {
-    body {
+
+    /*── Caso 1: login / estados / selector de cliente — tarjeta centrada ── */
+    body:not(:has(.screens)) {
       background-image:
         linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.72) 55%, rgba(6,12,26,0.92) 100%),
         url('/login-bg.jpg');
@@ -783,40 +789,39 @@
       justify-content: center;
       padding: 32px;
     }
-
-    /* Login, estados de carga/error, y el selector de cliente del admin
-       siguen siendo una tarjeta centrada — todavía no hay nada que poner
-       en un sidebar (no se eligió cliente / no hay sesión todavía). */
-    .app-shell:has(.login-shell),
-    .app-shell:has(.state-screen),
-    .app-shell:has(.admin-picker-shell) {
+    body:not(:has(.screens)) .app-shell {
       flex-direction: column;
+      width: 100%;
       max-width: 480px;
       min-height: min(820px, 92vh);
       max-height: 92vh;
+      margin: 0 auto;
       border-radius: 28px;
       box-shadow: 0 30px 80px rgba(0,0,0,0.55);
       overflow: hidden;
     }
 
-    /* App ya autenticada: layout de escritorio con sidebar */
-    .app-shell {
+    /*── Caso 2: dashboard logueado — cubre TODA la pantalla, sin tarjeta ── */
+    body:has(.screens) { margin: 0; }
+    body:has(.screens) .app-shell {
       flex-direction: row;
       width: 100%;
-      max-width: 1180px;
-      min-height: min(820px, 92vh);
-      max-height: 92vh;
-      border-radius: 20px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      height: 100%;
+      max-width: none;
+      min-height: 0;
+      margin: 0;
+      border-radius: 0;
+      box-shadow: none;
       overflow: hidden;
     }
 
     .sidebar-brand {
       display: block;
-      padding: 6px 16px 26px;
+      padding: 8px 20px 30px;
     }
-    .sidebar-brand img { height: 26px; }
+    .sidebar-brand img { height: 28px; }
 
+    /* Sidebar en azul sólido (no navy/negro) */
     .bottom-nav {
       order: -1;
       position: static;
@@ -824,50 +829,52 @@
       flex-direction: column;
       align-items: stretch;
       justify-content: flex-start;
-      width: 240px;
-      min-width: 240px;
+      width: 260px;
+      min-width: 260px;
       height: 100%;
-      background: #0D1629;
+      background: #1456D6;
       border-top: none;
-      border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 22px 14px;
+      border-right: none;
+      padding: 24px 16px;
       gap: 2px;
     }
     .nav-item {
       flex-direction: row;
       justify-content: flex-start;
       width: 100%;
-      padding: 11px 14px;
+      padding: 12px 16px;
       border-radius: 10px;
-      gap: 12px;
+      gap: 13px;
     }
     .nav-item svg { width: 19px; height: 19px; flex-shrink: 0; }
-    .nav-item span { font-size: 13.5px; font-weight: 500; }
-    .nav-item:not(.active) span { color: rgba(255,255,255,0.55); }
-    .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.55); }
-    .nav-item.active { background: rgba(37,99,235,0.18); }
+    .nav-item span { font-size: 14px; font-weight: 500; }
+    .nav-item:not(.active) span { color: rgba(255,255,255,0.7); }
+    .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.7); }
+    .nav-item.active { background: rgba(255,255,255,0.16); }
     .nav-item.active span { color: #fff; font-weight: 600; }
-    .nav-item.active svg { stroke: #2563EB; }
-    .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: #2563EB; }
-    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); }
+    .nav-item.active svg { stroke: #fff; }
+    .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: #fff; }
+    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.08); }
 
     .screens { background: #F0F2F7; }
 
     /* Más aire y más columnas en el contenido, ya no es una pantalla de celular */
-    .content-area { padding: 32px 40px; }
+    .content-area { padding: 36px 48px; }
     .header-dark, .header-light, .evidencias-header, .profile-header,
-    .wizard-header, .wizard-steps { padding-left: 40px; padding-right: 40px; }
-    .form-content { padding: 24px 40px; }
-    .campaign-list { padding: 20px 40px; }
-    .ev-content .ev-section-title { padding-left: 40px; padding-right: 40px; }
-    .ev-content .ev-campaign-row { padding-left: 40px; padding-right: 40px; }
-    .ev-content .photo-grid { padding: 8px 40px; }
+    .wizard-header, .wizard-steps { padding-left: 48px; padding-right: 48px; }
+    .form-content { padding: 28px 48px; }
+    .campaign-list { padding: 24px 48px; }
+    .ev-content .ev-section-title { padding-left: 48px; padding-right: 48px; }
+    .ev-content .ev-campaign-row { padding-left: 48px; padding-right: 48px; }
+    .ev-content .photo-grid { padding: 8px 48px; }
 
     .kpi-grid { grid-template-columns: repeat(4, 1fr); }
     .photo-grid { grid-template-columns: repeat(4, 1fr); }
-    .campaign-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-content: start; }
+    .campaign-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-content: start; }
     .campaign-card { margin-bottom: 0; }
   }
+
+
 
   /* ===== Estados de carga / vacío / config ===== */
   .state-screen {
