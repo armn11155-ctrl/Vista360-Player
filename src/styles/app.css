@@ -42,6 +42,18 @@
     }
   }
 
+  /* Respaldo: si por lo que sea el login-shell no llega exactamente
+     hasta el último pixel de abajo (notch raros, redondeo del navegador,
+     etc.), el shell de atrás ya tiene la MISMA foto — nunca se ve un
+     espacio sólido vacío, siempre se ve ciudad. */
+  .app-shell:has(.login-shell) {
+    background-image:
+      linear-gradient(180deg, rgba(8,14,28,0.8) 0%, rgba(8,14,28,0.6) 45%, rgba(6,12,26,0.32) 100%),
+      url('/login-bg.jpg');
+    background-size: cover;
+    background-position: center bottom;
+  }
+
   /* Screen container */
   .screens { flex: 1; overflow: hidden; position: relative; }
   .screen {
