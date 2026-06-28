@@ -40,13 +40,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 100vh;
-      height: 100dvh;
-      /* Autoridad final: altura medida en JS con window.innerHeight /
-         visualViewport, que sí refleja la pantalla real en iPhone
-         instalado cuando dvh y fixed+inset no alcanzan. */
-      height: var(--app-height, 100dvh);
-      min-height: 0;
+      /* Sin "height" explícito a propósito: igual que .appRoot de
+         Vista360 ERP. Si pones top+bottom+height juntos, el navegador
+         ignora "bottom" y usa "height" — y si height (vh/dvh/JS) calcula
+         mal en algún caso de iOS, deja exactamente este hueco. Dejando
+         que SOLO top/bottom definan el tamaño, nunca puede sobrar nada. */
       margin: 0;
       overscroll-behavior: none;
     }
