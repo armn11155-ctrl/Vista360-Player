@@ -4,6 +4,7 @@ import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
+import { useThemeColor } from "./hooks/useThemeColor";
 import ConfigMissing from "./components/ConfigMissing";
 import LoginScreen from "./components/LoginScreen";
 import AdminClientPicker from "./components/AdminClientPicker";
@@ -19,6 +20,19 @@ import type { Contrato } from "./types";
 
 type View = Tab | "detalle" | "nueva";
 
+// Color real del header de cada pantalla — debe coincidir exactamente con
+// el background de su header (.header-dark, .header-light, etc). Se usa
+// para sincronizar la barra de estado (ver useThemeColor).
+const VIEW_COLORS: Record<View, string> = {
+  inicio: "#0D1629",
+  campanas: "#FFFFFF",
+  detalle: "#FFFFFF",
+  evidencias: "#0D1629",
+  reportes: "#0D1629",
+  perfil: "#0D1629",
+  nueva: "#FFFFFF",
+};
+
 export default function App() {
   const auth = usePortalAuth();
   const [view, setView] = useState<View>("inicio");
@@ -26,6 +40,22 @@ export default function App() {
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
   const [adminClienteId, setAdminClienteId] = useState<string | null>(null);
+
+  // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
+  // el estado (login, cargando, selector de cliente, o ya adentro) — debe
+  // calcularse antes de cualquier "return" de abajo porque los hooks no
+  // pueden ser condicionales.
+  const themeColor =
+    envMissing.length > 0
+      ? "#1a0707"
+      : auth.status === "loading" || auth.status === "error"
+        ? "#FFFFFF"
+        : auth.status === "out"
+          ? "#0D1629"
+          : auth.role === "admin" && !adminClienteId
+            ? "#0D1629"
+            : VIEW_COLORS[view] ?? "#0D1629";
+  useThemeColor(themeColor);
 
   if (envMissing.length > 0) {
     return <ConfigMissing missing={envMissing} />;
