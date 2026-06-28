@@ -34,7 +34,8 @@
   }
   .screen.active { display: flex; }
 
-  /* Bottom nav */
+  /* Bottom nav (se convierte en sidebar en escritorio, ver media query) */
+  .sidebar-brand { display: none; }
   .bottom-nav {
     background: #fff;
     border-top: 1px solid #E5E7EB;
@@ -764,12 +765,12 @@
   .login-foot { text-align: center; font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 18px; }
 
   /* ===== Versión de escritorio ─────────────────────────────────────────
-     En pantallas anchas, la app deja de ser una columna mobile flotando
-     en medio de un fondo gris vacío: el fondo de Nueva York (el mismo
-     que usa Vista360) cubre todo el viewport y la app se muestra como
-     una ventana flotante centrada, con esquinas redondeadas y sombra,
-     como una app de escritorio real. En mobile no cambia nada. ===== */
-  @media (min-width: 860px) {
+     En pantallas anchas la app deja de verse como un celular flotando:
+     se convierte en un layout de dashboard real — sidebar oscuro fijo a
+     la izquierda (la barra inferior de mobile, reordenada con CSS) +
+     contenido a la derecha con más aire y más columnas. El fondo de
+     Nueva York cubre todo el viewport. En mobile no cambia nada. ===== */
+  @media (min-width: 900px) {
     body {
       background-image:
         linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.72) 55%, rgba(6,12,26,0.92) 100%),
@@ -780,16 +781,92 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 0;
+      padding: 32px;
     }
-    .app-shell {
+
+    /* Login, estados de carga/error, y el selector de cliente del admin
+       siguen siendo una tarjeta centrada — todavía no hay nada que poner
+       en un sidebar (no se eligió cliente / no hay sesión todavía). */
+    .app-shell:has(.login-shell),
+    .app-shell:has(.state-screen),
+    .app-shell:has(.admin-picker-shell) {
+      flex-direction: column;
       max-width: 480px;
       min-height: min(820px, 92vh);
       max-height: 92vh;
       border-radius: 28px;
       box-shadow: 0 30px 80px rgba(0,0,0,0.55);
-      overflow: hidden auto;
+      overflow: hidden;
     }
+
+    /* App ya autenticada: layout de escritorio con sidebar */
+    .app-shell {
+      flex-direction: row;
+      width: 100%;
+      max-width: 1180px;
+      min-height: min(820px, 92vh);
+      max-height: 92vh;
+      border-radius: 20px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
+      overflow: hidden;
+    }
+
+    .sidebar-brand {
+      display: block;
+      padding: 6px 16px 26px;
+    }
+    .sidebar-brand img { height: 26px; }
+
+    .bottom-nav {
+      order: -1;
+      position: static;
+      bottom: auto;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      width: 240px;
+      min-width: 240px;
+      height: 100%;
+      background: #0D1629;
+      border-top: none;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      padding: 22px 14px;
+      gap: 2px;
+    }
+    .nav-item {
+      flex-direction: row;
+      justify-content: flex-start;
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      gap: 12px;
+    }
+    .nav-item svg { width: 19px; height: 19px; flex-shrink: 0; }
+    .nav-item span { font-size: 13.5px; font-weight: 500; }
+    .nav-item:not(.active) span { color: rgba(255,255,255,0.55); }
+    .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.55); }
+    .nav-item.active { background: rgba(37,99,235,0.18); }
+    .nav-item.active span { color: #fff; font-weight: 600; }
+    .nav-item.active svg { stroke: #2563EB; }
+    .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: #2563EB; }
+    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); }
+
+    .screens { background: #F0F2F7; }
+
+    /* Más aire y más columnas en el contenido, ya no es una pantalla de celular */
+    .content-area { padding: 32px 40px; }
+    .header-dark, .header-light, .evidencias-header, .profile-header,
+    .wizard-header, .wizard-steps { padding-left: 40px; padding-right: 40px; }
+    .form-content { padding: 24px 40px; }
+    .campaign-list { padding: 20px 40px; }
+    .ev-content .ev-section-title { padding-left: 40px; padding-right: 40px; }
+    .ev-content .ev-campaign-row { padding-left: 40px; padding-right: 40px; }
+    .ev-content .photo-grid { padding: 8px 40px; }
+
+    .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+    .photo-grid { grid-template-columns: repeat(4, 1fr); }
+    .campaign-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-content: start; }
+    .campaign-card { margin-bottom: 0; }
   }
 
   /* ===== Estados de carga / vacío / config ===== */

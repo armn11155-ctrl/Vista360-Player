@@ -63,6 +63,9 @@ const ITEMS: { id: Tab; label: string; icon: React.ReactNode }[] = [
 export default function BottomNav({ active, onChange }: Props) {
   return (
     <div className="bottom-nav">
+      <div className="sidebar-brand">
+        <img src="/logo-player.png" alt="Vista360 Player" />
+      </div>
       {ITEMS.map((item) => (
         <div
           key={item.id}

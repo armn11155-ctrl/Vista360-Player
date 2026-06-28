@@ -17,7 +17,7 @@ export default function AdminClientPicker({ onSelect }: Props) {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="admin-picker-shell" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div className="header-dark" style={{ paddingBottom: 18 }}>
         <div className="logo-row">
           <div>
