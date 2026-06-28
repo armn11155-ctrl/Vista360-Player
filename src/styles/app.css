@@ -765,45 +765,17 @@
   .login-foot { text-align: center; font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 18px; }
 
   /* ===== Versión de escritorio ─────────────────────────────────────────
-     Dos casos distintos en pantallas >=900px:
-     1) Login / pantallas de estado (cargando, error) / selector de cliente
-        del admin → no hay nada que poner en un sidebar todavía, así que
-        siguen viéndose como una tarjeta centrada sobre el fondo de
-        Nueva York (de noche, "city" como el de Vista360).
-     2) Dashboard ya logueado (tiene <div class="screens"> adentro) → la
-        app cubre el 100% del viewport, de borde a borde, como una página
-        web real — nada de tarjeta flotando ni fondo visible alrededor.
+     La app cubre el 100% del viewport SIEMPRE en pantallas >=900px — ya
+     sea el dashboard (con sidebar) o el login (sin sidebar, pero con el
+     fondo de Nueva York cubriendo toda la pantalla). Nunca se ve como una
+     tarjeta tipo celular flotando. El formulario de login en sí no tiene
+     por qué ocupar todo ese ancho — se queda compacto y centrado, igual
+     que el fondo de cualquier login de escritorio real.
      En mobile no cambia nada (todo vive dentro de este media query). ===== */
   @media (min-width: 900px) {
+    body { margin: 0; }
 
-    /*── Caso 1: login / estados / selector de cliente — tarjeta centrada ── */
-    body:not(:has(.screens)) {
-      background-image:
-        linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.72) 55%, rgba(6,12,26,0.92) 100%),
-        url('/login-bg.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-    }
-    body:not(:has(.screens)) .app-shell {
-      flex-direction: column;
-      width: 100%;
-      max-width: 480px;
-      min-height: min(820px, 92vh);
-      max-height: 92vh;
-      margin: 0 auto;
-      border-radius: 28px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.55);
-      overflow: hidden;
-    }
-
-    /*── Caso 2: dashboard logueado — cubre TODA la pantalla, sin tarjeta ── */
-    body:has(.screens) { margin: 0; }
-    body:has(.screens) .app-shell {
+    .app-shell {
       flex-direction: row;
       width: 100%;
       height: 100%;
@@ -815,13 +787,31 @@
       overflow: hidden;
     }
 
+    /* Login / estados de carga-error / selector de cliente del admin no
+       tienen sidebar — siguen siendo una sola columna, pero a pantalla
+       completa (no una tarjeta angosta tipo celular en medio de la pantalla). */
+    .app-shell:has(.login-shell),
+    .app-shell:has(.state-screen),
+    .app-shell:has(.admin-picker-shell) {
+      flex-direction: column;
+    }
+
+    /* El formulario de login no se estira a todo lo ancho de la pantalla:
+       el fondo de Nueva York (ya está en .login-shell) sí cubre todo, pero
+       la tarjeta blanca se queda compacta y centrada sobre ese fondo. */
+    .login-logo, .login-card, .login-foot {
+      width: 100%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     .sidebar-brand {
       display: block;
       padding: 8px 20px 30px;
     }
-    .sidebar-brand img { height: 28px; }
+    .sidebar-brand img { height: 26px; }
 
-    /* Sidebar en azul sólido (no navy/negro) */
     .bottom-nav {
       order: -1;
       position: static;
@@ -832,9 +822,9 @@
       width: 260px;
       min-width: 260px;
       height: 100%;
-      background: #1456D6;
+      background: #0D1629;
       border-top: none;
-      border-right: none;
+      border-right: 1px solid rgba(255,255,255,0.06);
       padding: 24px 16px;
       gap: 2px;
     }
@@ -848,13 +838,13 @@
     }
     .nav-item svg { width: 19px; height: 19px; flex-shrink: 0; }
     .nav-item span { font-size: 14px; font-weight: 500; }
-    .nav-item:not(.active) span { color: rgba(255,255,255,0.7); }
-    .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.7); }
-    .nav-item.active { background: rgba(255,255,255,0.16); }
+    .nav-item:not(.active) span { color: rgba(255,255,255,0.55); }
+    .nav-item:not(.active) svg { stroke: rgba(255,255,255,0.55); }
+    .nav-item.active { background: rgba(37,99,235,0.18); }
     .nav-item.active span { color: #fff; font-weight: 600; }
-    .nav-item.active svg { stroke: #fff; }
-    .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: #fff; }
-    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.08); }
+    .nav-item.active svg { stroke: #2563EB; }
+    .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: #2563EB; }
+    .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); }
 
     .screens { background: #F0F2F7; }
 
@@ -873,6 +863,8 @@
     .campaign-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; align-content: start; }
     .campaign-card { margin-bottom: 0; }
   }
+
+
 
 
 
