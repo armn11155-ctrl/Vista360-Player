@@ -7,10 +7,10 @@ interface Props {
   onSelect: (clienteId: string) => void;
 }
 
-// Paleta de colores para los avatares — cada cliente siempre saca el mismo
-// color (no cambia al recargar), pero clientes distintos casi nunca
-// coinciden, porque se elige según su propio id.
-const AVATAR_COLORS = ["#2563EB", "#7C3AED", "#059669", "#D97706", "#DB2777", "#0D9488", "#4F46E5", "#0EA5E9"];
+// Paleta de colores para los avatares — solo tonos de azul (de más oscuro
+// a más claro), pero cada cliente siempre saca el mismo tono (no cambia al
+// recargar) porque se elige según su propio id.
+const AVATAR_COLORS = ["#0D1629", "#1E3A8A", "#1D4ED8", "#2563EB", "#3B82F6", "#0EA5E9", "#0284C7", "#0369A1"];
 
 function colorParaCliente(id: string): string {
   let hash = 0;
