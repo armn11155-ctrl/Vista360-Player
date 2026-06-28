@@ -2,12 +2,15 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./styles/app.css";
+import { setupFullscreenOnTouch } from "./utils/fullscreen";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>
 );
+
+setupFullscreenOnTouch();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
