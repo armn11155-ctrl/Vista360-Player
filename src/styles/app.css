@@ -866,6 +866,11 @@
     /* "Cambiar de cliente" se ancla al fondo del sidebar en vez de quedar pegado al último tab */
     .nav-item-switch { margin-top: auto; }
 
+    /* El logo ya está en el sidebar en escritorio — no lo dupliques arriba
+       de "Hola, ..." en Inicio. En mobile sigue igual (ahí es la única marca). */
+    .header-dark .logo-row { justify-content: flex-end; }
+    .header-dark .header-logo-img { display: none; }
+
     /* Selector de cliente del admin: versión espaciosa con grid de tarjetas */
     .admin-picker-header { padding: 48px 56px 40px; }
     .admin-picker-title { font-size: 28px; }
