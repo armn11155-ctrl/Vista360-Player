@@ -19,14 +19,43 @@
     --purple: #8B5CF6;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
 
-  html, body, #root { height: 100%; overscroll-behavior: none; }
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: #0D1629;
+    -webkit-text-size-adjust: 100%;
+  }
 
   body {
-    background: var(--dark);
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
     color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Igual que #root en Vista360 ERP: fixed con top/left/right/bottom,
+     SIN height explícito. Esto sella el vacío de abajo en iOS/Android. */
+  #root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    background: transparent;
   }
 
   /* Contenedor real de la app (no es un marco de iPhone de mentira —

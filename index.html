@@ -1,17 +1,26 @@
 <!DOCTYPE html>
-<html lang="es" style="background:#0D1629">
+<html lang="es" style="background:#0D1629;color-scheme:dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <style>
+      html,body,#root{background:#0D1629}
+    </style>
+
     <meta name="theme-color" content="#0D1629" />
 
-    <!-- PWA -->
+    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Vista360 Player" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
+    <!-- Favicon -->
     <link rel="icon" href="/favicon.ico" sizes="any" />
 
     <title>Vista360 Player</title>
