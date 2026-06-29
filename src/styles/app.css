@@ -767,7 +767,16 @@
 
   /* ===== LOGIN (no estaba en el mockup original — ahí ya arrancaba logueado) ===== */
   .login-shell {
-    flex: 1;
+    /* Igual que el login del ERP: se fija a la pantalla REAL por sí
+       mismo (position:fixed;inset:0), no depende de heredar un alto
+       exacto de .app-shell vía flex:1. Una capa de indirección menos =
+       un punto menos donde algo puede no cuadrar al pixel. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
     display: flex;
     flex-direction: column;
     justify-content: center;
