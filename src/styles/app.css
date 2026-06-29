@@ -773,17 +773,7 @@
     justify-content: center;
     padding: calc(32px + env(safe-area-inset-top)) 28px 32px;
     background-image:
-      /* El último tramo (85%-100%) ya es #0D1629 sólido, igual al fondo
-         de toda la app — así, sin importar el alto exacto que mida cada
-         teléfono, el final SIEMPRE es color liso, nunca un corte de la
-         foto. Mismo principio que usa el login del ERP (gradiente, sin
-         depender de que la foto llegue exacta al pixel final). */
-      linear-gradient(180deg,
-        rgba(8,14,28,0.8) 0%,
-        rgba(8,14,28,0.55) 35%,
-        rgba(13,22,41,0.95) 70%,
-        #0D1629 88%,
-        #0D1629 100%),
+      linear-gradient(180deg, rgba(8,14,28,0.8) 0%, rgba(8,14,28,0.6) 45%, rgba(6,12,26,0.32) 100%),
       url('/login-bg.jpg');
     background-size: cover;
     background-position: center bottom;
