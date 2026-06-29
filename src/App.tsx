@@ -5,10 +5,12 @@ import { useCliente } from "./hooks/useCliente";
 import { useContratos } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
 import { useThemeColor } from "./hooks/useThemeColor";
+import { logout } from "./config/firebase";
 import ConfigMissing from "./components/ConfigMissing";
 import LoginScreen from "./components/LoginScreen";
 import AdminClientPicker from "./components/AdminClientPicker";
 import BottomNav, { type Tab } from "./components/BottomNav";
+import Sidebar from "./components/Sidebar";
 import Inicio from "./components/screens/Inicio";
 import MisCampanas from "./components/screens/MisCampanas";
 import DetalleCampana from "./components/screens/DetalleCampana";
@@ -16,9 +18,22 @@ import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import NuevaCampana from "./components/screens/NuevaCampana";
+import Portafolio from "./components/screens/Portafolio";
+import Cobertura from "./components/screens/Cobertura";
+import MisPantallas from "./components/screens/MisPantallas";
+import Impacto from "./components/screens/Impacto";
+import Contactanos from "./components/screens/Contactanos";
 import type { Contrato } from "./types";
 
-type View = Tab | "detalle" | "nueva";
+type View =
+  | Tab
+  | "detalle"
+  | "nueva"
+  | "portafolio"
+  | "cobertura"
+  | "mispantallas"
+  | "impacto"
+  | "contactanos";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -31,7 +46,23 @@ const VIEW_COLORS: Record<View, string> = {
   reportes: "#0D1629",
   perfil: "#0D1629",
   nueva: "#FFFFFF",
+  portafolio: "#FFFFFF",
+  cobertura: "#FFFFFF",
+  mispantallas: "#FFFFFF",
+  impacto: "#FFFFFF",
+  contactanos: "#FFFFFF",
 };
+
+// Vistas que se abren desde el menú lateral (☰) y no desde la barra
+// inferior — se navegan igual que "detalle"/"nueva": pantalla completa,
+// con su propio botón de regreso, sin la barra inferior compitiendo.
+const SIDEBAR_VIEWS = new Set<View>([
+  "portafolio",
+  "cobertura",
+  "mispantallas",
+  "impacto",
+  "contactanos",
+]);
 
 export default function App() {
   const auth = usePortalAuth();
@@ -157,9 +188,11 @@ function AuthenticatedApp({
   const contratosState = useContratos(clienteId);
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
   const paneles = usePaneles(contratos.map((c) => c.panel_id));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const showBottomNav = view !== "detalle" && view !== "nueva";
-  const activeTab: Tab = view === "detalle" || view === "nueva" ? "campanas" : view;
+  const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
+  const activeTab: Tab =
+    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : view;
 
   function abrirContrato(c: Contrato) {
     setContratoAbierto(c);
@@ -237,6 +270,21 @@ function AuthenticatedApp({
           />
         );
         break;
+      case "portafolio":
+        content = <Portafolio onBack={() => setView("inicio")} onContactar={() => setView("contactanos")} />;
+        break;
+      case "cobertura":
+        content = <Cobertura onBack={() => setView("inicio")} />;
+        break;
+      case "mispantallas":
+        content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} />;
+        break;
+      case "impacto":
+        content = <Impacto onBack={() => setView("inicio")} />;
+        break;
+      case "contactanos":
+        content = <Contactanos cliente={cliente} onBack={() => setView("inicio")} />;
+        break;
     }
   }
 
@@ -253,6 +301,19 @@ function AuthenticatedApp({
           onCambiarCliente={onCambiarCliente}
         />
       )}
+      <div className="menu-fab" onClick={() => setSidebarOpen(true)}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round">
+          <line x1="4" y1="7" x2="20" y2="7" />
+          <line x1="4" y1="12" x2="20" y2="12" />
+          <line x1="4" y1="17" x2="20" y2="17" />
+        </svg>
+      </div>
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onNavigate={(v) => setView(v)}
+        onLogout={() => logout()}
+      />
     </div>
   );
 }
