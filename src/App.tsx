@@ -40,17 +40,17 @@ type View =
 // para sincronizar la barra de estado (ver useThemeColor).
 const VIEW_COLORS: Record<View, string> = {
   inicio: "#0D1629",
-  campanas: "#FFFFFF",
-  detalle: "#FFFFFF",
+  campanas: "#0D1629",
+  detalle: "#0D1629",
   evidencias: "#0D1629",
   reportes: "#0D1629",
   perfil: "#0D1629",
-  nueva: "#FFFFFF",
-  portafolio: "#FFFFFF",
-  cobertura: "#FFFFFF",
-  mispantallas: "#FFFFFF",
-  impacto: "#FFFFFF",
-  contactanos: "#FFFFFF",
+  nueva: "#0D1629",
+  portafolio: "#0D1629",
+  cobertura: "#0D1629",
+  mispantallas: "#0D1629",
+  impacto: "#0D1629",
+  contactanos: "#0D1629",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -80,7 +80,7 @@ export default function App() {
     envMissing.length > 0
       ? "#1a0707"
       : auth.status === "loading" || auth.status === "error"
-        ? "#FFFFFF"
+        ? "#0D1629"
         : auth.status === "out"
           ? "#0D1629"
           : auth.role === "admin" && !adminClienteId
@@ -192,7 +192,7 @@ function AuthenticatedApp({
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
-    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : view;
+    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
 
   function abrirContrato(c: Contrato) {
     setContratoAbierto(c);

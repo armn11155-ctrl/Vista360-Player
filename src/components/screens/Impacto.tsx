@@ -21,8 +21,8 @@ export default function Impacto({ onBack }: Props) {
         <div style={{ width: 32 }} />
       </div>
       <div className="content-area">
-        <div className="card" style={{ background: "#EFF6FF", marginBottom: 14 }}>
-          <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
+        <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
+          <div style={{ fontSize: 12.5, color: "#93C5FD", lineHeight: 1.5 }}>
             Datos de ejemplo — el conteo vehicular en vivo se activa cuando tu pantalla tiene el
             sensor de tráfico conectado.
           </div>
@@ -32,7 +32,7 @@ export default function Impacto({ onBack }: Props) {
           <div className="kpi-grid">
             <div className="kpi-item">
               <div className="kpi-icon blue">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2">
                   <path d="M3 17l6-6 4 4 8-8" />
                 </svg>
               </div>

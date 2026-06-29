@@ -73,7 +73,7 @@ export default function BottomNav({ active, onChange, isAdmin, onCambiarCliente 
           key={item.id}
           className={`nav-item ${active === item.id ? "active" : ""}`}
           onClick={() => onChange(item.id)}
-          style={{ color: active === item.id ? "#2563EB" : "#9CA3AF", stroke: active === item.id ? "#2563EB" : "#9CA3AF" }}
+          style={{ color: active === item.id ? "#3B82F6" : "#8B96AC", stroke: active === item.id ? "#3B82F6" : "#8B96AC" }}
         >
           {item.icon}
           <span>{item.label}</span>
@@ -83,7 +83,7 @@ export default function BottomNav({ active, onChange, isAdmin, onCambiarCliente 
         <div
           className="nav-item nav-item-switch"
           onClick={onCambiarCliente}
-          style={{ color: "#9CA3AF", stroke: "#9CA3AF" }}
+          style={{ color: "#8B96AC", stroke: "#8B96AC" }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="17 1 21 5 17 9" />

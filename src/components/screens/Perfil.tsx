@@ -11,7 +11,7 @@ interface Props {
 function MenuItem({ icon, label, value, danger, onClick }: { icon: string; label: string; value?: string; danger?: boolean; onClick?: () => void }) {
   return (
     <div className={`menu-item ${danger ? "danger" : ""}`} onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }}>
-      <div className="menu-item-icon" style={danger ? { background: "#FEF2F2" } : undefined}>
+      <div className="menu-item-icon" style={danger ? { background: "rgba(239,68,68,0.14)" } : undefined}>
         <span style={{ fontSize: 15 }}>{icon}</span>
       </div>
       <span className="menu-item-label">{label}</span>
@@ -44,7 +44,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", background: "#F0F2F7" }}>
+      <div style={{ flex: 1, overflowY: "auto", background: "#0A1220" }}>
         <div className="profile-section-title">Información de la empresa</div>
         <div>
           <MenuItem icon="🏢" label="Empresa" value={cliente?.empresa} />

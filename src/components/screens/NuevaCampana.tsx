@@ -51,9 +51,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada }: Props) {
 
   return (
     <div>
-      <div className="wizard-header" style={{ background: "#fff" }}>
+      <div className="wizard-header">
         <div className="back-btn" onClick={onBack}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="m15 18-6-6 6-6" />
           </svg>
         </div>
@@ -82,8 +82,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada }: Props) {
           <div className="form-group">
             <label className="form-label">Ciudad</label>
             <select className="form-input form-select" value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
-              <option value="" disabled>Selecciona una ciudad</option>
-              {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
+              <option value="" disabled style={{ background: "#15213B", color: "#F1F5F9" }}>Selecciona una ciudad</option>
+              {CIUDADES.map((c) => <option key={c} value={c} style={{ background: "#15213B", color: "#F1F5F9" }}>{c}</option>)}
             </select>
           </div>
           <div className="form-group">

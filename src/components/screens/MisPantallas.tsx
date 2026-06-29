@@ -18,7 +18,7 @@ const MOCK_FALLBACK: Panel[] = [
 
 function estadoInfo(estado: Panel["estado"]) {
   if (estado === "Mantenimiento") return { color: "#D97706", label: "Mantenimiento" };
-  if (estado === "Disponible" || estado === "Libre") return { color: "#9CA3AF", label: "En espera" };
+  if (estado === "Disponible" || estado === "Libre") return { color: "#8B96AC", label: "En espera" };
   return { color: "#22C55E", label: "Transmitiendo" };
 }
 
@@ -37,8 +37,8 @@ export default function MisPantallas({ paneles, onBack }: Props) {
       </div>
       <div className="content-area">
         {lista.length === 0 && (
-          <div className="card" style={{ background: "#EFF6FF", marginBottom: 14 }}>
-            <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
+          <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
+            <div style={{ fontSize: 12.5, color: "#93C5FD", lineHeight: 1.5 }}>
               Aún no tienes pantallas contratadas activas — esto es un ejemplo de cómo se verá el
               monitoreo en vivo de tus paneles.
             </div>

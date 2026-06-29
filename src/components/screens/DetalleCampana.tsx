@@ -41,9 +41,9 @@ export default function DetalleCampana({ contrato, panel, onBack, isAdmin }: Pro
 
   return (
     <div>
-      <div className="detail-header" style={{ background: "#fff" }}>
+      <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
             <path d="m15 18-6-6 6-6" />
           </svg>
         </div>
@@ -83,7 +83,7 @@ export default function DetalleCampana({ contrato, panel, onBack, isAdmin }: Pro
 
         <div className="card" style={{ marginBottom: 14 }}>
           <div className="section-title">Detalle de la campaña</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#F1F5F9" }}>
             <div>Cara del panel: <strong>{contrato.cara ?? "Ambas / Mural"}</strong></div>
           </div>
         </div>
@@ -115,8 +115,8 @@ export default function DetalleCampana({ contrato, panel, onBack, isAdmin }: Pro
                 disabled={subiendo}
                 style={{
                   width: "100%", padding: 12, borderRadius: 10,
-                  border: "1px solid #E5E7EB", background: "#F9FAFB",
-                  color: "#111827", fontWeight: 700, fontSize: 13,
+                  border: "1px solid #1F2C42", background: "#0D1629",
+                  color: "#F1F5F9", fontWeight: 700, fontSize: 13,
                   cursor: subiendo ? "default" : "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                 }}
@@ -130,7 +130,7 @@ export default function DetalleCampana({ contrato, panel, onBack, isAdmin }: Pro
         {panel?.direccion && (
           <div className="card">
             <div className="section-title">Ubicación del panel</div>
-            <div style={{ fontSize: 13, color: "#374151" }}>{panel.direccion}</div>
+            <div style={{ fontSize: 13, color: "#F1F5F9" }}>{panel.direccion}</div>
           </div>
         )}
       </div>

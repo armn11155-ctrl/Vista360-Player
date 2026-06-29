@@ -14,9 +14,9 @@ interface Props {
 }
 
 const BADGE_STYLE: Record<string, { bg: string; color: string }> = {
-  Activa: { bg: "#D1FAE5", color: "#059669" },
-  Programada: { bg: "#DBEAFE", color: "#2563EB" },
-  Finalizada: { bg: "#F3F4F6", color: "#6B7280" },
+  Activa: { bg: "rgba(34,197,94,0.18)", color: "#4ADE80" },
+  Programada: { bg: "rgba(59,130,246,0.18)", color: "#93C5FD" },
+  Finalizada: { bg: "rgba(255,255,255,0.08)", color: "#8B96AC" },
 };
 
 function progreso(c: Contrato): number {
@@ -39,12 +39,12 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
 
   return (
-    <div style={{ background: "#F0F2F7", display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ background: "#fff", padding: "16px 20px", paddingTop: "calc(16px + env(safe-area-inset-top))", display: "flex", justifyContent: "center", boxShadow: "0 1px 0 #F3F4F6", flexShrink: 0 }}>
-        <div style={{ fontSize: 17, fontWeight: 700, color: "#111827" }}>Mis campañas</div>
+    <div style={{ background: "#0A1220", display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ background: "#0D1629", padding: "16px 20px", paddingTop: "calc(16px + env(safe-area-inset-top))", display: "flex", justifyContent: "center", boxShadow: "0 1px 0 #1F2C42", flexShrink: 0 }}>
+        <div style={{ fontSize: 17, fontWeight: 700, color: "#F1F5F9" }}>Mis campañas</div>
       </div>
 
-      <div style={{ background: "#fff", display: "flex", padding: "0 6px", borderBottom: "1px solid #F3F4F6", flexShrink: 0 }}>
+      <div style={{ background: "#0D1629", display: "flex", padding: "0 6px", borderBottom: "1px solid #1F2C42", flexShrink: 0 }}>
         {(["Todas", "Activa", "Programada", "Finalizada"] as const).map((f) => (
           <div
             key={f}
@@ -53,8 +53,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               padding: "12px 14px",
               fontSize: 13,
               fontWeight: filtro === f ? 600 : 500,
-              color: filtro === f ? "#2563EB" : "#9CA3AF",
-              borderBottom: filtro === f ? "2px solid #2563EB" : "2px solid transparent",
+              color: filtro === f ? "#3B82F6" : "#8B96AC",
+              borderBottom: filtro === f ? "2px solid #3B82F6" : "2px solid transparent",
               cursor: "pointer",
             }}
           >
@@ -68,10 +68,10 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           <div
             style={{
               display: "flex", alignItems: "center", gap: 8,
-              background: informeDelMes ? "#F0FDF4" : "#FFF7ED",
-              border: `1px solid ${informeDelMes ? "#BBF7D0" : "#FED7AA"}`,
+              background: informeDelMes ? "rgba(34,197,94,0.14)" : "rgba(245,158,11,0.14)",
+              border: `1px solid ${informeDelMes ? "rgba(34,197,94,0.35)" : "rgba(245,158,11,0.35)"}`,
               borderRadius: 12, padding: "10px 12px", marginBottom: 14, fontSize: 12,
-              color: informeDelMes ? "#166534" : "#9A3412",
+              color: informeDelMes ? "#4ADE80" : "#FCD34D",
             }}
           >
             {informeDelMes
@@ -91,44 +91,44 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               key={c.id}
               onClick={() => onAbrir(c)}
               style={{
-                background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12,
+                background: "#15213B", border: "1px solid #1F2C42", borderRadius: 16, padding: 14, marginBottom: 12,
                 display: "flex", gap: 13, alignItems: "flex-start",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.07)", cursor: "pointer",
+                boxShadow: "0 10px 24px -16px rgba(0,0,0,0.6)", cursor: "pointer",
               }}
             >
               <div style={{ width: 56, height: 56, borderRadius: 12, background: "#0D1629", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 12 }}>
                 {c.cara ?? "🏙️"}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 5 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#F1F5F9", marginBottom: 5 }}>
                   Contrato #{c.id.slice(0, 6)}
                 </div>
                 <div style={{ display: "inline-block", background: badge.bg, color: badge.color, padding: "2px 9px", borderRadius: 6, fontSize: 11, fontWeight: 600, marginBottom: 7 }}>
                   {estado}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6B7280", marginBottom: 3 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#8B96AC", marginBottom: 3 }}>
                   📍 {panelNombres.join(", ")}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6B7280", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#8B96AC", marginBottom: 8 }}>
                   📅 {c.inicio} – {c.fin}
                 </div>
                 {estado === "Activa" && (
                   <>
-                    <div style={{ background: "#E5E7EB", borderRadius: 4, height: 6, overflow: "hidden" }}>
-                      <div style={{ width: `${progreso(c)}%`, height: "100%", background: "linear-gradient(90deg,#2563EB,#60A5FA)", borderRadius: 4 }} />
+                    <div style={{ background: "#1F2C42", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                      <div style={{ width: `${progreso(c)}%`, height: "100%", background: "linear-gradient(90deg,#3B82F6,#60A5FA)", borderRadius: 4 }} />
                     </div>
-                    <div style={{ fontSize: 10, color: "#9CA3AF", marginTop: 3 }}>{progreso(c)}% completado</div>
+                    <div style={{ fontSize: 10, color: "#8B96AC", marginTop: 3 }}>{progreso(c)}% completado</div>
                   </>
                 )}
               </div>
-              <div style={{ color: "#D1D5DB", fontSize: 20, marginTop: 2, flexShrink: 0 }}>›</div>
+              <div style={{ color: "#8B96AC", fontSize: 20, marginTop: 2, flexShrink: 0 }}>›</div>
             </div>
           );
         })}
       </div>
 
-      <div style={{ background: "#F0F2F7", padding: "10px 14px 14px", flexShrink: 0 }}>
-        <div style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", marginBottom: 10 }}>
+      <div style={{ background: "#0A1220", padding: "10px 14px 14px", flexShrink: 0 }}>
+        <div style={{ textAlign: "center", fontSize: 12, color: "#8B96AC", marginBottom: 10 }}>
           ¿Quieres lanzar una nueva campaña?
         </div>
         <button className="btn-primary" onClick={onNueva}>+ Nueva campaña</button>
