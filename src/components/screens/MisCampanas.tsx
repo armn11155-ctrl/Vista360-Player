@@ -40,7 +40,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
   return (
     <div style={{ background: "#0A1220", display: "flex", flexDirection: "column", height: "100%" }}>
-      <div style={{ background: "#0D1629", padding: "16px 20px", paddingTop: "calc(16px + env(safe-area-inset-top))", display: "flex", justifyContent: "center", boxShadow: "0 1px 0 #1F2C42", flexShrink: 0 }}>
+      <div style={{ background: "#0D1629", padding: "16px 20px", paddingTop: "16px", display: "flex", justifyContent: "center", boxShadow: "0 1px 0 #1F2C42", flexShrink: 0 }}>
         <div style={{ fontSize: 17, fontWeight: 700, color: "#F1F5F9" }}>Mis campañas</div>
       </div>
 

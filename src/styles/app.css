@@ -108,15 +108,17 @@
 
   /* Screen container */
   .screens { flex: 1; overflow: hidden; position: relative; }
-  .screen {
-    display: none;
+  /* Cada pantalla y su div-raíz directo deben llenar el 100% del espacio
+     disponible en columna — así content-area (flex:1) sabe su límite y
+     el scroll nunca va más allá del contenido real. */
+  .screen,
+  .screen.active > * {
+    display: flex;
     flex-direction: column;
     height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    min-height: 0;
   }
+  .screen { display: none; }
   .screen.active { display: flex; }
 
   /* Bottom nav (se convierte en sidebar en escritorio, ver media query) */
