@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { login } from "../config/firebase";
+import { auth, login } from "../config/firebase";
+import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 
 const LOGO = "/logo-player.png";
 
@@ -10,6 +11,7 @@ interface Props {
 export default function LoginScreen({ onLoggedIn }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -22,6 +24,9 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     }
     setBusy(true);
     try {
+      if (auth) {
+        await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+      }
       await login(email.trim(), password);
       onLoggedIn();
     } catch {
@@ -62,6 +67,16 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
             />
+          </div>
+          <div className="login-remember" onClick={() => setRemember(r => !r)}>
+            <div className={`login-remember-box${remember ? " checked" : ""}`}>
+              {remember && (
+                <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                  <path d="M1 4L4 7.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+            <span className="login-remember-label">Mantener sesión iniciada</span>
           </div>
           <button className="login-btn" disabled={busy} type="submit">
             {busy ? "Ingresando…" : "Ingresar"}

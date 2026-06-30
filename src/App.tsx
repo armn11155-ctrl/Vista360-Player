@@ -82,7 +82,7 @@ export default function App() {
       : auth.status === "loading" || auth.status === "error"
         ? "#0D1629"
         : auth.status === "out"
-          ? "#0D1629"
+          ? "#080E1C"
           : auth.role === "admin" && !adminClienteId
             ? "#0D1629"
             : VIEW_COLORS[view] ?? "#0D1629";
