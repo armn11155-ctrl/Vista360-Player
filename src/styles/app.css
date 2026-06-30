@@ -854,7 +854,7 @@
     padding: 28px 22px;
     box-shadow: 0 24px 60px -20px rgba(0,0,0,0.7);
   }
-  .login-title { font-size: 19px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  .login-title { font-size: 19px; font-weight: 800; color: #FFFFFF; margin-bottom: 6px; }
   .login-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
   .login-error {
     background: rgba(239,68,68,0.14); color: #FCA5A5; font-size: 12.5px;
