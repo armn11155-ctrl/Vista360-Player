@@ -270,6 +270,7 @@ function AuthenticatedApp({
             clienteId={clienteId}
             onBack={() => setView("campanas")}
             onEnviada={() => setView("campanas")}
+            isAdmin={isAdmin}
           />
         );
         break;
