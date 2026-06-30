@@ -3,16 +3,16 @@
   /* ── Design tokens — paleta "premium dark" (navy casi negro + acento
      azul con glow), consistente con la marca Vista360. ─────────────── */
   :root {
-    --bg: #0A1220;
+    --bg: #F2F4F8;
     --dark: #0D1629;
     --darker: #07101F;
     --surface: #121D33;
-    --card: #15213B;
-    --text: #F1F5F9;
-    --muted: #8B96AC;
+    --card: #FFFFFF;
+    --text: #0D1629;
+    --muted: #6B7A99;
     --accent: #3B82F6;
     --accent-lt: rgba(59,130,246,0.16);
-    --border: #1F2C42;
+    --border: rgba(30,58,138,0.12);
     --green: #22C55E;
     --red: #EF4444;
     --amber: #F59E0B;
@@ -197,7 +197,7 @@
   }
   .green-dot { width: 7px; height: 7px; background: #22C55E; border-radius: 50%; }
 
-  .content-area { background: var(--bg); flex: 1; padding: 20px 16px; }
+  .content-area { background: var(--bg); flex: 1; padding: 20px 16px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
   .card {
     background: var(--card);
@@ -306,7 +306,7 @@
   }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
-  .campaign-list { flex: 1; overflow-y: auto; padding: 12px 16px; background: var(--bg); }
+  .campaign-list { flex: 1; overflow-y: auto; padding: 12px 16px; background: var(--bg); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
   .campaign-card {
     background: var(--card);
@@ -865,8 +865,7 @@
     width: 100%; background: var(--accent); color: #fff; border: none;
     border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 700;
     cursor: pointer; margin-top: 6px;
-    box-shadow: 0 10px 24px -8px rgba(59,130,246,0.5);
-  }
+    }
   .login-btn:disabled { opacity: 0.6; cursor: default; }
   .login-foot { text-align: center; font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 18px; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
 
@@ -1030,8 +1029,8 @@
   .admin-context-dot { width: 6px; height: 6px; background: #5B9BFF; border-radius: 50%; flex-shrink: 0; }
 
   /* ===== Selector de cliente del admin (rediseño premium) ===== */
-  .admin-picker-shell { display: flex; flex-direction: column; height: 100%; background: var(--bg); }
-  .admin-picker-header { background: var(--dark); padding: calc(30px + env(safe-area-inset-top)) 22px 24px; flex-shrink: 0; }
+  .admin-picker-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); overflow: hidden; }
+  .admin-picker-header { background: var(--dark); padding: calc(30px + env(safe-area-inset-top)) 22px 24px; flex-shrink: 0; position: relative; z-index: 10; }
   .admin-picker-logo { height: 22px; display: block; margin-bottom: 16px; }
   .admin-picker-badge {
     display: inline-block;
@@ -1061,7 +1060,7 @@
   .admin-picker-search::placeholder { color: rgba(255,255,255,0.4); }
   .admin-picker-search:focus { border-color: var(--accent); }
 
-  .admin-picker-body { flex: 1; overflow-y: auto; padding: 18px 16px; }
+  .admin-picker-body { flex: 1; overflow-y: auto; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
   .admin-picker-grid { display: flex; flex-direction: column; gap: 10px; }
   .admin-picker-card {
     background: var(--card);
@@ -1087,8 +1086,8 @@
     flex-shrink: 0;
   }
   .admin-picker-card-info { flex: 1; min-width: 0; }
-  .admin-picker-card-name { font-size: 14px; font-weight: 700; color: var(--text); }
-  .admin-picker-card-city { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .admin-picker-card-name { font-size: 14px; font-weight: 700; color: #0D1629; }
+  .admin-picker-card-city { font-size: 12px; color: #6B7A99; margin-top: 2px; }
 
   .admin-picker-footer { padding: 14px 16px 20px; flex-shrink: 0; }
   .admin-picker-logout {
@@ -1096,7 +1095,7 @@
     padding: 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: var(--card);
+    background: #FFF;
     color: var(--red);
     font-weight: 700;
     font-size: 13px;
