@@ -94,7 +94,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#0D1629" }}>{c.campana}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#0D1629" }}>{panelNombre}</div>
                 </div>
                 <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 6, padding: "2px 8px", marginBottom: 6 }}>
                   <span style={{ fontSize: 11, fontWeight: 600, color: badge.color }}>{estado}</span>
