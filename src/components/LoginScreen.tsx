@@ -3,15 +3,20 @@ import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 
 const LOGO = "/logo-player.png";
+const SAVED_EMAIL_KEY = "v360_saved_email";
+const REMEMBER_KEY = "v360_remember";
 
 interface Props {
   onLoggedIn: () => void;
 }
 
 export default function LoginScreen({ onLoggedIn }: Props) {
-  const [email, setEmail] = useState("");
+  const savedRemember = localStorage.getItem(REMEMBER_KEY) !== "false";
+  const savedEmail = savedRemember ? (localStorage.getItem(SAVED_EMAIL_KEY) ?? "") : "";
+
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(savedRemember);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -26,6 +31,14 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     try {
       if (auth) {
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+      }
+      // Guardar email si "recordar" está activo
+      if (remember) {
+        localStorage.setItem(SAVED_EMAIL_KEY, email.trim());
+        localStorage.setItem(REMEMBER_KEY, "true");
+      } else {
+        localStorage.removeItem(SAVED_EMAIL_KEY);
+        localStorage.setItem(REMEMBER_KEY, "false");
       }
       await login(email.trim(), password);
       onLoggedIn();

@@ -44,8 +44,8 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", background: "#0A1220" }}>
-        <div className="profile-section-title">Información de la empresa</div>
+      <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)" }}>
+        <div className="profile-section-title" style={{ background: "var(--bg)" }}>Información de la empresa</div>
         <div>
           <MenuItem icon="🏢" label="Empresa" value={cliente?.empresa} />
           <MenuItem icon="📞" label="Contacto" value={cliente?.contacto} />
@@ -54,14 +54,14 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
 
         {isAdmin && (
           <>
-            <div className="profile-section-title">Admin</div>
+            <div className="profile-section-title" style={{ background: "var(--bg)" }}>Admin</div>
             <div>
               <MenuItem icon="🔁" label="Cambiar de cliente" onClick={onCambiarCliente} />
             </div>
           </>
         )}
 
-        <div className="profile-section-title">Soporte</div>
+        <div className="profile-section-title" style={{ background: "var(--bg)" }}>Soporte</div>
         <div>
           <MenuItem icon="🧑‍💼" label="Mi ejecutivo" value={cliente?.ejecutivo ?? "Vista360"} />
           <MenuItem icon="🚪" label="Cerrar sesión" danger onClick={() => logout()} />
