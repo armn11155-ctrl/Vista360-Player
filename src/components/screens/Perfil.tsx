@@ -8,65 +8,74 @@ interface Props {
   onCambiarCliente?: () => void;
 }
 
-function MenuItem({ icon, label, value, danger, onClick }: { icon: string; label: string; value?: string; danger?: boolean; onClick?: () => void }) {
+function Row({ icon, label, value, danger, onClick }: { icon: React.ReactNode; label: string; value?: string; danger?: boolean; onClick?: () => void }) {
   return (
-    <div className={`menu-item ${danger ? "danger" : ""}`} onClick={onClick} style={{ cursor: onClick ? "pointer" : "default" }}>
-      <div className="menu-item-icon" style={danger ? { background: "rgba(239,68,68,0.14)" } : undefined}>
-        <span style={{ fontSize: 15 }}>{icon}</span>
-      </div>
-      <span className="menu-item-label">{label}</span>
-      {value && <span className="menu-item-value">{value}</span>}
-      {!danger && <span className="menu-item-chevron">›</span>}
+    <div onClick={onClick} style={{
+      display: "flex", alignItems: "center", padding: "14px 16px",
+      background: "#fff", borderBottom: "1px solid #F3F4F6", cursor: onClick ? "pointer" : "default", gap: 12,
+    }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        background: danger ? "rgba(239,68,68,0.1)" : "#F3F4F6",
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>{icon}</div>
+      <span style={{ flex: 1, fontSize: 14, fontWeight: 500, color: danger ? "#EF4444" : "#0D1629" }}>{label}</span>
+      {value && <span style={{ fontSize: 13, color: "#6B7280" }}>{value}</span>}
+      {!danger && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>}
     </div>
   );
 }
 
 export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Props) {
+  const initials = (cliente?.empresa ?? "?").slice(0, 2).toUpperCase();
+
   return (
-    <div>
-      <div className="profile-header">
-        <div className="profile-avatar">
-          <span style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>
-            {(cliente?.empresa ?? "?").slice(0, 2).toUpperCase()}
-          </span>
-        </div>
-        <div>
-          <div className="profile-name">{cliente?.empresa ?? "Cliente"}</div>
-          <div className="profile-since">{email}{isAdmin ? " · viendo como admin" : ""}</div>
-          {cliente?.estado === "Activo" && (
-            <div className="verified-badge">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              Cuenta activa
-            </div>
-          )}
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
+      {/* Header dark con avatar */}
+      <div style={{ background: "#0D1629", padding: "20px 20px 28px", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: "50%", background: "#CC0000",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, fontWeight: 800, color: "#fff", flexShrink: 0,
+          }}>{initials}</div>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{cliente?.empresa ?? "Cliente"}</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{email}{isAdmin ? " · viendo como admin" : ""}</div>
+            {cliente?.estado === "Activo" && (
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 4, background: "#22C55E",
+                color: "#fff", padding: "3px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, marginTop: 6,
+              }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                Cuenta activa
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", background: "var(--bg)" }}>
-        <div className="profile-section-title" style={{ background: "var(--bg)" }}>Información de la empresa</div>
-        <div>
-          <MenuItem icon="🏢" label="Empresa" value={cliente?.empresa} />
-          <MenuItem icon="📞" label="Contacto" value={cliente?.contacto} />
-          <MenuItem icon="📍" label="Ciudad" value={cliente?.ciudad} />
+      {/* Sections */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {/* Información */}
+        <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>
+          Información de la empresa
         </div>
+        <Row icon={<span style={{ fontSize: 16 }}>🏢</span>} label="Empresa" value={cliente?.empresa} />
+        <Row icon={<span style={{ fontSize: 16 }}>📞</span>} label="Contacto" value={cliente?.contacto} />
+        <Row icon={<span style={{ fontSize: 16 }}>📍</span>} label="Ciudad" value={cliente?.ciudad} />
 
         {isAdmin && (
           <>
-            <div className="profile-section-title" style={{ background: "var(--bg)" }}>Admin</div>
-            <div>
-              <MenuItem icon="🔁" label="Cambiar de cliente" onClick={onCambiarCliente} />
-            </div>
+            <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Admin</div>
+            <Row icon={<span style={{ fontSize: 16 }}>🔁</span>} label="Cambiar de cliente" onClick={onCambiarCliente} />
           </>
         )}
 
-        <div className="profile-section-title" style={{ background: "var(--bg)" }}>Soporte</div>
-        <div>
-          <MenuItem icon="🧑‍💼" label="Mi ejecutivo" value={cliente?.ejecutivo ?? "Vista360"} />
-          <MenuItem icon="🚪" label="Cerrar sesión" danger onClick={() => logout()} />
-        </div>
-        <div style={{ height: 16 }} />
+        <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Soporte</div>
+        <Row icon={<span style={{ fontSize: 16 }}>🧑‍💼</span>} label="Mi ejecutivo" value={cliente?.ejecutivo ?? "Vista360"} />
+        <Row icon={<span style={{ fontSize: 16 }}>🚪</span>} label="Cerrar sesión" danger onClick={() => logout()} />
+        <div style={{ height: 24 }} />
       </div>
     </div>
   );
