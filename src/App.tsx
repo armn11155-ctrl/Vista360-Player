@@ -234,6 +234,7 @@ function AuthenticatedApp({
           <MisCampanas
             contratos={contratos}
             paneles={paneles}
+            clienteNombre={cliente?.empresa ?? ""}
             onAbrir={abrirContrato}
             onNueva={() => setView("nueva")}
             isAdmin={isAdmin}
@@ -246,6 +247,7 @@ function AuthenticatedApp({
           <DetalleCampana
             contrato={contratoAbierto}
             panel={paneles[contratoAbierto.panel_id]}
+            clienteNombre={cliente?.empresa ?? ""}
             onBack={() => setView("campanas")}
             isAdmin={isAdmin}
           />

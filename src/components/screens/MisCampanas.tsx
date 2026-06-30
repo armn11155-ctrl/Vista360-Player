@@ -2,10 +2,12 @@ import { useState } from "react";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
+import { BrandThumb } from "../BrandThumb";
 
 interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
+  clienteNombre: string;
   onAbrir: (contrato: Contrato) => void;
   onNueva: () => void;
   isAdmin?: boolean;
@@ -24,7 +26,7 @@ function progreso(c: Contrato): number {
   return Math.round(((n - s) / (e - s)) * 100);
 }
 
-export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId }: Props) {
+export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
@@ -83,14 +85,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12,
               boxShadow: "0 1px 4px rgba(0,0,0,0.07)", cursor: "pointer", display: "flex", gap: 13, alignItems: "flex-start",
             }}>
-              {/* Thumbnail */}
-              <div style={{ width: 72, height: 72, borderRadius: 12, background: "#F3F4F6", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {c.cara ? (
-                  <span style={{ fontSize: 28 }}>{c.cara}</span>
-                ) : (
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-                )}
-              </div>
+              <BrandThumb name={clienteNombre || panelNombre} size={72} radius={12} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
