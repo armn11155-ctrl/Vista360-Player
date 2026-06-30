@@ -82,7 +82,7 @@ export default function App() {
       : auth.status === "loading" || auth.status === "error"
         ? "#0D1629"
         : auth.status === "out"
-          ? "#080E1C"
+          ? "#000000"
           : auth.role === "admin" && !adminClienteId
             ? "#0D1629"
             : VIEW_COLORS[view] ?? "#0D1629";
@@ -223,6 +223,7 @@ function AuthenticatedApp({
             contratos={contratos}
             paneles={paneles}
             onGoTo={(tab) => setView(tab)}
+            onMenuClick={() => setSidebarOpen(true)}
             isAdmin={isAdmin}
             adminNombre={adminNombre}
           />
@@ -301,13 +302,6 @@ function AuthenticatedApp({
           onCambiarCliente={onCambiarCliente}
         />
       )}
-      <div className="menu-fab" onClick={() => setSidebarOpen(true)}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.3" strokeLinecap="round">
-          <line x1="4" y1="7" x2="20" y2="7" />
-          <line x1="4" y1="12" x2="20" y2="12" />
-          <line x1="4" y1="17" x2="20" y2="17" />
-        </svg>
-      </div>
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

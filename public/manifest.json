@@ -6,6 +6,9 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0D1629",
-  "theme_color": "#0D1629",
-  "icons": []
+  "theme_color": "#080E1C",
+  "icons": [
+    { "src": "/logo-player.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/logo-player.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
 }

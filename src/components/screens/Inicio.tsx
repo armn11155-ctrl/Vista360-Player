@@ -6,6 +6,7 @@ interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
   onGoTo: (tab: "campanas" | "evidencias" | "reportes" | "nueva") => void;
+  onMenuClick?: () => void;
   isAdmin?: boolean;
   adminNombre?: string | null;
 }
@@ -27,7 +28,7 @@ function proximoVencimiento(contratos: Contrato[]): Contrato | null {
   return activos[0] ?? null;
 }
 
-export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClick, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter((c) => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map((c) => c.panel_id)).size;
   const ultima = ultimaFoto(contratos);
@@ -38,6 +39,11 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, a
     <div>
       <div className="header-dark">
         <div className="logo-row">
+          <button className="header-menu-btn" onClick={onMenuClick} aria-label="Abrir menú">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round">
+              <line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" />
+            </svg>
+          </button>
           <img src="/logo-player.png" alt="Vista360 Player" className="header-logo-img" />
           <div className="notif-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">

@@ -66,11 +66,9 @@
     max-width: 480px;
     min-height: 100vh;
     margin: 0 auto;
-    /* Navy (igual a body/theme-color), no blanco: si algún borde no llega
-       exacto al pixel final (Android sin buen soporte de safe-area, o el
-       rebote de Safari), lo que se vea siempre es el mismo color, nunca
-       un corte visible. */
-    background: #0D1629;
+    /* Blanco: si algún borde no llega exacto, se ve blanco (como el
+       content-area), nunca un corte oscuro. */
+    background: #FFFFFF;
     overflow: hidden;
     position: relative;
     display: flex;
@@ -161,6 +159,25 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    position: relative;
+  }
+  /* Botón hamburguesa — sin círculo, pegado a la esquina */
+  .header-menu-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 1;
+  }
+  /* Logo centrado absolutamente dentro del logo-row */
+  .header-dark .logo-row .header-logo-img {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .logo-text { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: 1px; }
   .logo-sub { color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 3px; display: block; text-align: center; }
