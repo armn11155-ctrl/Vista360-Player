@@ -1019,6 +1019,12 @@
        de "Hola, ..." en Inicio. En mobile sigue igual (ahí es la única marca). */
     .header-dark .logo-row { justify-content: flex-end; }
     .header-dark .header-logo-img { display: none; }
+    /* En desktop el header solo muestra logo + campana, sin el saludo */
+    .header-dark .greeting,
+    .header-dark .greeting-name,
+    .header-dark .admin-context-pill,
+    .header-dark .status-pill { display: none; }
+    .header-dark { padding-bottom: 16px; }
 
     /* Selector de cliente del admin: versión espaciosa con grid de tarjetas */
     .admin-picker-header { padding: 48px 56px 40px; }
