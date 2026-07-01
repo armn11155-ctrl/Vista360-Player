@@ -5,8 +5,10 @@ import { useCliente } from "./hooks/useCliente";
 import { useContratos } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
 import { useThemeColor } from "./hooks/useThemeColor";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
 import { logout } from "./config/firebase";
 import ConfigMissing from "./components/ConfigMissing";
+import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
 import AdminClientPicker from "./components/AdminClientPicker";
 import BottomNav, { type Tab } from "./components/BottomNav";
@@ -66,6 +68,7 @@ const SIDEBAR_VIEWS = new Set<View>([
 
 export default function App() {
   const auth = usePortalAuth();
+  const online = useOnlineStatus();
   const [view, setView] = useState<View>("inicio");
   const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
@@ -95,6 +98,7 @@ export default function App() {
   if (auth.status === "loading") {
     return (
       <div className="app-shell">
+        <OfflineBanner online={online} />
         <div className="state-screen">
           <div className="state-title">Cargando…</div>
         </div>
@@ -105,6 +109,7 @@ export default function App() {
   if (auth.status === "out") {
     return (
       <div className="app-shell">
+        <OfflineBanner online={online} />
         <LoginScreen onLoggedIn={() => setView("inicio")} />
       </div>
     );
@@ -113,6 +118,7 @@ export default function App() {
   if (auth.status === "error") {
     return (
       <div className="app-shell">
+        <OfflineBanner online={online} />
         <div className="state-screen">
           <div className="state-title">No se pudo cargar tu cuenta</div>
           <div className="state-sub">{auth.message}</div>
@@ -126,6 +132,7 @@ export default function App() {
     if (!adminClienteId) {
       return (
         <div className="app-shell">
+          <OfflineBanner online={online} />
           <AdminClientPicker onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }} />
         </div>
       );
@@ -140,6 +147,7 @@ export default function App() {
         setContratoAbierto={setContratoAbierto}
         isAdmin
         adminNombre={auth.nombre}
+        online={online}
         onCambiarCliente={() => {
           setAdminClienteId(null);
           setView("inicio");
@@ -157,6 +165,7 @@ export default function App() {
       contratoAbierto={contratoAbierto}
       setContratoAbierto={setContratoAbierto}
       isAdmin={false}
+      online={online}
     />
   );
 }
@@ -171,6 +180,7 @@ interface AuthenticatedProps {
   isAdmin: boolean;
   adminNombre?: string | null;
   onCambiarCliente?: () => void;
+  online: boolean;
 }
 
 function AuthenticatedApp({
@@ -183,6 +193,7 @@ function AuthenticatedApp({
   isAdmin,
   adminNombre,
   onCambiarCliente,
+  online,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
@@ -212,6 +223,9 @@ function AuthenticatedApp({
       <div className="state-screen">
         <div className="state-title">No se pudieron cargar las campañas</div>
         <div className="state-sub">{contratosState.message}</div>
+        <button className="retry-btn" onClick={contratosState.retry}>
+          Reintentar
+        </button>
       </div>
     );
   } else {
@@ -294,6 +308,7 @@ function AuthenticatedApp({
 
   return (
     <div className="app-shell">
+      <OfflineBanner online={online} />
       <div className="screens">
         <div className="screen active">{content}</div>
       </div>

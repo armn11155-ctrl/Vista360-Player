@@ -3,6 +3,7 @@ import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { BrandThumb } from "./BrandThumb";
+import { filtrarClientes } from "../utils/clientPicker";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -13,9 +14,7 @@ export default function AdminClientPicker({ onSelect }: Props) {
   const [busqueda, setBusqueda] = useState("");
 
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
-  const filtrados = clientes.filter((c) =>
-    c.empresa?.toLowerCase().includes(busqueda.toLowerCase().trim())
-  );
+  const filtrados = filtrarClientes(clientes, busqueda);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>

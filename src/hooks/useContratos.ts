@@ -6,7 +6,7 @@ import type { Contrato } from "../types";
 export type ContratosState =
   | { status: "loading" }
   | { status: "ready"; contratos: Contrato[] }
-  | { status: "error"; message: string };
+  | { status: "error"; message: string; retry: () => void };
 
 /**
  * Solo trae los contratos de ESTE cliente (filtrado por cliente_id).
@@ -15,9 +15,11 @@ export type ContratosState =
  */
 export function useContratos(clienteId: string): ContratosState {
   const [state, setState] = useState<ContratosState>({ status: "loading" });
+  const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
     if (!clienteId || !db) return;
+    setState({ status: "loading" });
     const q = query(
       collection(db, "contratos"),
       where("cliente_id", "==", clienteId),
@@ -31,10 +33,15 @@ export function useContratos(clienteId: string): ContratosState {
           .filter((c) => !c.deleted);
         setState({ status: "ready", contratos });
       },
-      (err) => setState({ status: "error", message: err.message })
+      (err) =>
+        setState({
+          status: "error",
+          message: err.message,
+          retry: () => setRetryNonce((n) => n + 1),
+        })
     );
     return unsub;
-  }, [clienteId]);
+  }, [clienteId, retryNonce]);
 
   return state;
 }

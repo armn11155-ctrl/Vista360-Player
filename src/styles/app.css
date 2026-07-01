@@ -75,6 +75,40 @@
     flex-direction: column;
   }
 
+  /* Aviso de sin conexión — franja fija arriba, encima de todo lo demás.
+     No bloquea nada: Firestore sigue mostrando la última data en caché. */
+  .offline-banner {
+    position: absolute;
+    top: env(safe-area-inset-top);
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background: #B45309;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 16px;
+    animation: offlineSlideDown 0.25s ease-out;
+  }
+  @keyframes offlineSlideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0);      opacity: 1; }
+  }
+
+  .retry-btn {
+    margin-top: 14px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .retry-btn:active { opacity: 0.7; }
+
   /* En mobile, el shell completo queda fijo a la pantalla (como el
      .appRoot de Vista360 ERP) — así la página en sí nunca hace el rebote
      elástico de iOS al deslizar más allá del borde. Solo el contenido de
