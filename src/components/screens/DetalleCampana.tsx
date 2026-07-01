@@ -4,7 +4,7 @@ import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
-import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
+import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
 import { BrandThumb } from "../BrandThumb";
 
 interface Props {
@@ -287,6 +287,21 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                         decoding="async"
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
+                      {esVideo(f.url) && (
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            position: "absolute", top: 4, right: 4,
+                            width: 20, height: 20, borderRadius: 5,
+                            background: "rgba(0,0,0,0.45)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                          }}
+                        >
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </span>
+                      )}
                       <span style={{
                         position: "absolute", bottom: 0, left: 0, right: 0,
                         background: "linear-gradient(transparent, rgba(0,0,0,0.6))",

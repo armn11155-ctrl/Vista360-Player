@@ -6,11 +6,17 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
+interface VisitaPantalla {
+  count: number;
+  lastVisit: number | null;
+}
+
 interface AccesoCliente {
   clienteId: string;
   empresa: string;
   lastLogin: number | null; // epoch ms, o null si nunca entró
   lastLoginCount: number;
+  pantallasVisitadas: Record<string, VisitaPantalla>;
 }
 
 /**
@@ -48,11 +54,25 @@ export const listarAccesosClientes = onCall(async (request) => {
     const data = doc.data();
     const clienteId: string | undefined = data.clienteId;
     if (!clienteId) return;
+
+    const pantallasRaw = (data.pantallasVisitadas ?? {}) as Record<
+      string,
+      { count?: number; lastVisit?: { toMillis?: () => number } }
+    >;
+    const pantallasVisitadas: Record<string, VisitaPantalla> = {};
+    for (const [pantalla, v] of Object.entries(pantallasRaw)) {
+      pantallasVisitadas[pantalla] = {
+        count: v.count ?? 0,
+        lastVisit: v.lastVisit?.toMillis?.() ?? null,
+      };
+    }
+
     accesos.push({
       clienteId,
       empresa: empresaPorClienteId.get(clienteId) ?? clienteId,
       lastLogin: data.lastLogin?.toMillis?.() ?? null,
       lastLoginCount: data.lastLoginCount ?? 0,
+      pantallasVisitadas,
     });
   });
 

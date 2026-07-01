@@ -1,5 +1,33 @@
 import BackChevron from "../BackChevron";
 import { useAccesosClientes } from "../../hooks/useAccesosClientes";
+import type { AccesoCliente } from "../../hooks/useAccesosClientes";
+
+const NOMBRES_PANTALLA: Record<string, string> = {
+  inicio: "Inicio",
+  campanas: "Mis Campañas",
+  detalle: "Detalle de campaña",
+  evidencias: "Evidencias",
+  reportes: "Reportes",
+  perfil: "Perfil",
+  nueva: "Nueva campaña",
+  portafolio: "Portafolio",
+  cobertura: "Cobertura",
+  mispantallas: "Mis Pantallas",
+  impacto: "Impacto",
+  contactanos: "Contáctanos",
+};
+
+/** La pantalla que más veces visitó este cliente, o null si nunca visitó ninguna. */
+export function pantallaFavorita(
+  pantallasVisitadas: AccesoCliente["pantallasVisitadas"]
+): { nombre: string; count: number } | null {
+  let mejor: { pantalla: string; count: number } | null = null;
+  for (const [pantalla, v] of Object.entries(pantallasVisitadas)) {
+    if (!mejor || v.count > mejor.count) mejor = { pantalla, count: v.count };
+  }
+  if (!mejor) return null;
+  return { nombre: NOMBRES_PANTALLA[mejor.pantalla] ?? mejor.pantalla, count: mejor.count };
+}
 
 interface Props {
   onBack: () => void;
@@ -71,58 +99,66 @@ export default function AnaliticaClientes({ onBack }: Props) {
         )}
 
         {state.status === "ready" &&
-          state.accesos.map((a) => (
-            <div
-              key={a.clienteId}
-              className="card"
-              style={{
-                marginBottom: 8,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-              }}
-            >
-              <div style={{ minWidth: 0 }}>
-                <div
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: "#0D1629",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {a.empresa}
-                </div>
-                <div style={{ fontSize: 11.5, color: "#6B7A99", marginTop: 2 }}>
-                  {a.lastLoginCount} {a.lastLoginCount === 1 ? "acceso" : "accesos"} en total
-                </div>
-              </div>
+          state.accesos.map((a) => {
+            const favorita = pantallaFavorita(a.pantallasVisitadas);
+            return (
               <div
+                key={a.clienteId}
+                className="card"
                 style={{
-                  flexShrink: 0,
+                  marginBottom: 8,
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: colorEstado(a.lastLogin),
+                  justifyContent: "space-between",
+                  gap: 12,
                 }}
               >
-                <span
+                <div style={{ minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "#0D1629",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {a.empresa}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "#6B7A99", marginTop: 2 }}>
+                    {a.lastLoginCount} {a.lastLoginCount === 1 ? "acceso" : "accesos"} en total
+                  </div>
+                  {favorita && (
+                    <div style={{ fontSize: 11.5, color: "#6B7A99", marginTop: 1 }}>
+                      Mira más: {favorita.nombre} ({favorita.count})
+                    </div>
+                  )}
+                </div>
+                <div
                   style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: colorEstado(a.lastLogin),
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: colorEstado(a.lastLogin),
                   }}
-                />
-                {tiempoRelativo(a.lastLogin)}
+                >
+                  <span
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: "50%",
+                      background: colorEstado(a.lastLogin),
+                    }}
+                  />
+                  {tiempoRelativo(a.lastLogin)}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
       </div>
     </div>
   );

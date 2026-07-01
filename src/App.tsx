@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { envMissing } from "./config/env";
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
@@ -15,19 +15,26 @@ import BottomNav, { type Tab } from "./components/BottomNav";
 import Sidebar from "./components/Sidebar";
 import Inicio from "./components/screens/Inicio";
 import MisCampanas from "./components/screens/MisCampanas";
-import DetalleCampana from "./components/screens/DetalleCampana";
 import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
-import NuevaCampana from "./components/screens/NuevaCampana";
-import Portafolio from "./components/screens/Portafolio";
-import Cobertura from "./components/screens/Cobertura";
-import MisPantallas from "./components/screens/MisPantallas";
-import Impacto from "./components/screens/Impacto";
-import Contactanos from "./components/screens/Contactanos";
-import AnaliticaClientes from "./components/screens/AnaliticaClientes";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
+import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import type { Contrato } from "./types";
+
+// Pantallas que NO se necesitan de entrada — se piden al navegador solo
+// cuando el cliente realmente entra a esa sección (tocar una campaña,
+// abrir el menú lateral, etc). Esto es lo que baja el peso del bundle
+// inicial: nadie descarga el código de "Cobertura" o "Analítica" solo
+// para ver "Inicio".
+const DetalleCampana = lazy(() => import("./components/screens/DetalleCampana"));
+const NuevaCampana = lazy(() => import("./components/screens/NuevaCampana"));
+const Portafolio = lazy(() => import("./components/screens/Portafolio"));
+const Cobertura = lazy(() => import("./components/screens/Cobertura"));
+const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
+const Impacto = lazy(() => import("./components/screens/Impacto"));
+const Contactanos = lazy(() => import("./components/screens/Contactanos"));
+const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
 
 type View =
   | Tab
@@ -74,8 +81,10 @@ const SIDEBAR_VIEWS = new Set<View>([
 export default function App() {
   const auth = usePortalAuth();
   const online = useOnlineStatus();
-  useRegistrarAcceso(auth.status === "in" ? auth.user.uid : undefined);
+  const uid = auth.status === "in" ? auth.user.uid : undefined;
+  useRegistrarAcceso(uid);
   const [view, setView] = useState<View>("inicio");
+  useRegistrarVisita(uid, view);
   const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
@@ -319,7 +328,17 @@ function AuthenticatedApp({
     <div className="app-shell">
       <OfflineBanner online={online} />
       <div className="screens">
-        <div className="screen active">{content}</div>
+        <div className="screen active">
+          <Suspense
+            fallback={
+              <div className="state-screen">
+                <div className="state-title">Cargando…</div>
+              </div>
+            }
+          >
+            {content}
+          </Suspense>
+        </div>
       </div>
       {showBottomNav && (
         <BottomNav

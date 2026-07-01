@@ -41,13 +41,19 @@ export async function subirEvidenciaCloudinary(file: File): Promise<string> {
   formData.append("signature", firma.signature);
   formData.append("folder", firma.folder);
 
+  // Cloudinary tiene endpoints de subida separados por tipo de recurso.
+  // Antes esto siempre apuntaba a /image/upload — funcionaba para fotos,
+  // pero Cloudinary rechaza un video en ese endpoint específico (hay que
+  // usar /video/upload). La firma sigue siendo válida para ambos: firma
+  // exactamente folder+timestamp, no el tipo de recurso.
+  const resourceType = file.type.startsWith("video/") ? "video" : "image";
   const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${firma.cloudName}/image/upload`,
+    `https://api.cloudinary.com/v1_1/${firma.cloudName}/${resourceType}/upload`,
     { method: "POST", body: formData }
   );
 
   if (!res.ok) {
-    throw new Error("No se pudo subir la imagen. Intenta de nuevo.");
+    throw new Error("No se pudo subir el archivo. Intenta de nuevo.");
   }
 
   const data = await res.json();

@@ -6,7 +6,7 @@
   "engines": { "node": "20" },
   "scripts": {
     "build": "tsc",
-    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:listarAccesosClientes"
+    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:registrarVisita,functions:listarAccesosClientes"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",

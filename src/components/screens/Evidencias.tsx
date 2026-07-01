@@ -3,7 +3,7 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
-import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
+import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
 
 interface Props {
   contratos: Contrato[];
@@ -171,6 +171,13 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
                       loading="lazy"
                       decoding="async"
                     />
+                    {esVideo(f.url) && (
+                      <div className="photo-type-icon" aria-hidden="true">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    )}
                     <div className="photo-overlay">
                       <div className="photo-time">{f.fecha}</div>
                       <div className="photo-loc">{f.panelNombre}</div>

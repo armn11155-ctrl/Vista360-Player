@@ -2,11 +2,17 @@ import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { app } from "../config/firebase";
 
+export interface VisitaPantalla {
+  count: number;
+  lastVisit: number | null;
+}
+
 export interface AccesoCliente {
   clienteId: string;
   empresa: string;
   lastLogin: number | null;
   lastLoginCount: number;
+  pantallasVisitadas: Record<string, VisitaPantalla>;
 }
 
 export type AccesosState =
