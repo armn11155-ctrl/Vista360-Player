@@ -72,7 +72,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, a
         {/* Saludo */}
         <div style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", marginBottom: 4 }}>{saludo}</div>
         <div style={{ fontSize: 30, fontWeight: 800, color: "#fff", marginBottom: 14, letterSpacing: -0.5 }}>
-          {isAdmin ? "Hola Admin" : nombre} 👋
+          {isAdmin ? "Hola Admin" : nombre}
         </div>
 
         {/* Status pill */}
