@@ -10,7 +10,7 @@ import {
 } from "firebase/auth";
 import { env, envMissing } from "./env";
 
-let app: FirebaseApp | null = null;
+export let app: FirebaseApp | null = null;
 export let db: Firestore | null = null;
 export let auth: Auth | null = null;
 
