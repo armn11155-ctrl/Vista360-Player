@@ -224,42 +224,80 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
 
         {/* ── TAB EVIDENCIAS ── */}
         {tab === "evidencias" && (
-          <div style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 12 }}>
-              Evidencias ({fotos.length})
-            </div>
-
-            {fotos.length > 0 ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginBottom: isAdmin ? 14 : 0 }}>
-                {fotos.map((f, i) => (
-                  <a key={i} href={f.url} target="_blank" rel="noreferrer" style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
-                    <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    <span style={{ position: "absolute", bottom: 4, left: 4, fontSize: 9, color: "#fff", background: "rgba(0,0,0,0.55)", padding: "2px 6px", borderRadius: 6 }}>
-                      {f.fecha}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div style={{ color: "#6B7280", fontSize: 13, marginBottom: isAdmin ? 14 : 0, textAlign: "center", padding: "24px 0" }}>
-                Todavía no hay evidencias registradas.
-              </div>
-            )}
-
+          <div>
+            {/* Zona de subida — siempre arriba y prominente para el admin */}
             {isAdmin && (
-              <>
-                <input ref={fileRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleFile} />
-                {error && <div style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>{error}</div>}
-                <button onClick={() => fileRef.current?.click()} disabled={subiendo} style={{
-                  width: "100%", padding: 12, borderRadius: 12, border: "1.5px dashed #CBD5E1",
-                  background: "#F8F9FB", color: "#2563EB", fontWeight: 600, fontSize: 13,
-                  cursor: subiendo ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                  {subiendo ? "Subiendo…" : "Subir evidencia"}
-                </button>
-              </>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 12 }}>
+                  📸 Subir evidencia
+                </div>
+                <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" style={{ display: "none" }} onChange={handleFile} />
+                {error && (
+                  <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
+                    {error}
+                  </div>
+                )}
+                <div
+                  onClick={() => !subiendo && fileRef.current?.click()}
+                  style={{
+                    border: "2px dashed #BFDBFE", borderRadius: 14, padding: "20px 16px",
+                    textAlign: "center", cursor: subiendo ? "default" : "pointer",
+                    background: subiendo ? "#F0F9FF" : "#EFF6FF",
+                    transition: "background 0.15s",
+                  }}
+                >
+                  {subiendo ? (
+                    <>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Subiendo foto…</div>
+                      <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Espera un momento</div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Toca para agregar foto o video</div>
+                      <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
+
+            {/* Galería de evidencias */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629" }}>
+                  Evidencias registradas
+                </div>
+                <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>
+                  {fotos.length} foto{fotos.length !== 1 ? "s" : ""}
+                </div>
+              </div>
+
+              {fotos.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+                  {[...fotos].reverse().map((f, i) => (
+                    <a key={i} href={f.url} target="_blank" rel="noreferrer"
+                      style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
+                      <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <span style={{
+                        position: "absolute", bottom: 0, left: 0, right: 0,
+                        background: "linear-gradient(transparent, rgba(0,0,0,0.6))",
+                        padding: "12px 6px 4px", fontSize: 9, color: "#fff", textAlign: "center",
+                      }}>
+                        {f.fecha}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF" }}>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>🖼️</div>
+                  <div style={{ fontSize: 13 }}>Aún no hay evidencias registradas</div>
+                  {isAdmin && <div style={{ fontSize: 12, marginTop: 4 }}>Usa el botón de arriba para agregar la primera</div>}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

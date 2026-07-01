@@ -35,26 +35,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
 
-  // Admins no pueden crear campañas — deben ir al ERP
-  if (isAdmin) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-        <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🖥️</div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: "#0D1629", marginBottom: 8 }}>Crear campañas desde el ERP</div>
-          <div style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.6 }}>
-            Las campañas se crean directamente desde el portal de administración Vista360. Selecciona un cliente y crea el contrato desde allí.
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // En modo admin, permite crear campañas para el cliente seleccionado
+  // (clienteId es el id del cliente que está gestionando el admin)
 
   async function enviar() {
     setError("");
@@ -89,6 +71,11 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
+        {isAdmin && (
+          <div style={{ marginLeft: "auto", background: "rgba(59,130,246,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#93C5FD", letterSpacing: 0.8 }}>
+            ADMIN
+          </div>
+        )}
       </div>
 
       {/* Form */}
