@@ -123,8 +123,8 @@
   .sidebar-brand { display: none; }
   .bottom-nav {
     background: #FFFFFF;
-    border-top: 1px solid #F0F0F0;
-    padding: 8px 4px calc(env(safe-area-inset-bottom) + 6px);
+    border-top: 1px solid #EBEBEB;
+    padding: 6px 0 calc(env(safe-area-inset-bottom) + 4px);
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
@@ -132,7 +132,6 @@
     position: sticky;
     bottom: 0;
     z-index: 100;
-    box-shadow: 0 -1px 0 #F0F0F0;
   }
   .nav-item {
     display: flex;
@@ -140,17 +139,30 @@
     align-items: center;
     gap: 3px;
     cursor: pointer;
-    padding: 6px 14px 2px;
-    border-radius: 10px;
+    padding: 6px 8px 4px;
     flex: 1;
-    transition: all 0.15s;
+    min-width: 0;
+    transition: all 0.12s;
     -webkit-tap-highlight-color: transparent;
+    position: relative;
   }
-  .nav-item svg { width: 22px; height: 22px; stroke: #94A3B8; }
-  .nav-item span { font-size: 10px; color: #94A3B8; font-weight: 500; }
+  .nav-item svg { width: 24px; height: 24px; stroke: #9CA3AF; flex-shrink: 0; }
+  .nav-item span { font-size: 10px; color: #9CA3AF; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-align: center; }
   .nav-item.active svg { stroke: #2563EB; }
   .nav-item.active span { color: #2563EB; font-weight: 700; }
   .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle, .nav-item.active svg polyline, .nav-item.active svg line { stroke: #2563EB; }
+  /* Punto azul debajo del ícono activo */
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 3px;
+    background: #2563EB;
+    border-radius: 0 0 4px 4px;
+  }
 
   /* ===== SCREEN 1: INICIO ===== */
   .header-dark {
