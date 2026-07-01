@@ -1,0 +1,17 @@
+{
+  "name": "vista360-functions-cloudinary-signature",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "20" },
+  "scripts": {
+    "build": "tsc",
+    "deploy": "firebase deploy --only functions:getCloudinarySignature"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "firebase-functions": "^6.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
