@@ -25,6 +25,8 @@ import Cobertura from "./components/screens/Cobertura";
 import MisPantallas from "./components/screens/MisPantallas";
 import Impacto from "./components/screens/Impacto";
 import Contactanos from "./components/screens/Contactanos";
+import AnaliticaClientes from "./components/screens/AnaliticaClientes";
+import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import type { Contrato } from "./types";
 
 type View =
@@ -35,7 +37,8 @@ type View =
   | "cobertura"
   | "mispantallas"
   | "impacto"
-  | "contactanos";
+  | "contactanos"
+  | "analitica";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -53,6 +56,7 @@ const VIEW_COLORS: Record<View, string> = {
   mispantallas: "#0D1629",
   impacto: "#0D1629",
   contactanos: "#0D1629",
+  analitica: "#0D1629",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -64,11 +68,13 @@ const SIDEBAR_VIEWS = new Set<View>([
   "mispantallas",
   "impacto",
   "contactanos",
+  "analitica",
 ]);
 
 export default function App() {
   const auth = usePortalAuth();
   const online = useOnlineStatus();
+  useRegistrarAcceso(auth.status === "in" ? auth.user.uid : undefined);
   const [view, setView] = useState<View>("inicio");
   const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
@@ -303,6 +309,9 @@ function AuthenticatedApp({
       case "contactanos":
         content = <Contactanos cliente={cliente} onBack={() => setView("inicio")} />;
         break;
+      case "analitica":
+        content = isAdmin ? <AnaliticaClientes onBack={() => setView("inicio")} /> : null;
+        break;
     }
   }
 
@@ -325,6 +334,7 @@ function AuthenticatedApp({
         onClose={() => setSidebarOpen(false)}
         onNavigate={(v) => setView(v)}
         onLogout={() => logout()}
+        isAdmin={isAdmin}
       />
     </div>
   );

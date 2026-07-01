@@ -1,5 +1,6 @@
 import type { Cliente, Contrato, FotoCampania, Panel } from "../../types";
 import { estadoCampana } from "../../types";
+import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
 
 interface Props {
   cliente: Cliente | null;
@@ -121,7 +122,13 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, a
           {ultima ? (
             <div style={{ display:"flex", gap:11, alignItems:"flex-start" }}>
               <div style={{ width:100, height:80, borderRadius:10, overflow:"hidden", flexShrink:0, background:"#F3F4F6" }}>
-                <img src={ultima.foto.url} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                <img
+                  src={cloudinaryThumb(ultima.foto.url, 160)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  style={{ width:"100%", height:"100%", objectFit:"cover" }}
+                />
               </div>
               <div style={{ flex:1, paddingTop:2 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:"#111827", marginBottom:6, lineHeight:1.3 }}>

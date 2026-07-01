@@ -3,6 +3,7 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
 
 interface Props {
   contratos: Contrato[];
@@ -163,7 +164,13 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
               <div className="photo-grid">
                 {items.map((f, i) => (
                   <a className="photo-item" key={`${fecha}-${i}`} href={f.url} target="_blank" rel="noreferrer">
-                    <img src={f.url} className="evidence-photo-real" alt={`Evidencia ${f.panelNombre}`} />
+                    <img
+                      src={cloudinaryThumb(f.url, 240)}
+                      className="evidence-photo-real"
+                      alt={`Evidencia ${f.panelNombre}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <div className="photo-overlay">
                       <div className="photo-time">{f.fecha}</div>
                       <div className="photo-loc">{f.panelNombre}</div>

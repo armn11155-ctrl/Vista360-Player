@@ -5,13 +5,15 @@ type SidebarView =
   | "mispantallas"
   | "reportes"
   | "impacto"
-  | "contactanos";
+  | "contactanos"
+  | "analitica";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onNavigate: (view: SidebarView) => void;
   onLogout: () => void;
+  isAdmin?: boolean;
 }
 
 const ITEMS: { id: SidebarView; icon: string; label: string }[] = [
@@ -24,7 +26,15 @@ const ITEMS: { id: SidebarView; icon: string; label: string }[] = [
   { id: "contactanos", icon: "💬", label: "Contáctanos" },
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout }: Props) {
+// Solo el dueño ve esto — última vez que entró cada cliente.
+const ADMIN_ITEM: { id: SidebarView; icon: string; label: string } = {
+  id: "analitica",
+  icon: "📈",
+  label: "Analítica de acceso",
+};
+
+export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin }: Props) {
+  const items = isAdmin ? [...ITEMS, ADMIN_ITEM] : ITEMS;
   return (
     <>
       <div className={`sidebar-overlay ${open ? "open" : ""}`} onClick={onClose} />
@@ -36,7 +46,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout }: Props) 
           </div>
         </div>
         <div className="sidebar-list">
-          {ITEMS.map((it) => (
+          {items.map((it) => (
             <div
               key={it.id}
               className="sidebar-item"

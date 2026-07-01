@@ -4,6 +4,7 @@ import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
 import { BrandThumb } from "../BrandThumb";
 
 interface Props {
@@ -279,7 +280,13 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                   {[...fotos].reverse().map((f, i) => (
                     <a key={i} href={f.url} target="_blank" rel="noreferrer"
                       style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
-                      <img src={f.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img
+                        src={cloudinaryThumb(f.url, 200)}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
                       <span style={{
                         position: "absolute", bottom: 0, left: 0, right: 0,
                         background: "linear-gradient(transparent, rgba(0,0,0,0.6))",

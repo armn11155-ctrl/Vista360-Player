@@ -1,11 +1,12 @@
 {
-  "name": "vista360-functions-cloudinary-signature",
+  "name": "vista360-player-functions",
   "private": true,
   "type": "module",
+  "main": "lib/index.js",
   "engines": { "node": "20" },
   "scripts": {
     "build": "tsc",
-    "deploy": "firebase deploy --only functions:getCloudinarySignature"
+    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:listarAccesosClientes"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",
