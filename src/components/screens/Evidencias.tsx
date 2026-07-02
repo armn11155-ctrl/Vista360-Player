@@ -3,7 +3,6 @@ import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
-import { comprimirImagen } from "../../utils/comprimirImagen";
 import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
 
 interface Props {
@@ -59,8 +58,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
 
     setError(""); setExito(""); setSubiendo(true);
     try {
-      const archivoOptimizado = await comprimirImagen(file);
-      const url = await subirEvidenciaCloudinary(archivoOptimizado);
+      const url = await subirEvidenciaCloudinary(file);
       const fecha = new Date().toISOString().slice(0, 10);
       await updateDoc(doc(db, "contratos", targetId), {
         fotos_campania: arrayUnion({ url, fecha }),
