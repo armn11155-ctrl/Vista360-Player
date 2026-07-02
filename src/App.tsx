@@ -339,27 +339,6 @@ function AuthenticatedApp({
   return (
     <div className="app-shell">
       <OfflineBanner online={online} />
-      <div className="screens">
-        <div className="screen active">
-          <Suspense
-            fallback={
-              <div className="state-screen">
-                <div className="state-title">Cargando…</div>
-              </div>
-            }
-          >
-            {content}
-          </Suspense>
-        </div>
-      </div>
-      {showBottomNav && (
-        <BottomNav
-          active={activeTab}
-          onChange={(tab) => setView(tab)}
-          isAdmin={isAdmin}
-          onCambiarCliente={onCambiarCliente}
-        />
-      )}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -367,6 +346,29 @@ function AuthenticatedApp({
         onLogout={() => logout()}
         isAdmin={isAdmin}
       />
+      <div className="main-area">
+        <div className="screens">
+          <div className="screen active">
+            <Suspense
+              fallback={
+                <div className="state-screen">
+                  <div className="state-title">Cargando…</div>
+                </div>
+              }
+            >
+              {content}
+            </Suspense>
+          </div>
+        </div>
+        {showBottomNav && (
+          <BottomNav
+            active={activeTab}
+            onChange={(tab) => setView(tab)}
+            isAdmin={isAdmin}
+            onCambiarCliente={onCambiarCliente}
+          />
+        )}
+      </div>
     </div>
   );
 }

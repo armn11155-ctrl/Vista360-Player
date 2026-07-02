@@ -995,6 +995,7 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
+      min-height: 0;
     }
 
     /* Login / estados de carga-error / selector de cliente del admin no
@@ -1085,18 +1086,32 @@
       min-width: 240px;
       height: 100%;
       box-shadow: none;
-      border-right: 1px solid var(--border);
+      border-right: 1px solid rgba(255,255,255,0.08);
       background: var(--dark);
     }
-    .sidebar-panel .sidebar-head { background: var(--dark); }
+    .sidebar-panel .sidebar-head {
+      background: var(--dark);
+      justify-content: center;
+    }
     .sidebar-panel .sidebar-head img { filter: brightness(10); }
     .sidebar-close { display: none !important; }
-    .sidebar-item-label { color: rgba(255,255,255,0.75) !important; }
+    .sidebar-item-label { color: rgba(255,255,255,0.75) !important; display: block !important; }
+    .sidebar-item-chevron { color: rgba(255,255,255,0.3) !important; }
     .sidebar-item-danger .sidebar-item-label { color: var(--red) !important; }
     .sidebar-item-danger { border-top-color: rgba(255,255,255,0.1) !important; }
     .sidebar-item:hover { background: rgba(255,255,255,0.06); }
+    .sidebar-item-icon { filter: none; }
 
-    /* El bottom-nav desaparece en escritorio — la nav la da el sidebar */
+    /* main-area: el resto de la pantalla (contenido + bottom nav) */
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    /* El bottom-nav desaparece en escritorio */
     .bottom-nav { display: none !important; }
     .header-dark .logo-row { justify-content: flex-end; }
     .header-dark .header-logo-img { display: none; }
