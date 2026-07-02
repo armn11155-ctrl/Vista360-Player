@@ -27,6 +27,30 @@
     -webkit-touch-callout: none;
   }
 
+  /* Comportamiento de app, no de página web: nada de arrastrar imágenes
+     con el mouse ni seleccionar texto por accidente al hacer clic y
+     mover (eso es lo que se sentía como "la pantalla se mueve" en el
+     login). Los inputs/textarea siguen permitiendo selección normal,
+     porque ahí sí hace falta para editar texto. */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
+  }
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: auto;
+  }
+
   html,
   body {
     margin: 0;

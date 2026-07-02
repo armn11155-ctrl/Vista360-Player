@@ -25,7 +25,7 @@ export default function AdminClientPicker({ onSelect }: Props) {
   return (
     <div className="admin-picker-shell">
       <div className="admin-picker-header">
-        <img src="/logo-player.png" alt="Vista360 Player" className="admin-picker-logo" />
+        <img src="/logo-player.png" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
         <div className="admin-picker-badge">
           <span className="admin-picker-badge-dot" />
           Modo Administrador

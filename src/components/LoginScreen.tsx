@@ -52,7 +52,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   return (
     <div className="login-shell">
       <div className="login-logo">
-        <img src={LOGO} alt="Vista360 Player" />
+        <img src={LOGO} alt="Vista360 Player" draggable={false} />
       </div>
       <div className="login-card">
         <div className="login-title">Bienvenido</div>
