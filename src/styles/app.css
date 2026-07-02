@@ -1358,14 +1358,15 @@
   .simple-title { font-size: 16px; font-weight: 700; color: var(--text); }
 
   /* ===== Menú lateral (sidebar) — independiente de la barra inferior =====
-     IMPORTANTE: estos son los estilos del sidebar como DRAWER móvil
-     (position:fixed, ancho 82%, fondo blanco, oculto por transform).
-     Deben vivir solo bajo max-width:899px — si quedan sueltos aquí
-     fuera de un media query, se aplican SIEMPRE (incluso en escritorio)
-     y, por venir después en el archivo, le ganan en la cascada a las
-     reglas de escritorio que no llevan !important (ej. el fondo del
-     panel), dejando el sidebar de escritorio con fondo blanco y texto
-     blanco encima — invisible. Por eso todo este bloque va envuelto. */
+     Solo lo que REALMENTE difiere entre móvil y escritorio va dentro de
+     este media query: la posición/ancho/fondo del panel (mobile = drawer
+     fijo blanco de 82% oculto por transform; desktop = columna estática
+     de 240px, fondo navy — ver el otro media query de min-width:900px).
+     Todo lo demás (tamaño del logo, layout en fila de cada ítem: ícono +
+     texto + flecha) es IGUAL en ambos casos y vive fuera de cualquier
+     media query — si se mete aquí por error, el sidebar de escritorio
+     pierde ese layout compartido (como pasó antes: ítems apilados en
+     vertical en vez de en fila, logo sin tamaño fijo y gigante/recortado). */
   @media (max-width: 899px) {
     .menu-fab {
       position: fixed;
@@ -1399,31 +1400,33 @@
       box-shadow: 4px 0 28px rgba(0,0,0,0.22);
     }
     .sidebar-panel.open { transform: translateX(0); }
-    .sidebar-head {
-      background: var(--dark);
-      padding: 20px 20px 20px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .sidebar-head img { height: 26px; }
-    .sidebar-close {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      color: #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 14px; cursor: pointer;
-    }
-    .sidebar-list { flex: 1; overflow-y: auto; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
-    .sidebar-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 14px 20px;
-      cursor: pointer;
-    }
-    .sidebar-item-icon { font-size: 19px; width: 26px; text-align: center; flex-shrink: 0; }
-    .sidebar-item-label { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text); }
-    .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
-    .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: 6px; }
-    .sidebar-item-danger .sidebar-item-label { color: var(--red); }
   }
+
+  /* Layout compartido del sidebar — idéntico en móvil y escritorio */
+  .sidebar-head {
+    background: var(--dark);
+    padding: 20px 20px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .sidebar-head img { height: 26px; width: auto; display: block; }
+  .sidebar-close {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer;
+  }
+  .sidebar-list { flex: 1; overflow-y: auto; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+  .sidebar-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 20px;
+    cursor: pointer;
+  }
+  .sidebar-item-icon { font-size: 19px; width: 26px; text-align: center; flex-shrink: 0; }
+  .sidebar-item-label { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text); }
+  .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
+  .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: 6px; }
+  .sidebar-item-danger .sidebar-item-label { color: var(--red); }
 
 
   /* ===== Portafolio ===== */
