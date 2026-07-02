@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { logout } from "../config/firebase";
 import type { Cliente } from "../types";
-import { brandColor, brandInitials } from "../utils/brandColor";
+import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
+import { PersonIcon } from "./PersonIcon";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -59,8 +60,7 @@ export default function AdminClientPicker({ onSelect }: Props) {
 
         <div className="admin-picker-grid">
           {filtrados.map((c) => {
-            const { bg, text } = brandColor(c.empresa ?? "?");
-            const initials = brandInitials(c.empresa ?? "?");
+            const { bg } = brandColor(c.empresa ?? "?");
             return (
               <button
                 key={c.id}
@@ -68,8 +68,8 @@ export default function AdminClientPicker({ onSelect }: Props) {
                 onClick={() => onSelect(c.id)}
                 className="admin-picker-tile"
               >
-                <span className="admin-picker-tile-avatar" style={{ background: bg, color: text }}>
-                  {initials}
+                <span className="admin-picker-tile-avatar" style={{ background: bg }}>
+                  <PersonIcon size={34} />
                 </span>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
                 {c.ciudad && <span className="admin-picker-tile-city">📍 {c.ciudad}</span>}
