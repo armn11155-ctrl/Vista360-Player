@@ -46,31 +46,26 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* #root ocupa todo el alto de la pantalla pero SIN position:fixed,
-     para que .app-shell pueda centrarse en escritorio con margin:auto.
-     En móvil, .app-shell se convierte en fixed (ver media query abajo). */
+  /* #root simple: ocupa toda la pantalla, sin centrado artificial.
+     En móvil, .app-shell se vuelve fixed (media query abajo).
+     En escritorio, .app-shell ocupa todo el ancho con flex row. */
   #root {
     width: 100%;
     height: 100%;
     overflow: hidden;
     background: #0D1629;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
   }
 
-  /* Contenedor centrado tipo "app móvil" — en móvil ocupa toda la
-     pantalla, en escritorio se centra con sombra lateral. */
+  /* Contenedor principal — en móvil ocupa toda la pantalla (ver
+     media query max-width:899px abajo), en escritorio ocupa todo
+     el ancho con sidebar izquierdo siempre visible. */
   .app-shell {
     width: 100%;
-    max-width: 480px;
     height: 100vh;
     background: #FFFFFF;
     overflow: hidden;
-    position: relative;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 60px rgba(0,0,0,0.4);
   }
 
   /* Aviso de sin conexión — franja fija arriba, encima de todo lo demás.
@@ -996,6 +991,12 @@
       overflow: hidden;
     }
 
+    .screens {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
     /* Login / estados de carga-error / selector de cliente del admin no
        tienen sidebar — siguen siendo una sola columna, pero a pantalla
        completa (no una tarjeta angosta tipo celular en medio de la pantalla). */
@@ -1075,8 +1076,28 @@
     /* "Cambiar de cliente" se ancla al fondo del sidebar en vez de quedar pegado al último tab */
     .nav-item-switch { margin-top: auto; }
 
-    /* El logo ya está en el sidebar en escritorio — no lo dupliques arriba
-       de "Hola, ..." en Inicio. En mobile sigue igual (ahí es la única marca). */
+    /* En escritorio el sidebar drawer se convierte en columna fija izquierda */
+    .sidebar-overlay { display: none !important; }
+    .sidebar-panel {
+      position: static !important;
+      transform: none !important;
+      width: 240px;
+      min-width: 240px;
+      height: 100%;
+      box-shadow: none;
+      border-right: 1px solid var(--border);
+      background: var(--dark);
+    }
+    .sidebar-panel .sidebar-head { background: var(--dark); }
+    .sidebar-panel .sidebar-head img { filter: brightness(10); }
+    .sidebar-close { display: none !important; }
+    .sidebar-item-label { color: rgba(255,255,255,0.75) !important; }
+    .sidebar-item-danger .sidebar-item-label { color: var(--red) !important; }
+    .sidebar-item-danger { border-top-color: rgba(255,255,255,0.1) !important; }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); }
+
+    /* El bottom-nav desaparece en escritorio — la nav la da el sidebar */
+    .bottom-nav { display: none !important; }
     .header-dark .logo-row { justify-content: flex-end; }
     .header-dark .header-logo-img { display: none; }
     /* En desktop el header solo muestra logo + campana, sin el saludo */
@@ -1085,6 +1106,11 @@
     .header-dark .admin-context-pill,
     .header-dark .status-pill { display: none; }
     .header-dark { padding-bottom: 16px; }
+
+    /* En escritorio el botón ☰ y el logo de Inicio no se necesitan —
+       la navegación siempre está visible en el sidebar izquierdo */
+    .mobile-menu-btn { display: none !important; }
+    .inicio-logo { display: none !important; }
 
     /* Selector de cliente del admin: versión espaciosa con grid de tarjetas */
     .admin-picker-header { padding: 48px 56px 40px; }

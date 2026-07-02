@@ -45,9 +45,10 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
       <div style={{ padding:"12px 18px 44px", flexShrink:0 }}>
         {/* Logo + menú + campana */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:16 }}>
-          {/* Botón menú lateral ☰ */}
+          {/* Botón menú lateral ☰ — solo visible en móvil, en escritorio el nav siempre está abierto */}
           <div
             onClick={onMenuClick}
+            className="mobile-menu-btn"
             style={{ position:"absolute", left:0, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
@@ -56,7 +57,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </div>
-          <img src="/logo-player.png" alt="Vista360 Player" style={{ height:32 }} />
+          <img src="/logo-player.png" alt="Vista360 Player" className="inicio-logo" style={{ height:32 }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center" }}>
             <div
               onClick={onNotifClick}
