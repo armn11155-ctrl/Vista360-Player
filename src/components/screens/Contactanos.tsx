@@ -19,10 +19,10 @@ export default function Contactanos({ cliente, onBack }: Props) {
       <div className="content-area">
         <div className="card">
           <div className="section-title">Tu ejecutivo de cuenta</div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: "#F1F5F9" }}>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text)" }}>
             {cliente?.ejecutivo ?? "Equipo Vista360"}
           </div>
-          <div style={{ fontSize: 12.5, color: "#8B96AC", marginTop: 3, lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 3, lineHeight: 1.5 }}>
             Te ayuda con cotizaciones, renovaciones y soporte de tus campañas.
           </div>
         </div>
@@ -32,29 +32,29 @@ export default function Contactanos({ cliente, onBack }: Props) {
           <a className="contact-btn" style={{ background: "rgba(34,197,94,0.14)" }} href="https://wa.me/51999999999" target="_blank" rel="noreferrer">
             <div className="contact-btn-icon" style={{ background: "#22C55E" }}>💬</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "#F1F5F9" }}>WhatsApp</div>
-              <div style={{ fontSize: 12, color: "#8B96AC" }}>+51 999 999 999</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>WhatsApp</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>+51 999 999 999</div>
             </div>
           </a>
           <a className="contact-btn" style={{ background: "rgba(59,130,246,0.14)" }} href="tel:+5115550199">
             <div className="contact-btn-icon" style={{ background: "#3B82F6" }}>📞</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "#F1F5F9" }}>Llamar</div>
-              <div style={{ fontSize: 12, color: "#8B96AC" }}>(01) 555 0199</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>Llamar</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>(01) 555 0199</div>
             </div>
           </a>
           <a className="contact-btn" style={{ background: "rgba(245,158,11,0.14)" }} href="mailto:contacto@vista360.pe">
             <div className="contact-btn-icon" style={{ background: "#D97706" }}>✉️</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "#F1F5F9" }}>Correo</div>
-              <div style={{ fontSize: 12, color: "#8B96AC" }}>contacto@vista360.pe</div>
+              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>Correo</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>contacto@vista360.pe</div>
             </div>
           </a>
         </div>
 
         <div className="card">
           <div className="section-title">Horario de atención</div>
-          <div style={{ fontSize: 13, color: "#F1F5F9", lineHeight: 1.7 }}>
+          <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7 }}>
             Lunes a viernes: 9:00 am – 6:30 pm
             <br />
             Sábados: 9:00 am – 1:00 pm

@@ -44,7 +44,7 @@ const TABS: { id: Tab; label: string; getIcon: (a: boolean) => React.ReactNode }
 
 export default function BottomNav({ active, onChange }: Props) {
   return (
-    <div style={{
+    <div className="bottom-nav" style={{
       background:"#fff",
       borderTop:"1px solid #EBEBEB",
       display:"flex",
