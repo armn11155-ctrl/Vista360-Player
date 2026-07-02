@@ -6,6 +6,11 @@ import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
 
+// TODO: reemplazar por el número real de WhatsApp del negocio (mismo
+// placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
+// lugares a la vez).
+const WHATSAPP_NUMERO = "51999999999";
+
 interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
@@ -32,33 +37,45 @@ function diasParaVencer(c: Contrato): number {
   return Math.ceil((new Date(c.fin).getTime() - Date.now()) / 86400000);
 }
 
+type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
+
 export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
-  const [renovando, setRenovando] = useState<string | null>(null);
+  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
   const informeDelMes = informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
 
-  async function solicitarRenovacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
+  function abrirConfirmacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
     e.stopPropagation();
-    if (!db || !clienteId) return;
-    setRenovando(c.id);
+    setModal({ contrato: c, panelNombre, estado: "confirmando" });
+  }
+
+  async function confirmarRenovacion() {
+    if (!modal || !db || !clienteId) return;
+    setModal({ ...modal, estado: "enviando" });
     try {
       await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
-        nombre: `Renovación — ${panelNombre}`,
+        nombre: `Renovación — ${modal.panelNombre}`,
         objetivo: "Renovar campaña antes de que venza",
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
-      setRenovadas((prev) => new Set(prev).add(c.id));
+      setRenovadas((prev) => new Set(prev).add(modal.contrato.id));
+      setModal({ ...modal, estado: "enviada" });
     } catch {
-      // si falla, el botón sigue disponible para reintentar
+      setModal({ ...modal, estado: "error" });
     }
-    setRenovando(null);
   }
+
+  const whatsappHref = modal
+    ? `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
+        `Hola, acabo de solicitar la renovación de "${modal.panelNombre}" desde Vista360 Player. ¿Podemos coordinar el pago?`
+      )}`
+    : "#";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
@@ -144,17 +161,14 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     </div>
                   ) : (
                     <button
-                      onClick={(e) => solicitarRenovacion(c, panelNombre, e)}
-                      disabled={renovando === c.id}
+                      onClick={(e) => abrirConfirmacion(c, panelNombre, e)}
                       style={{
                         marginTop: 8, background: "rgba(245,158,11,0.1)", border: "1px solid #FDE68A",
                         borderRadius: 8, padding: "6px 10px", color: "#B45309", fontSize: 11.5,
-                        fontWeight: 700, cursor: renovando === c.id ? "not-allowed" : "pointer",
+                        fontWeight: 700, cursor: "pointer",
                       }}
                     >
-                      {renovando === c.id
-                        ? "Enviando…"
-                        : `⏰ Vence en ${diasParaVencer(c)} día(s) — Solicitar renovación`}
+                      {`⏰ Vence en ${diasParaVencer(c)} día(s) — Solicitar renovación`}
                     </button>
                   )
                 )}
@@ -181,6 +195,133 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           Nueva campaña
         </button>
       </div>
+
+      {/* Modal de confirmación / éxito — en el mismo lugar, sin salir de la pantalla */}
+      {modal && (
+        <div
+          onClick={() => (modal.estado === "confirmando" || modal.estado === "error") && setModal(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(13,22,41,0.55)", zIndex: 500,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px",
+              width: "100%", maxWidth: 480, boxShadow: "0 -8px 30px rgba(0,0,0,0.2)",
+            }}
+          >
+            {(modal.estado === "confirmando" || modal.estado === "enviando") && (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629", marginBottom: 6 }}>
+                  ¿Confirmas la renovación?
+                </div>
+                <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
+                  Vamos a solicitar renovar <strong style={{ color: "#0D1629" }}>{modal.panelNombre}</strong> por
+                  un mes más. Nuestro equipo te contactará para coordinar el pago.
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => setModal(null)}
+                    disabled={modal.estado === "enviando"}
+                    style={{
+                      flex: 1, padding: "13px", background: "#F3F4F6", border: "none", borderRadius: 12,
+                      color: "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer",
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={confirmarRenovacion}
+                    disabled={modal.estado === "enviando"}
+                    style={{
+                      flex: 1, padding: "13px", background: "#2563EB", border: "none", borderRadius: 12,
+                      color: "#fff", fontWeight: 700, fontSize: 14,
+                      cursor: modal.estado === "enviando" ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {modal.estado === "enviando" ? "Enviando…" : "Confirmar y enviar"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {modal.estado === "enviada" && (
+              <>
+                <div style={{ textAlign: "center", marginBottom: 6 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
+                    display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px",
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629", marginBottom: 6 }}>
+                    Solicitud enviada
+                  </div>
+                  <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
+                    Ya la vieron. Para coordinar el pago más rápido, escríbenos directo por WhatsApp.
+                  </div>
+                </div>
+                <a
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    width: "100%", padding: "13px", background: "#22C55E", borderRadius: 12,
+                    color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none", boxSizing: "border-box",
+                  }}
+                >
+                  💬 Escríbenos para coordinar el pago
+                </a>
+                <button
+                  onClick={() => setModal(null)}
+                  style={{
+                    width: "100%", padding: "12px", background: "none", border: "none",
+                    color: "#6B7280", fontWeight: 600, fontSize: 13.5, cursor: "pointer", marginTop: 4,
+                  }}
+                >
+                  Listo, cerrar
+                </button>
+              </>
+            )}
+
+            {modal.estado === "error" && (
+              <>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#DC2626", marginBottom: 6 }}>
+                  No se pudo enviar
+                </div>
+                <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
+                  Revisa tu conexión e intenta de nuevo, o escríbenos directo.
+                </div>
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => setModal(null)}
+                    style={{
+                      flex: 1, padding: "13px", background: "#F3F4F6", border: "none", borderRadius: 12,
+                      color: "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer",
+                    }}
+                  >
+                    Cerrar
+                  </button>
+                  <button
+                    onClick={confirmarRenovacion}
+                    style={{
+                      flex: 1, padding: "13px", background: "#2563EB", border: "none", borderRadius: 12,
+                      color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                    }}
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
