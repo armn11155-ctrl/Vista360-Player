@@ -57,11 +57,6 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin }
             <span className="sidebar-item-label">Cerrar Sesión</span>
           </div>
         </div>
-
-        {/* Debug temporal — te muestra si isAdmin llegó como true o false */}
-        <div style={{ padding: "8px 20px", fontSize: 11, color: "#6B7A99", opacity: 0.6 }}>
-          rol: {isAdmin ? "admin ✓" : "cliente"}
-        </div>
       </div>
     </>
   );

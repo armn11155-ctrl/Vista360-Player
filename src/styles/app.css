@@ -1357,63 +1357,74 @@
   }
   .simple-title { font-size: 16px; font-weight: 700; color: var(--text); }
 
-  /* ===== Menú lateral (sidebar) — independiente de la barra inferior ===== */
-  .menu-fab {
-    position: fixed;
-    right: 16px;
-    bottom: calc(92px + env(safe-area-inset-bottom));
-    width: 52px; height: 52px;
-    border-radius: 50%;
-    background: var(--dark);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.45);
-    z-index: 120;
-    cursor: pointer;
+  /* ===== Menú lateral (sidebar) — independiente de la barra inferior =====
+     IMPORTANTE: estos son los estilos del sidebar como DRAWER móvil
+     (position:fixed, ancho 82%, fondo blanco, oculto por transform).
+     Deben vivir solo bajo max-width:899px — si quedan sueltos aquí
+     fuera de un media query, se aplican SIEMPRE (incluso en escritorio)
+     y, por venir después en el archivo, le ganan en la cascada a las
+     reglas de escritorio que no llevan !important (ej. el fondo del
+     panel), dejando el sidebar de escritorio con fondo blanco y texto
+     blanco encima — invisible. Por eso todo este bloque va envuelto. */
+  @media (max-width: 899px) {
+    .menu-fab {
+      position: fixed;
+      right: 16px;
+      bottom: calc(92px + env(safe-area-inset-bottom));
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+      z-index: 120;
+      cursor: pointer;
+    }
+    .sidebar-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+      z-index: 200;
+    }
+    .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+    .sidebar-panel {
+      position: fixed; top: 0; bottom: 0; left: 0;
+      width: 82%; max-width: 320px;
+      background: var(--card);
+      transform: translateX(-100%);
+      transition: transform .28s ease;
+      z-index: 210;
+      display: flex; flex-direction: column;
+      box-shadow: 4px 0 28px rgba(0,0,0,0.22);
+    }
+    .sidebar-panel.open { transform: translateX(0); }
+    .sidebar-head {
+      background: var(--dark);
+      padding: 20px 20px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .sidebar-head img { height: 26px; }
+    .sidebar-close {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; cursor: pointer;
+    }
+    .sidebar-list { flex: 1; overflow-y: auto; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px;
+      cursor: pointer;
+    }
+    .sidebar-item-icon { font-size: 19px; width: 26px; text-align: center; flex-shrink: 0; }
+    .sidebar-item-label { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text); }
+    .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
+    .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: 6px; }
+    .sidebar-item-danger .sidebar-item-label { color: var(--red); }
   }
-  .sidebar-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.5);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .25s ease;
-    z-index: 200;
-  }
-  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
-  .sidebar-panel {
-    position: fixed; top: 0; bottom: 0; left: 0;
-    width: 82%; max-width: 320px;
-    background: var(--card);
-    transform: translateX(-100%);
-    transition: transform .28s ease;
-    z-index: 210;
-    display: flex; flex-direction: column;
-    box-shadow: 4px 0 28px rgba(0,0,0,0.22);
-  }
-  .sidebar-panel.open { transform: translateX(0); }
-  .sidebar-head {
-    background: var(--dark);
-    padding: 20px 20px 20px;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0;
-  }
-  .sidebar-head img { height: 26px; }
-  .sidebar-close {
-    width: 30px; height: 30px; border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    color: #fff; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; cursor: pointer;
-  }
-  .sidebar-list { flex: 1; overflow-y: auto; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
-  .sidebar-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 20px;
-    cursor: pointer;
-  }
-  .sidebar-item-icon { font-size: 19px; width: 26px; text-align: center; flex-shrink: 0; }
-  .sidebar-item-label { flex: 1; font-size: 14.5px; font-weight: 600; color: var(--text); }
-  .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
-  .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: 6px; }
-  .sidebar-item-danger .sidebar-item-label { color: var(--red); }
+
 
   /* ===== Portafolio ===== */
   .product-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--border); }
