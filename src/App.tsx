@@ -36,6 +36,7 @@ const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
 const Impacto = lazy(() => import("./components/screens/Impacto"));
 const Contactanos = lazy(() => import("./components/screens/Contactanos"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
+const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 
 type View =
@@ -48,6 +49,7 @@ type View =
   | "impacto"
   | "contactanos"
   | "analitica"
+  | "solicitudes"
   | "notificaciones";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
@@ -67,6 +69,7 @@ const VIEW_COLORS: Record<View, string> = {
   impacto: "#0D1629",
   contactanos: "#0D1629",
   analitica: "#0D1629",
+  solicitudes: "#0D1629",
   notificaciones: "#0D1629",
 };
 
@@ -80,6 +83,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "impacto",
   "contactanos",
   "analitica",
+  "solicitudes",
   "notificaciones",
 ]);
 
@@ -329,6 +333,9 @@ function AuthenticatedApp({
         break;
       case "analitica":
         content = isAdmin ? <AnaliticaClientes onBack={() => setView("inicio")} /> : null;
+        break;
+      case "solicitudes":
+        content = isAdmin ? <SolicitudesCampana onBack={() => setView("inicio")} /> : null;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;

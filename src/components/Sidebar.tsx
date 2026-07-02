@@ -6,7 +6,8 @@ type SidebarView =
   | "reportes"
   | "impacto"
   | "contactanos"
-  | "analitica";
+  | "analitica"
+  | "solicitudes";
 
 interface Props {
   open: boolean;
@@ -24,6 +25,7 @@ const ITEMS: { id: SidebarView; icon: string; label: string; adminOnly?: boolean
   { id: "reportes",     icon: "📊",  label: "Reportes" },
   { id: "impacto",      icon: "🚗",  label: "Impacto" },
   { id: "contactanos",  icon: "💬",  label: "Contáctanos" },
+  { id: "solicitudes",  icon: "🎯",  label: "Solicitudes de campaña", adminOnly: true },
   { id: "analitica",    icon: "📈",  label: "Analítica de acceso", adminOnly: true },
 ];
 
