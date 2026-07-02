@@ -43,8 +43,19 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
 
       {/* ── HEADER ── */}
       <div style={{ padding:"12px 18px 44px", flexShrink:0 }}>
-        {/* Logo + campana */}
+        {/* Logo + menú + campana */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:16 }}>
+          {/* Botón menú lateral ☰ */}
+          <div
+            onClick={onMenuClick}
+            style={{ position:"absolute", left:0, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </div>
           <img src="/logo-player.png" alt="Vista360 Player" style={{ height:32 }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center" }}>
             <div
