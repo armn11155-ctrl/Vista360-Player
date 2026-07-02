@@ -912,10 +912,11 @@
     justify-content: center;
     padding: 32px 28px;
     background-image:
-      linear-gradient(180deg, rgba(8,14,28,0.8) 0%, rgba(8,14,28,0.6) 45%, rgba(6,12,26,0.32) 100%),
+      linear-gradient(180deg, rgba(8,14,28,0.55) 0%, rgba(8,14,28,0.32) 45%, rgba(6,12,26,0.15) 100%),
       url('/login-bg.jpg');
     background-size: cover;
     background-position: center bottom;
+    background-repeat: no-repeat;
   }
   .login-logo { text-align: center; margin-bottom: 36px; }
   .login-logo img { height: 56px; max-width: 90%; }
@@ -1127,15 +1128,24 @@
     .mobile-menu-btn { display: none !important; }
     .inicio-logo { display: none !important; }
 
-    /* Selector de cliente del admin: versión espaciosa con grid de tarjetas */
-    .admin-picker-header { padding: 48px 56px 40px; }
-    .admin-picker-title { font-size: 28px; }
-    .admin-picker-sub { font-size: 14px; }
-    .admin-picker-search { max-width: 420px; }
-    .admin-picker-body { padding: 36px 56px; }
-    .admin-picker-grid { grid-template-columns: repeat(3, 1fr); max-width: 1080px; margin: 0 auto; }
-    .admin-picker-footer { padding: 20px 56px 32px; display: flex; justify-content: flex-end; }
-    .admin-picker-logout { max-width: 200px; }
+    /* Selector de cliente del admin: versión espaciosa tipo "perfiles",
+       tiles más grandes y grid centrado con más aire alrededor. */
+    .admin-picker-header { padding: 56px 40px 36px; }
+    .admin-picker-logo { height: 26px; margin-bottom: 26px; }
+    .admin-picker-title { font-size: 30px; }
+    .admin-picker-sub { font-size: 14.5px; margin-bottom: 26px; }
+    .admin-picker-search-wrap { max-width: 420px; }
+    .admin-picker-search { padding: 13px 16px 13px 40px; font-size: 14px; }
+    .admin-picker-body { padding: 8px 40px 40px; }
+    .admin-picker-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 28px 24px;
+      max-width: 1080px;
+    }
+    .admin-picker-tile-avatar { border-radius: 20px; font-size: 30px; }
+    .admin-picker-tile-name { font-size: 14px; }
+    .admin-picker-tile-city { font-size: 12px; }
+    .admin-picker-footer { padding: 24px 40px 40px; }
   }
 
 
@@ -1179,79 +1189,141 @@
   .admin-context-pill strong { color: #fff; font-weight: 700; }
   .admin-context-dot { width: 6px; height: 6px; background: #5B9BFF; border-radius: 50%; flex-shrink: 0; }
 
-  /* ===== Selector de cliente del admin (rediseño premium) ===== */
-  .admin-picker-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--bg); overflow: hidden; }
-  .admin-picker-header { background: var(--dark); padding: 20px 22px 24px; flex-shrink: 0; position: relative; z-index: 10; }
-  .admin-picker-logo { height: 22px; display: block; margin-bottom: 16px; }
+  /* ===== Selector de cliente del admin — estilo "perfiles" (Netflix) =====
+     Ocupa la pantalla real completa (fixed, igual que .login-shell) con
+     el mismo fondo fotográfico de Los Ángeles para que ambas pantallas
+     de entrada se sientan como una sola experiencia. Los clientes se
+     muestran como tiles cuadrados (color de marca + iniciales), en un
+     grid que se adapta solo de móvil a escritorio. */
+  .admin-picker-shell {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-image:
+      linear-gradient(180deg, rgba(8,14,28,0.78) 0%, rgba(8,14,28,0.62) 40%, rgba(6,12,26,0.7) 100%),
+      url('/login-bg.jpg');
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+  }
+  .admin-picker-header {
+    flex-shrink: 0;
+    padding: 28px 22px 22px;
+    text-align: center;
+  }
+  .admin-picker-logo { height: 22px; display: block; margin: 0 auto 22px; }
   .admin-picker-badge {
-    display: inline-block;
-    background: rgba(59,130,246,0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59,130,246,0.22);
     color: #8FB8FF;
     font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
-  .admin-picker-title { color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-  .admin-picker-sub { color: rgba(255,255,255,0.55); font-size: 12.5px; margin-bottom: 18px; }
+  .admin-picker-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #3B82F6; }
+  .admin-picker-title { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .admin-picker-sub { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px; }
+
+  .admin-picker-search-wrap { position: relative; max-width: 360px; margin: 0 auto; }
+  .admin-picker-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); }
   .admin-picker-search {
     display: block;
     width: 100%;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.16);
     border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 13px;
+    padding: 12px 14px 12px 38px;
+    font-size: 13.5px;
     color: #fff;
     outline: none;
+    box-sizing: border-box;
   }
-  .admin-picker-search::placeholder { color: rgba(255,255,255,0.4); }
-  .admin-picker-search:focus { border-color: #2563EB; }
+  .admin-picker-search::placeholder { color: rgba(255,255,255,0.45); }
+  .admin-picker-search:focus { border-color: #3B82F6; }
 
-  .admin-picker-body { flex: 1; overflow-y: auto; padding: 18px 16px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
-  .admin-picker-grid { display: flex; flex-direction: column; gap: 10px; }
-  .admin-picker-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 13px 14px;
+  .admin-picker-body { flex: 1; overflow-y: auto; padding: 8px 20px 20px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .admin-picker-empty { text-align: center; color: rgba(255,255,255,0.55); font-size: 14px; margin-top: 32px; }
+  .admin-picker-empty-error { color: #FCA5A5; }
+
+  /* Grid de perfiles: 2 columnas apretadas en celulares chicos, crece
+     solo con el ancho disponible — sin media queries a mano por breakpoint. */
+  .admin-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 18px 14px;
+    max-width: 720px;
+    margin: 12px auto 0;
+  }
+  .admin-picker-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+  }
+  .admin-picker-tile-avatar {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    box-shadow: 0 10px 24px -16px rgba(0,0,0,0.6);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    justify-content: center;
+    font-size: clamp(18px, 6vw, 26px);
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    box-shadow: 0 10px 26px -12px rgba(0,0,0,0.65);
+    border: 2px solid rgba(255,255,255,0.08);
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .admin-picker-card:hover { transform: translateY(-1px); box-shadow: 0 14px 32px -12px rgba(0,0,0,0.7); }
-  .admin-picker-avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  .admin-picker-tile:hover .admin-picker-tile-avatar,
+  .admin-picker-tile:focus-visible .admin-picker-tile-avatar {
+    transform: translateY(-3px) scale(1.04);
+    border-color: rgba(255,255,255,0.55);
+    box-shadow: 0 16px 34px -12px rgba(0,0,0,0.75);
   }
-  .admin-picker-card-info { flex: 1; min-width: 0; }
-  .admin-picker-card-name { font-size: 14px; font-weight: 700; color: #0D1629; }
-  .admin-picker-card-city { font-size: 12px; color: #6B7A99; margin-top: 2px; }
+  .admin-picker-tile-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .admin-picker-tile-city {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: -4px;
+  }
 
-  .admin-picker-footer { padding: 14px 16px 20px; flex-shrink: 0; }
+  .admin-picker-footer { flex-shrink: 0; padding: 14px 22px 22px; display: flex; justify-content: center; }
   .admin-picker-logout {
-    width: 100%;
-    padding: 12px;
+    padding: 11px 24px;
     border-radius: 10px;
-    border: 1px solid var(--border);
-    background: #FFF;
-    color: var(--red);
-    font-weight: 700;
+    border: 1px solid rgba(239,68,68,0.35);
+    background: rgba(239,68,68,0.10);
+    color: #FCA5A5;
+    font-weight: 600;
     font-size: 13px;
     cursor: pointer;
   }
+  .admin-picker-logout:hover { background: rgba(239,68,68,0.16); }
 
   /* ===== Botón de regreso genérico (Portafolio/Cobertura/Mis Pantallas/Impacto/Contáctanos) ===== */
   .back-btn {
