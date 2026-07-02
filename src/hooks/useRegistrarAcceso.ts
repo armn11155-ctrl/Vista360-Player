@@ -1,26 +1,26 @@
 import { useEffect, useRef } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "../config/firebase";
+import { doc, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 /**
- * Llama a la Cloud Function registrarAcceso una sola vez, apenas el
- * usuario queda autenticado (uid presente). Es "fire and forget": si
- * falla (sin internet, función no desplegada aún, etc.) no interrumpe
- * nada — es solo un dato para la pantalla de Analítica, no algo de lo
- * que dependa el resto de la app.
+ * Registra "este cliente acaba de entrar" directo en Firestore, sin
+ * Cloud Functions ni Blaze. Guarda lastLogin (timestamp) y un contador
+ * de accesos totales en portalUsers/{uid}.
+ * Fire-and-forget: si falla no interrumpe nada.
  */
 export function useRegistrarAcceso(uid: string | undefined) {
   const yaRegistrado = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!uid || !app) return;
+    if (!uid || !db) return;
     if (yaRegistrado.current === uid) return;
     yaRegistrado.current = uid;
 
-    const functions = getFunctions(app);
-    const registrar = httpsCallable(functions, "registrarAcceso");
-    registrar().catch(() => {
-      // Silencioso a propósito — ver comentario arriba.
+    updateDoc(doc(db, "portalUsers", uid), {
+      lastLogin: serverTimestamp(),
+      lastLoginCount: increment(1),
+    }).catch(() => {
+      // Silencioso — es solo analytics, no bloquea nada
     });
   }, [uid]);
 }
