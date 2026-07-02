@@ -104,6 +104,7 @@ export interface SolicitudCampana {
   ciudades: string[];
   comentarios?: string;
   estado: "Pendiente" | "Revisada" | "Convertida" | "Rechazada";
+  estadoActualizadoEn?: Timestamp | null;
   createdAt?: Timestamp | null;
 }
 

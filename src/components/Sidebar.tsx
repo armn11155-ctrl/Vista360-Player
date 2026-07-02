@@ -15,6 +15,7 @@ interface Props {
   onNavigate: (view: SidebarView) => void;
   onLogout: () => void;
   isAdmin?: boolean;
+  solicitudesPendientes?: number;
 }
 
 const ITEMS: { id: SidebarView; icon: string; label: string; adminOnly?: boolean }[] = [
@@ -29,7 +30,7 @@ const ITEMS: { id: SidebarView; icon: string; label: string; adminOnly?: boolean
   { id: "analitica",    icon: "📈",  label: "Analítica de acceso", adminOnly: true },
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin, solicitudesPendientes }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
   return (
     <>
@@ -48,6 +49,14 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin }
             >
               <span className="sidebar-item-icon">{it.icon}</span>
               <span className="sidebar-item-label">{it.label}</span>
+              {it.id === "solicitudes" && !!solicitudesPendientes && (
+                <span style={{
+                  background: "#EF4444", color: "#fff", fontSize: 10.5, fontWeight: 700,
+                  borderRadius: 20, padding: "1px 7px", marginRight: 4,
+                }}>
+                  {solicitudesPendientes}
+                </span>
+              )}
               <span className="sidebar-item-chevron">›</span>
             </div>
           ))}

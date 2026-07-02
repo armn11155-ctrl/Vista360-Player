@@ -1,4 +1,4 @@
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
 import { db } from "../../config/firebase";
@@ -27,7 +27,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
     if (!db) return;
     setResolviendo(id);
     try {
-      await updateDoc(doc(db, "solicitudesCampana", id), { estado });
+      await updateDoc(doc(db, "solicitudesCampana", id), { estado, estadoActualizadoEn: serverTimestamp() });
     } catch {
       // el estado vuelve a Pendiente solo si falla, no hace falta más feedback aquí
     }

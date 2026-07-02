@@ -21,6 +21,7 @@ import Perfil from "./components/screens/Perfil";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
+import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
 import type { Contrato } from "./types";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
@@ -224,6 +225,10 @@ function AuthenticatedApp({
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
   const notifState = useNotificaciones(clienteId);
   const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
+  const solCampState = useSolicitudesCampana(!!isAdmin);
+  const solCampPendientes = solCampState.status === "ready"
+    ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
+    : 0;
   const paneles = usePaneles(contratos.map((c) => c.panel_id));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -352,6 +357,7 @@ function AuthenticatedApp({
         onNavigate={(v) => setView(v)}
         onLogout={() => logout()}
         isAdmin={isAdmin}
+        solicitudesPendientes={solCampPendientes}
       />
       <div className="main-area">
         <div className="screens">

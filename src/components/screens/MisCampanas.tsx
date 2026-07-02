@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
+import { db } from "../../config/firebase";
 
 interface Props {
   contratos: Contrato[];
@@ -26,12 +28,37 @@ function progreso(c: Contrato): number {
   return Math.round(((n - s) / (e - s)) * 100);
 }
 
+function diasParaVencer(c: Contrato): number {
+  return Math.ceil((new Date(c.fin).getTime() - Date.now()) / 86400000);
+}
+
 export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
+  const [renovando, setRenovando] = useState<string | null>(null);
+  const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
   const informeDelMes = informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
+
+  async function solicitarRenovacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!db || !clienteId) return;
+    setRenovando(c.id);
+    try {
+      await addDoc(collection(db, "solicitudesCampana"), {
+        cliente_id: clienteId,
+        nombre: `Renovación — ${panelNombre}`,
+        objetivo: "Renovar campaña antes de que venza",
+        estado: "Pendiente",
+        createdAt: serverTimestamp(),
+      });
+      setRenovadas((prev) => new Set(prev).add(c.id));
+    } catch {
+      // si falla, el botón sigue disponible para reintentar
+    }
+    setRenovando(null);
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
@@ -109,6 +136,27 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     </div>
                     <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
                   </div>
+                )}
+                {!isAdmin && estado === "Activa" && diasParaVencer(c) <= 14 && diasParaVencer(c) >= 0 && (
+                  renovadas.has(c.id) ? (
+                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#16A34A", fontWeight: 600 }}>
+                      ✓ Solicitud de renovación enviada
+                    </div>
+                  ) : (
+                    <button
+                      onClick={(e) => solicitarRenovacion(c, panelNombre, e)}
+                      disabled={renovando === c.id}
+                      style={{
+                        marginTop: 8, background: "rgba(245,158,11,0.1)", border: "1px solid #FDE68A",
+                        borderRadius: 8, padding: "6px 10px", color: "#B45309", fontSize: 11.5,
+                        fontWeight: 700, cursor: renovando === c.id ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      {renovando === c.id
+                        ? "Enviando…"
+                        : `⏰ Vence en ${diasParaVencer(c)} día(s) — Solicitar renovación`}
+                    </button>
+                  )
                 )}
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" style={{ marginTop: 4, flexShrink: 0 }}>

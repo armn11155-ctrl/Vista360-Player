@@ -31,6 +31,7 @@ export function useNotificaciones(clienteId: string): NotifState {
     const notifs: Map<string, Notificacion> = new Map();
     let solicitudesDone = false;
     let contratosDone = false;
+    const hoyBase = new Date();
 
     function emitir() {
       if (!solicitudesDone || !contratosDone) return;
@@ -40,12 +41,14 @@ export function useNotificaciones(clienteId: string): NotifState {
       setState({ status: "ready", notifs: lista, total: lista.length });
     }
 
-    // ── Solicitudes pendientes ────────────────────────────────────────────
+    // ── Solicitudes: pendientes (aún esperando respuesta) + resueltas
+    //    recientemente (el cliente merece saber qué pasó, no que la
+    //    notificación simplemente desaparezca) ─────────────────────────
     const qSol = query(
       collection(db, "solicitudesCampana"),
-      where("cliente_id", "==", clienteId),
-      where("estado", "==", "Pendiente")
+      where("cliente_id", "==", clienteId)
     );
+    const hace14 = new Date(hoyBase.getTime() - 14 * 86400000);
     const unsubSol = onSnapshot(qSol, (snap) => {
       // Limpiar las anteriores de este tipo
       for (const k of notifs.keys()) {
@@ -53,20 +56,40 @@ export function useNotificaciones(clienteId: string): NotifState {
       }
       snap.docs.forEach((d) => {
         const data = d.data();
-        notifs.set(`sol-${d.id}`, {
-          id: `sol-${d.id}`,
-          tipo: "solicitud_pendiente",
-          titulo: "Solicitud en revisión",
-          detalle: `Tu solicitud "${data.nombre}" está siendo revisada por el equipo.`,
-          fecha: data.createdAt?.toDate?.().toISOString() ?? new Date().toISOString(),
-        });
+        if (data.estado === "Pendiente") {
+          notifs.set(`sol-${d.id}`, {
+            id: `sol-${d.id}`,
+            tipo: "solicitud_pendiente",
+            titulo: "Solicitud en revisión",
+            detalle: `Tu solicitud "${data.nombre}" está siendo revisada por el equipo.`,
+            fecha: data.createdAt?.toDate?.().toISOString() ?? new Date().toISOString(),
+          });
+          return;
+        }
+        // Resuelta (Revisada / Rechazada / Convertida): avisar solo si
+        // el cambio fue reciente, para no llenar la lista de historial viejo.
+        const actualizadaEn = data.estadoActualizadoEn?.toDate?.();
+        if (actualizadaEn && actualizadaEn >= hace14) {
+          const mensajes: Record<string, string> = {
+            Rechazada: `Tu solicitud "${data.nombre}" fue rechazada. Contáctanos si tienes dudas.`,
+            Revisada: `Tu solicitud "${data.nombre}" fue revisada por el equipo.`,
+            Convertida: `¡Tu solicitud "${data.nombre}" ya es una campaña activa!`,
+          };
+          notifs.set(`sol-${d.id}`, {
+            id: `sol-${d.id}`,
+            tipo: "solicitud_pendiente",
+            titulo: data.estado === "Rechazada" ? "Solicitud rechazada" : "Solicitud actualizada",
+            detalle: mensajes[data.estado] ?? `Tu solicitud "${data.nombre}" cambió de estado.`,
+            fecha: actualizadaEn.toISOString(),
+          });
+        }
       });
       solicitudesDone = true;
       emitir();
     }, () => { solicitudesDone = true; emitir(); });
 
     // ── Contratos por vencer (próximos 30 días) ───────────────────────────
-    const hoy = new Date();
+    const hoy = hoyBase;
     const en30 = new Date(hoy.getTime() + 30 * 86400000);
 
     const qCon = query(
