@@ -46,33 +46,31 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Igual que #root en Vista360 ERP: fixed con top/left/right/bottom,
-     SIN height explícito. Esto sella el vacío de abajo en iOS/Android. */
+  /* #root ocupa todo el alto de la pantalla pero SIN position:fixed,
+     para que .app-shell pueda centrarse en escritorio con margin:auto.
+     En móvil, .app-shell se convierte en fixed (ver media query abajo). */
   #root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    background: transparent;
+    background: #0D1629;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
   }
 
-  /* Contenedor real de la app (no es un marco de iPhone de mentira —
-     en producción el navegador/PWA ya pone su propia barra de estado).
-     Centrado tipo "app móvil" también en escritorio, máx 480px. */
+  /* Contenedor centrado tipo "app móvil" — en móvil ocupa toda la
+     pantalla, en escritorio se centra con sombra lateral. */
   .app-shell {
     width: 100%;
     max-width: 480px;
-    min-height: 100vh;
-    margin: 0 auto;
-    /* Blanco: si algún borde no llega exacto, se ve blanco (como el
-       content-area), nunca un corte oscuro. */
+    height: 100vh;
     background: #FFFFFF;
     overflow: hidden;
     position: relative;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.4);
   }
 
   /* Aviso de sin conexión — franja fija arriba, encima de todo lo demás.
