@@ -1,15 +1,31 @@
 /**
  * Comprime una imagen en el navegador ANTES de subirla — reduce el peso
  * 10-15x sin que se note a simple vista (una foto de celular de 5-8MB
- * queda en 200-500KB). Esto estira muchísimo cualquier límite gratuito
+ * queda en 150-400KB). Esto estira muchísimo cualquier límite gratuito
  * de almacenamiento (Cloudinary, Firebase) sin gastar ni arriesgar nada.
+ *
+ * Intenta primero WebP (formato más moderno y eficiente que JPEG — misma
+ * calidad visual, 25-35% menos peso) y si el navegador no lo soporta bien
+ * para codificar, cae de vuelta a JPEG automáticamente. No todos los
+ * navegadores viejos/Safari antiguos codifican WebP desde <canvas>, así
+ * que SIEMPRE se verifica que el resultado realmente sea WebP antes de
+ * usarlo — si no, no se arriesga nada, se usa JPEG.
  *
  * Solo aplica a imágenes — los videos se suben tal cual, comprimirlos
  * en el navegador requiere librerías pesadas que no valen la pena para
  * este caso de uso.
  */
 const MAX_DIMENSION = 1920; // suficiente para verse nítido en cualquier pantalla
+const WEBP_QUALITY = 0.82; // visualmente ≥ que JPEG 80%, y más liviano
 const JPEG_QUALITY = 0.8;
+
+async function codificar(
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number
+): Promise<Blob | null> {
+  return new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+}
 
 export async function comprimirImagen(file: File): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") {
@@ -34,9 +50,19 @@ export async function comprimirImagen(file: File): Promise<File> {
     ctx.drawImage(bitmap, 0, 0, width, height);
     bitmap.close();
 
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY)
-    );
+    // Intentar WebP primero — más liviano a igual calidad visual.
+    let blob = await codificar(canvas, "image/webp", WEBP_QUALITY);
+    let extension = "webp";
+    let mime = "image/webp";
+
+    // Algunos navegadores (Safari viejo) ignoran el "image/webp" pedido
+    // y devuelven PNG (pesadísimo) o null — en ese caso, usar JPEG.
+    if (!blob || blob.type !== "image/webp") {
+      blob = await codificar(canvas, "image/jpeg", JPEG_QUALITY);
+      extension = "jpg";
+      mime = "image/jpeg";
+    }
+
     if (!blob) return file;
 
     // Si por algún motivo la "comprimida" salió más pesada que el
@@ -44,8 +70,8 @@ export async function comprimirImagen(file: File): Promise<File> {
     // con el original — nunca empeoramos el resultado.
     if (blob.size >= file.size) return file;
 
-    const nuevoNombre = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-    return new File([blob], nuevoNombre, { type: "image/jpeg" });
+    const nuevoNombre = file.name.replace(/\.[^.]+$/, "") + "." + extension;
+    return new File([blob], nuevoNombre, { type: mime });
   } catch {
     // Si algo falla (navegador viejo, archivo raro), subimos el
     // original sin comprimir — nunca bloqueamos la subida por esto.
