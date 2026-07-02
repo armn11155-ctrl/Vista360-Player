@@ -4,6 +4,7 @@ import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { comprimirImagen } from "../../utils/comprimirImagen";
 import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
 import { BrandThumb } from "../BrandThumb";
 
@@ -56,7 +57,8 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
     setError("");
     setSubiendo(true);
     try {
-      const url = await subirEvidenciaCloudinary(file);
+      const archivoOptimizado = await comprimirImagen(file);
+      const url = await subirEvidenciaCloudinary(archivoOptimizado);
       const fecha = new Date().toISOString().slice(0, 10);
       await updateDoc(doc(db, "contratos", contrato.id), { fotos_campania: arrayUnion({ url, fecha }) });
     } catch (err) {
