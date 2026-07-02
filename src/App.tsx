@@ -20,6 +20,7 @@ import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
+import { useNotificaciones } from "./hooks/useNotificaciones";
 import type { Contrato } from "./types";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
@@ -35,6 +36,7 @@ const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
 const Impacto = lazy(() => import("./components/screens/Impacto"));
 const Contactanos = lazy(() => import("./components/screens/Contactanos"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
+const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 
 type View =
   | Tab
@@ -45,7 +47,8 @@ type View =
   | "mispantallas"
   | "impacto"
   | "contactanos"
-  | "analitica";
+  | "analitica"
+  | "notificaciones";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -64,6 +67,7 @@ const VIEW_COLORS: Record<View, string> = {
   impacto: "#0D1629",
   contactanos: "#0D1629",
   analitica: "#0D1629",
+  notificaciones: "#0D1629",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -76,6 +80,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "impacto",
   "contactanos",
   "analitica",
+  "notificaciones",
 ]);
 
 export default function App() {
@@ -213,6 +218,8 @@ function AuthenticatedApp({
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
+  const notifState = useNotificaciones(clienteId);
+  const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
   const paneles = usePaneles(contratos.map((c) => c.panel_id));
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -253,6 +260,8 @@ function AuthenticatedApp({
             paneles={paneles}
             onGoTo={(tab) => setView(tab)}
             onMenuClick={() => setSidebarOpen(true)}
+            onNotifClick={() => setView("notificaciones")}
+            totalNotifs={totalNotifs}
             isAdmin={isAdmin}
             adminNombre={adminNombre}
           />
@@ -320,6 +329,9 @@ function AuthenticatedApp({
         break;
       case "analitica":
         content = isAdmin ? <AnaliticaClientes onBack={() => setView("inicio")} /> : null;
+        break;
+      case "notificaciones":
+        content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;
         break;
     }
   }

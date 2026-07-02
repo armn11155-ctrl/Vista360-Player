@@ -8,6 +8,8 @@ interface Props {
   paneles: Record<string, Panel>;
   onGoTo: (tab: "campanas" | "evidencias" | "reportes" | "nueva") => void;
   onMenuClick?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
   isAdmin?: boolean;
   adminNombre?: string | null;
 }
@@ -26,7 +28,7 @@ function proximoVencimiento(contratos: Contrato[]): Contrato | null {
 
 const HEADER = "#0D1B2E";
 
-export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClick, onNotifClick, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map(c => c.panel_id)).size;
   const ultima = ultimaFoto(contratos);
@@ -45,12 +47,27 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, isAdmin, a
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:16 }}>
           <img src="/logo-player.png" alt="Vista360 Player" style={{ height:32 }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center" }}>
-            <div style={{ position:"relative", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div
+              onClick={onNotifClick}
+              style={{ position:"relative", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}
+            >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
-              <div style={{ position:"absolute", top:3, right:3, width:7, height:7, background:"#EF4444", borderRadius:"50%", border:`1.5px solid ${HEADER}` }} />
+              {totalNotifs > 0 && (
+                <div style={{
+                  position:"absolute", top:3, right:3,
+                  minWidth:7, height:7,
+                  background:"#EF4444", borderRadius:"50%",
+                  border:`1.5px solid ${HEADER}`,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize: totalNotifs > 9 ? 7 : 8, color:"#fff", fontWeight:700,
+                  padding: totalNotifs > 9 ? "0 2px" : 0,
+                }}>
+                  {totalNotifs > 9 ? "9+" : ""}
+                </div>
+              )}
             </div>
           </div>
         </div>
