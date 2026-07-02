@@ -38,7 +38,7 @@ export default function MisPantallas({ paneles, onBack }: Props) {
       <div className="content-area">
         {lista.length === 0 && (
           <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
-            <div style={{ fontSize: 12.5, color: "#93C5FD", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
               Aún no tienes pantallas contratadas activas — esto es un ejemplo de cómo se verá el
               monitoreo en vivo de tus paneles.
             </div>

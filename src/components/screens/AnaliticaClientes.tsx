@@ -73,7 +73,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
 
       <div className="content-area">
         <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
-          <div style={{ fontSize: 12.5, color: "#93C5FD", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
             Última vez que cada cliente entró a su portal. Solo tú puedes ver esta pantalla.
           </div>
         </div>

@@ -22,7 +22,7 @@ export default function Impacto({ onBack }: Props) {
       </div>
       <div className="content-area">
         <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
-          <div style={{ fontSize: 12.5, color: "#93C5FD", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
             Datos de ejemplo — el conteo vehicular en vivo se activa cuando tu pantalla tiene el
             sensor de tráfico conectado.
           </div>
