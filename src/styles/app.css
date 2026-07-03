@@ -92,6 +92,22 @@
     flex-direction: column;
   }
 
+  /* main-area: el resto de la pantalla (contenido + bottom nav) — IGUAL
+     en móvil y escritorio. Antes vivía solo dentro del media query de
+     escritorio (línea ~1131), así que en móvil .main-area no tenía
+     flex:1 ni display:flex — se quedaba con su altura de contenido en
+     vez de llenar la pantalla, y el bottom-nav terminaba pegado justo
+     debajo del contenido corto en vez de fijo abajo del todo. Mismo
+     patrón de bug que ya se corrigió antes con el sidebar. */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+  }
+
   /* Aviso de sin conexión — franja fija arriba, encima de todo lo demás.
      No bloquea nada: Firestore sigue mostrando la última data en caché. */
   .offline-banner {
@@ -1126,15 +1142,6 @@
     .sidebar-item-danger { border-top-color: rgba(255,255,255,0.1) !important; }
     .sidebar-item:hover { background: rgba(255,255,255,0.06); }
     .sidebar-item-icon { filter: none; }
-
-    /* main-area: el resto de la pantalla (contenido + bottom nav) */
-    .main-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      min-width: 0;
-    }
 
     /* El bottom-nav desaparece en escritorio */
     .bottom-nav { display: none !important; }

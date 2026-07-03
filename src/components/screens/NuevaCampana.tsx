@@ -35,9 +35,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
 
-  // En modo admin, permite crear campañas para el cliente seleccionado
-  // (clienteId es el id del cliente que está gestionando el admin)
-
   async function enviar() {
     setError("");
     if (!nombre.trim()) { setError("Ponle un nombre a tu campaña."); return; }
@@ -63,6 +60,49 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     }
   }
 
+  // Como admin, "Nueva campaña" NO tiene sentido como una solicitud —
+  // eso sería mandarte una petición a ti mismo para que tú mismo la
+  // apruebes después. Crear una campaña real (con panel, monto y
+  // fechas) se hace en el ERP, no aquí — el Player no tiene permiso
+  // para crear contratos directamente (por seguridad, ver
+  // firestore.rules). Así que en vez del formulario, un acceso directo.
+  if (isAdmin) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
+        <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
+        </div>
+        <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
+          <div style={{ fontSize: 40, marginBottom: 14 }}>🛠️</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#0D1629", marginBottom: 8 }}>
+            Esto se crea desde el ERP
+          </div>
+          <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.6, marginBottom: 22, maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
+            Como admin, tú creas la campaña real directamente en Vista360 (con el panel, el
+            monto y las fechas) — el Player no te la manda como solicitud a ti mismo, eso es
+            solo para cuando el cliente te pide algo a ti.
+          </div>
+          <a
+            href="https://vista360.pages.dev"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
+              background: "#2563EB", color: "#fff", fontWeight: 700, fontSize: 14,
+              padding: "13px 20px", borderRadius: 12, textDecoration: "none",
+            }}
+          >
+            Abrir Vista360 (ERP) →
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
@@ -71,11 +111,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
-        {isAdmin && (
-          <div style={{ marginLeft: "auto", background: "rgba(59,130,246,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#93C5FD", letterSpacing: 0.8 }}>
-            ADMIN
-          </div>
-        )}
       </div>
 
       {/* Form */}
