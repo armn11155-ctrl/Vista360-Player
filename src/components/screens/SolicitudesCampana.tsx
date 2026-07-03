@@ -34,6 +34,17 @@ export default function SolicitudesCampana({ onBack }: Props) {
     setResolviendo(null);
   }
 
+  async function confirmarPago(id: string, confirmado: boolean) {
+    if (!db) return;
+    setResolviendo(id);
+    try {
+      await updateDoc(doc(db, "solicitudesCampana", id), { pagoConfirmado: confirmado });
+    } catch {
+      // sin feedback extra, el botón queda disponible para reintentar
+    }
+    setResolviendo(null);
+  }
+
   return (
     <div>
       <div className="detail-header">
@@ -94,8 +105,37 @@ export default function SolicitudesCampana({ onBack }: Props) {
                         {s.comentarios}
                       </div>
                     )}
+                    {s.comprobantePagoUrl && (
+                      <a
+                        href={s.comprobantePagoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
+                          fontSize: 12, fontWeight: 600,
+                          color: s.pagoConfirmado ? "var(--green)" : "#D97706",
+                        }}
+                      >
+                        📎 Ver comprobante de pago {s.pagoConfirmado ? "· Confirmado ✓" : "· Sin confirmar"}
+                      </a>
+                    )}
                   </div>
                 </div>
+                {s.comprobantePagoUrl && !s.pagoConfirmado && (
+                  <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                    <button
+                      onClick={() => confirmarPago(s.id, true)}
+                      disabled={resolviendo === s.id}
+                      style={{
+                        flex: 1, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
+                        borderRadius: 10, padding: "9px 12px", color: "var(--green)", fontSize: 12.5,
+                        fontWeight: 700, cursor: resolviendo === s.id ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      💰 Confirmar pago recibido
+                    </button>
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
                     onClick={() => resolver(s.id, "Revisada")}

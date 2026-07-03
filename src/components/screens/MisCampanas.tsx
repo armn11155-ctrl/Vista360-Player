@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useRef, useState } from "react";
+import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
+import { subirEvidenciaCloudinary } from "../../config/cloudinary";
 
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
 // placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
@@ -38,11 +39,14 @@ function diasParaVencer(c: Contrato): number {
 }
 
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
+type ComprobanteEstado = "idle" | "subiendo" | "subido" | "error";
 
 export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
-  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado } | null>(null);
+  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
+  const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
+  const comprobanteRef = useRef<HTMLInputElement>(null);
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
@@ -50,6 +54,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
 
   function abrirConfirmacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
     e.stopPropagation();
+    setComprobante("idle");
     setModal({ contrato: c, panelNombre, estado: "confirmando" });
   }
 
@@ -57,7 +62,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
     if (!modal || !db || !clienteId) return;
     setModal({ ...modal, estado: "enviando" });
     try {
-      await addDoc(collection(db, "solicitudesCampana"), {
+      const ref = await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
         nombre: `Renovación — ${modal.panelNombre}`,
         objetivo: "Renovar campaña antes de que venza",
@@ -65,9 +70,26 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
         createdAt: serverTimestamp(),
       });
       setRenovadas((prev) => new Set(prev).add(modal.contrato.id));
-      setModal({ ...modal, estado: "enviada" });
+      setModal({ ...modal, estado: "enviada", solicitudId: ref.id });
     } catch {
       setModal({ ...modal, estado: "error" });
+    }
+  }
+
+  async function subirComprobante(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !db || !modal?.solicitudId) return;
+    setComprobante("subiendo");
+    try {
+      const url = await subirEvidenciaCloudinary(file);
+      await updateDoc(doc(db, "solicitudesCampana", modal.solicitudId), {
+        comprobantePagoUrl: url,
+        comprobantePagoFecha: new Date().toISOString(),
+      });
+      setComprobante("subido");
+    } catch {
+      setComprobante("error");
     }
   }
 
@@ -277,6 +299,38 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                 >
                   💬 Escríbenos para coordinar el pago
                 </a>
+
+                <div style={{ margin: "12px 0", textAlign: "center", fontSize: 12, color: "#9CA3AF" }}>o</div>
+
+                <input ref={comprobanteRef} type="file" accept="image/*" style={{ display: "none" }} onChange={subirComprobante} />
+                {comprobante === "subido" ? (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    width: "100%", padding: "13px", background: "rgba(34,197,94,0.1)", borderRadius: 12,
+                    color: "#16A34A", fontWeight: 700, fontSize: 14,
+                  }}>
+                    ✓ Comprobante enviado — lo vamos a revisar
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => comprobanteRef.current?.click()}
+                    disabled={comprobante === "subiendo"}
+                    style={{
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                      width: "100%", padding: "13px", background: "#F3F4F6", border: "1px dashed #D1D5DB",
+                      borderRadius: 12, color: "#374151", fontWeight: 600, fontSize: 14,
+                      cursor: comprobante === "subiendo" ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {comprobante === "subiendo" ? "Subiendo…" : "📎 Ya pagué — adjuntar captura de Yape/Plin"}
+                  </button>
+                )}
+                {comprobante === "error" && (
+                  <div style={{ fontSize: 12, color: "#DC2626", textAlign: "center", marginTop: 6 }}>
+                    No se pudo subir el comprobante. Intenta de nuevo.
+                  </div>
+                )}
+
                 <button
                   onClick={() => setModal(null)}
                   style={{

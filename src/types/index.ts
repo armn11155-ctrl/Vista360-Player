@@ -105,6 +105,12 @@ export interface SolicitudCampana {
   comentarios?: string;
   estado: "Pendiente" | "Revisada" | "Convertida" | "Rechazada";
   estadoActualizadoEn?: Timestamp | null;
+  /** Comprobante de pago (ej. captura de Yape/Plin) que el cliente
+   *  adjunta después de enviar la solicitud, para agilizar el trámite. */
+  comprobantePagoUrl?: string;
+  comprobantePagoFecha?: string;
+  /** null = sin revisar, true = confirmado, false = rechazado */
+  pagoConfirmado?: boolean | null;
   createdAt?: Timestamp | null;
 }
 
