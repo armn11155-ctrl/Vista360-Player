@@ -99,7 +99,6 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
     if (!db) return;
     setCalificando(c.id);
     try {
-      const { doc, updateDoc } = await import("firebase/firestore");
       await updateDoc(doc(db, "contratos", c.id), {
         calificacion: estrellas,
         calificacionFecha: new Date().toISOString(),
