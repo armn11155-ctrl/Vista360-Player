@@ -45,7 +45,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
             {cliente?.estado === "Activo" && (
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: 4, background: "#22C55E",
-                color: "#fff", padding: "3px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600, marginTop: 6,
+                color: "#fff", padding: "3px 8px", borderRadius: 6, fontSize: 12, fontWeight: 600, marginTop: 6,
               }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                 Cuenta activa
@@ -58,7 +58,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
       {/* Sections */}
       <div style={{ flex: 1, overflowY: "auto" }}>
         {/* Información */}
-        <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>
+        <div style={{ padding: "18px 16px 6px", fontSize: 12, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>
           Información de la empresa
         </div>
         <Row icon={<span style={{ fontSize: 16 }}>🏢</span>} label="Empresa" value={cliente?.empresa} />
@@ -67,12 +67,12 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
 
         {isAdmin && (
           <>
-            <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Admin</div>
+            <div style={{ padding: "18px 16px 6px", fontSize: 12, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Admin</div>
             <Row icon={<span style={{ fontSize: 16 }}>🔁</span>} label="Cambiar de cliente" onClick={onCambiarCliente} />
           </>
         )}
 
-        <div style={{ padding: "18px 16px 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Soporte</div>
+        <div style={{ padding: "18px 16px 6px", fontSize: 12, fontWeight: 700, color: "#6B7280", letterSpacing: 0.8, textTransform: "uppercase" }}>Soporte</div>
         <Row icon={<span style={{ fontSize: 16 }}>🧑‍💼</span>} label="Mi ejecutivo" value={cliente?.ejecutivo ?? "Vista360"} />
         <Row icon={<span style={{ fontSize: 16 }}>🚪</span>} label="Cerrar sesión" danger onClick={() => logout()} />
         <div style={{ height: 24 }} />

@@ -72,7 +72,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         </button>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
         {isAdmin && (
-          <div style={{ marginLeft: "auto", background: "rgba(59,130,246,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#93C5FD", letterSpacing: 0.8 }}>
+          <div style={{ marginLeft: "auto", background: "rgba(59,130,246,0.2)", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#93C5FD", letterSpacing: 0.8 }}>
             ADMIN
           </div>
         )}

@@ -175,7 +175,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                   <div style={{ fontSize: 15, fontWeight: 600, color: "#0D1629" }}>{panelNombre}</div>
                 </div>
                 <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 6, padding: "2px 8px", marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: badge.color }}>{estado}</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>{estado}</span>
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
@@ -190,14 +190,14 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     <div style={{ height: 4, background: "#E5E7EB", borderRadius: 4, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: "#2563EB", borderRadius: 4, transition: "width .3s" }} />
                     </div>
-                    <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
+                    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
                   </div>
                 )}
                 {!isAdmin && estado === "Finalizada" && (
                   c.calificacion ? (
                     <div style={{ fontSize: 13, marginTop: 4 }}>
                       {"★".repeat(c.calificacion)}{"☆".repeat(5 - c.calificacion)}
-                      <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 6 }}>¡Gracias por calificar!</span>
+                      <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 6 }}>¡Gracias por calificar!</span>
                     </div>
                   ) : (
                     <div style={{ marginTop: 6 }}>

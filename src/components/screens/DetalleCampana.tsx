@@ -26,7 +26,7 @@ function Badge({ estado }: { estado: string }) {
   };
   const s = map[estado] ?? map.Finalizada;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", background: s.bg, color: s.color, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", background: s.bg, color: s.color, fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 20 }}>
       {estado}
     </span>
   );
@@ -35,7 +35,7 @@ function Badge({ estado }: { estado: string }) {
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-      <div style={{ fontSize: 11, color: "#6B7280", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 700, color: "#0D1629" }}>{value}</div>
     </div>
   );
@@ -151,7 +151,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629" }}>Alcance estimado</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(59,130,246,0.1)", borderRadius: 20, padding: "3px 10px" }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#3B82F6", animation: "pulse 1.5s infinite" }} />
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#2563EB" }}>Cámara IA</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#2563EB" }}>Cámara IA</span>
                 </div>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
@@ -162,12 +162,12 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                 ].map((m) => (
                   <div key={m.label} style={{ flex: 1, textAlign: "center", padding: "12px 6px", background: "#F8F9FB", borderRadius: 12, border: "1px dashed #E2E8F0" }}>
                     <div style={{ fontSize: 16, marginBottom: 4 }}>{m.icon}</div>
-                    <div style={{ fontSize: 10, color: "#9CA3AF", marginBottom: 2 }}>{m.label}</div>
+                    <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 2 }}>{m.label}</div>
                     <div style={{ fontSize: 12, color: "#CBD5E1", fontWeight: 600 }}>Pendiente</div>
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: 10, fontSize: 11, color: "#9CA3AF", textAlign: "center" }}>
+              <div style={{ marginTop: 10, fontSize: 12, color: "#9CA3AF", textAlign: "center" }}>
                 Los datos se actualizarán automáticamente cuando la cámara IA esté conectada.
               </div>
             </div>

@@ -85,7 +85,7 @@ export default function Notificaciones({ clienteId, onBack }: Props) {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#0D1629" }}>{n.titulo}</div>
               <div style={{ fontSize: 12, color: "#6B7A99", marginTop: 3, lineHeight: 1.4 }}>{n.detalle}</div>
-              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
+              <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
             </div>
           </div>
         ))}

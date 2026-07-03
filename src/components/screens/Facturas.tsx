@@ -83,7 +83,7 @@ export default function Facturas({ ruc, onBack }: Props) {
                     {f.fecha_emision ?? "—"} · {fmtMonto(f)}
                   </div>
                   <span style={{
-                    display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 700,
+                    display: "inline-block", marginTop: 6, fontSize: 12, fontWeight: 700,
                     padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color,
                   }}>
                     {f.estado}

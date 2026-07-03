@@ -62,7 +62,7 @@ export default function BottomNav({ active, onChange }: Props) {
             WebkitTapHighlightColor:"transparent",
           }}>
             {tab.getIcon(a)}
-            <span style={{ fontSize:10, fontWeight: a ? 700 : 400, color: a ? "#2563EB" : "#9CA3AF", letterSpacing:0 }}>
+            <span style={{ fontSize: 11, fontWeight: a ? 700 : 400, color: a ? "#2563EB" : "#9CA3AF", letterSpacing:0 }}>
               {tab.label}
             </span>
           </button>

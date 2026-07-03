@@ -18,6 +18,7 @@ import MisCampanas from "./components/screens/MisCampanas";
 import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
+import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
@@ -235,6 +236,7 @@ function AuthenticatedApp({
     : 0;
   const paneles = usePaneles(contratos.map((c) => c.panel_id));
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding());
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
@@ -358,6 +360,7 @@ function AuthenticatedApp({
   return (
     <div className="app-shell">
       <OfflineBanner online={online} />
+      {mostrarOnboarding && <OnboardingTour onClose={() => setMostrarOnboarding(false)} />}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

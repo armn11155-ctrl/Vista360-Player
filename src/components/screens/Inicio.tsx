@@ -130,7 +130,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
                 {k.icon}
               </div>
               <div style={{ minWidth:0 }}>
-                <div style={{ fontSize:10, color:"#6B7280", marginBottom:1, lineHeight:1.2 }}>{k.label}</div>
+                <div style={{ fontSize: 11, color:"#6B7280", marginBottom:1, lineHeight:1.2 }}>{k.label}</div>
                 <div style={{ fontSize:15, fontWeight:800, color:"#111827", lineHeight:1.1 }}>{k.val}</div>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               <div style={{ width:52, height:52, borderRadius:14, background:q.bg, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 {q.icon}
               </div>
-              <span style={{ fontSize:10, color:"#374151", fontWeight:500, textAlign:"center", lineHeight:1.3 }}>{q.label}</span>
+              <span style={{ fontSize: 11, color:"#374151", fontWeight:500, textAlign:"center", lineHeight:1.3 }}>{q.label}</span>
             </div>
           ))}
         </div>
@@ -190,7 +190,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
                 <div style={{ fontSize:13, fontWeight:700, color:"#111827", marginBottom:6, lineHeight:1.3 }}>
                   Pantalla: {paneles[ultima.panel ?? ""]?.nombre ?? ultima.panel}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:4, color:"#6B7280", fontSize:11, marginBottom:12 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:4, color:"#6B7280", fontSize: 12, marginBottom:12 }}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   {ultima.foto.fecha}
                 </div>

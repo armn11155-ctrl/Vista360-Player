@@ -182,7 +182,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
                   </div>
                   <div
                     style={{
-                      fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                      fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
                       color: s.estado === "Rechazada" ? "var(--red)" : "var(--green)",
                       background: s.estado === "Rechazada" ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.12)",
                     }}
