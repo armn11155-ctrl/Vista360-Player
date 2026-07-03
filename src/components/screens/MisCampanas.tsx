@@ -46,6 +46,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
+  const [calificando, setCalificando] = useState<string | null>(null);
   const comprobanteRef = useRef<HTMLInputElement>(null);
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
@@ -91,6 +92,22 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
     } catch {
       setComprobante("error");
     }
+  }
+
+  async function calificar(c: Contrato, estrellas: number, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!db) return;
+    setCalificando(c.id);
+    try {
+      const { doc, updateDoc } = await import("firebase/firestore");
+      await updateDoc(doc(db, "contratos", c.id), {
+        calificacion: estrellas,
+        calificacionFecha: new Date().toISOString(),
+      });
+    } catch {
+      // si falla, las estrellas siguen disponibles para reintentar
+    }
+    setCalificando(null);
   }
 
   const whatsappHref = modal
@@ -175,6 +192,34 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     </div>
                     <div style={{ fontSize: 11, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
                   </div>
+                )}
+                {!isAdmin && estado === "Finalizada" && (
+                  c.calificacion ? (
+                    <div style={{ fontSize: 13, marginTop: 4 }}>
+                      {"★".repeat(c.calificacion)}{"☆".repeat(5 - c.calificacion)}
+                      <span style={{ fontSize: 11, color: "#6B7280", marginLeft: 6 }}>¡Gracias por calificar!</span>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 4 }}>¿Cómo te fue con esta campaña?</div>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            onClick={(e) => calificar(c, n, e)}
+                            disabled={calificando === c.id}
+                            style={{
+                              background: "none", border: "none", fontSize: 22, lineHeight: 1,
+                              cursor: calificando === c.id ? "not-allowed" : "pointer", padding: 2,
+                              color: "#F59E0B", opacity: calificando === c.id ? 0.5 : 1,
+                            }}
+                          >
+                            ☆
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
                 )}
                 {!isAdmin && estado === "Activa" && diasParaVencer(c) <= 14 && diasParaVencer(c) >= 0 && (
                   renovadas.has(c.id) ? (

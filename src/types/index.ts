@@ -45,6 +45,11 @@ export interface Contrato {
   monto: number;
   pagado: boolean;
   fotos_campania?: FotoCampania[];
+  /** Encuesta de satisfacción — el cliente califica su campaña una vez
+   *  finalizada (1-5 estrellas), opcional. */
+  calificacion?: number;
+  calificacionComentario?: string;
+  calificacionFecha?: string;
   deleted?: boolean;
   createdAt?: Timestamp | null;
 }
