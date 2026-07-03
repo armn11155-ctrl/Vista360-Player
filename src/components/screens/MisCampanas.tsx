@@ -284,7 +284,8 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     Solicitud enviada
                   </div>
                   <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
-                    Ya la vieron. Para coordinar el pago más rápido, escríbenos directo por WhatsApp.
+                    Ya la vieron. Puedes escribirnos por WhatsApp <strong>o</strong> adjuntar tu
+                    comprobante de pago aquí mismo — lo que te sea más cómodo, las dos formas son válidas.
                   </div>
                 </div>
                 <a
@@ -300,7 +301,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                   💬 Escríbenos para coordinar el pago
                 </a>
 
-                <div style={{ margin: "12px 0", textAlign: "center", fontSize: 12, color: "#9CA3AF" }}>o</div>
+                <div style={{ margin: "12px 0", textAlign: "center", fontSize: 12, color: "#9CA3AF" }}>o, si prefieres</div>
 
                 <input ref={comprobanteRef} type="file" accept="image/*" style={{ display: "none" }} onChange={subirComprobante} />
                 {comprobante === "subido" ? (
