@@ -47,6 +47,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
   const [calificando, setCalificando] = useState<string | null>(null);
+  const [hoverEstrella, setHoverEstrella] = useState<{ id: string; n: number } | null>(null);
   const comprobanteRef = useRef<HTMLInputElement>(null);
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
@@ -202,20 +203,27 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     <div style={{ marginTop: 6 }}>
                       <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 4 }}>¿Cómo te fue con esta campaña?</div>
                       <div style={{ display: "flex", gap: 4 }}>
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <button
-                            key={n}
-                            onClick={(e) => calificar(c, n, e)}
-                            disabled={calificando === c.id}
-                            style={{
-                              background: "none", border: "none", fontSize: 22, lineHeight: 1,
-                              cursor: calificando === c.id ? "not-allowed" : "pointer", padding: 2,
-                              color: "#F59E0B", opacity: calificando === c.id ? 0.5 : 1,
-                            }}
-                          >
-                            ☆
-                          </button>
-                        ))}
+                        {[1, 2, 3, 4, 5].map((n) => {
+                          const activa = hoverEstrella?.id === c.id ? n <= hoverEstrella.n : false;
+                          return (
+                            <button
+                              key={n}
+                              onClick={(e) => calificar(c, n, e)}
+                              onMouseEnter={() => setHoverEstrella({ id: c.id, n })}
+                              onMouseLeave={() => setHoverEstrella(null)}
+                              disabled={calificando === c.id}
+                              style={{
+                                background: "none", border: "none", fontSize: 22, lineHeight: 1,
+                                cursor: calificando === c.id ? "not-allowed" : "pointer", padding: 2,
+                                color: "#F59E0B", opacity: calificando === c.id ? 0.5 : 1,
+                                transition: "transform 0.1s ease",
+                                transform: activa ? "scale(1.15)" : "scale(1)",
+                              }}
+                            >
+                              {activa ? "★" : "☆"}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )
