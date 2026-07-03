@@ -5,6 +5,7 @@ type SidebarView =
   | "mispantallas"
   | "reportes"
   | "impacto"
+  | "facturas"
   | "contactanos"
   | "analitica"
   | "solicitudes";
@@ -24,6 +25,7 @@ const ITEMS: { id: SidebarView; icon: string; label: string; adminOnly?: boolean
   { id: "cobertura",    icon: "🗺️",  label: "Cobertura" },
   { id: "mispantallas", icon: "📺",  label: "Mis Pantallas" },
   { id: "reportes",     icon: "📊",  label: "Reportes" },
+  { id: "facturas",     icon: "🧾",  label: "Facturas" },
   { id: "impacto",      icon: "🚗",  label: "Impacto" },
   { id: "contactanos",  icon: "💬",  label: "Contáctanos" },
   { id: "solicitudes",  icon: "🎯",  label: "Solicitudes de campaña", adminOnly: true },

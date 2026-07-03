@@ -116,6 +116,28 @@ export interface SolicitudCampana {
 
 /** Informe mensual generado automáticamente (ver Vista360 →
  *  scripts/informe-mensual-clientes.mjs). Colección: informesCliente. */
+/** Comprobante electrónico emitido desde facturacion-web (SUNAT/8 Millas).
+ *  Vinculado al cliente por RUC (cliente_doc), no por cliente_id — viene
+ *  de un sistema distinto que comparte el mismo Firebase. Colección: facturas. */
+export type FacturaEstado =
+  | "Borrador" | "Pendiente" | "Emitida" | "Aceptada"
+  | "Rechazada" | "Anulada" | "Vencida" | "Pagada";
+
+export interface Factura {
+  id: string;
+  serie?: string;
+  numero?: number;
+  numero_fmt?: string;
+  tipo_doc?: string;
+  estado: FacturaEstado;
+  fecha_emision?: string;
+  fecha_vencimiento?: string;
+  cliente_doc?: string;
+  total?: number;
+  moneda?: string;
+  pagado?: boolean;
+}
+
 export interface InformeCliente {
   id: string;
   cliente_id: string;
