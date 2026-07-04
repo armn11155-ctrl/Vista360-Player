@@ -132,9 +132,11 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
       <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {(["Todas","Activa","Programada","Finalizada"] as const).map((f) => (
           <div key={f} onClick={() => setFiltro(f)} style={{
-            padding: "12px 14px", fontSize: 13, fontWeight: filtro === f ? 600 : 400,
+            flex: 1, textAlign: "center",
+            padding: "12px 6px", fontSize: 13, fontWeight: filtro === f ? 600 : 400,
             color: filtro === f ? "#2563EB" : "#6B7280",
             borderBottom: filtro === f ? "2px solid #2563EB" : "2px solid transparent", cursor: "pointer",
+            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           }}>
             {f === "Activa" ? "Activas" : f === "Programada" ? "Programadas" : f === "Finalizada" ? "Finalizadas" : f}
           </div>
