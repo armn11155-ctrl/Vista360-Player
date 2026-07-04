@@ -1,3 +1,9 @@
+import type { ReactNode } from "react";
+import {
+  IconInicio, IconPortafolio, IconCobertura, IconMisPantallas, IconReportes,
+  IconFacturas, IconContactanos, IconAnalitica, IconCerrar,
+} from "./SidebarIcons";
+
 type SidebarView =
   | "inicio"
   | "portafolio"
@@ -19,17 +25,17 @@ interface Props {
   solicitudesPendientes?: number;
 }
 
-const ITEMS: { id: SidebarView; icon: string; label: string; adminOnly?: boolean }[] = [
-  { id: "inicio",       icon: "🏠",  label: "Inicio" },
-  { id: "portafolio",   icon: "🗂️",  label: "Portafolio" },
-  { id: "cobertura",    icon: "🗺️",  label: "Cobertura" },
-  { id: "mispantallas", icon: "📺",  label: "Mis Pantallas" },
-  { id: "reportes",     icon: "📊",  label: "Reportes" },
-  { id: "facturas",     icon: "🧾",  label: "Facturas" },
-  { id: "impacto",      icon: "🚗",  label: "Impacto" },
-  { id: "contactanos",  icon: "💬",  label: "Contáctanos" },
-  { id: "solicitudes",  icon: "🎯",  label: "Solicitudes de campaña", adminOnly: true },
-  { id: "analitica",    icon: "📈",  label: "Analítica de acceso", adminOnly: true },
+const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: boolean }[] = [
+  { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
+  { id: "portafolio",   icon: <IconPortafolio />,   label: "Portafolio" },
+  { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
+  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Pantallas" },
+  { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
+  { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
+  { id: "impacto",      icon: "🚗",                 label: "Impacto" },
+  { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
+  { id: "solicitudes",  icon: "🎯",                 label: "Solicitudes de campaña", adminOnly: true },
+  { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 
 export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin, solicitudesPendientes }: Props) {
@@ -40,7 +46,9 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin, 
       <div className={`sidebar-panel ${open ? "open" : ""}`}>
         <div className="sidebar-head">
           <img src="/logo-player.png" alt="Vista360 Player" />
-          <div className="sidebar-close" onClick={onClose}>✕</div>
+          <div className="sidebar-close" onClick={onClose}>
+            <IconCerrar size={13} />
+          </div>
         </div>
         <div className="sidebar-list">
           {items.map((it) => (
