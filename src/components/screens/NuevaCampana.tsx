@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
 interface Props {
   clienteId: string;
@@ -26,7 +27,15 @@ const inputStyle: React.CSSProperties = {
   outline: "none", boxSizing: "border-box",
 };
 
+const selectStyle: React.CSSProperties = {
+  ...inputStyle, appearance: "none",
+  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
+  backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center",
+};
+
 export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: Props) {
+  // ── Formulario del CLIENTE: pedir una campaña nueva (queda como
+  //    solicitud pendiente, la revisa el admin) ──────────────────────
   const [nombre, setNombre] = useState("");
   const [objetivo, setObjetivo] = useState("");
   const [presupuesto, setPresupuesto] = useState("");
@@ -60,48 +69,109 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     }
   }
 
-  // Como admin, "Nueva campaña" NO tiene sentido como una solicitud —
-  // eso sería mandarte una petición a ti mismo para que tú mismo la
-  // apruebes después. Crear una campaña real (con panel, monto y
-  // fechas) se hace en el ERP, no aquí — el Player no tiene permiso
-  // para crear contratos directamente (por seguridad, ver
-  // firestore.rules). Así que en vez del formulario, un acceso directo.
+  // ── Formulario del ADMIN: crear el contrato real directo ───────────
+  const panelesState = usePanelesDisponibles(!!isAdmin);
+  const [panelId, setPanelId] = useState("");
+  const [inicio, setInicio] = useState("");
+  const [fin, setFin] = useState("");
+  const [monto, setMonto] = useState("");
+  const [errorAdmin, setErrorAdmin] = useState("");
+  const [creando, setCreando] = useState(false);
+
+  async function crearContrato() {
+    setErrorAdmin("");
+    if (!panelId) { setErrorAdmin("Elige un panel."); return; }
+    if (!inicio || !fin) { setErrorAdmin("Pon fecha de inicio y de fin."); return; }
+    if (fin < inicio) { setErrorAdmin("La fecha de fin no puede ser antes que la de inicio."); return; }
+    if (!monto || Number(monto) < 0) { setErrorAdmin("Pon un monto válido."); return; }
+    if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
+    setCreando(true);
+    try {
+      await addDoc(collection(db, "contratos"), {
+        panel_id: panelId,
+        cliente_id: clienteId,
+        inicio,
+        fin,
+        monto: Number(monto),
+        pagado: false,
+        fotos_campania: [],
+        createdAt: serverTimestamp(),
+      });
+      // Marcar el panel como Ocupado (mismo comportamiento que en el ERP)
+      await setDoc(doc(db, "paneles", panelId), { estado: "Ocupado" }, { merge: true });
+      onEnviada();
+    } catch {
+      setErrorAdmin("No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo.");
+    } finally {
+      setCreando(false);
+    }
+  }
+
   if (isAdmin) {
+    const paneles = panelesState.status === "ready" ? panelesState.paneles : [];
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
         <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
           </button>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nuevo contrato</div>
         </div>
-        <div style={{ flex: 1, padding: 20, display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 14 }}>🛠️</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#0D1629", marginBottom: 8 }}>
-            Esto se crea desde el ERP
+
+        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629", marginBottom: 18 }}>
+              Crear campaña para este cliente
+            </div>
+
+            {errorAdmin && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>
+                {errorAdmin}
+              </div>
+            )}
+
+            <Field label="Panel">
+              <select style={selectStyle} value={panelId} onChange={(e) => setPanelId(e.target.value)}>
+                <option value="">
+                  {panelesState.status === "loading" ? "Cargando paneles…" : "Selecciona un panel"}
+                </option>
+                {paneles.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre} — {p.ciudad} {p.estado === "Ocupado" ? "(Ocupado)" : ""}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Fecha de inicio">
+                  <input style={inputStyle} type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Fecha de fin">
+                  <input style={inputStyle} type="date" value={fin} onChange={(e) => setFin(e.target.value)} />
+                </Field>
+              </div>
+            </div>
+            <Field label="Monto (S/)">
+              <input style={inputStyle} type="number" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="Ej. 3500" />
+            </Field>
           </div>
-          <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.6, marginBottom: 22, maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
-            Como admin, tú creas la campaña real directamente en Vista360 (con el panel, el
-            monto y las fechas) — el Player no te la manda como solicitud a ti mismo, eso es
-            solo para cuando el cliente te pide algo a ti.
-          </div>
-          <a
-            href="https://vista360.pages.dev"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-              background: "#2563EB", color: "#fff", fontWeight: 700, fontSize: 14,
-              padding: "13px 20px", borderRadius: 12, textDecoration: "none",
-            }}
-          >
-            Abrir Vista360 (ERP) →
-          </a>
+          <div style={{ height: 16 }} />
+        </div>
+
+        <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
+          <button onClick={crearContrato} disabled={creando} style={{
+            width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#2563EB", color: "#fff",
+            fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: creando ? "default" : "pointer",
+          }}>
+            {creando ? "Creando…" : "Crear contrato"}
+          </button>
         </div>
       </div>
     );
   }
-
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
@@ -134,8 +204,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
             <input style={inputStyle} type="number" value={presupuesto} onChange={(e) => setPresupuesto(e.target.value)} placeholder="Ej. 5,000" />
           </Field>
           <Field label="Ciudad">
-            <select style={{ ...inputStyle, appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center" }}
-              value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
+            <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
               <option value="">Selecciona una ciudad</option>
               {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
