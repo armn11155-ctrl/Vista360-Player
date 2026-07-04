@@ -1,3 +1,5 @@
+import { PersonIcon } from "./PersonIcon";
+
 export type Tab = "inicio" | "campanas" | "evidencias" | "reportes" | "perfil";
 
 interface Props {
@@ -35,10 +37,7 @@ const TABS: { id: Tab; label: string; getIcon: (a: boolean) => React.ReactNode }
     </svg>
   },
   { id:"perfil", label:"Perfil", getIcon: a =>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a ? "#2563EB" : "#9CA3AF"} strokeWidth="1.8" strokeLinecap="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-      <circle cx="12" cy="7" r="4"/>
-    </svg>
+    <PersonIcon size={22} color={a ? "#2563EB" : "#9CA3AF"} />
   },
 ];
 
