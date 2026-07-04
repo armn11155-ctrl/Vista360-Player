@@ -234,7 +234,7 @@
   /* ===== SCREEN 1: INICIO ===== */
   .header-dark {
     background: var(--dark);
-    padding: 20px 24px 48px;
+    padding: calc(20px + env(safe-area-inset-top)) 24px 48px;
     flex-shrink: 0;
   }
   .header-dark .logo-row {
@@ -488,7 +488,7 @@
   /* ===== SCREEN 3: DETALLE ===== */
   .detail-header {
     background: var(--dark);
-    padding: 20px 20px;
+    padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1242,7 +1242,7 @@
   }
   .admin-picker-header {
     flex-shrink: 0;
-    padding: 28px 22px 22px;
+    padding: calc(28px + env(safe-area-inset-top)) 22px 22px;
     text-align: center;
   }
   .admin-picker-logo { height: 22px; display: block; margin: 0 auto 22px; }
@@ -1412,7 +1412,7 @@
   /* Layout compartido del sidebar — idéntico en móvil y escritorio */
   .sidebar-head {
     background: var(--dark);
-    padding: 20px 20px 20px;
+    padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
     display: flex; align-items: center; justify-content: space-between;
     flex-shrink: 0;
   }
