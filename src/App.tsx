@@ -39,6 +39,7 @@ const Impacto = lazy(() => import("./components/screens/Impacto"));
 const Contactanos = lazy(() => import("./components/screens/Contactanos"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
 const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
+const Accesos = lazy(() => import("./components/screens/Accesos"));
 const Facturas = lazy(() => import("./components/screens/Facturas"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 
@@ -53,6 +54,7 @@ type View =
   | "contactanos"
   | "analitica"
   | "solicitudes"
+  | "accesos"
   | "facturas"
   | "notificaciones";
 
@@ -74,6 +76,7 @@ const VIEW_COLORS: Record<View, string> = {
   contactanos: "#0D1629",
   analitica: "#0D1629",
   solicitudes: "#0D1629",
+  accesos: "#0D1629",
   facturas: "#0D1629",
   notificaciones: "#0D1629",
 };
@@ -89,6 +92,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "contactanos",
   "analitica",
   "solicitudes",
+  "accesos",
   "facturas",
   "notificaciones",
 ]);
@@ -347,6 +351,9 @@ function AuthenticatedApp({
         break;
       case "solicitudes":
         content = isAdmin ? <SolicitudesCampana onBack={() => setView("inicio")} /> : null;
+        break;
+      case "accesos":
+        content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
         content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} />;

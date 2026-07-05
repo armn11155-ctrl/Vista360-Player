@@ -14,7 +14,8 @@ type SidebarView =
   | "facturas"
   | "contactanos"
   | "analitica"
-  | "solicitudes";
+  | "solicitudes"
+  | "accesos";
 
 interface Props {
   open: boolean;
@@ -35,6 +36,7 @@ const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: bool
   { id: "impacto",      icon: "🚗",                 label: "Impacto" },
   { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
   { id: "solicitudes",  icon: "🎯",                 label: "Solicitudes de campaña", adminOnly: true },
+  { id: "accesos",      icon: "🔑",                 label: "Accesos", adminOnly: true },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 
