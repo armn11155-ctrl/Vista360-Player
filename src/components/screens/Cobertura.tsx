@@ -23,6 +23,11 @@ type PanelConCoordenadas = PanelConUso & {
   lng: number;
 };
 
+function numeroCoordenada(value: unknown) {
+  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value.trim()) : NaN;
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function tieneCoordenadas(panel: PanelConUso): panel is PanelConCoordenadas {
   return typeof panel.lat === "number" && typeof panel.lng === "number";
 }
@@ -86,7 +91,12 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
   const lista = useMemo<PanelConUso[]>(() => {
     const usados = new Map(contratos.map((contrato) => [contrato.panel_id, contrato]));
     return Object.values(paneles)
-      .map((panel) => ({ ...panel, contrato: usados.get(panel.id) }))
+      .map((panel) => ({
+        ...panel,
+        lat: numeroCoordenada((panel as unknown as Record<string, unknown>).lat),
+        lng: numeroCoordenada((panel as unknown as Record<string, unknown>).lng),
+        contrato: usados.get(panel.id),
+      }))
       .sort((a, b) => (a.ciudad || "").localeCompare(b.ciudad || "") || a.nombre.localeCompare(b.nombre));
   }, [contratos, paneles]);
 
@@ -229,9 +239,21 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
                 {[seleccionado.direccion, seleccionado.ciudad].filter(Boolean).join(" · ") || "Sin dirección registrada"}
               </div>
             </div>
-            <div className="coverage-selected-status" style={{ color: estadoColor(estadoTexto(seleccionado.contrato)) }}>
-              <span style={{ background: estadoColor(estadoTexto(seleccionado.contrato)) }} />
-              {estadoTexto(seleccionado.contrato)}
+            <div className="coverage-selected-actions">
+              <div className="coverage-selected-status" style={{ color: estadoColor(estadoTexto(seleccionado.contrato)) }}>
+                <span style={{ background: estadoColor(estadoTexto(seleccionado.contrato)) }} />
+                {estadoTexto(seleccionado.contrato)}
+              </div>
+              {tieneCoordenadas(seleccionado) && (
+                <a
+                  className="coverage-google-link"
+                  href={`https://maps.google.com/?q=${seleccionado.lat},${seleccionado.lng}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Google Maps
+                </a>
+              )}
             </div>
           </div>
         )}

@@ -1681,15 +1681,15 @@
   }
   .coverage-premium-area {
     background: #08111f;
-    margin-top: -28px;
-    padding-top: 12px;
+    margin-top: -34px;
+    padding-top: 8px;
   }
   .coverage-hero {
     background: linear-gradient(135deg, #0B1728 0%, #10213A 58%, #123E63 100%);
     border: 1px solid rgba(147,197,253,0.16);
     border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
@@ -1713,7 +1713,7 @@
   .coverage-count small { color: rgba(226,232,240,.68); font-size: 10px; margin-top: 4px; }
   .coverage-map-real {
     position: relative;
-    min-height: 280px;
+    min-height: 380px;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -1870,6 +1870,23 @@
     width: 7px;
     height: 7px;
     border-radius: 50%;
+  }
+  .coverage-selected-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  .coverage-google-link {
+    border-radius: 999px;
+    background: rgba(59,130,246,.16);
+    color: #93C5FD;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 9px;
+    white-space: nowrap;
   }
   .coverage-panel-row {
     width: 100%;
