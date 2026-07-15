@@ -57,6 +57,8 @@
     padding: 0;
     width: 100%;
     height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
     background: #0D1629;
@@ -76,6 +78,8 @@
   #root {
     width: 100%;
     height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
     background: #0D1629;
   }
@@ -150,17 +154,25 @@
      rebote nativo del navegador puede "mezclar" visualmente contenido de
      más abajo con el header de arriba durante el scroll rápido. */
   @media (max-width: 899px) {
+    html,
+    body,
+    #root {
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: #FFFFFF;
+    }
     .app-shell {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      /* Sin "height" explícito a propósito: igual que .appRoot de
-         Vista360 ERP. Si pones top+bottom+height juntos, el navegador
-         ignora "bottom" y usa "height" — y si height (vh/dvh/JS) calcula
-         mal en algún caso de iOS, deja exactamente este hueco. Dejando
-         que SOLO top/bottom definan el tamaño, nunca puede sobrar nada. */
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
       margin: 0;
       overscroll-behavior: none;
     }
