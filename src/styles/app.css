@@ -1594,6 +1594,117 @@
   }
   .admin-picker-logout:hover { background: rgba(239,68,68,0.16); }
 
+  /* ===== Solicitudes de campaña ===== */
+  .solicitudes-screen {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+  }
+  .solicitudes-area {
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .solicitudes-card {
+    cursor: pointer;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .solicitudes-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(59,130,246,.28);
+  }
+  .solicitud-detail-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 520;
+    background: rgba(2,6,23,.58);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .solicitud-detail-panel {
+    width: min(720px, 100%);
+    max-height: min(82vh, 760px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 24px 60px rgba(2,6,23,.28);
+  }
+  .solicitud-detail-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .solicitud-detail-kicker { color: #2563EB; font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+  .solicitud-detail-title { color: #0D1629; font-size: 19px; font-weight: 900; line-height: 1.15; }
+  .solicitud-detail-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 0; background: #F1F5F9; color: #0D1629;
+    font-size: 22px; line-height: 1; cursor: pointer;
+  }
+  .solicitud-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .solicitud-detail-grid div {
+    background: #F8FAFC;
+    border: 1px solid #E8EDF5;
+    border-radius: 12px;
+    padding: 11px;
+  }
+  .solicitud-detail-grid span,
+  .solicitud-detail-text span {
+    display: block;
+    color: #64748B;
+    font-size: 11px;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .solicitud-detail-grid strong {
+    color: #0D1629;
+    font-size: 13px;
+  }
+  .solicitud-detail-text {
+    border: 1px solid #E8EDF5;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .solicitud-detail-text p {
+    margin: 0;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .solicitud-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 14px;
+  }
+  .solicitud-action {
+    flex: 1 1 150px;
+    border-radius: 12px;
+    padding: 12px 13px;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    border: 0;
+  }
+  .solicitud-action.primary { background: #2563EB; color: #fff; }
+  .solicitud-action.secondary { background: #F1F5F9; color: #0D1629; }
+  .solicitud-action.whatsapp { background: #22C55E; color: #fff; }
+
   /* ===== Botón de regreso genérico (Portafolio/Cobertura/Mis Pantallas/Impacto/Contáctanos) ===== */
   .back-btn {
     width: 32px; height: 32px;

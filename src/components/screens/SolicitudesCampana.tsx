@@ -5,19 +5,22 @@ import { db } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
+import type { SolicitudCampana } from "../../types";
 
 interface Props {
   onBack: () => void;
+  onCrearCampana?: (clienteId: string) => void;
 }
 
-export default function SolicitudesCampana({ onBack }: Props) {
+export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const state = useSolicitudesCampana(true);
   const clientesState = useClientesAdmin();
   const [resolviendo, setResolviendo] = useState<string | null>(null);
+  const [seleccionada, setSeleccionada] = useState<SolicitudCampana | null>(null);
 
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
-  const nombreCliente = (clienteId: string) =>
-    clientes.find((c) => c.id === clienteId)?.empresa ?? "Cliente";
+  const clientePorId = (clienteId: string) => clientes.find((c) => c.id === clienteId);
+  const nombreCliente = (clienteId: string) => clientePorId(clienteId)?.empresa ?? "Cliente";
 
   const solicitudes = state.status === "ready" ? state.solicitudes : [];
   const pendientes = solicitudes.filter((s) => s.estado === "Pendiente");
@@ -28,6 +31,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
     setResolviendo(id);
     try {
       await updateDoc(doc(db, "solicitudesCampana", id), { estado, estadoActualizadoEn: serverTimestamp() });
+      setSeleccionada((actual) => actual?.id === id ? { ...actual, estado } : actual);
     } catch {
       // el estado vuelve a Pendiente solo si falla, no hace falta más feedback aquí
     }
@@ -46,7 +50,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
   }
 
   return (
-    <div>
+    <div className="solicitudes-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
@@ -55,7 +59,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
         <div style={{ width: 32 }} />
       </div>
 
-      <div className="content-area">
+      <div className="content-area solicitudes-area">
         <div className="card" style={{ background: "rgba(139,92,246,0.12)" }}>
           <div style={{ fontSize: 12.5, color: "#6D28D9", lineHeight: 1.5 }}>
             Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
@@ -80,7 +84,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
         {pendientes.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
             {pendientes.map((s) => (
-              <div className="card" key={s.id}>
+              <div className="card solicitudes-card" key={s.id} onClick={() => setSeleccionada(s)}>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
                   <BrandThumb name={nombreCliente(s.cliente_id)} size={40} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -124,7 +128,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
                 {s.comprobantePagoUrl && !s.pagoConfirmado && (
                   <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <button
-                      onClick={() => confirmarPago(s.id, true)}
+                      onClick={(event) => { event.stopPropagation(); confirmarPago(s.id, true); }}
                       disabled={resolviendo === s.id}
                       style={{
                         flex: 1, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
@@ -138,7 +142,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
-                    onClick={() => resolver(s.id, "Revisada")}
+                    onClick={(event) => { event.stopPropagation(); resolver(s.id, "Revisada"); }}
                     disabled={resolviendo === s.id}
                     style={{
                       flex: 1, background: "var(--accent)", border: "none", borderRadius: 10,
@@ -149,7 +153,7 @@ export default function SolicitudesCampana({ onBack }: Props) {
                     {resolviendo === s.id ? "Guardando…" : "✓ Marcar revisada"}
                   </button>
                   <button
-                    onClick={() => resolver(s.id, "Rechazada")}
+                    onClick={(event) => { event.stopPropagation(); resolver(s.id, "Rechazada"); }}
                     disabled={resolviendo === s.id}
                     style={{
                       background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
@@ -172,9 +176,10 @@ export default function SolicitudesCampana({ onBack }: Props) {
               {resueltas.map((s) => (
                 <div
                   key={s.id}
+                  onClick={() => setSeleccionada(s)}
                   style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "10px 0", borderBottom: "1px solid var(--border)",
+                    padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer",
                   }}
                 >
                   <div style={{ fontSize: 13, color: "var(--text)" }}>
@@ -195,6 +200,84 @@ export default function SolicitudesCampana({ onBack }: Props) {
           </>
         )}
       </div>
+
+      {seleccionada && (
+        <div className="solicitud-detail-overlay" onClick={() => setSeleccionada(null)}>
+          <div className="solicitud-detail-panel" onClick={(event) => event.stopPropagation()}>
+            <div className="solicitud-detail-head">
+              <div>
+                <div className="solicitud-detail-kicker">{nombreCliente(seleccionada.cliente_id)}</div>
+                <div className="solicitud-detail-title">{seleccionada.nombre}</div>
+              </div>
+              <button className="solicitud-detail-close" onClick={() => setSeleccionada(null)}>×</button>
+            </div>
+
+            <div className="solicitud-detail-grid">
+              <div>
+                <span>Estado</span>
+                <strong>{seleccionada.estado}</strong>
+              </div>
+              <div>
+                <span>Presupuesto</span>
+                <strong>{seleccionada.presupuesto != null ? `S/ ${seleccionada.presupuesto.toLocaleString("es-PE")}` : "Sin definir"}</strong>
+              </div>
+              <div>
+                <span>Ciudades</span>
+                <strong>{seleccionada.ciudades?.length ? seleccionada.ciudades.join(", ") : "Sin ciudad"}</strong>
+              </div>
+              <div>
+                <span>Pago</span>
+                <strong>{seleccionada.pagoConfirmado ? "Confirmado" : seleccionada.comprobantePagoUrl ? "Por confirmar" : "Sin comprobante"}</strong>
+              </div>
+            </div>
+
+            {seleccionada.objetivo && (
+              <div className="solicitud-detail-text">
+                <span>Objetivo</span>
+                <p>{seleccionada.objetivo}</p>
+              </div>
+            )}
+            {seleccionada.comentarios && (
+              <div className="solicitud-detail-text">
+                <span>Comentarios</span>
+                <p>{seleccionada.comentarios}</p>
+              </div>
+            )}
+
+            <div className="solicitud-detail-actions">
+              {seleccionada.comprobantePagoUrl && (
+                <a href={seleccionada.comprobantePagoUrl} target="_blank" rel="noreferrer" className="solicitud-action secondary">
+                  Ver comprobante
+                </a>
+              )}
+              {clientePorId(seleccionada.cliente_id)?.celular && (
+                <a
+                  href={`https://wa.me/${clientePorId(seleccionada.cliente_id)?.celular?.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola, revisé tu solicitud de campaña "${seleccionada.nombre}" en Vista360 Player. Te escribo para coordinar los detalles.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="solicitud-action whatsapp"
+                >
+                  Hablar por WhatsApp
+                </a>
+              )}
+              {seleccionada.estado === "Pendiente" && (
+                <button className="solicitud-action secondary" onClick={() => resolver(seleccionada.id, "Revisada")}>
+                  Marcar revisada
+                </button>
+              )}
+              <button
+                className="solicitud-action primary"
+                onClick={() => {
+                  setSeleccionada(null);
+                  onCrearCampana?.(seleccionada.cliente_id);
+                }}
+              >
+                Crear campaña
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

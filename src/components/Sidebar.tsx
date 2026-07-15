@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import {
-  IconInicio, IconPortafolio, IconCobertura, IconMisPantallas, IconReportes,
+  IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconContactanos, IconAnalitica, IconCerrar,
 } from "./SidebarIcons";
 
@@ -28,14 +28,13 @@ interface Props {
 
 const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: boolean }[] = [
   { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
-  { id: "portafolio",   icon: <IconPortafolio />,   label: "Portafolio" },
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Pantallas" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
   { id: "solicitudes",  icon: "🎯",                 label: "Solicitudes de campaña", adminOnly: true },
-  { id: "accesos",      icon: "🔑",                 label: "Accesos", adminOnly: true },
+  { id: "accesos",      icon: "🔑",                 label: "Usuarios", adminOnly: true },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 

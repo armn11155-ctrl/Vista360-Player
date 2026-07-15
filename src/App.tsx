@@ -179,7 +179,13 @@ export default function App() {
               }
             >
               {view === "solicitudes"
-                ? <SolicitudesCampana onBack={() => setView("inicio")} />
+                ? <SolicitudesCampana
+                    onBack={() => setView("inicio")}
+                    onCrearCampana={(id) => {
+                      setAdminClienteId(id);
+                      setView("nueva");
+                    }}
+                  />
                 : <Accesos onBack={() => setView("inicio")} />}
             </Suspense>
           </div>
@@ -207,6 +213,10 @@ export default function App() {
         isAdmin
         adminNombre={auth.nombre}
         online={online}
+        onSeleccionarCliente={(id) => {
+          setAdminClienteId(id);
+          setView("nueva");
+        }}
         onCambiarCliente={() => {
           setAdminClienteId(null);
           setView("inicio");
@@ -239,6 +249,7 @@ interface AuthenticatedProps {
   isAdmin: boolean;
   adminNombre?: string | null;
   onCambiarCliente?: () => void;
+  onSeleccionarCliente?: (clienteId: string) => void;
   online: boolean;
 }
 
@@ -252,6 +263,7 @@ function AuthenticatedApp({
   isAdmin,
   adminNombre,
   onCambiarCliente,
+  onSeleccionarCliente,
   online,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
@@ -385,7 +397,15 @@ function AuthenticatedApp({
         content = isAdmin ? <AnaliticaClientes onBack={() => setView("inicio")} /> : null;
         break;
       case "solicitudes":
-        content = isAdmin ? <SolicitudesCampana onBack={() => setView("inicio")} /> : null;
+        content = isAdmin ? (
+          <SolicitudesCampana
+            onBack={() => setView("inicio")}
+            onCrearCampana={(id) => {
+              if (id !== clienteId) onSeleccionarCliente?.(id);
+              else setView("nueva");
+            }}
+          />
+        ) : null;
         break;
       case "accesos":
         content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
