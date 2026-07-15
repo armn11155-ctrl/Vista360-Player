@@ -16,7 +16,7 @@ interface Props {
   isAdmin: boolean;
 }
 
-type TabId = "resumen" | "pantallas" | "evidencias";
+type TabId = "resumen" | "reportes";
 
 function Badge({ estado }: { estado: string }) {
   const map: Record<string, { bg: string; color: string }> = {
@@ -70,8 +70,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
 
   const TABS: { id: TabId; label: string }[] = [
     { id: "resumen",    label: "Resumen" },
-    { id: "pantallas",  label: "Pantallas" },
-    { id: "evidencias", label: "Evidencias" },
+    { id: "reportes",   label: "Reportes" },
   ];
 
   return (
@@ -204,35 +203,14 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
           </>
         )}
 
-        {/* ── TAB PANTALLAS ── */}
-        {tab === "pantallas" && (
-          <div style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 12 }}>Pantalla asignada</div>
-            {panel ? (
-              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
-                  {panel.icono ?? "🖥️"}
-                </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#0D1629" }}>{panel.nombre}</div>
-                  <div style={{ fontSize: 12, color: "#6B7280" }}>{panel.ciudad} · {panel.tipo}</div>
-                  {panel.direccion && <div style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}>📍 {panel.direccion}</div>}
-                </div>
-              </div>
-            ) : (
-              <div style={{ color: "#6B7280", fontSize: 13 }}>Sin información del panel.</div>
-            )}
-          </div>
-        )}
-
-        {/* ── TAB EVIDENCIAS ── */}
-        {tab === "evidencias" && (
+        {/* ── TAB REPORTES ── */}
+        {tab === "reportes" && (
           <div>
             {/* Zona de subida — siempre arriba y prominente para el admin */}
             {isAdmin && (
               <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 12 }}>
-                  📸 Subir evidencia
+                  Subir reporte
                 </div>
                 <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" style={{ display: "none" }} onChange={handleFile} />
                 {error && (
@@ -258,7 +236,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                   ) : (
                     <>
                       <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Toca para agregar foto o video</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Toca para agregar foto o video del reporte</div>
                       <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
                     </>
                   )}
@@ -270,7 +248,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
             <div style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629" }}>
-                  Evidencias registradas
+                  Reportes registrados
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>
                   {fotos.length} foto{fotos.length !== 1 ? "s" : ""}
@@ -317,8 +295,8 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               ) : (
                 <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF" }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>🖼️</div>
-                  <div style={{ fontSize: 13 }}>Aún no hay evidencias registradas</div>
-                  {isAdmin && <div style={{ fontSize: 12, marginTop: 4 }}>Usa el botón de arriba para agregar la primera</div>}
+                  <div style={{ fontSize: 13 }}>Aún no hay reportes registrados</div>
+                  {isAdmin && <div style={{ fontSize: 12, marginTop: 4 }}>Usa el botón de arriba para agregar el primero</div>}
                 </div>
               )}
             </div>

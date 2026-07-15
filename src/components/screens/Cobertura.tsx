@@ -180,8 +180,8 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
   }, []);
 
   return (
-    <div>
-      <div className="detail-header">
+    <div className="coverage-screen">
+      <div className="detail-header coverage-header-compact">
         {onBack ? (
           <div className="back-btn" onClick={onBack}>
             <BackChevron />
