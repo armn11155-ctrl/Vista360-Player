@@ -46,6 +46,7 @@ const Notificaciones = lazy(() => import("./components/screens/Notificaciones"))
 type View =
   | Tab
   | "detalle"
+  | "evidencias"
   | "nueva"
   | "portafolio"
   | "cobertura"
@@ -244,7 +245,7 @@ function AuthenticatedApp({
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
-    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
+    view === "detalle" || view === "evidencias" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
 
   function abrirContrato(c: Contrato) {
     setContratoAbierto(c);
