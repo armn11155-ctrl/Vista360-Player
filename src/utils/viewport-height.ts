@@ -39,6 +39,11 @@ export function setupRealViewportHeight() {
   });
   window.addEventListener("focusout", resetAfterKeyboard);
   window.addEventListener("blur", resetAfterKeyboard, true);
+  window.addEventListener("focus", resetAfterKeyboard);
+  window.addEventListener("pageshow", resetAfterKeyboard);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) resetAfterKeyboard();
+  });
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", set);
   }

@@ -32,7 +32,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header dark con avatar */}
-      <div style={{ background: "#0D1629", padding: "20px 20px 28px", flexShrink: 0 }}>
+      <div style={{ background: "#0D1629", padding: "calc(24px + env(safe-area-inset-top)) 20px 26px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 60, height: 60, borderRadius: "50%", background: "#CC0000",

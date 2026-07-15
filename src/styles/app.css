@@ -1679,7 +1679,11 @@
     background: linear-gradient(160deg, #0D1629, #16213D);
     border-radius: 16px; padding: 26px 16px; margin-bottom: 16px; text-align: center;
   }
-  .coverage-premium-area { background: #08111f; }
+  .coverage-premium-area {
+    background: #08111f;
+    margin-top: -28px;
+    padding-top: 12px;
+  }
   .coverage-hero {
     background: linear-gradient(135deg, #0B1728 0%, #10213A 58%, #123E63 100%);
     border: 1px solid rgba(147,197,253,0.16);
