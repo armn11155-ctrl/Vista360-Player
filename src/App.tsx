@@ -49,7 +49,6 @@ type View =
   | "evidencias"
   | "nueva"
   | "portafolio"
-  | "cobertura"
   | "mispantallas"
   | "impacto"
   | "contactanos"
@@ -87,7 +86,6 @@ const VIEW_COLORS: Record<View, string> = {
 // con su propio botón de regreso, sin la barra inferior compitiendo.
 const SIDEBAR_VIEWS = new Set<View>([
   "portafolio",
-  "cobertura",
   "mispantallas",
   "impacto",
   "contactanos",
@@ -345,7 +343,7 @@ function AuthenticatedApp({
         content = <Portafolio onBack={() => setView("inicio")} onContactar={() => setView("contactanos")} />;
         break;
       case "cobertura":
-        content = <Cobertura onBack={() => setView("inicio")} />;
+        content = <Cobertura paneles={paneles} contratos={contratos} />;
         break;
       case "mispantallas":
         content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} />;

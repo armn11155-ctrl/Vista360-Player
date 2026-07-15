@@ -1,6 +1,6 @@
 import { PersonIcon } from "./PersonIcon";
 
-export type Tab = "inicio" | "campanas" | "reportes" | "perfil";
+export type Tab = "inicio" | "campanas" | "cobertura" | "reportes" | "perfil";
 
 interface Props {
   active: Tab;
@@ -20,6 +20,13 @@ const TABS: { id: Tab; label: string; getIcon: (a: boolean) => React.ReactNode }
   { id:"campanas", label:"Campañas", getIcon: a =>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a ? "#2563EB" : "#9CA3AF"} strokeWidth="1.8" strokeLinecap="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  },
+  { id:"cobertura", label:"Cobertura", getIcon: a =>
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a ? "#2563EB" : "#9CA3AF"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z"/>
+      <path d="M9 3v15M15 6v15"/>
+      <circle cx="15" cy="10" r="2"/>
     </svg>
   },
   { id:"reportes", label:"Reportes", getIcon: a =>
