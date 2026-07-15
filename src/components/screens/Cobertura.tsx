@@ -216,9 +216,6 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
               {mapError && (
                 <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>
               )}
-              <div className="coverage-map-label">
-                OpenStreetMap · {seleccionado?.ciudad || "Ubicación"} · {conCoordenadas.length} ubicados
-              </div>
             </>
           ) : (
             <div className="coverage-no-coords">
