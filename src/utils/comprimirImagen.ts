@@ -107,11 +107,20 @@ export async function comprimirAvatarWebp(file: File): Promise<File> {
   ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
   bitmap.close();
 
-  const blob = await codificar(canvas, "image/webp", AVATAR_WEBP_QUALITY);
+  let blob = await codificar(canvas, "image/webp", AVATAR_WEBP_QUALITY);
+  let extension = "webp";
+  let mime = "image/webp";
+
   if (!blob || blob.type !== "image/webp") {
-    throw new Error("Tu navegador no pudo convertir el avatar a WebP.");
+    blob = await codificar(canvas, "image/jpeg", 0.84);
+    extension = "jpg";
+    mime = "image/jpeg";
+  }
+
+  if (!blob) {
+    throw new Error("No se pudo preparar la foto.");
   }
 
   const nombre = file.name.replace(/\.[^.]+$/, "") || "avatar";
-  return new File([blob], `${nombre}.webp`, { type: "image/webp" });
+  return new File([blob], `${nombre}.${extension}`, { type: mime });
 }

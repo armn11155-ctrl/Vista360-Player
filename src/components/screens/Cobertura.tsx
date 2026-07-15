@@ -255,7 +255,7 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
           </div>
         )}
 
-        <div className="card">
+        <div className="coverage-panel-card">
           <div className="section-title">Paneles ubicados</div>
           {lista.length === 0 ? (
             <div className="state-sub" style={{ maxWidth: "none" }}>

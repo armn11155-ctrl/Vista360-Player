@@ -35,33 +35,47 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
   const state = useFacturas(ruc);
   const facturas = state.status === "ready" ? state.facturas : [];
   const fileRef = useRef<HTMLInputElement>(null);
+  const [pdfListo, setPdfListo] = useState<File | null>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState("");
 
-  async function subirPdf(e: React.ChangeEvent<HTMLInputElement>) {
+  async function elegirPdf(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !db || !ruc) return;
+    if (!file) return;
+    setMensaje("");
+    try {
+      const pdf = await prepararFacturaPdf(file);
+      setPdfListo(pdf);
+      setMensaje(`PDF listo para enviar: ${formatoBytes(pdf.size)}.`);
+    } catch (err) {
+      setPdfListo(null);
+      setMensaje(err instanceof Error ? err.message : "No se pudo preparar la factura.");
+    }
+  }
+
+  async function enviarPdf() {
+    if (!pdfListo || !db || !ruc) return;
     setMensaje("");
     setSubiendo(true);
     try {
-      const pdf = await prepararFacturaPdf(file);
-      const pdfUrl = await subirFacturaPdfCloudinary(pdf);
+      const pdfUrl = await subirFacturaPdfCloudinary(pdfListo);
       const hoy = new Date().toISOString().slice(0, 10);
       await addDoc(collection(db, "facturas"), {
         cliente_doc: ruc,
         tipo_doc: "Factura",
-        numero_fmt: pdf.name.replace(/\.pdf$/i, ""),
+        numero_fmt: pdfListo.name.replace(/\.pdf$/i, ""),
         estado: "Emitida",
         fecha_emision: hoy,
         moneda: "PEN",
         total: 0,
         pagado: false,
         pdfUrl,
-        pdfPesoBytes: pdf.size,
+        pdfPesoBytes: pdfListo.size,
         createdAt: serverTimestamp(),
       });
-      setMensaje(`Factura subida (${formatoBytes(pdf.size)}).`);
+      setMensaje(`Factura subida (${formatoBytes(pdfListo.size)}).`);
+      setPdfListo(null);
     } catch (err) {
       setMensaje(err instanceof Error ? err.message : "No se pudo subir la factura.");
     } finally {
@@ -82,11 +96,11 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
       <div className="content-area">
         {isAdmin && ruc && (
           <div className="card factura-upload-card">
-            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={subirPdf} />
+            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
             <div>
               <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Subir factura PDF</div>
               <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.35 }}>
-                Máximo 2.5 MB. Ideal si viene directo del sistema de facturación.
+                Máximo 5 MB. Primero ves el peso, luego la envías.
               </div>
             </div>
             <button
@@ -95,8 +109,18 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
               disabled={subiendo}
               className="factura-upload-btn"
             >
-              {subiendo ? "Subiendo..." : "Elegir PDF"}
+              Elegir PDF
             </button>
+            {pdfListo && (
+              <button
+                type="button"
+                onClick={enviarPdf}
+                disabled={subiendo}
+                className="factura-upload-btn factura-upload-send"
+              >
+                {subiendo ? "Enviando..." : "Enviar"}
+              </button>
+            )}
             {mensaje && <div className="factura-upload-msg">{mensaje}</div>}
           </div>
         )}

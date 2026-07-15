@@ -367,6 +367,7 @@ function AuthenticatedApp({
         content = (
           <Perfil
             cliente={cliente}
+            contratos={contratos}
             email={email}
             isAdmin={isAdmin}
             onCambiarCliente={onCambiarCliente}

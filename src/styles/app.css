@@ -1334,7 +1334,7 @@
   }
   .factura-upload-card {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     gap: 10px;
     align-items: center;
     background: linear-gradient(135deg, rgba(59,130,246,.10), rgba(139,92,246,.10));
@@ -1353,6 +1353,9 @@
   .factura-upload-btn:disabled {
     opacity: .72;
     cursor: default;
+  }
+  .factura-upload-send {
+    background: #16A34A;
   }
   .factura-upload-msg {
     grid-column: 1 / -1;
@@ -1378,6 +1381,15 @@
   .factura-link.secondary {
     background: rgba(59,130,246,.10);
     color: var(--accent);
+  }
+  @media (max-width: 430px) {
+    .factura-upload-card {
+      grid-template-columns: 1fr 1fr;
+    }
+    .factura-upload-card > div:first-of-type,
+    .factura-upload-msg {
+      grid-column: 1 / -1;
+    }
   }
 
   /* ===== SCREEN 7: NUEVA CAMPAÑA ===== */
@@ -2662,13 +2674,25 @@
     padding: 6px 9px;
     white-space: nowrap;
   }
+  .coverage-panel-card {
+    background: linear-gradient(135deg, #0B1728 0%, #111D33 62%, #08111F 100%);
+    border: 1px solid rgba(147,197,253,.16);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 14px 30px rgba(2,6,23,.24);
+  }
+  .coverage-panel-card .section-title {
+    color: #FFFFFF;
+    margin: 0;
+    padding: 14px 14px 4px;
+  }
   .coverage-panel-row {
     width: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
     border: 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid rgba(147,197,253,.12);
     background: transparent;
     padding: 12px 10px;
     text-align: left;
@@ -2676,7 +2700,7 @@
     border-radius: 8px;
   }
   .coverage-panel-row:last-child { border-bottom: 0; }
-  .coverage-panel-row:hover { background: rgba(59,130,246,.08); }
+  .coverage-panel-row:hover { background: rgba(59,130,246,.12); }
   .coverage-panel-dot {
     width: 12px;
     height: 12px;
@@ -2685,8 +2709,8 @@
     box-shadow: 0 0 0 5px rgba(59,130,246,.10);
   }
   .coverage-panel-info { flex: 1; min-width: 0; }
-  .coverage-panel-name { color: var(--text); font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .coverage-panel-meta { color: var(--muted); font-size: 11px; margin-top: 3px; }
+  .coverage-panel-name { color: #FFFFFF; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .coverage-panel-meta { color: rgba(226,232,240,.62); font-size: 11px; margin-top: 3px; }
   .coverage-panel-state { font-size: 11px; font-weight: 800; white-space: nowrap; }
   .coverage-city-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
   .coverage-city-row:last-child { border-bottom: none; }

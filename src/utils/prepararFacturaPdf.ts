@@ -1,4 +1,4 @@
-const MAX_FACTURA_PDF_BYTES = 2.5 * 1024 * 1024;
+const MAX_FACTURA_PDF_BYTES = 5 * 1024 * 1024;
 
 export function formatoBytes(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
