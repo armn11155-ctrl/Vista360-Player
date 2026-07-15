@@ -3,7 +3,7 @@
 // Safari/WKWebView de iPhone instalado, que a veces no calculan bien
 // el viewport contra la pantalla física real.
 export function setupRealViewportHeight() {
-  let stableHeight = window.visualViewport?.height || window.innerHeight;
+  let stableHeight = Math.max(window.innerHeight, window.visualViewport?.height || 0);
 
   const isTextInputFocused = () => {
     const el = document.activeElement;
@@ -14,21 +14,24 @@ export function setupRealViewportHeight() {
 
   const set = () => {
     const visualHeight = window.visualViewport?.height ?? 0;
-    const currentHeight = visualHeight || window.innerHeight;
+    const currentHeight = Math.max(window.innerHeight, visualHeight || 0);
     const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
 
     if (!keyboardLikelyOpen) {
-      stableHeight = Math.max(currentHeight, window.innerHeight * 0.92);
+      stableHeight = currentHeight;
     }
 
     document.documentElement.style.setProperty("--app-height", `${stableHeight}px`);
   };
 
   const resetAfterKeyboard = () => {
-    window.setTimeout(() => {
-      stableHeight = window.visualViewport?.height || window.innerHeight;
+    const reset = () => {
+      stableHeight = Math.max(window.innerHeight, window.visualViewport?.height || 0);
       set();
-    }, 80);
+    };
+    window.setTimeout(reset, 80);
+    window.setTimeout(reset, 260);
+    window.setTimeout(reset, 700);
   };
 
   set();
@@ -39,7 +42,6 @@ export function setupRealViewportHeight() {
   });
   window.addEventListener("focusout", resetAfterKeyboard);
   window.addEventListener("blur", resetAfterKeyboard, true);
-  window.addEventListener("focus", resetAfterKeyboard);
   window.addEventListener("pageshow", resetAfterKeyboard);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) resetAfterKeyboard();
