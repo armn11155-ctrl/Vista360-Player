@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
+import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
+import { cloudFunctions } from "../../config/firebase";
 
 interface Props {
   onBack: () => void;
@@ -16,7 +19,16 @@ function fmtFecha(inv: { createdAt?: { toDate: () => Date } | null }): string {
 
 export default function Accesos({ onBack }: Props) {
   const state = useInvitaciones(true);
+  const clientesState = useClientesAdmin();
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [clienteId, setClienteId] = useState("");
+  const [email, setEmail] = useState("");
+  const [contacto, setContacto] = useState("");
+  const [celular, setCelular] = useState("");
+  const [creando, setCreando] = useState(false);
+  const [errorCrear, setErrorCrear] = useState("");
+  const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
 
   async function copiar(id: string, link: string) {
     try {
@@ -29,6 +41,47 @@ export default function Accesos({ onBack }: Props) {
   }
 
   const invitaciones = state.status === "ready" ? state.invitaciones : [];
+  const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
+
+  async function crearUsuario() {
+    if (!cloudFunctions) {
+      setErrorCrear("Firebase Functions no está configurado.");
+      return;
+    }
+    if (!clienteId || !email.trim()) {
+      setErrorCrear("Selecciona un cliente y escribe el correo.");
+      return;
+    }
+    setCreando(true);
+    setErrorCrear("");
+    setAccesoCreado(null);
+    try {
+      const fn = httpsCallable<
+        { clienteId: string; email: string; contacto: string; celular: string },
+        { clienteId: string; empresa: string; email: string; password: string }
+      >(cloudFunctions, "crearClienteAcceso");
+      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim() });
+      setAccesoCreado(res.data);
+    } catch (err) {
+      setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario.");
+    } finally {
+      setCreando(false);
+    }
+  }
+
+  const mensajeAcceso = accesoCreado
+    ? [
+        `Hola ${contacto || accesoCreado.empresa}, te mando tu acceso a Vista360 Player.`,
+        "",
+        "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
+        "",
+        `Portal: ${window.location.origin}`,
+        `Correo: ${accesoCreado.email}`,
+        `Contraseña temporal: ${accesoCreado.password}`,
+        "",
+        "Por seguridad, te recomendamos cambiar la contraseña después del primer ingreso.",
+      ].join("\n")
+    : "";
 
   return (
     <div>
@@ -36,18 +89,71 @@ export default function Accesos({ onBack }: Props) {
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
         </div>
-        <div className="simple-title">Accesos</div>
+        <div className="simple-title">Usuarios</div>
         <div style={{ width: 32 }} />
       </div>
 
       <div className="content-area">
         <div className="card" style={{ background: "rgba(59,130,246,0.12)" }}>
           <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
-            Cada vez que se crea un acceso nuevo, se manda un correo automático — pero aquí
-            puedes copiar el mismo link y mandarlo tú a mano (WhatsApp, etc.) por si el correo
-            no llega a tiempo o cae en spam.
+            Aquí administras los usuarios del portal. Cada usuario queda vinculado a un cliente
+            existente de tu base de datos mediante su <strong>clienteId</strong>.
           </div>
         </div>
+
+        <button
+          onClick={() => setMostrarForm((v) => !v)}
+          style={{
+            width: "100%", margin: "12px 0", background: "#2563EB", color: "#fff",
+            border: "none", borderRadius: 12, padding: "13px", fontSize: 13,
+            fontWeight: 800, cursor: "pointer",
+          }}
+        >
+          {mostrarForm ? "Cerrar formulario" : "+ Agregar usuario"}
+        </button>
+
+        {mostrarForm && (
+          <div className="card">
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
+              Nuevo usuario
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <select
+                value={clienteId}
+                onChange={(e) => setClienteId(e.target.value)}
+                style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", color: "var(--text)", background: "#fff" }}
+              >
+                <option value="">Seleccionar cliente</option>
+                {clientes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.empresa}</option>
+                ))}
+              </select>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+            </div>
+            {errorCrear && (
+              <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorCrear}</div>
+            )}
+            <button
+              onClick={crearUsuario}
+              disabled={creando}
+              style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0D1629", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
+            >
+              {creando ? "Creando..." : "Crear usuario y contraseña"}
+            </button>
+            {accesoCreado && (
+              <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Usuario creado</div>
+                <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAcceso}</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <a href={`https://wa.me/${celular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAcceso)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
+                  <a href={`mailto:${accesoCreado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAcceso)}`} style={{ flex: 1, textAlign: "center", background: "#3B82F6", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {state.status === "loading" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
@@ -59,7 +165,7 @@ export default function Accesos({ onBack }: Props) {
         )}
         {state.status === "ready" && invitaciones.length === 0 && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            Aún no se ha creado ningún acceso.
+            Aún no se ha creado ningún usuario.
           </div>
         )}
 
