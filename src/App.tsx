@@ -167,10 +167,30 @@ export default function App() {
   // auth.status === "in"
   if (auth.role === "admin") {
     if (!adminClienteId) {
+      if (view === "solicitudes") {
+        return (
+          <div className="app-shell">
+            <OfflineBanner online={online} />
+            <Suspense
+              fallback={
+                <div className="state-screen">
+                  <div className="state-title">Cargando…</div>
+                </div>
+              }
+            >
+              <SolicitudesCampana onBack={() => setView("inicio")} />
+            </Suspense>
+          </div>
+        );
+      }
       return (
         <div className="app-shell">
           <OfflineBanner online={online} />
-          <AdminClientPicker onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }} />
+          <AdminClientPicker
+            onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }}
+            onCreateUser={(id) => { setAdminClienteId(id); setView("nuevoCliente"); }}
+            onOpenSolicitudes={() => setView("solicitudes")}
+          />
         </div>
       );
     }

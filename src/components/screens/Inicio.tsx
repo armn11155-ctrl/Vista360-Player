@@ -115,7 +115,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
       <div style={{ flex:1, overflowY:"auto", background:"#F8FAFD", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
 
         {isAdmin && (
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
             <button
               type="button"
               onClick={onCambiarCliente}
@@ -123,14 +123,6 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
             >
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>Admin</div>
               <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Cambiar cliente</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => onGoTo("nuevoCliente")}
-              style={{ background:"#2563EB", color:"#fff", border:"none", borderRadius:13, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(37,99,235,0.18)" }}
-            >
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.72)", marginBottom:3 }}>Accesos</div>
-              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Crear usuario</div>
             </button>
           </div>
         )}

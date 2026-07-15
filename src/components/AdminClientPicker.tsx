@@ -8,6 +8,8 @@ import { PersonIcon } from "./PersonIcon";
 
 interface Props {
   onSelect: (clienteId: string) => void;
+  onCreateUser?: (clienteId: string) => void;
+  onOpenSolicitudes?: () => void;
 }
 
 /**
@@ -16,7 +18,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect }: Props) {
+export default function AdminClientPicker({ onSelect, onCreateUser, onOpenSolicitudes }: Props) {
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
 
@@ -33,6 +35,12 @@ export default function AdminClientPicker({ onSelect }: Props) {
         </div>
         <div className="admin-picker-title">¿Qué cuenta gestionas?</div>
         <div className="admin-picker-sub">Selecciona un perfil de cliente para continuar.</div>
+
+        <div className="admin-picker-actions">
+          <button type="button" onClick={onOpenSolicitudes} className="admin-picker-action">
+            Solicitudes de campaña
+          </button>
+        </div>
 
         <div className="admin-picker-search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" className="admin-picker-search-icon">
@@ -73,6 +81,15 @@ export default function AdminClientPicker({ onSelect }: Props) {
                 </span>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
                 {c.ciudad && <span className="admin-picker-tile-city">📍 {c.ciudad}</span>}
+                <span
+                  className="admin-picker-user-action"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onCreateUser?.(c.id);
+                  }}
+                >
+                  Usuario
+                </span>
               </button>
             );
           })}

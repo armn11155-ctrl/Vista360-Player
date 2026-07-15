@@ -138,7 +138,7 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
           const marker = L.marker([panel.lat, panel.lng], {
             icon: L.divIcon({
               className: `coverage-leaflet-marker ${active ? "active" : ""}`,
-              html: "<span></span>",
+              html: `<span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="11" rx="2"></rect><path d="M9 20h6M12 16v4"></path></svg></span>`,
               iconSize: active ? [38, 38] : [30, 30],
               iconAnchor: active ? [19, 34] : [15, 27],
             }),
