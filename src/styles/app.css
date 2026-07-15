@@ -3,6 +3,7 @@
   /* ── Design tokens — paleta "premium dark" (navy casi negro + acento
      azul con glow), consistente con la marca Vista360. ─────────────── */
   :root {
+    --app-height: 100vh;
     --bg: #F2F4F8;
     --dark: #0D1629;
     --darker: #07101F;
@@ -61,7 +62,7 @@
     min-height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
-    background: #0D1629;
+    background: #FFFFFF;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -81,7 +82,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
-    background: #0D1629;
+    background: #FFFFFF;
   }
 
   /* Contenedor principal — en móvil ocupa toda la pantalla (ver
@@ -89,8 +90,8 @@
      el ancho con sidebar izquierdo siempre visible. */
   .app-shell {
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
+    height: var(--app-height);
+    min-height: var(--app-height);
     background: #FFFFFF;
     overflow: hidden;
     display: flex;
@@ -157,10 +158,8 @@
     html,
     body,
     #root {
-      height: 100vh;
-      height: 100dvh;
-      min-height: 100vh;
-      min-height: 100dvh;
+      height: var(--app-height);
+      min-height: var(--app-height);
       background: #FFFFFF;
     }
     .app-shell {
@@ -168,11 +167,9 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
-      height: 100vh;
-      height: 100dvh;
-      min-height: 100vh;
-      min-height: 100dvh;
+      bottom: auto;
+      height: var(--app-height);
+      min-height: var(--app-height);
       margin: 0;
       overscroll-behavior: none;
     }

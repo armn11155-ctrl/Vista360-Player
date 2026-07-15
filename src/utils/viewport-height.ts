@@ -4,7 +4,8 @@
 // el viewport contra la pantalla física real.
 export function setupRealViewportHeight() {
   const set = () => {
-    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const visualHeight = window.visualViewport?.height ?? 0;
+    const h = Math.max(window.innerHeight, visualHeight);
     document.documentElement.style.setProperty("--app-height", `${h}px`);
   };
   set();

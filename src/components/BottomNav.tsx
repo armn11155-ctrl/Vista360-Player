@@ -50,7 +50,6 @@ export default function BottomNav({ active, onChange }: Props) {
       display:"flex",
       alignItems:"stretch",
       flexShrink:0,
-      paddingBottom:"env(safe-area-inset-bottom)",
     }}>
       {TABS.map(tab => {
         const a = active === tab.id;
