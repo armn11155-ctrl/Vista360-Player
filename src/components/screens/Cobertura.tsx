@@ -139,8 +139,8 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
             icon: L.divIcon({
               className: `coverage-leaflet-marker ${active ? "active" : ""}`,
               html: `<span><img src="/vista360-map-marker.png" alt="" /></span>`,
-              iconSize: active ? [58, 74] : [46, 60],
-              iconAnchor: active ? [29, 72] : [23, 58],
+              iconSize: active ? [48, 74] : [38, 58],
+              iconAnchor: active ? [24, 72] : [19, 56],
             }),
           })
             .addTo(markersRef.current)
