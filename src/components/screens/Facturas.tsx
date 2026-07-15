@@ -1,10 +1,16 @@
+import { useRef, useState } from "react";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import BackChevron from "../BackChevron";
 import { useFacturas } from "../../hooks/useFacturas";
+import { db } from "../../config/firebase";
+import { subirFacturaPdfCloudinary } from "../../config/cloudinary";
+import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
 import type { Factura, FacturaEstado } from "../../types";
 
 interface Props {
   ruc: string | undefined;
   onBack: () => void;
+  isAdmin?: boolean;
 }
 
 const FACTURACION_WEB_URL = "https://facturacion-web-abi.pages.dev";
@@ -25,12 +31,46 @@ function fmtMonto(f: Factura): string {
   return `${f.moneda === "USD" ? "US$" : "S/"} ${monto}`;
 }
 
-export default function Facturas({ ruc, onBack }: Props) {
+export default function Facturas({ ruc, onBack, isAdmin }: Props) {
   const state = useFacturas(ruc);
   const facturas = state.status === "ready" ? state.facturas : [];
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [subiendo, setSubiendo] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+
+  async function subirPdf(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !db || !ruc) return;
+    setMensaje("");
+    setSubiendo(true);
+    try {
+      const pdf = await prepararFacturaPdf(file);
+      const pdfUrl = await subirFacturaPdfCloudinary(pdf);
+      const hoy = new Date().toISOString().slice(0, 10);
+      await addDoc(collection(db, "facturas"), {
+        cliente_doc: ruc,
+        tipo_doc: "Factura",
+        numero_fmt: pdf.name.replace(/\.pdf$/i, ""),
+        estado: "Emitida",
+        fecha_emision: hoy,
+        moneda: "PEN",
+        total: 0,
+        pagado: false,
+        pdfUrl,
+        pdfPesoBytes: pdf.size,
+        createdAt: serverTimestamp(),
+      });
+      setMensaje(`Factura subida (${formatoBytes(pdf.size)}).`);
+    } catch (err) {
+      setMensaje(err instanceof Error ? err.message : "No se pudo subir la factura.");
+    } finally {
+      setSubiendo(false);
+    }
+  }
 
   return (
-    <div>
+    <div className="facturas-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
@@ -40,6 +80,27 @@ export default function Facturas({ ruc, onBack }: Props) {
       </div>
 
       <div className="content-area">
+        {isAdmin && ruc && (
+          <div className="card factura-upload-card">
+            <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={subirPdf} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Subir factura PDF</div>
+              <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.35 }}>
+                Máximo 2.5 MB. Ideal si viene directo del sistema de facturación.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => !subiendo && fileRef.current?.click()}
+              disabled={subiendo}
+              className="factura-upload-btn"
+            >
+              {subiendo ? "Subiendo..." : "Elegir PDF"}
+            </button>
+            {mensaje && <div className="factura-upload-msg">{mensaje}</div>}
+          </div>
+        )}
+
         {!ruc && (
           <div className="card" style={{ background: "rgba(245,158,11,0.1)" }}>
             <div style={{ fontSize: 12.5, color: "#B45309", lineHeight: 1.5 }}>
@@ -67,11 +128,8 @@ export default function Facturas({ ruc, onBack }: Props) {
           {facturas.map((f) => {
             const badge = BADGE[f.estado] ?? BADGE.Borrador;
             return (
-              <a
+              <div
                 key={f.id}
-                href={`${FACTURACION_WEB_URL}/ver/${f.id}`}
-                target="_blank"
-                rel="noreferrer"
                 className="card"
                 style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}
               >
@@ -88,11 +146,26 @@ export default function Facturas({ ruc, onBack }: Props) {
                   }}>
                     {f.estado}
                   </span>
+                  {f.pdfPesoBytes != null && (
+                    <span style={{
+                      display: "inline-block", marginTop: 6, marginLeft: 6, fontSize: 12, fontWeight: 700,
+                      padding: "2px 8px", borderRadius: 20, background: "rgba(59,130,246,0.10)", color: "#2563EB",
+                    }}>
+                      {formatoBytes(f.pdfPesoBytes)}
+                    </span>
+                  )}
                 </div>
-                <span style={{ fontSize: 13, color: "var(--accent)", fontWeight: 600, flexShrink: 0 }}>
-                  Ver →
-                </span>
-              </a>
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  {f.pdfUrl && (
+                    <a href={f.pdfUrl} target="_blank" rel="noreferrer" className="factura-link">
+                      PDF
+                    </a>
+                  )}
+                  <a href={`${FACTURACION_WEB_URL}/ver/${f.id}`} target="_blank" rel="noreferrer" className="factura-link secondary">
+                    Ver
+                  </a>
+                </div>
+              </div>
             );
           })}
         </div>

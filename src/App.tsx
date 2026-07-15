@@ -417,7 +417,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
-        content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} />;
+        content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} isAdmin={isAdmin} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;

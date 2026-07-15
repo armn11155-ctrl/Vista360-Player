@@ -45,6 +45,43 @@ export async function subirArchivoCloudinary(file: File, folder = "vista360/camp
   return data.secure_url as string;
 }
 
+export async function subirFacturaPdfCloudinary(file: File): Promise<string> {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error(
+      "Cloudinary no está configurado. Agrega VITE_CLOUDINARY_CLOUD_NAME y VITE_CLOUDINARY_UPLOAD_PRESET en Cloudflare Pages."
+    );
+  }
+
+  const auth = getAuth(app ?? undefined);
+  if (!auth.currentUser) {
+    throw new Error("Debes iniciar sesión para subir facturas.");
+  }
+
+  if (file.type !== "application/pdf") {
+    throw new Error("Sube un PDF válido.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+  formData.append("folder", "vista360/facturas");
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+    { method: "POST", body: formData }
+  );
+
+  if (!res.ok) {
+    throw new Error("No se pudo subir la factura. Intenta de nuevo.");
+  }
+
+  const data = await res.json();
+  return data.secure_url as string;
+}
+
 export async function subirEvidenciaCloudinary(file: File): Promise<string> {
   return subirArchivoCloudinary(file, "vista360/campanas");
 }

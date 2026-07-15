@@ -156,7 +156,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente, onCo
         </ProfileSection>
 
         <ProfileSection title="Preferencias">
-          <ProfileRow icon="language" label="Idioma" value="Español / Inglés" />
+          <ProfileRow icon="language" label="Idioma" value="Español" />
           <ProfileRow icon="clock" label="Zona horaria" value="Lima" />
         </ProfileSection>
 

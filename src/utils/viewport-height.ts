@@ -3,7 +3,7 @@
 // Safari/WKWebView de iPhone instalado, que a veces no calculan bien
 // el viewport contra la pantalla física real.
 export function setupRealViewportHeight() {
-  let stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0);
+  let stableHeight = window.visualViewport?.height || window.innerHeight;
 
   const isTextInputFocused = () => {
     const el = document.activeElement;
@@ -14,11 +14,11 @@ export function setupRealViewportHeight() {
 
   const set = () => {
     const visualHeight = window.visualViewport?.height ?? 0;
-    const currentHeight = Math.max(window.innerHeight, visualHeight);
+    const currentHeight = visualHeight || window.innerHeight;
     const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
 
     if (!keyboardLikelyOpen) {
-      stableHeight = currentHeight;
+      stableHeight = Math.max(currentHeight, window.innerHeight * 0.92);
     }
 
     document.documentElement.style.setProperty("--app-height", `${stableHeight}px`);
@@ -26,7 +26,7 @@ export function setupRealViewportHeight() {
 
   const resetAfterKeyboard = () => {
     window.setTimeout(() => {
-      stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0);
+      stableHeight = window.visualViewport?.height || window.innerHeight;
       set();
     }, 80);
   };

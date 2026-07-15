@@ -147,6 +147,8 @@ export interface Factura {
   total?: number;
   moneda?: string;
   pagado?: boolean;
+  pdfUrl?: string;
+  pdfPesoBytes?: number;
 }
 
 export interface InformeCliente {
