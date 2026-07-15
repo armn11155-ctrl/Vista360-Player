@@ -48,5 +48,6 @@ export function setupRealViewportHeight() {
   });
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", set);
+    window.visualViewport.addEventListener("scroll", resetAfterKeyboard);
   }
 }
