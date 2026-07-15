@@ -2094,36 +2094,31 @@
     line-height: 1.35;
   }
   .coverage-leaflet-marker {
-    border-radius: 50% 50% 50% 8px;
-    background: linear-gradient(135deg, #16A34A, #22C55E);
-    border: 2px solid #DCFCE7;
-    box-shadow: 0 10px 24px rgba(34,197,94,.38), 0 0 0 6px rgba(34,197,94,.14);
-    transform: rotate(-45deg);
+    border-radius: 50%;
+    background: #050B14;
+    border: 2px solid rgba(255,255,255,.9);
+    box-shadow: 0 12px 28px rgba(2,6,23,.42), 0 0 0 6px rgba(37,99,235,.18);
+    overflow: hidden;
   }
   .coverage-leaflet-marker span {
     position: absolute;
-    inset: 6px;
+    inset: 2px;
     border-radius: 50%;
-    background: #fff;
-    box-shadow: inset 0 0 0 2px rgba(34,197,94,.16);
+    background: #050B14;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
-  .coverage-leaflet-marker svg {
-    width: 13px;
-    height: 13px;
-    fill: none;
-    stroke: #16A34A;
-    stroke-width: 2.2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transform: rotate(45deg);
+  .coverage-leaflet-marker img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .coverage-leaflet-marker.active {
-    background: linear-gradient(135deg, #15803D, #22C55E 58%, #86EFAC);
-    border-color: #F0FDF4;
-    box-shadow: 0 16px 34px rgba(34,197,94,.40), 0 0 0 8px rgba(34,197,94,.18);
+    border-color: #FFFFFF;
+    box-shadow: 0 18px 38px rgba(2,6,23,.48), 0 0 0 8px rgba(22,131,255,.24);
   }
   .coverage-map-loading {
     position: absolute;
