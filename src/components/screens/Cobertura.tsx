@@ -1,6 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import BackChevron from "../BackChevron";
 import type { Contrato, Panel } from "../../types";
+
+declare global {
+  interface Window {
+    L?: any;
+  }
+}
 
 interface Props {
   paneles: Record<string, Panel>;
@@ -38,7 +44,45 @@ function estadoColor(label: string) {
   return "#60A5FA";
 }
 
+function cargarLeaflet() {
+  if (window.L) return Promise.resolve(window.L);
+
+  const cssId = "leaflet-css";
+  if (!document.getElementById(cssId)) {
+    const link = document.createElement("link");
+    link.id = cssId;
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
+  }
+
+  const scriptId = "leaflet-js";
+  const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
+  if (existing) {
+    return new Promise<any>((resolve, reject) => {
+      existing.addEventListener("load", () => resolve(window.L));
+      existing.addEventListener("error", reject);
+    });
+  }
+
+  return new Promise<any>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.async = true;
+    script.onload = () => resolve(window.L);
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+}
+
 export default function Cobertura({ paneles, contratos, onBack }: Props) {
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+  const markersRef = useRef<any>(null);
+  const [mapReady, setMapReady] = useState(false);
+  const [mapError, setMapError] = useState(false);
+
   const lista = useMemo<PanelConUso[]>(() => {
     const usados = new Map(contratos.map((contrato) => [contrato.panel_id, contrato]));
     return Object.values(paneles)
@@ -46,32 +90,84 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
       .sort((a, b) => (a.ciudad || "").localeCompare(b.ciudad || "") || a.nombre.localeCompare(b.nombre));
   }, [contratos, paneles]);
 
-  const conCoordenadas = lista.filter(tieneCoordenadas);
+  const conCoordenadas = useMemo(() => lista.filter(tieneCoordenadas), [lista]);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
 
-  const bounds = useMemo(() => {
-    if (conCoordenadas.length === 0) return null;
-    const lats = conCoordenadas.map((panel) => panel.lat);
-    const lngs = conCoordenadas.map((panel) => panel.lng);
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLng = Math.min(...lngs);
-    const maxLng = Math.max(...lngs);
-    return {
-      minLat: minLat === maxLat ? minLat - 0.01 : minLat,
-      maxLat: minLat === maxLat ? maxLat + 0.01 : maxLat,
-      minLng: minLng === maxLng ? minLng - 0.01 : minLng,
-      maxLng: minLng === maxLng ? maxLng + 0.01 : maxLng,
-    };
-  }, [conCoordenadas]);
+  useEffect(() => {
+    let cancelado = false;
+    if (!mapEl.current || conCoordenadas.length === 0) return;
 
-  function posicion(panel: PanelConCoordenadas) {
-    if (!bounds) return { left: "50%", top: "50%" };
-    const x = ((panel.lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 76 + 12;
-    const y = (1 - (panel.lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 70 + 14;
-    return { left: `${x}%`, top: `${y}%` };
-  }
+    cargarLeaflet()
+      .then((L) => {
+        if (cancelado || !mapEl.current) return;
+        setMapReady(true);
+        setMapError(false);
+
+        if (!mapRef.current) {
+          mapRef.current = L.map(mapEl.current, {
+            zoomControl: false,
+            attributionControl: false,
+            scrollWheelZoom: false,
+          });
+          L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
+          L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap",
+          }).addTo(mapRef.current);
+        }
+
+        if (markersRef.current) {
+          markersRef.current.remove();
+        }
+        markersRef.current = L.layerGroup().addTo(mapRef.current);
+
+        conCoordenadas.forEach((panel) => {
+          const active = panel.id === seleccionado?.id;
+          const marker = L.marker([panel.lat, panel.lng], {
+            icon: L.divIcon({
+              className: `coverage-leaflet-marker ${active ? "active" : ""}`,
+              html: "<span></span>",
+              iconSize: active ? [38, 38] : [30, 30],
+              iconAnchor: active ? [19, 34] : [15, 27],
+            }),
+          })
+            .addTo(markersRef.current)
+            .on("click", () => setSeleccionadoId(panel.id));
+          marker.bindPopup(`<strong>${panel.nombre}</strong><br>${panel.direccion || panel.ciudad || ""}`);
+        });
+
+        const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
+        if (seleccionadoId && seleccionadoConCoords) {
+          mapRef.current.setView([seleccionadoConCoords.lat, seleccionadoConCoords.lng], 15, { animate: true });
+        } else if (conCoordenadas.length === 1) {
+          mapRef.current.setView([conCoordenadas[0].lat, conCoordenadas[0].lng], 15);
+        } else {
+          mapRef.current.fitBounds(
+            L.latLngBounds(conCoordenadas.map((panel) => [panel.lat, panel.lng])),
+            { padding: [28, 28] }
+          );
+        }
+
+        window.setTimeout(() => mapRef.current?.invalidateSize(), 80);
+      })
+      .catch(() => {
+        if (!cancelado) {
+          setMapError(true);
+          setMapReady(false);
+        }
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [conCoordenadas, seleccionado, seleccionadoId]);
+
+  useEffect(() => () => {
+    mapRef.current?.remove();
+    mapRef.current = null;
+  }, []);
 
   return (
     <div>
@@ -100,27 +196,18 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
           </div>
         </div>
 
-        <div className="coverage-map-real">
-          {conCoordenadas.length > 0 && bounds ? (
+        <div className="coverage-map-real coverage-map-osm">
+          {conCoordenadas.length > 0 ? (
             <>
-              <div className="coverage-map-grid" />
-              {conCoordenadas.map((panel) => {
-                const active = panel.id === seleccionado?.id;
-                return (
-                  <button
-                    key={panel.id}
-                    type="button"
-                    className={`coverage-map-pin ${active ? "active" : ""}`}
-                    style={posicion(panel)}
-                    onClick={() => setSeleccionadoId(panel.id)}
-                    title={panel.nombre}
-                  >
-                    <span />
-                  </button>
-                );
-              })}
+              <div ref={mapEl} className="coverage-leaflet-map" />
+              {!mapReady && !mapError && (
+                <div className="coverage-map-loading">Cargando mapa gratuito...</div>
+              )}
+              {mapError && (
+                <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>
+              )}
               <div className="coverage-map-label">
-                {seleccionado?.ciudad || "Ubicación"} · {conCoordenadas.length} con coordenadas
+                OpenStreetMap · {seleccionado?.ciudad || "Ubicación"} · {conCoordenadas.length} ubicados
               </div>
             </>
           ) : (
