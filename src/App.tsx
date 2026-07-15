@@ -185,10 +185,6 @@ export default function App() {
         isAdmin
         adminNombre={auth.nombre}
         online={online}
-        onSeleccionarCliente={(id) => {
-          setAdminClienteId(id);
-          setView("inicio");
-        }}
         onCambiarCliente={() => {
           setAdminClienteId(null);
           setView("inicio");
@@ -221,7 +217,6 @@ interface AuthenticatedProps {
   isAdmin: boolean;
   adminNombre?: string | null;
   onCambiarCliente?: () => void;
-  onSeleccionarCliente?: (clienteId: string) => void;
   online: boolean;
 }
 
@@ -235,7 +230,6 @@ function AuthenticatedApp({
   isAdmin,
   adminNombre,
   onCambiarCliente,
-  onSeleccionarCliente,
   online,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
@@ -383,10 +377,9 @@ function AuthenticatedApp({
       case "nuevoCliente":
         content = isAdmin ? (
           <CrearCliente
+            cliente={cliente}
+            clienteId={clienteId}
             onBack={() => setView("inicio")}
-            onClienteCreado={(id) => {
-              onSeleccionarCliente?.(id);
-            }}
           />
         ) : null;
         break;

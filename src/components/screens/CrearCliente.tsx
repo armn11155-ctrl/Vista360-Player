@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../../config/firebase";
+import type { Cliente } from "../../types";
 import BackChevron from "../BackChevron";
 
 interface Props {
+  cliente: Cliente | null;
+  clienteId: string;
   onBack: () => void;
-  onClienteCreado?: (clienteId: string) => void;
 }
 
 interface CrearClienteResponse {
@@ -31,13 +33,10 @@ function portalUrl() {
   return window.location.origin;
 }
 
-export default function CrearCliente({ onBack, onClienteCreado }: Props) {
-  const [empresa, setEmpresa] = useState("");
-  const [email, setEmail] = useState("");
-  const [contacto, setContacto] = useState("");
-  const [celular, setCelular] = useState("");
-  const [ciudad, setCiudad] = useState("");
-  const [ruc, setRuc] = useState("");
+export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
+  const [email, setEmail] = useState(cliente?.email ?? "");
+  const [contacto, setContacto] = useState(cliente?.contacto ?? "");
+  const [celular, setCelular] = useState(cliente?.celular ?? "");
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState<CrearClienteResponse | null>(null);
@@ -45,9 +44,9 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
   const mensaje = useMemo(() => {
     if (!resultado) return "";
     return [
-      `Hola ${contacto || resultado.empresa}, bienvenido a Vista360 Player.`,
+      `Hola ${contacto || resultado.empresa}, te mando tu acceso a Vista360 Player.`,
       "",
-      "Ya tienes acceso a tu portal para ver campañas, cobertura, reportes y descargas.",
+      "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
       "",
       `Portal: ${portalUrl()}`,
       `Correo: ${resultado.email}`,
@@ -62,28 +61,26 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
       setError("Firebase Functions no está configurado.");
       return;
     }
-    if (!empresa.trim() || !email.trim()) {
-      setError("Empresa y correo son obligatorios.");
+    if (!clienteId || !email.trim()) {
+      setError("Selecciona un cliente y escribe el correo del usuario.");
       return;
     }
     setError("");
     setCreando(true);
     try {
       const fn = httpsCallable<
-        { empresa: string; email: string; contacto: string; celular: string; ciudad: string; ruc: string },
+        { clienteId: string; email: string; contacto: string; celular: string },
         CrearClienteResponse
       >(cloudFunctions, "crearClienteAcceso");
       const res = await fn({
-        empresa: empresa.trim(),
+        clienteId,
         email: email.trim(),
         contacto: contacto.trim(),
         celular: celular.trim(),
-        ciudad: ciudad.trim(),
-        ruc: ruc.trim(),
       });
       setResultado(res.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear el cliente.");
+      setError(err instanceof Error ? err.message : "No se pudo crear el usuario.");
     } finally {
       setCreando(false);
     }
@@ -103,25 +100,21 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <BackChevron />
           </button>
-          <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>Crear nuevo cliente</div>
+          <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>Crear usuario</div>
           <div style={{ width: 34 }} />
         </div>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16, WebkitOverflowScrolling: "touch" as any }}>
         <div style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Datos del cliente</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
           <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 16 }}>
-            Se crea el cliente, su cuenta de acceso y una contraseña temporal automática.
+            Cliente seleccionado: <strong style={{ color: "#0D1629" }}>{cliente?.empresa ?? "Cliente actual"}</strong>. Aquí sólo se crea el acceso al portal.
           </div>
 
           <div style={{ display: "grid", gap: 12 }}>
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
-              Empresa
-              <input style={{ ...inputStyle, marginTop: 6 }} value={empresa} onChange={(e) => setEmpresa(e.target.value)} placeholder="Ej. Bubu Store" />
-            </label>
-            <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
-              Correo de acceso
+              Correo del usuario
               <input style={{ ...inputStyle, marginTop: 6 }} value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="cliente@empresa.com" />
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -132,16 +125,6 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
               <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
                 WhatsApp
                 <input style={{ ...inputStyle, marginTop: 6 }} value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="51999999999" />
-              </label>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
-                Ciudad
-                <input style={{ ...inputStyle, marginTop: 6 }} value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Lima" />
-              </label>
-              <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
-                RUC
-                <input style={{ ...inputStyle, marginTop: 6 }} value={ruc} onChange={(e) => setRuc(e.target.value)} placeholder="Opcional" />
               </label>
             </div>
           </div>
@@ -158,7 +141,7 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
               background: creando ? "#93C5FD" : "#2563EB", color: "#fff", fontWeight: 800, fontSize: 14,
               cursor: creando ? "not-allowed" : "pointer",
             }}>
-              {creando ? "Creando cliente..." : "Crear cliente y acceso"}
+              {creando ? "Creando usuario..." : "Crear usuario y contraseña"}
             </button>
           )}
         </div>
@@ -167,7 +150,7 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
           <div style={{ background: "#0D1629", border: "1px solid rgba(147,197,253,0.18)", borderRadius: 16, padding: 16, marginTop: 14, color: "#fff" }}>
             <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>Acceso listo</div>
             <div style={{ fontSize: 12.5, color: "rgba(226,232,240,0.72)", marginBottom: 12 }}>
-              Copia o envía este acceso al cliente.
+              Copia o envía este acceso al usuario del cliente.
             </div>
             <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 12, fontSize: 12.5, lineHeight: 1.55, whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.88)" }}>
               {mensaje}
@@ -180,8 +163,8 @@ export default function CrearCliente({ onBack, onClienteCreado }: Props) {
                 Enviar correo
               </a>
             </div>
-            <button onClick={() => onClienteCreado?.(resultado.clienteId)} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, cursor: "pointer" }}>
-              Gestionar este cliente
+            <button onClick={onBack} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, cursor: "pointer" }}>
+              Volver al cliente
             </button>
           </div>
         )}

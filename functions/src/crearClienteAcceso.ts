@@ -9,12 +9,10 @@ if (getApps().length === 0) {
 }
 
 interface CrearClienteAccesoData {
-  empresa?: string;
+  clienteId?: string;
   email?: string;
   contacto?: string;
   celular?: string;
-  ciudad?: string;
-  ruc?: string;
 }
 
 function limpiar(value?: string) {
@@ -35,19 +33,24 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
   if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear clientes.");
+    throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear usuarios.");
   }
 
-  const empresa = limpiar(request.data.empresa);
+  const clienteId = limpiar(request.data.clienteId);
   const email = limpiar(request.data.email).toLowerCase();
   const contacto = limpiar(request.data.contacto);
   const celular = limpiar(request.data.celular);
-  const ciudad = limpiar(request.data.ciudad);
-  const ruc = limpiar(request.data.ruc);
 
-  if (!empresa || !email) {
-    throw new HttpsError("invalid-argument", "Empresa y correo son obligatorios.");
+  if (!clienteId || !email) {
+    throw new HttpsError("invalid-argument", "Cliente y correo son obligatorios.");
   }
+
+  const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
+  if (!clienteSnap.exists) {
+    throw new HttpsError("not-found", "No se encontró ese cliente.");
+  }
+  const cliente = clienteSnap.data() ?? {};
+  const empresa = String(cliente.empresa ?? clienteId);
 
   const auth = getAuth();
   const password = generarPassword();
@@ -69,31 +72,25 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
   }
 
   try {
-    const clienteRef = db.collection("clientes").doc();
-    await clienteRef.set({
-      empresa,
-      email,
-      contacto,
-      celular,
-      ciudad,
-      ruc,
-      estado: "Activo",
-      ejecutivo: propio.data()?.nombre ?? "Vista360",
-      createdAt: FieldValue.serverTimestamp(),
-    });
-
     await db.doc(`portalUsers/${userRecord.uid}`).set({
       uid: userRecord.uid,
       role: "cliente",
-      clienteId: clienteRef.id,
+      clienteId,
       email,
       nombre: contacto || empresa,
       createdAt: FieldValue.serverTimestamp(),
     });
 
+    await clienteSnap.ref.set({
+      email: email || cliente.email || "",
+      contacto: contacto || cliente.contacto || "",
+      celular: celular || cliente.celular || "",
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true });
+
     await db.collection("invitacionesPortal").add({
       email,
-      clienteId: clienteRef.id,
+      clienteId,
       clienteNombre: empresa,
       link: "",
       createdAt: FieldValue.serverTimestamp(),
@@ -101,13 +98,13 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
     });
 
     return {
-      clienteId: clienteRef.id,
+      clienteId,
       empresa,
       email,
       password,
     };
   } catch (error) {
     await auth.deleteUser(userRecord.uid).catch(() => undefined);
-    throw new HttpsError("internal", "No se pudo guardar el cliente.");
+    throw new HttpsError("internal", "No se pudo guardar el usuario del cliente.");
   }
 });

@@ -130,7 +130,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               style={{ background:"#2563EB", color:"#fff", border:"none", borderRadius:13, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(37,99,235,0.18)" }}
             >
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.72)", marginBottom:3 }}>Accesos</div>
-              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Crear nuevo cliente</div>
+              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Crear usuario</div>
             </button>
           </div>
         )}
