@@ -77,21 +77,34 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center" }}>
             <div
               onClick={onNotifClick}
-              style={{ position:"relative", width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}
+              style={{
+                position:"relative",
+                width:38,
+                height:38,
+                borderRadius:19,
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center",
+                cursor:"pointer",
+                background:"rgba(255,255,255,0.10)",
+                border:"1px solid rgba(255,255,255,0.14)",
+                boxShadow:"0 12px 26px rgba(0,0,0,0.16)",
+              }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round">
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
               {totalNotifs > 0 && (
                 <div style={{
-                  position:"absolute", top:3, right:3,
-                  minWidth:18, height:18,
+                  position:"absolute", top:-5, right:-5,
+                  minWidth:20, height:20,
                   background:"#EF4444", borderRadius:"50%",
-                  border:`2px solid ${HEADER}`,
+                  border:"2px solid #0B2243",
                   display:"flex", alignItems:"center", justifyContent:"center",
-                  fontSize: totalNotifs > 9 ? 9 : 10, color:"#fff", fontWeight:800,
-                  padding: totalNotifs > 9 ? "0 3px" : 0,
+                  fontSize: totalNotifs > 9 ? 9 : 11, color:"#fff", fontWeight:900,
+                  padding: totalNotifs > 9 ? "0 4px" : 0,
+                  boxShadow:"0 6px 14px rgba(239,68,68,0.36)",
                 }}>
                   {totalNotifs > 9 ? "9+" : totalNotifs}
                 </div>

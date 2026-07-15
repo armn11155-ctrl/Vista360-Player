@@ -18,7 +18,7 @@ export function setupRealViewportHeight() {
     const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
 
     if (!keyboardLikelyOpen) {
-      stableHeight = Math.max(stableHeight, currentHeight);
+      stableHeight = currentHeight;
     }
 
     document.documentElement.style.setProperty("--app-height", `${stableHeight}px`);
@@ -26,7 +26,7 @@ export function setupRealViewportHeight() {
 
   const resetAfterKeyboard = () => {
     window.setTimeout(() => {
-      stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0, stableHeight);
+      stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0);
       set();
     }, 80);
   };
