@@ -3,14 +3,42 @@
 // Safari/WKWebView de iPhone instalado, que a veces no calculan bien
 // el viewport contra la pantalla física real.
 export function setupRealViewportHeight() {
+  let stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0);
+
+  const isTextInputFocused = () => {
+    const el = document.activeElement;
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    return tag === "input" || tag === "textarea" || el.getAttribute("contenteditable") === "true";
+  };
+
   const set = () => {
     const visualHeight = window.visualViewport?.height ?? 0;
-    const h = Math.max(window.innerHeight, visualHeight);
-    document.documentElement.style.setProperty("--app-height", `${h}px`);
+    const currentHeight = Math.max(window.innerHeight, visualHeight);
+    const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
+
+    if (!keyboardLikelyOpen) {
+      stableHeight = Math.max(stableHeight, currentHeight);
+    }
+
+    document.documentElement.style.setProperty("--app-height", `${stableHeight}px`);
   };
+
+  const resetAfterKeyboard = () => {
+    window.setTimeout(() => {
+      stableHeight = Math.max(window.innerHeight, window.visualViewport?.height ?? 0, stableHeight);
+      set();
+    }, 80);
+  };
+
   set();
   window.addEventListener("resize", set);
-  window.addEventListener("orientationchange", set);
+  window.addEventListener("orientationchange", () => {
+    stableHeight = 0;
+    window.setTimeout(set, 250);
+  });
+  window.addEventListener("focusout", resetAfterKeyboard);
+  window.addEventListener("blur", resetAfterKeyboard, true);
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", set);
   }
