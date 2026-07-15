@@ -119,7 +119,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
       {/* Header */}
-      <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0 }}>
+      <div style={{ background: "#0D1629", padding: "calc(24px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>Mis campañas</div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">

@@ -601,7 +601,7 @@
   /* ===== SCREEN 4: EVIDENCIAS ===== */
   .evidencias-header {
     background: var(--dark);
-    padding: 20px 24px 18px;
+    padding: calc(24px + env(safe-area-inset-top)) 24px 18px;
     flex-shrink: 0;
   }
   .ev-logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
