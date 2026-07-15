@@ -111,14 +111,14 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     const paneles = panelesState.status === "ready" ? panelesState.paneles : [];
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-        <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
+        <div style={{ background: "#0D1629", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nuevo contrato</div>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629", marginBottom: 18 }}>
               Crear campaña para este cliente
@@ -161,7 +161,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           <div style={{ height: 16 }} />
         </div>
 
-        <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
+        <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
           <button onClick={crearContrato} disabled={creando} style={{
             width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#2563EB", color: "#fff",
             fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: creando ? "default" : "pointer",
@@ -176,15 +176,15 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
-      <div style={{ background: "#0D1629", padding: "16px 20px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 0 }}>
+      <div style={{ background: "#0D1629", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
         </button>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
       </div>
 
       {/* Form */}
-      <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
         <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629", marginBottom: 18 }}>Información de la campaña</div>
 
@@ -217,7 +217,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
       </div>
 
       {/* Footer */}
-      <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
+      <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
         <button onClick={enviar} disabled={enviando} style={{
           width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#2563EB", color: "#fff",
           fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: enviando ? "default" : "pointer",

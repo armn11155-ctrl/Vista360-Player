@@ -62,7 +62,7 @@
     min-height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
-    background: #FFFFFF;
+    background: #0D1629;
     -webkit-text-size-adjust: 100%;
   }
 
@@ -82,7 +82,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     overflow: hidden;
-    background: #FFFFFF;
+    background: #0D1629;
   }
 
   /* Contenedor principal — en móvil ocupa toda la pantalla (ver
@@ -92,7 +92,7 @@
     width: 100%;
     height: var(--app-height);
     min-height: var(--app-height);
-    background: #FFFFFF;
+    background: #0D1629;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -160,14 +160,14 @@
     #root {
       height: var(--app-height);
       min-height: var(--app-height);
-      background: #FFFFFF;
+      background: #0D1629;
     }
     .app-shell {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      bottom: auto;
+      bottom: 0;
       height: var(--app-height);
       min-height: var(--app-height);
       margin: 0;

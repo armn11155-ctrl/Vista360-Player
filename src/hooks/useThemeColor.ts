@@ -20,7 +20,7 @@ export function useThemeColor(color: string) {
       document.head.appendChild(meta);
     }
     meta.setAttribute("content", color);
-    document.documentElement.style.background = "#FFFFFF";
-    document.body.style.background = "#FFFFFF";
+    document.documentElement.style.background = "#0D1629";
+    document.body.style.background = "#0D1629";
   }, [color]);
 }
