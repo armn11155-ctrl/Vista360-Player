@@ -4,6 +4,7 @@ import { ClientAvatar } from "./ClientAvatar";
 interface Props {
   name: string;
   avatarKey?: string;
+  avatarUrl?: string;
   size?: number;
   radius?: number;
   /** Tamaño del ícono de persona respecto al thumbnail (0–1). Por defecto 0.58. */
@@ -14,7 +15,7 @@ interface Props {
  * Thumbnail de marca: fondo de color único por empresa + personaje estable
  * por nombre. Así cada cliente se reconoce sin depender solo del color.
  */
-export function BrandThumb({ name, avatarKey, size = 72, radius = 12, iconScale = 0.58 }: Props) {
+export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12, iconScale = 0.58 }: Props) {
   const { bg } = brandColor(name);
   const iconSize = size * iconScale;
 
@@ -24,7 +25,11 @@ export function BrandThumb({ name, avatarKey, size = 72, radius = 12, iconScale 
       background: bg, display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", userSelect: "none",
     }}>
-      <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : (
+        <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
+      )}
     </div>
   );
 }

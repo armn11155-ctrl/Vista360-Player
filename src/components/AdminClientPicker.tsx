@@ -80,7 +80,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 className="admin-picker-tile"
               >
                 <span className="admin-picker-tile-avatar" style={{ background: bg }}>
-                  <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
+                  {c.avatarUrl ? (
+                    <img src={c.avatarUrl} alt="" />
+                  ) : (
+                    <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
+                  )}
                 </span>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
                 {c.ciudad && <span className="admin-picker-tile-city">📍 {c.ciudad}</span>}

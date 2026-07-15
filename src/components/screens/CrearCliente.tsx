@@ -4,6 +4,8 @@ import { cloudFunctions } from "../../config/firebase";
 import type { Cliente } from "../../types";
 import BackChevron from "../BackChevron";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
+import { subirAvatarCloudinary } from "../../config/cloudinary";
+import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 
 interface Props {
   cliente: Cliente | null;
@@ -39,6 +41,8 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
   const [contacto, setContacto] = useState(cliente?.contacto ?? "");
   const [celular, setCelular] = useState(cliente?.celular ?? "");
   const [avatarKey, setAvatarKey] = useState(cliente?.avatarKey ?? "tower");
+  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState<CrearClienteResponse | null>(null);
@@ -58,6 +62,20 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     ].join("\n");
   }, [contacto, resultado]);
 
+  async function subirAvatar(file: File) {
+    setSubiendoAvatar(true);
+    setError("");
+    try {
+      const webp = await comprimirAvatarWebp(file);
+      const url = await subirAvatarCloudinary(webp);
+      setAvatarUrl(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo preparar el avatar.");
+    } finally {
+      setSubiendoAvatar(false);
+    }
+  }
+
   async function crear() {
     if (!cloudFunctions) {
       setError("Firebase Functions no está configurado.");
@@ -71,7 +89,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     setCreando(true);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string },
+        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
         CrearClienteResponse
       >(cloudFunctions, "crearClienteAcceso");
       const res = await fn({
@@ -80,6 +98,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
         contacto: contacto.trim(),
         celular: celular.trim(),
         avatarKey,
+        avatarUrl,
       });
       setResultado(res.data);
     } catch (err) {
@@ -133,7 +152,17 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
               Avatar del cliente
               <div style={{ marginTop: 8 }}>
-                <ClientAvatarPicker name={cliente?.empresa || contacto || email || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
+                <ClientAvatarPicker
+                  name={cliente?.empresa || contacto || email || "Cliente"}
+                  value={avatarKey}
+                  onChange={(value) => {
+                    setAvatarKey(value);
+                    setAvatarUrl("");
+                  }}
+                  avatarUrl={avatarUrl}
+                  onAvatarFile={(file) => void subirAvatar(file)}
+                  uploading={subiendoAvatar}
+                />
               </div>
             </label>
           </div>
@@ -145,12 +174,12 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           )}
 
           {!resultado && (
-            <button onClick={crear} disabled={creando} style={{
+            <button onClick={crear} disabled={creando || subiendoAvatar} style={{
               width: "100%", marginTop: 16, padding: "14px", border: "none", borderRadius: 12,
-              background: creando ? "#93C5FD" : "#2563EB", color: "#fff", fontWeight: 800, fontSize: 14,
-              cursor: creando ? "not-allowed" : "pointer",
+              background: creando || subiendoAvatar ? "#93C5FD" : "#2563EB", color: "#fff", fontWeight: 800, fontSize: 14,
+              cursor: creando || subiendoAvatar ? "not-allowed" : "pointer",
             }}>
-              {creando ? "Creando usuario..." : "Crear usuario y contraseña"}
+              {creando ? "Creando usuario..." : subiendoAvatar ? "Preparando avatar..." : "Crear usuario y contraseña"}
             </button>
           )}
         </div>

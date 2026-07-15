@@ -9,6 +9,7 @@ export interface InvitacionPortal {
   clienteId: string | null;
   clienteNombre: string;
   avatarKey?: string;
+  avatarUrl?: string;
   esAdmin: boolean;
   link: string;
   createdAt?: { toDate: () => Date } | null;

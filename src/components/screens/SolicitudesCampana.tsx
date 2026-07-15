@@ -86,7 +86,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
             {pendientes.map((s) => (
               <div className="card solicitudes-card" key={s.id} onClick={() => setSeleccionada(s)}>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
-                  <BrandThumb name={nombreCliente(s.cliente_id)} avatarKey={clientePorId(s.cliente_id)?.avatarKey} size={40} radius={10} />
+                  <BrandThumb name={nombreCliente(s.cliente_id)} avatarKey={clientePorId(s.cliente_id)?.avatarKey} avatarUrl={clientePorId(s.cliente_id)?.avatarUrl} size={40} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {nombreCliente(s.cliente_id)} — {s.nombre}

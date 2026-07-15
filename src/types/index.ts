@@ -28,6 +28,7 @@ export interface Cliente {
   estado: ClienteEstado;
   ejecutivo?: string;
   avatarKey?: string;
+  avatarUrl?: string;
   createdAt?: Timestamp | null;
 }
 
@@ -85,6 +86,7 @@ export interface PortalUser {
   email: string;
   nombre?: string;
   avatarKey?: string;
+  avatarUrl?: string;
   createdAt?: Timestamp | null;
 }
 

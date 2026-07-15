@@ -1956,6 +1956,12 @@
     width: 76%;
     height: 76%;
   }
+  .admin-picker-tile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
   .client-avatar-picker {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1990,6 +1996,61 @@
     background: rgba(37,99,235,.08);
     color: #1D4ED8;
     box-shadow: 0 0 0 2px rgba(37,99,235,.12);
+  }
+  .client-avatar-upload {
+    border: 1px dashed rgba(37,99,235,.34);
+    background: rgba(37,99,235,.06);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+    cursor: pointer;
+  }
+  .client-avatar-upload.has-image {
+    border-style: solid;
+    background: rgba(22,163,74,.06);
+    border-color: rgba(22,163,74,.28);
+  }
+  .client-avatar-upload input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .client-avatar-upload-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0D1629, #1D4ED8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .client-avatar-upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .client-avatar-upload-copy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .client-avatar-upload-copy strong {
+    color: #1E3A8A;
+    font-size: 12.5px;
+    line-height: 1.2;
+  }
+  .client-avatar-upload-copy small {
+    color: #64748B;
+    font-size: 11px;
+    line-height: 1.25;
   }
   .admin-picker-tile:hover .admin-picker-tile-avatar,
   .admin-picker-tile:focus-visible .admin-picker-tile-avatar {

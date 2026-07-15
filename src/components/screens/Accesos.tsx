@@ -5,7 +5,9 @@ import { useInvitaciones } from "../../hooks/useInvitaciones";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
+import { subirAvatarCloudinary } from "../../config/cloudinary";
 import { cloudFunctions } from "../../config/firebase";
+import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 
 interface Props {
   onBack: () => void;
@@ -28,6 +30,8 @@ export default function Accesos({ onBack }: Props) {
   const [contacto, setContacto] = useState("");
   const [celular, setCelular] = useState("");
   const [avatarKey, setAvatarKey] = useState("tower");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState("");
   const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
@@ -46,6 +50,20 @@ export default function Accesos({ onBack }: Props) {
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
   const clienteSeleccionado = clientes.find((c) => c.id === clienteId);
 
+  async function subirAvatar(file: File) {
+    setSubiendoAvatar(true);
+    setErrorCrear("");
+    try {
+      const webp = await comprimirAvatarWebp(file);
+      const url = await subirAvatarCloudinary(webp);
+      setAvatarUrl(url);
+    } catch (err) {
+      setErrorCrear(err instanceof Error ? err.message : "No se pudo preparar el avatar.");
+    } finally {
+      setSubiendoAvatar(false);
+    }
+  }
+
   async function crearUsuario() {
     if (!cloudFunctions) {
       setErrorCrear("Firebase Functions no está configurado.");
@@ -60,10 +78,10 @@ export default function Accesos({ onBack }: Props) {
     setAccesoCreado(null);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string },
+        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
         { clienteId: string; empresa: string; email: string; password: string }
       >(cloudFunctions, "crearClienteAcceso");
-      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey });
+      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey, avatarUrl });
       setAccesoCreado(res.data);
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario.");
@@ -128,6 +146,7 @@ export default function Accesos({ onBack }: Props) {
                   setClienteId(nextId);
                   const nextCliente = clientes.find((c) => c.id === nextId);
                   if (nextCliente?.avatarKey) setAvatarKey(nextCliente.avatarKey);
+                  setAvatarUrl(nextCliente?.avatarUrl ?? "");
                 }}
                 style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", color: "var(--text)", background: "#fff" }}
               >
@@ -141,7 +160,17 @@ export default function Accesos({ onBack }: Props) {
               <input value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
-                <ClientAvatarPicker name={clienteSeleccionado?.empresa || contacto || email || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
+                <ClientAvatarPicker
+                  name={clienteSeleccionado?.empresa || contacto || email || "Cliente"}
+                  value={avatarKey}
+                  onChange={(value) => {
+                    setAvatarKey(value);
+                    setAvatarUrl("");
+                  }}
+                  avatarUrl={avatarUrl}
+                  onAvatarFile={(file) => void subirAvatar(file)}
+                  uploading={subiendoAvatar}
+                />
               </div>
             </div>
             {errorCrear && (
@@ -149,10 +178,10 @@ export default function Accesos({ onBack }: Props) {
             )}
             <button
               onClick={crearUsuario}
-              disabled={creando}
-              style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0D1629", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
+              disabled={creando || subiendoAvatar}
+              style={{ width: "100%", marginTop: 12, background: creando || subiendoAvatar ? "#93C5FD" : "#0D1629", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando || subiendoAvatar ? "not-allowed" : "pointer" }}
             >
-              {creando ? "Creando..." : "Crear usuario y contraseña"}
+              {creando ? "Creando..." : subiendoAvatar ? "Preparando avatar..." : "Crear usuario y contraseña"}
             </button>
             {accesoCreado && (
               <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
@@ -190,7 +219,7 @@ export default function Accesos({ onBack }: Props) {
             return (
               <div className="card" key={inv.id}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
-                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} size={38} radius={10} />
+                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={38} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {inv.clienteNombre || inv.email}

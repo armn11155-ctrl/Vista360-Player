@@ -88,7 +88,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
 
       <main className="profile-content">
         <section className="profile-company-card">
-          <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} size={64} radius={32} iconScale={0.82} />
+          <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={cliente?.avatarUrl} size={64} radius={32} iconScale={0.82} />
           <div className="profile-company-copy">
             <h1>{empresa}</h1>
             <p>{email || cliente?.email || "Cliente desde Enero 2024"}</p>

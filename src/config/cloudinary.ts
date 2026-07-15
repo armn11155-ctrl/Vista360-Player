@@ -10,7 +10,7 @@ import { app } from "./firebase";
  * El botón de subir solo aparece para el admin, así que en la práctica
  * solo tú puedes llegar a esta función.
  */
-export async function subirEvidenciaCloudinary(file: File): Promise<string> {
+export async function subirArchivoCloudinary(file: File, folder = "vista360/campanas"): Promise<string> {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
@@ -29,7 +29,7 @@ export async function subirEvidenciaCloudinary(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", uploadPreset);
-  formData.append("folder", "vista360/campanas");
+  formData.append("folder", folder);
 
   const resourceType = file.type.startsWith("video/") ? "video" : "image";
   const res = await fetch(
@@ -43,4 +43,12 @@ export async function subirEvidenciaCloudinary(file: File): Promise<string> {
 
   const data = await res.json();
   return data.secure_url as string;
+}
+
+export async function subirEvidenciaCloudinary(file: File): Promise<string> {
+  return subirArchivoCloudinary(file, "vista360/campanas");
+}
+
+export async function subirAvatarCloudinary(file: File): Promise<string> {
+  return subirArchivoCloudinary(file, "vista360/avatares");
 }

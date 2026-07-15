@@ -18,6 +18,8 @@
 const MAX_DIMENSION = 1920; // suficiente para verse nítido en cualquier pantalla
 const WEBP_QUALITY = 0.82; // visualmente ≥ que JPEG 80%, y más liviano
 const JPEG_QUALITY = 0.8;
+const AVATAR_SIZE = 320;
+const AVATAR_WEBP_QUALITY = 0.86;
 
 async function codificar(
   canvas: HTMLCanvasElement,
@@ -77,4 +79,39 @@ export async function comprimirImagen(file: File): Promise<File> {
     // original sin comprimir — nunca bloqueamos la subida por esto.
     return file;
   }
+}
+
+export async function comprimirAvatarWebp(file: File): Promise<File> {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") {
+    throw new Error("El avatar debe ser una imagen estática.");
+  }
+
+  const bitmap = await createImageBitmap(file);
+  const side = Math.min(bitmap.width, bitmap.height);
+  const sx = Math.round((bitmap.width - side) / 2);
+  const sy = Math.round((bitmap.height - side) / 2);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = AVATAR_SIZE;
+  canvas.height = AVATAR_SIZE;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("No se pudo preparar la imagen.");
+  }
+
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, AVATAR_SIZE, AVATAR_SIZE);
+  bitmap.close();
+
+  const blob = await codificar(canvas, "image/webp", AVATAR_WEBP_QUALITY);
+  if (!blob || blob.type !== "image/webp") {
+    throw new Error("Tu navegador no pudo convertir el avatar a WebP.");
+  }
+
+  const nombre = file.name.replace(/\.[^.]+$/, "") || "avatar";
+  return new File([blob], `${nombre}.webp`, { type: "image/webp" });
 }
