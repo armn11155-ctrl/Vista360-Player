@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import type { Cliente, Contrato } from "../../types";
 import { estadoCampana } from "../../types";
-import { db, logout } from "../../config/firebase";
+import { app, db, logout } from "../../config/firebase";
 import { subirAvatarCloudinary } from "../../config/cloudinary";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
@@ -97,12 +98,18 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     ? facturasState.facturas.filter((factura) => factura.estado === "Pendiente" || factura.estado === "Vencida").length
     : 0;
   const fileRef = useRef<HTMLInputElement>(null);
+  const pendingAvatarRef = useRef("");
   const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
 
   useEffect(() => {
-    setAvatarUrl(cliente?.avatarUrl ?? "");
+    if (cliente?.avatarUrl) {
+      pendingAvatarRef.current = "";
+      setAvatarUrl(cliente.avatarUrl);
+    } else if (!pendingAvatarRef.current) {
+      setAvatarUrl("");
+    }
     setAvatarError("");
   }, [cliente?.id, cliente?.avatarUrl]);
 
@@ -116,8 +123,13 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     try {
       const webp = await comprimirAvatarWebp(file);
       const url = await subirAvatarCloudinary(webp);
-      await updateDoc(doc(db, "clientes", cliente.id), { avatarUrl: url, avatarKey: "custom" });
+      pendingAvatarRef.current = url;
       setAvatarUrl(url);
+      await updateDoc(doc(db, "clientes", cliente.id), { avatarUrl: url, avatarKey: "custom" });
+      const uid = getAuth(app ?? undefined).currentUser?.uid;
+      if (uid) {
+        await updateDoc(doc(db, "portalUsers", uid), { avatarUrl: url, avatarKey: "custom" }).catch(() => undefined);
+      }
     } catch (err) {
       setAvatarError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
     } finally {
@@ -162,10 +174,9 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
           </div>
         </section>
 
-        <ProfileSection title="Información útil">
-          <ProfileRow icon="company" label="RUC" value={cliente?.ruc || "Por registrar"} />
+        <ProfileSection title="Información de la empresa">
+          <ProfileRow icon="company" label="RUC cliente" value={cliente?.ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
-          <ProfileRow icon="executive" label="Ejecutivo asignado" value={ejecutivo} />
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
 

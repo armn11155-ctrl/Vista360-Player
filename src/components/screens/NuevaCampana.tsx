@@ -109,6 +109,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         monto: Number(monto),
         pagado: false,
         fotos_campania: imagenUrl ? [{ url: imagenUrl, fecha: fechaImagen }] : [],
+        ...(imagenUrl ? { imagenCampaniaUrl: imagenUrl, imagenCampaniaFecha: fechaImagen } : {}),
         createdAt: serverTimestamp(),
       });
       // Marcar el panel como Ocupado (mismo comportamiento que en el ERP)
@@ -234,7 +235,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           <Field label="Objetivo de la campaña">
             <input style={inputStyle} value={objetivo} onChange={(e) => setObjetivo(e.target.value)} placeholder="Ej. Dar a conocer nuevo producto" />
           </Field>
-          <Field label="Presupuesto estimado (USD)">
+          <Field label="Presupuesto (USD)">
             <input style={inputStyle} type="number" value={presupuesto} onChange={(e) => setPresupuesto(e.target.value)} placeholder="Ej. 5,000" />
           </Field>
           <Field label="Ciudad">

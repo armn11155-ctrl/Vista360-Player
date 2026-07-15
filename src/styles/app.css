@@ -164,16 +164,25 @@
       height: -webkit-fill-available;
       min-height: 100%;
       min-height: -webkit-fill-available;
-      background: #0D1629;
+      background: var(--bg);
     }
     .app-shell {
       position: fixed;
       inset: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
       height: auto;
       min-height: 0;
       max-height: none;
       margin: 0;
+      background: var(--bg);
       overscroll-behavior: none;
+    }
+    .main-area,
+    .screens {
+      background: var(--bg);
     }
     .bottom-nav {
       position: relative;

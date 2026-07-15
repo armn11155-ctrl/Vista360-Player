@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
@@ -44,11 +44,19 @@ function StatBox({ label, value }: { label: string; value: string }) {
 export default function DetalleCampana({ contrato, panel, clienteNombre, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
   const [subiendo, setSubiendo] = useState(false);
+  const [subiendoPortada, setSubiendoPortada] = useState(false);
   const [error, setError] = useState("");
+  const [portadaUrl, setPortadaUrl] = useState(contrato.imagenCampaniaUrl ?? "");
   const fileRef = useRef<HTMLInputElement>(null);
+  const portadaRef = useRef<HTMLInputElement>(null);
 
   const estado = estadoCampana(contrato);
   const fotos = contrato.fotos_campania ?? [];
+  const imagenPortada = portadaUrl || contrato.imagenCampaniaUrl || fotos[0]?.url || "";
+
+  useEffect(() => {
+    setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
+  }, [contrato.id, contrato.imagenCampaniaUrl]);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -65,6 +73,28 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
       setError(err instanceof Error ? err.message : "No se pudo subir la foto.");
     } finally {
       setSubiendo(false);
+    }
+  }
+
+  async function cambiarPortada(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !db) return;
+    setError("");
+    setSubiendoPortada(true);
+    try {
+      const archivoOptimizado = await comprimirImagen(file);
+      const url = await subirEvidenciaCloudinary(archivoOptimizado);
+      const fecha = new Date().toISOString().slice(0, 10);
+      setPortadaUrl(url);
+      await updateDoc(doc(db, "contratos", contrato.id), {
+        imagenCampaniaUrl: url,
+        imagenCampaniaFecha: fecha,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo cambiar la foto de campaña.");
+    } finally {
+      setSubiendoPortada(false);
     }
   }
 
@@ -88,7 +118,35 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
 
         {/* Campaign card in header */}
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
+          <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
+            {imagenPortada ? (
+              <img
+                src={cloudinaryThumb(imagenPortada, 180)}
+                alt=""
+                style={{ width: 72, height: 72, borderRadius: 14, objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
+            )}
+            {isAdmin && (
+              <>
+                <input ref={portadaRef} type="file" accept="image/*" style={{ display: "none" }} onChange={cambiarPortada} />
+                <button
+                  type="button"
+                  onClick={() => !subiendoPortada && portadaRef.current?.click()}
+                  disabled={subiendoPortada}
+                  style={{
+                    position: "absolute", left: "50%", bottom: -8, transform: "translateX(-50%)",
+                    minHeight: 22, border: "1px solid rgba(147,197,253,.35)", borderRadius: 999,
+                    background: "#fff", color: "#2563EB", padding: "0 9px", fontSize: 10.5,
+                    fontWeight: 900, boxShadow: "0 8px 18px rgba(2,6,23,.22)", cursor: subiendoPortada ? "default" : "pointer",
+                  }}
+                >
+                  {subiendoPortada ? "..." : "Cambiar"}
+                </button>
+              </>
+            )}
+          </div>
           <div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
               {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
