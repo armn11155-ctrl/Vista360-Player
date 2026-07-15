@@ -1,18 +1,17 @@
 /**
- * Genera un color de fondo consistente a partir del nombre de la empresa.
- * El mismo nombre siempre produce el mismo color — como un avatar de marca.
+ * Genera un color premium consistente a partir del nombre de la empresa.
+ * Mantiene variedad sin salir de la identidad Vista360: navy, azul,
+ * cyan, verde tech y slate. Evita colores sueltos que rompen la marca.
  */
 const PALETTE = [
-  { bg: "#CC0000", text: "#fff" }, // Rojo (Coca-Cola style)
-  { bg: "#1558D6", text: "#fff" }, // Azul
-  { bg: "#059669", text: "#fff" }, // Verde
-  { bg: "#7C3AED", text: "#fff" }, // Violeta
-  { bg: "#D97706", text: "#fff" }, // Naranja
-  { bg: "#DB2777", text: "#fff" }, // Rosa
-  { bg: "#0891B2", text: "#fff" }, // Cyan
-  { bg: "#65A30D", text: "#fff" }, // Lima
-  { bg: "#DC2626", text: "#fff" }, // Rojo vivo
-  { bg: "#4F46E5", text: "#fff" }, // Índigo
+  { bg: "linear-gradient(145deg, #0B1728 0%, #1D4ED8 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0D1629 0%, #2563EB 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0F2742 0%, #0891B2 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0E2B2F 0%, #16A34A 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #111827 0%, #475569 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #10213A 0%, #38BDF8 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #08111F 0%, #1E40AF 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0F1D32 0%, #0EA5E9 100%)", text: "#fff" },
 ];
 
 export function brandColor(name: string): { bg: string; text: string } {

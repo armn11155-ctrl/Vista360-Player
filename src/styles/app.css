@@ -1456,7 +1456,8 @@
     flex-direction: column;
     overflow: hidden;
     background-image:
-      linear-gradient(180deg, rgba(8,14,28,0.78) 0%, rgba(8,14,28,0.62) 40%, rgba(6,12,26,0.7) 100%),
+      radial-gradient(circle at 50% 0%, rgba(59,130,246,0.26), transparent 34%),
+      linear-gradient(180deg, rgba(6,12,26,0.92) 0%, rgba(8,14,28,0.82) 46%, rgba(6,12,26,0.88) 100%),
       url('/login-bg.jpg');
     background-size: cover;
     background-position: center bottom;
@@ -1530,9 +1531,9 @@
      solo con el ancho disponible — sin media queries a mano por breakpoint. */
   .admin-picker-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: 18px 14px;
-    max-width: 720px;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 20px 16px;
+    max-width: 760px;
     margin: 12px auto 0;
   }
   .admin-picker-tile {
@@ -1549,27 +1550,31 @@
   .admin-picker-tile-avatar {
     width: 100%;
     aspect-ratio: 1 / 1;
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: clamp(18px, 6vw, 26px);
     font-weight: 800;
     letter-spacing: 0.5px;
-    box-shadow: 0 10px 26px -12px rgba(0,0,0,0.65);
-    border: 2px solid rgba(255,255,255,0.08);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.16),
+      0 16px 34px -18px rgba(0,0,0,0.86);
+    border: 1px solid rgba(147,197,253,0.22);
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .admin-picker-tile:hover .admin-picker-tile-avatar,
   .admin-picker-tile:focus-visible .admin-picker-tile-avatar {
     transform: translateY(-3px) scale(1.04);
-    border-color: rgba(255,255,255,0.55);
-    box-shadow: 0 16px 34px -12px rgba(0,0,0,0.75);
+    border-color: rgba(147,197,253,0.62);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.22),
+      0 20px 42px -16px rgba(37,99,235,0.42);
   }
   .admin-picker-tile-name {
     font-size: 12.5px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.88);
+    font-weight: 800;
+    color: rgba(255,255,255,0.92);
     text-align: center;
     max-width: 100%;
     overflow: hidden;
@@ -1578,7 +1583,7 @@
   }
   .admin-picker-tile-city {
     font-size: 11px;
-    color: rgba(255,255,255,0.45);
+    color: rgba(191,219,254,0.54);
     margin-top: -4px;
   }
   .admin-picker-footer { flex-shrink: 0; padding: 14px 22px 22px; display: flex; justify-content: center; }
