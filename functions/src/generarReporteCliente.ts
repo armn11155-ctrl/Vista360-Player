@@ -89,6 +89,11 @@ function timestampToIso(value: unknown) {
 }
 
 async function imageBuffer(url: string) {
+  if (url.startsWith("data:image/")) {
+    const base64 = url.split(",")[1];
+    if (!base64) throw new Error("Imagen inválida.");
+    return Buffer.from(base64, "base64");
+  }
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`No se pudo descargar imagen: ${response.status}`);
@@ -305,6 +310,37 @@ async function cargarElementos(clienteId: string, mes: string) {
   });
 }
 
+async function cargarUbicacionCliente(clienteId: string) {
+  const db = getFirestore();
+  const contratosSnap = await db
+    .collection("contratos")
+    .where("cliente_id", "==", clienteId)
+    .limit(1)
+    .get();
+  const panelId = contratosSnap.docs[0]?.data().panel_id;
+  if (!panelId) return "";
+  const panelSnap = await db.doc(`paneles/${panelId}`).get();
+  const panel = panelSnap.data() ?? {};
+  return [panel.nombre, panel.direccion, panel.ciudad].filter(Boolean).join(" - ");
+}
+
+function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemento[] {
+  if (!Array.isArray(data)) return [];
+  const fotos = data
+    .map(normalizeFoto)
+    .filter((foto) => typeof foto.url === "string" && foto.url.startsWith("data:image/"))
+    .slice(0, 12);
+  const elementos: ReporteElemento[] = [];
+  for (let i = 0; i < fotos.length; i += 2) {
+    elementos.push({
+      titulo: "Evidencia de campaña",
+      ubicacion,
+      fotos: fotos.slice(i, i + 2),
+    });
+  }
+  return elementos;
+}
+
 export const generarReporteCliente = onCall(
   { timeoutSeconds: 540, memory: "1GiB", secrets: REPORT_SECRETS },
   async (request) => {
@@ -327,16 +363,20 @@ export const generarReporteCliente = onCall(
     const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
     if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
     const clienteData = clienteSnap.data() ?? {};
-    const elementos = await cargarElementos(clienteId, mes);
+    const ubicacionDb = String(clienteData.ciudad ?? "");
+    const ubicacionPanel = await cargarUbicacionCliente(clienteId);
+    const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
+    const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
+    const elementos = elementosSubidos.length > 0 ? elementosSubidos : await cargarElementos(clienteId, mes);
     if (elementos.length === 0) {
-      throw new HttpsError("failed-precondition", "No hay evidencias para generar el reporte.");
+      throw new HttpsError("failed-precondition", "Agrega fotos para generar el reporte.");
     }
 
     const cliente: ClienteReporte = {
       id: clienteId,
       nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
       periodo: nombreMes(mes),
-      ubicacion: String(clienteData.ciudad ?? elementos[0]?.ubicacion ?? "Perú"),
+      ubicacion,
     };
 
     const reporte = await generarReporte(cliente, elementos);

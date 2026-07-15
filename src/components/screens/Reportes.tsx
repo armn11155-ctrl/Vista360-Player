@@ -2,14 +2,22 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
-import type { Cliente } from "../../types";
+import type { Cliente, Contrato, Panel } from "../../types";
 
 interface Props {
   cliente: Cliente | null;
   clienteId: string;
   hayContratos: boolean;
+  contratos?: Contrato[];
+  paneles?: Record<string, Panel>;
   isAdmin?: boolean;
 }
+
+type FotoReporte = {
+  id: string;
+  nombre: string;
+  dataUrl: string;
+};
 
 type GenerarReporteResponse = {
   ok: boolean;
@@ -27,6 +35,30 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
+async function fotoADataUrl(file: File): Promise<string> {
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("No se pudo procesar la imagen."));
+      image.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const maxSide = 1600;
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(img.width * scale));
+  canvas.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No se pudo preparar la imagen.");
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return canvas.toDataURL("image/jpeg", 0.82);
+}
+
 function mensajeReporte(mesLabel: string, cliente: Cliente | null, urlDigital: string, urlHd: string) {
   const nombre = nombreCliente(cliente);
   return [
@@ -41,13 +73,19 @@ function mensajeReporte(mesLabel: string, cliente: Cliente | null, urlDigital: s
   ].join("\n");
 }
 
-export default function Reportes({ cliente, clienteId, hayContratos, isAdmin }: Props) {
+export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(mesActual());
   const [generando, setGenerando] = useState(false);
+  const [procesandoFotos, setProcesandoFotos] = useState(false);
+  const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
+  const panelPrincipal = contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined;
+  const ubicacionAuto = [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
+    .filter(Boolean)
+    .join(" - ") || cliente?.ciudad || "Ubicación del cliente";
 
   function mensajeErrorReporte(error: unknown) {
     const raw = error instanceof Error ? error.message : String(error || "");
@@ -63,18 +101,53 @@ export default function Reportes({ cliente, clienteId, hayContratos, isAdmin }: 
     return raw.replace("FirebaseError: ", "") || "No se pudo generar el reporte.";
   }
 
+  async function agregarFotos(files: FileList | null) {
+    if (!files?.length) return;
+    setProcesandoFotos(true);
+    setMensajeAdmin(null);
+    try {
+      const nuevas = await Promise.all(
+        Array.from(files)
+          .filter((file) => file.type.startsWith("image/"))
+          .map(async (file) => ({
+            id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
+            nombre: file.name,
+            dataUrl: await fotoADataUrl(file),
+          }))
+      );
+      setFotosReporte((actuales) => [...actuales, ...nuevas].slice(0, 12));
+    } catch (error) {
+      setMensajeAdminTipo("error");
+      setMensajeAdmin(error instanceof Error ? error.message : "No se pudieron cargar las fotos.");
+    } finally {
+      setProcesandoFotos(false);
+    }
+  }
+
+  function quitarFoto(id: string) {
+    setFotosReporte((actuales) => actuales.filter((foto) => foto.id !== id));
+  }
+
   async function generarReporte() {
-    if (!cloudFunctions || generando) return;
+    if (!cloudFunctions || generando || procesandoFotos) return;
     setGenerando(true);
     setMensajeAdmin(null);
     try {
-      const generarReporteCliente = httpsCallable<{ clienteId: string; mes: string }, GenerarReporteResponse>(
+      const generarReporteCliente = httpsCallable<{ clienteId: string; mes: string; fotos?: { url: string; fecha: string }[] }, GenerarReporteResponse>(
         cloudFunctions,
         "generarReporteCliente"
       );
-      await generarReporteCliente({ clienteId, mes });
+      await generarReporteCliente({
+        clienteId,
+        mes,
+        fotos: fotosReporte.map((foto) => ({
+          url: foto.dataUrl,
+          fecha: new Date().toISOString().slice(0, 10),
+        })),
+      });
       setMensajeAdminTipo("ok");
       setMensajeAdmin("Reporte generado. Ya puedes verlo y enviarlo desde la lista.");
+      setFotosReporte([]);
     } catch (error) {
       setMensajeAdminTipo("error");
       setMensajeAdmin(mensajeErrorReporte(error));
@@ -123,17 +196,48 @@ export default function Reportes({ cliente, clienteId, hayContratos, isAdmin }: 
                   aria-label="Mes del reporte"
                 />
               </label>
+              <label className="report-photo-picker">
+                <span>Fotos del reporte</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    void agregarFotos(e.target.files);
+                    e.currentTarget.value = "";
+                  }}
+                />
+                <div className="report-photo-picker-btn">
+                  {procesandoFotos ? "Preparando fotos..." : "Agregar fotos"}
+                </div>
+              </label>
               <button
                 className="report-generate-btn"
                 type="button"
                 onClick={generarReporte}
-                disabled={!hayContratos || !mes || generando}
+                disabled={!hayContratos || !mes || generando || procesandoFotos}
               >
                 {generando ? "Generando..." : "Generar PDF"}
               </button>
             </div>
+            <div className="report-auto-data">
+              <span>Cliente: {nombreCliente(cliente)}</span>
+              <span>Ubicación: {ubicacionAuto}</span>
+            </div>
+            {fotosReporte.length > 0 && (
+              <div className="report-photo-grid">
+                {fotosReporte.map((foto, index) => (
+                  <div className="report-photo-thumb" key={foto.id}>
+                    <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
+                    <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="report-admin-hint">
-              El PDF se creará con el diseño horizontal premium y aparecerá abajo cuando termine.
+              Sube las fotos del reporte; cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes.
             </div>
             {mensajeAdmin && (
               <div className={`report-admin-status ${mensajeAdminTipo === "error" ? "error" : "ok"}`}>

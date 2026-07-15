@@ -754,6 +754,88 @@
     font-size: 13px;
     color-scheme: dark;
   }
+  .report-photo-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 168px;
+    flex: 0 1 210px;
+  }
+  .report-photo-picker span {
+    color: rgba(226,232,240,.72);
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .report-photo-picker input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .report-photo-picker-btn {
+    min-height: 40px;
+    border-radius: 8px;
+    border: 1px dashed rgba(147,197,253,.42);
+    background: rgba(59,130,246,.12);
+    color: #BFDBFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .report-auto-data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .report-auto-data span {
+    border-radius: 999px;
+    background: rgba(15,23,42,.86);
+    border: 1px solid rgba(148,163,184,.16);
+    color: rgba(226,232,240,.76);
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 6px 9px;
+  }
+  .report-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .report-photo-thumb {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(2,6,23,.72);
+    border: 1px solid rgba(148,163,184,.18);
+  }
+  .report-photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .report-photo-thumb button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(2,6,23,.78);
+    color: #fff;
+    font-size: 17px;
+    line-height: 20px;
+    cursor: pointer;
+  }
   .report-generate-btn {
     min-height: 40px;
     border: 0;

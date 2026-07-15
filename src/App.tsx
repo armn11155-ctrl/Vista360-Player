@@ -315,7 +315,16 @@ function AuthenticatedApp({
         content = <Evidencias contratos={contratos} paneles={paneles} isAdmin={isAdmin} />;
         break;
       case "reportes":
-        content = <Reportes cliente={cliente} clienteId={clienteId} hayContratos={contratos.length > 0} isAdmin={isAdmin} />;
+        content = (
+          <Reportes
+            cliente={cliente}
+            clienteId={clienteId}
+            hayContratos={contratos.length > 0}
+            contratos={contratos}
+            paneles={paneles}
+            isAdmin={isAdmin}
+          />
+        );
         break;
       case "perfil":
         content = (
