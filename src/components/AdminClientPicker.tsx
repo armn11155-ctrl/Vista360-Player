@@ -4,7 +4,7 @@ import { logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
-import { ClientCharacter } from "./ClientCharacter";
+import { ClientAvatar } from "./ClientAvatar";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -80,7 +80,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 className="admin-picker-tile"
               >
                 <span className="admin-picker-tile-avatar" style={{ background: bg }}>
-                  <ClientCharacter name={c.empresa ?? c.contacto ?? c.id} size={58} />
+                  <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
                 </span>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
                 {c.ciudad && <span className="admin-picker-tile-city">📍 {c.ciudad}</span>}

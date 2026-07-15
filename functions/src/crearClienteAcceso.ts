@@ -13,7 +13,10 @@ interface CrearClienteAccesoData {
   email?: string;
   contacto?: string;
   celular?: string;
+  avatarKey?: string;
 }
+
+const AVATAR_KEYS = new Set(["tower", "store", "factory", "mall", "office", "media"]);
 
 function limpiar(value?: string) {
   return value?.trim() ?? "";
@@ -40,6 +43,8 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
   const email = limpiar(request.data.email).toLowerCase();
   const contacto = limpiar(request.data.contacto);
   const celular = limpiar(request.data.celular);
+  const avatarKeyRaw = limpiar(request.data.avatarKey);
+  const avatarKey = AVATAR_KEYS.has(avatarKeyRaw) ? avatarKeyRaw : "";
 
   if (!clienteId || !email) {
     throw new HttpsError("invalid-argument", "Cliente y correo son obligatorios.");
@@ -78,6 +83,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
       clienteId,
       email,
       nombre: contacto || empresa,
+      avatarKey: avatarKey || null,
       createdAt: FieldValue.serverTimestamp(),
     });
 
@@ -85,6 +91,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
       email: email || cliente.email || "",
       contacto: contacto || cliente.contacto || "",
       celular: celular || cliente.celular || "",
+      ...(avatarKey ? { avatarKey } : {}),
       updatedAt: FieldValue.serverTimestamp(),
     }, { merge: true });
 
@@ -92,6 +99,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
       email,
       clienteId,
       clienteNombre: empresa,
+      avatarKey: avatarKey || null,
       link: "",
       createdAt: FieldValue.serverTimestamp(),
       modo: "password-temporal",

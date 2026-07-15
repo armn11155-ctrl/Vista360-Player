@@ -4,6 +4,7 @@ import BackChevron from "../BackChevron";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
+import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { cloudFunctions } from "../../config/firebase";
 
 interface Props {
@@ -26,6 +27,7 @@ export default function Accesos({ onBack }: Props) {
   const [email, setEmail] = useState("");
   const [contacto, setContacto] = useState("");
   const [celular, setCelular] = useState("");
+  const [avatarKey, setAvatarKey] = useState("tower");
   const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState("");
   const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
@@ -42,6 +44,7 @@ export default function Accesos({ onBack }: Props) {
 
   const invitaciones = state.status === "ready" ? state.invitaciones : [];
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
+  const clienteSeleccionado = clientes.find((c) => c.id === clienteId);
 
   async function crearUsuario() {
     if (!cloudFunctions) {
@@ -57,10 +60,10 @@ export default function Accesos({ onBack }: Props) {
     setAccesoCreado(null);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string },
+        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string },
         { clienteId: string; empresa: string; email: string; password: string }
       >(cloudFunctions, "crearClienteAcceso");
-      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim() });
+      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey });
       setAccesoCreado(res.data);
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario.");
@@ -120,7 +123,12 @@ export default function Accesos({ onBack }: Props) {
             <div style={{ display: "grid", gap: 10 }}>
               <select
                 value={clienteId}
-                onChange={(e) => setClienteId(e.target.value)}
+                onChange={(e) => {
+                  const nextId = e.target.value;
+                  setClienteId(nextId);
+                  const nextCliente = clientes.find((c) => c.id === nextId);
+                  if (nextCliente?.avatarKey) setAvatarKey(nextCliente.avatarKey);
+                }}
                 style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", color: "var(--text)", background: "#fff" }}
               >
                 <option value="">Seleccionar cliente</option>
@@ -131,6 +139,10 @@ export default function Accesos({ onBack }: Props) {
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <input value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <input value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <div>
+                <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
+                <ClientAvatarPicker name={clienteSeleccionado?.empresa || contacto || email || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
+              </div>
             </div>
             {errorCrear && (
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorCrear}</div>
@@ -178,7 +190,7 @@ export default function Accesos({ onBack }: Props) {
             return (
               <div className="card" key={inv.id}>
                 <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
-                  <BrandThumb name={inv.clienteNombre || inv.email} size={38} radius={10} />
+                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} size={38} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {inv.clienteNombre || inv.email}

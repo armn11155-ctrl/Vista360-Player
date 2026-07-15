@@ -33,7 +33,7 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Pr
       {/* Header dark con avatar */}
       <div style={{ background: "#0D1629", padding: "calc(24px + env(safe-area-inset-top)) 20px 26px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <BrandThumb name={cliente?.empresa ?? "Cliente"} size={60} radius={20} iconScale={0.78} />
+          <BrandThumb name={cliente?.empresa ?? "Cliente"} avatarKey={cliente?.avatarKey} size={60} radius={20} iconScale={0.78} />
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{cliente?.empresa ?? "Cliente"}</div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{email}{isAdmin ? " · viendo como admin" : ""}</div>

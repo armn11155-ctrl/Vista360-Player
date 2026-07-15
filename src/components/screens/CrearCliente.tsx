@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente } from "../../types";
 import BackChevron from "../BackChevron";
+import { ClientAvatarPicker } from "../ClientAvatarPicker";
 
 interface Props {
   cliente: Cliente | null;
@@ -37,6 +38,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
   const [email, setEmail] = useState(cliente?.email ?? "");
   const [contacto, setContacto] = useState(cliente?.contacto ?? "");
   const [celular, setCelular] = useState(cliente?.celular ?? "");
+  const [avatarKey, setAvatarKey] = useState(cliente?.avatarKey ?? "tower");
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState("");
   const [resultado, setResultado] = useState<CrearClienteResponse | null>(null);
@@ -69,7 +71,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     setCreando(true);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string },
+        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string },
         CrearClienteResponse
       >(cloudFunctions, "crearClienteAcceso");
       const res = await fn({
@@ -77,6 +79,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
         email: email.trim(),
         contacto: contacto.trim(),
         celular: celular.trim(),
+        avatarKey,
       });
       setResultado(res.data);
     } catch (err) {
@@ -127,6 +130,12 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
                 <input style={{ ...inputStyle, marginTop: 6 }} value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="51999999999" />
               </label>
             </div>
+            <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
+              Avatar del cliente
+              <div style={{ marginTop: 8 }}>
+                <ClientAvatarPicker name={cliente?.empresa || contacto || email || "Cliente"} value={avatarKey} onChange={setAvatarKey} />
+              </div>
+            </label>
           </div>
 
           {error && (

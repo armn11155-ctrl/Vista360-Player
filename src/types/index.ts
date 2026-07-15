@@ -27,6 +27,7 @@ export interface Cliente {
   ciudad?: string;
   estado: ClienteEstado;
   ejecutivo?: string;
+  avatarKey?: string;
   createdAt?: Timestamp | null;
 }
 
@@ -83,6 +84,7 @@ export interface PortalUser {
   clienteId?: string;
   email: string;
   nombre?: string;
+  avatarKey?: string;
   createdAt?: Timestamp | null;
 }
 
