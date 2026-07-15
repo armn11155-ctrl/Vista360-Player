@@ -1241,6 +1241,8 @@
     }
     .sidebar-panel .sidebar-head img { filter: brightness(10); }
     .sidebar-close { display: none !important; }
+    .sidebar-item { color: rgba(255,255,255,0.75) !important; }
+    .sidebar-item-icon { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-label { color: rgba(255,255,255,0.75) !important; display: block !important; }
     .sidebar-item-chevron { color: rgba(255,255,255,0.3) !important; }
     .sidebar-item-danger .sidebar-item-label { color: var(--red) !important; }
