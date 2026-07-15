@@ -7,9 +7,10 @@ interface Props {
   cliente: Cliente | null;
   contratos: Contrato[];
   paneles: Record<string, Panel>;
-  onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas") => void;
+  onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente") => void;
   onMenuClick?: () => void;
   onNotifClick?: () => void;
+  onCambiarCliente?: () => void;
   totalNotifs?: number;
   isAdmin?: boolean;
   adminNombre?: string | null;
@@ -38,7 +39,7 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#07152A";
 
-export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClick, onNotifClick, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map(c => c.panel_id)).size;
   const ultima = ultimaFoto(contratos);
@@ -112,6 +113,27 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
 
       {/* ── FONDO BLANCO CON CURVA ── */}
       <div style={{ flex:1, overflowY:"auto", background:"#F8FAFD", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
+
+        {isAdmin && (
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+            <button
+              type="button"
+              onClick={onCambiarCliente}
+              style={{ background:"#0D1629", color:"#fff", border:"none", borderRadius:13, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(15,23,42,0.12)" }}
+            >
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>Admin</div>
+              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Cambiar cliente</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => onGoTo("nuevoCliente")}
+              style={{ background:"#2563EB", color:"#fff", border:"none", borderRadius:13, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(37,99,235,0.18)" }}
+            >
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.72)", marginBottom:3 }}>Accesos</div>
+              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Crear nuevo cliente</div>
+            </button>
+          </div>
+        )}
 
         {/* RESUMEN GENERAL — título suelto, cards individuales */}
         <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>

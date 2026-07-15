@@ -42,6 +42,7 @@ const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCa
 const Accesos = lazy(() => import("./components/screens/Accesos"));
 const Facturas = lazy(() => import("./components/screens/Facturas"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
+const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
 
 type View =
   | Tab
@@ -56,7 +57,8 @@ type View =
   | "solicitudes"
   | "accesos"
   | "facturas"
-  | "notificaciones";
+  | "notificaciones"
+  | "nuevoCliente";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -79,6 +81,7 @@ const VIEW_COLORS: Record<View, string> = {
   accesos: "#0D1629",
   facturas: "#0D1629",
   notificaciones: "#0D1629",
+  nuevoCliente: "#0D1629",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -94,6 +97,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "accesos",
   "facturas",
   "notificaciones",
+  "nuevoCliente",
 ]);
 
 export default function App() {
@@ -181,6 +185,10 @@ export default function App() {
         isAdmin
         adminNombre={auth.nombre}
         online={online}
+        onSeleccionarCliente={(id) => {
+          setAdminClienteId(id);
+          setView("inicio");
+        }}
         onCambiarCliente={() => {
           setAdminClienteId(null);
           setView("inicio");
@@ -213,6 +221,7 @@ interface AuthenticatedProps {
   isAdmin: boolean;
   adminNombre?: string | null;
   onCambiarCliente?: () => void;
+  onSeleccionarCliente?: (clienteId: string) => void;
   online: boolean;
 }
 
@@ -226,6 +235,7 @@ function AuthenticatedApp({
   isAdmin,
   adminNombre,
   onCambiarCliente,
+  onSeleccionarCliente,
   online,
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
@@ -279,6 +289,7 @@ function AuthenticatedApp({
             onGoTo={(tab) => setView(tab)}
             onMenuClick={() => setSidebarOpen(true)}
             onNotifClick={() => setView("notificaciones")}
+            onCambiarCliente={onCambiarCliente}
             totalNotifs={totalNotifs}
             isAdmin={isAdmin}
             adminNombre={adminNombre}
@@ -369,6 +380,16 @@ function AuthenticatedApp({
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;
         break;
+      case "nuevoCliente":
+        content = isAdmin ? (
+          <CrearCliente
+            onBack={() => setView("inicio")}
+            onClienteCreado={(id) => {
+              onSeleccionarCliente?.(id);
+            }}
+          />
+        ) : null;
+        break;
     }
   }
 
@@ -381,6 +402,7 @@ function AuthenticatedApp({
         onClose={() => setSidebarOpen(false)}
         onNavigate={(v) => setView(v)}
         onLogout={() => logout()}
+        onCambiarCliente={onCambiarCliente}
         isAdmin={isAdmin}
         solicitudesPendientes={solCampPendientes}
       />

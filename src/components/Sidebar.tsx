@@ -21,6 +21,7 @@ interface Props {
   onClose: () => void;
   onNavigate: (view: SidebarView) => void;
   onLogout: () => void;
+  onCambiarCliente?: () => void;
   isAdmin?: boolean;
   solicitudesPendientes?: number;
 }
@@ -38,7 +39,7 @@ const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: bool
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin, solicitudesPendientes }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
   return (
     <>
@@ -70,6 +71,16 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, isAdmin, 
               <span className="sidebar-item-chevron">›</span>
             </div>
           ))}
+          {isAdmin && onCambiarCliente && (
+            <div
+              className="sidebar-item"
+              onClick={() => { onCambiarCliente(); onClose(); }}
+            >
+              <span className="sidebar-item-icon">⇄</span>
+              <span className="sidebar-item-label">Cambiar cliente</span>
+              <span className="sidebar-item-chevron">›</span>
+            </div>
+          )}
           <div
             className="sidebar-item sidebar-item-danger"
             onClick={() => { onLogout(); onClose(); }}
