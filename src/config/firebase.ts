@@ -1,5 +1,6 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFunctions, type Functions } from "firebase/functions";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -13,6 +14,7 @@ import { env, envMissing } from "./env";
 export let app: FirebaseApp | null = null;
 export let db: Firestore | null = null;
 export let auth: Auth | null = null;
+export let cloudFunctions: Functions | null = null;
 
 // Solo inicializamos Firebase si TODAS las variables de entorno están
 // presentes. Si falta alguna, dejamos db/auth en null a propósito —
@@ -22,6 +24,7 @@ if (envMissing.length === 0) {
   app = initializeApp(env.firebase);
   db = getFirestore(app);
   auth = getAuth(app);
+  cloudFunctions = getFunctions(app);
 }
 
 /**

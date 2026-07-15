@@ -6,13 +6,16 @@
   "engines": { "node": "20" },
   "scripts": {
     "build": "tsc",
-    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:registrarVisita,functions:listarAccesosClientes"
+    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:registrarVisita,functions:listarAccesosClientes,functions:generarReporteCliente"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.731.1",
     "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.0.1"
+    "firebase-functions": "^6.0.1",
+    "pdfkit": "^0.16.0"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.13.9",
     "typescript": "^5.9.3"
   }
 }

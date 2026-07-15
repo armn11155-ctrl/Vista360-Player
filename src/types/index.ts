@@ -148,7 +148,13 @@ export interface InformeCliente {
   cliente_id: string;
   mes: string; // "2026-06"
   mesLabel: string; // "Junio 2026"
+  /** Compatibilidad con reportes antiguos. En reportes nuevos equivale a urlDigital. */
   url: string;
+  /** PDF comprimido para vista dentro del portal (72-96 DPI). */
+  urlDigital?: string;
+  /** PDF de mayor calidad para descarga del cliente (150 DPI). */
+  urlHd?: string;
+  storage?: "firebase" | "r2";
   numCampanas: number;
   numEvidencias: number;
   createdAt?: Timestamp | null;

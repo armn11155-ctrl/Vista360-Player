@@ -10,7 +10,6 @@ type SidebarView =
   | "cobertura"
   | "mispantallas"
   | "reportes"
-  | "impacto"
   | "facturas"
   | "contactanos"
   | "analitica"
@@ -33,7 +32,6 @@ const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: bool
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Pantallas" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
-  { id: "impacto",      icon: "🚗",                 label: "Impacto" },
   { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
   { id: "solicitudes",  icon: "🎯",                 label: "Solicitudes de campaña", adminOnly: true },
   { id: "accesos",      icon: "🔑",                 label: "Accesos", adminOnly: true },

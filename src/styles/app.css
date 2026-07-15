@@ -86,6 +86,7 @@
   .app-shell {
     width: 100%;
     height: 100vh;
+    height: 100dvh;
     background: #FFFFFF;
     overflow: hidden;
     display: flex;
@@ -191,7 +192,7 @@
   .bottom-nav {
     background: #FFFFFF;
     border-top: 1px solid #EBEBEB;
-    padding: 6px 0 calc(env(safe-area-inset-bottom) - 4px);
+    padding: 6px 0 max(8px, env(safe-area-inset-bottom));
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
@@ -709,9 +710,49 @@
   .report-icon.green { background: rgba(34,197,94,0.16); }
   .report-icon.purple { background: rgba(139,92,246,0.16); }
   .report-icon.blue { background: rgba(59,130,246,0.16); }
-  .report-info { flex: 1; }
+  .report-info { flex: 1; min-width: 0; }
   .report-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
   .report-desc { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .report-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .report-admin-panel {
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0 14px;
+  }
+  .report-admin-copy { margin-bottom: 10px; }
+  .report-admin-title { color: #fff; font-size: 13px; font-weight: 700; }
+  .report-admin-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .report-admin-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .report-month-input {
+    min-height: 34px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.55);
+    color: #fff;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .report-generate-btn {
+    min-height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: #3B82F6;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+  .report-generate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .report-admin-status { color: #93C5FD; font-size: 11px; margin-top: 8px; }
   .report-meta { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
   .report-tag {
     background: rgba(255,255,255,0.08);
@@ -1190,6 +1231,19 @@
   }
   .state-title { font-size: 15px; font-weight: 700; color: var(--text); }
   .state-sub { font-size: 13px; color: var(--muted); max-width: 280px; }
+  .config-missing-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(59,130,246,.16), transparent 34%),
+      linear-gradient(180deg, #0D1629 0%, #070B14 100%);
+  }
+  .config-missing-logo {
+    width: min(210px, 62vw);
+    height: auto;
+    margin-bottom: 8px;
+    filter: brightness(1.05);
+  }
 
   .evidence-photo-real { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -1203,6 +1257,17 @@
     padding: 6px 10px;
     border-radius: 8px;
     background: rgba(59,130,246,0.16);
+  }
+  .report-download-hd { white-space: nowrap; }
+  .report-send-whatsapp {
+    background: rgba(34,197,94,0.16);
+    color: #22C55E;
+    white-space: nowrap;
+  }
+  .report-send-email {
+    background: rgba(245,158,11,0.16);
+    color: #F59E0B;
+    white-space: nowrap;
   }
 
   /* ===== Banner "estás gestionando la cuenta de X" (Inicio, solo admin) ===== */
@@ -1467,10 +1532,59 @@
 
   /* ===== Mis Pantallas ===== */
   .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .screen-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 24px -16px rgba(0,0,0,0.6); }
+  .screens-premium-area { background: #08111f; }
+  .screens-premium-hero {
+    background: linear-gradient(135deg, #0B1728 0%, #10213A 58%, #123E63 100%);
+    border: 1px solid rgba(147,197,253,0.16);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .screens-premium-kicker { color: #38BDF8; font-size: 11px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; }
+  .screens-premium-title { color: #fff; font-size: 19px; font-weight: 800; margin-top: 5px; }
+  .screens-premium-sub { color: rgba(226,232,240,.72); font-size: 12px; line-height: 1.45; margin-top: 4px; }
+  .screens-premium-metric {
+    width: 72px;
+    min-width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .screens-premium-metric span { color: #fff; font-size: 26px; font-weight: 900; line-height: 1; }
+  .screens-premium-metric small { color: rgba(226,232,240,.68); font-size: 10px; margin-top: 4px; }
+  .screens-empty-premium {
+    background: rgba(15,23,42,.92);
+    border: 1px solid rgba(147,197,253,.16);
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+  }
+  .screens-empty-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 8px;
+    margin: 0 auto 10px;
+    background: rgba(59,130,246,.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .screens-empty-title { color: #fff; font-size: 14px; font-weight: 800; }
+  .screens-empty-sub { color: rgba(226,232,240,.68); font-size: 12px; line-height: 1.45; margin-top: 5px; }
+  .screen-card { background: #0F1D32; border: 1px solid rgba(147,197,253,.14); border-radius: 8px; overflow: hidden; box-shadow: 0 16px 30px -20px rgba(0,0,0,0.8); }
   .screen-thumb {
-    position: relative; height: 90px;
-    background: linear-gradient(135deg, #1E293B, #0D1629);
+    position: relative; height: 96px;
+    background:
+      radial-gradient(circle at 75% 20%, rgba(56,189,248,.32), transparent 30%),
+      linear-gradient(135deg, #1E293B, #07111F);
     display: flex; align-items: center; justify-content: center;
   }
   .screen-live-badge {
@@ -1483,8 +1597,8 @@
   .screen-live-dot { width: 5px; height: 5px; border-radius: 50%; background: #fff; animation: livePulse 1.4s infinite; }
   @keyframes livePulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
   .screen-info { padding: 10px; }
-  .screen-name { font-size: 12.5px; font-weight: 700; color: var(--text); margin-bottom: 2px; line-height: 1.3; }
-  .screen-city { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .screen-name { font-size: 12.5px; font-weight: 700; color: #fff; margin-bottom: 2px; line-height: 1.3; }
+  .screen-city { font-size: 11px; color: rgba(226,232,240,.62); margin-bottom: 6px; }
   .screen-status { display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; }
   .screen-status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 

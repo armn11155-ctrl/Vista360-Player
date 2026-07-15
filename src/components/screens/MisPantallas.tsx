@@ -6,16 +6,6 @@ interface Props {
   onBack: () => void;
 }
 
-// Se muestra solo si el cliente todavía no tiene paneles contratados
-// cargados — así la pantalla nunca se ve vacía mientras llegan datos
-// reales de sus campañas.
-const MOCK_FALLBACK: Panel[] = [
-  { id: "m1", nombre: "Panel Av. Javier Prado", tipo: "Vial", ciudad: "Lima", estado: "Ocupado" },
-  { id: "m2", nombre: "Panel Real Plaza", tipo: "Centro comercial", ciudad: "Lima", estado: "Ocupado" },
-  { id: "m3", nombre: "Panel Óvalo Higuereta", tipo: "Vial", ciudad: "Lima", estado: "Disponible" },
-  { id: "m4", nombre: "Panel Mall Aventura", tipo: "Centro comercial", ciudad: "Trujillo", estado: "Mantenimiento" },
-];
-
 function estadoInfo(estado: Panel["estado"]) {
   if (estado === "Mantenimiento") return { color: "#D97706", label: "Mantenimiento" };
   if (estado === "Disponible" || estado === "Libre") return { color: "#8B96AC", label: "En espera" };
@@ -24,7 +14,6 @@ function estadoInfo(estado: Panel["estado"]) {
 
 export default function MisPantallas({ paneles, onBack }: Props) {
   const lista = Object.values(paneles);
-  const items = lista.length > 0 ? lista : MOCK_FALLBACK;
 
   return (
     <div>
@@ -35,17 +24,37 @@ export default function MisPantallas({ paneles, onBack }: Props) {
         <div className="simple-title">Mis Pantallas</div>
         <div style={{ width: 32 }} />
       </div>
-      <div className="content-area">
+      <div className="content-area screens-premium-area">
+        <div className="screens-premium-hero">
+          <div>
+            <div className="screens-premium-kicker">Vista360 Player</div>
+            <div className="screens-premium-title">Monitoreo de pantallas</div>
+            <div className="screens-premium-sub">
+              Estado operativo de las ubicaciones activas de tu campaña.
+            </div>
+          </div>
+          <div className="screens-premium-metric">
+            <span>{lista.length}</span>
+            <small>activas</small>
+          </div>
+        </div>
         {lista.length === 0 && (
-          <div className="card" style={{ background: "rgba(59,130,246,0.14)", marginBottom: 14 }}>
-            <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
-              Aún no tienes pantallas contratadas activas — esto es un ejemplo de cómo se verá el
-              monitoreo en vivo de tus paneles.
+          <div className="screens-empty-premium">
+            <div className="screens-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2">
+                <rect x="2" y="4" width="20" height="13" rx="2" />
+                <path d="M8 21h8M12 17v4" />
+              </svg>
+            </div>
+            <div className="screens-empty-title">Aún no hay pantallas activas</div>
+            <div className="screens-empty-sub">
+              Cuando tu campaña esté publicada, aquí verás cada ubicación y su estado.
             </div>
           </div>
         )}
+        {lista.length > 0 && (
         <div className="screen-grid">
-          {items.map((p) => {
+          {lista.map((p) => {
             const info = estadoInfo(p.estado);
             const live = info.label === "Transmitiendo";
             return (
@@ -73,6 +82,7 @@ export default function MisPantallas({ paneles, onBack }: Props) {
             );
           })}
         </div>
+        )}
       </div>
     </div>
   );
