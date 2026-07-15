@@ -35,6 +35,26 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
+function fechaCorta(date: Date) {
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  return `${String(date.getDate()).padStart(2, "0")} ${meses[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+function fechaGenerada(createdAt: unknown, mes: string) {
+  if (createdAt && typeof createdAt === "object" && "toDate" in createdAt) {
+    const toDate = (createdAt as { toDate?: () => Date }).toDate;
+    if (typeof toDate === "function") return fechaCorta(toDate());
+  }
+  const fallback = new Date(`${mes || mesActual()}-01T12:00:00`);
+  return fechaCorta(Number.isNaN(fallback.getTime()) ? new Date() : fallback);
+}
+
+function formatoBytes(bytes?: number) {
+  if (!bytes || bytes <= 0) return null;
+  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 async function fotoADataUrl(file: File): Promise<string> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const reader = new FileReader();
@@ -164,16 +184,11 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", background: "#0A1220", padding: 14 }}>
-        <div className="report-header-blue">
-          <div>
-            <div className="text-blue">Reportes digitales</div>
-            <div className="text-sub">
-              Consulta la versión liviana en el portal o descarga el archivo en máxima calidad.
-            </div>
-          </div>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="1.5">
-            <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+      <div className="reports-screen-body">
+        <div className="reports-panel-filter" aria-label="Filtrar paneles">
+          <span>Todos los paneles</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+            <polyline points="6 9 12 15 18 9" />
           </svg>
         </div>
 
@@ -279,51 +294,74 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         )}
 
         {informes.length > 0 && (
-          <div className="card">
+          <div className="reports-list">
             {informes.map((informe) => {
               const urlDigital = informe.urlDigital || informe.url;
               const urlHd = informe.urlHd || informe.urlDigital || informe.url;
               const mensaje = mensajeReporte(informe.mesLabel, cliente, urlDigital, urlHd);
               const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
               const emailTo = cliente?.email ?? "";
+              const hdSize = formatoBytes((informe as { hdBytes?: number }).hdBytes);
 
               return (
-                <div className="report-item" key={informe.id}>
-                  <div className="report-icon blue">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                  <div className="report-info">
-                    <div className="report-name">{informe.mesLabel}</div>
-                    <div className="report-desc">{informe.numEvidencias} evidencia(s)</div>
+                <div className="report-card" key={informe.id}>
+                  <div className="report-card-main">
+                    <div className="report-pdf-icon" aria-hidden="true">
+                      <svg width="46" height="58" viewBox="0 0 46 58" fill="none">
+                        <path d="M7 1.5h22.5L44.5 16v35A5.5 5.5 0 0 1 39 56.5H7A5.5 5.5 0 0 1 1.5 51V7A5.5 5.5 0 0 1 7 1.5Z" fill="url(#reportPdfGradient)" stroke="#4B7FE7" />
+                        <path d="M29.5 1.5V12A4.5 4.5 0 0 0 34 16.5h10.5" fill="#6FA2FF" fillOpacity=".35" />
+                        <rect x="12.5" y="22.5" width="21" height="19" rx="1.5" stroke="#BFD5FF" strokeWidth="1.6" />
+                        <path d="M17 28h8M17 32h12M17 36h15" stroke="#BFD5FF" strokeWidth="1.6" strokeLinecap="round" />
+                        <defs>
+                          <linearGradient id="reportPdfGradient" x1="4" y1="3" x2="44" y2="57" gradientUnits="userSpaceOnUse">
+                            <stop stopColor="#315FC6" />
+                            <stop offset="1" stopColor="#123778" />
+                          </linearGradient>
+                        </defs>
+                      </svg>
+                      <span>PDF</span>
+                    </div>
+                    <div className="report-card-copy">
+                      <div className="report-kicker">Reporte mensual</div>
+                      <div className="report-title">{informe.mesLabel}</div>
+                      <div className="report-meta">Generado el {fechaGenerada(informe.createdAt, informe.mes)}</div>
+                      {hdSize && <div className="report-meta">Tamaño HD: {hdSize}</div>}
+                    </div>
+                    <div className="report-ready-badge">Listo</div>
                   </div>
                   <div className="report-actions">
+                    <a className="report-action report-action-outline" href={urlDigital} target="_blank" rel="noreferrer">
+                      Ver digital
+                    </a>
+                    <a className="report-action report-action-primary" href={urlHd} target="_blank" rel="noreferrer">
+                      Descargar HD
+                    </a>
                     {isAdmin && (
                       <>
                         <a
-                          className="report-download report-send-whatsapp"
+                          className="report-action report-action-muted report-action-whatsapp"
                           href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Enviar WhatsApp
+                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L4 20l.9-4a8.4 8.4 0 1 1 15.6-4.3Z" />
+                            <path d="M9.2 8.7c.2-.5.4-.5.7-.5h.6c.2 0 .5.1.6.4.2.5.7 1.7.8 1.8.1.2.1.4 0 .6l-.4.5c-.1.2-.3.3-.1.6.2.3.8 1.3 1.8 2 .9.7 1.7.9 2 .9.2.1.4 0 .6-.2l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.3.4.4 0 .5-.3 1.4-.8 1.7-.4.3-1.2.5-2.1.2-1-.3-2.2-.8-3.6-2-1.6-1.4-2.6-3-3-4-.4-1-.4-1.8-.1-2.4Z" />
+                          </svg>
+                          WhatsApp
                         </a>
                         <a
-                          className="report-download report-send-email"
+                          className="report-action report-action-muted"
                           href={`mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensaje)}`}
                         >
-                          Enviar correo
+                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <rect x="3" y="5" width="18" height="14" rx="2" />
+                            <path d="m4 7 8 6 8-6" />
+                          </svg>
+                          Correo
                         </a>
                       </>
                     )}
-                    <a className="report-download" href={urlDigital} target="_blank" rel="noreferrer">
-                      Ver
-                    </a>
-                    <a className="report-download report-download-hd" href={urlHd} target="_blank" rel="noreferrer">
-                      Máxima calidad
-                    </a>
                   </div>
                 </div>
               );
