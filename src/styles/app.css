@@ -1223,6 +1223,10 @@
     color: #26395F;
     text-align: left;
     font: inherit;
+    cursor: default;
+  }
+  .profile-row.clickable,
+  .profile-row.danger {
     cursor: pointer;
   }
   .profile-row:last-child {

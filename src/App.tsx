@@ -365,7 +365,13 @@ function AuthenticatedApp({
         break;
       case "perfil":
         content = (
-          <Perfil cliente={cliente} email={email} isAdmin={isAdmin} onCambiarCliente={onCambiarCliente} />
+          <Perfil
+            cliente={cliente}
+            email={email}
+            isAdmin={isAdmin}
+            onCambiarCliente={onCambiarCliente}
+            onContactanos={() => setView("contactanos")}
+          />
         );
         break;
       case "nueva":

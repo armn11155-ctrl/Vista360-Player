@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
-  IconFacturas, IconContactanos, IconAnalitica, IconCerrar,
+  IconFacturas, IconAnalitica, IconCerrar,
 } from "./SidebarIcons";
 
 type SidebarView =
@@ -32,7 +32,6 @@ const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: bool
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Pantallas" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
-  { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 
