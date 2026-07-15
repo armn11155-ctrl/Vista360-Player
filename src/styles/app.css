@@ -1761,6 +1761,11 @@
       0 16px 34px -18px rgba(0,0,0,0.86);
     border: 1px solid rgba(147,197,253,0.22);
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    overflow: hidden;
+  }
+  .admin-picker-tile-avatar svg {
+    width: 76%;
+    height: 76%;
   }
   .admin-picker-tile:hover .admin-picker-tile-avatar,
   .admin-picker-tile:focus-visible .admin-picker-tile-avatar {

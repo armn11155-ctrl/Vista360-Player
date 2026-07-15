@@ -1,5 +1,5 @@
 import { brandColor } from "../utils/brandColor";
-import { PersonIcon } from "./PersonIcon";
+import { ClientCharacter } from "./ClientCharacter";
 
 interface Props {
   name: string;
@@ -10,9 +10,8 @@ interface Props {
 }
 
 /**
- * Thumbnail de marca: fondo de color único por empresa (siempre distinto
- * según el nombre) + un ícono genérico de persona en blanco encima —
- * igual criterio en todas las apps de Vista360 (ERP y Player).
+ * Thumbnail de marca: fondo de color único por empresa + personaje estable
+ * por nombre. Así cada cliente se reconoce sin depender solo del color.
  */
 export function BrandThumb({ name, size = 72, radius = 12, iconScale = 0.58 }: Props) {
   const { bg } = brandColor(name);
@@ -24,7 +23,7 @@ export function BrandThumb({ name, size = 72, radius = 12, iconScale = 0.58 }: P
       background: bg, display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", userSelect: "none",
     }}>
-      <PersonIcon size={iconSize} />
+      <ClientCharacter name={name} size={iconSize} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import type { Cliente } from "../../types";
 import { logout } from "../../config/firebase";
+import { BrandThumb } from "../BrandThumb";
 
 interface Props {
   cliente: Cliente | null;
@@ -27,18 +28,12 @@ function Row({ icon, label, value, danger, onClick }: { icon: React.ReactNode; l
 }
 
 export default function Perfil({ cliente, email, isAdmin, onCambiarCliente }: Props) {
-  const initials = (cliente?.empresa ?? "?").slice(0, 2).toUpperCase();
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header dark con avatar */}
       <div style={{ background: "#0D1629", padding: "calc(24px + env(safe-area-inset-top)) 20px 26px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{
-            width: 60, height: 60, borderRadius: "50%", background: "#CC0000",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, fontWeight: 800, color: "#fff", flexShrink: 0,
-          }}>{initials}</div>
+          <BrandThumb name={cliente?.empresa ?? "Cliente"} size={60} radius={20} iconScale={0.78} />
           <div>
             <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>{cliente?.empresa ?? "Cliente"}</div>
             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>{email}{isAdmin ? " · viendo como admin" : ""}</div>
