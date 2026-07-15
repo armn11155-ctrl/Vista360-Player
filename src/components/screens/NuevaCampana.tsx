@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
+import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { comprimirImagen } from "../../utils/comprimirImagen";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
 interface Props {
@@ -41,8 +43,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [presupuesto, setPresupuesto] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [comentarios, setComentarios] = useState("");
+  const [imagenCampana, setImagenCampana] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  const imagenRef = useRef<HTMLInputElement>(null);
 
   async function enviar() {
     setError("");
@@ -51,6 +55,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
     setEnviando(true);
     try {
+      const imagenUrl = imagenCampana
+        ? await subirEvidenciaCloudinary(await comprimirImagen(imagenCampana))
+        : "";
       await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
         nombre: nombre.trim(),
@@ -58,6 +65,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         presupuesto: presupuesto ? Number(presupuesto) : null,
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
+        ...(imagenUrl ? { imagenReferencialUrl: imagenUrl, imagenReferencialFecha: new Date().toISOString().slice(0, 10) } : {}),
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
@@ -75,8 +83,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [inicio, setInicio] = useState("");
   const [fin, setFin] = useState("");
   const [monto, setMonto] = useState("");
+  const [imagenAdmin, setImagenAdmin] = useState<File | null>(null);
   const [errorAdmin, setErrorAdmin] = useState("");
   const [creando, setCreando] = useState(false);
+  const imagenAdminRef = useRef<HTMLInputElement>(null);
 
   async function crearContrato() {
     setErrorAdmin("");
@@ -87,6 +97,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
+      const imagenUrl = imagenAdmin
+        ? await subirEvidenciaCloudinary(await comprimirImagen(imagenAdmin))
+        : "";
+      const fechaImagen = new Date().toISOString().slice(0, 10);
       await addDoc(collection(db, "contratos"), {
         panel_id: panelId,
         cliente_id: clienteId,
@@ -94,7 +108,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         fin,
         monto: Number(monto),
         pagado: false,
-        fotos_campania: [],
+        fotos_campania: imagenUrl ? [{ url: imagenUrl, fecha: fechaImagen }] : [],
         createdAt: serverTimestamp(),
       });
       // Marcar el panel como Ocupado (mismo comportamiento que en el ERP)
@@ -157,6 +171,26 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
             <Field label="Monto (S/)">
               <input style={inputStyle} type="number" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="Ej. 3500" />
             </Field>
+            <Field label="Imagen de campaña">
+              <input
+                ref={imagenAdminRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => setImagenAdmin(e.target.files?.[0] ?? null)}
+              />
+              <button
+                type="button"
+                onClick={() => imagenAdminRef.current?.click()}
+                style={{
+                  width: "100%", minHeight: 58, border: "1.5px dashed #A78BFA", borderRadius: 12,
+                  background: "linear-gradient(135deg, rgba(139,92,246,0.10), rgba(249,115,22,0.10))",
+                  color: "#5B21B6", fontSize: 13, fontWeight: 800, cursor: "pointer",
+                }}
+              >
+                {imagenAdmin ? `Lista: ${imagenAdmin.name}` : "Elegir foto para esta campaña"}
+              </button>
+            </Field>
           </div>
           <div style={{ height: 16 }} />
         </div>
@@ -211,6 +245,26 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           </Field>
           <Field label="Comentarios adicionales">
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
+          </Field>
+          <Field label="Imagen de referencia">
+            <input
+              ref={imagenRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => setImagenCampana(e.target.files?.[0] ?? null)}
+            />
+            <button
+              type="button"
+              onClick={() => imagenRef.current?.click()}
+              style={{
+                width: "100%", minHeight: 58, border: "1.5px dashed #F97316", borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(249,115,22,0.10), rgba(34,197,94,0.10))",
+                color: "#9A3412", fontSize: 13, fontWeight: 800, cursor: "pointer",
+              }}
+            >
+              {imagenCampana ? `Lista: ${imagenCampana.name}` : "Elegir foto o diseño de la campaña"}
+            </button>
           </Field>
         </div>
         <div style={{ height: 16 }} />

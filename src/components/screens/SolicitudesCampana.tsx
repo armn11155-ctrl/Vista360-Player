@@ -5,6 +5,7 @@ import { db } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
+import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
 import type { SolicitudCampana } from "../../types";
 
 interface Props {
@@ -125,6 +126,15 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     )}
                   </div>
                 </div>
+                {s.imagenReferencialUrl && (
+                  <img
+                    src={cloudinaryThumb(s.imagenReferencialUrl, 260)}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    style={{ width: "100%", height: 128, objectFit: "cover", borderRadius: 12, marginBottom: 10, display: "block" }}
+                  />
+                )}
                 {s.comprobantePagoUrl && !s.pagoConfirmado && (
                   <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
                     <button
@@ -242,6 +252,12 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 <span>Comentarios</span>
                 <p>{seleccionada.comentarios}</p>
               </div>
+            )}
+            {seleccionada.imagenReferencialUrl && (
+              <a href={seleccionada.imagenReferencialUrl} target="_blank" rel="noreferrer" className="solicitud-detail-image">
+                <img src={cloudinaryThumb(seleccionada.imagenReferencialUrl, 640)} alt="" />
+                <span>Ver imagen de referencia</span>
+              </a>
             )}
 
             <div className="solicitud-detail-actions">

@@ -1,5 +1,9 @@
+import { useEffect, useRef, useState } from "react";
+import { doc, updateDoc } from "firebase/firestore";
 import type { Cliente } from "../../types";
-import { logout } from "../../config/firebase";
+import { db, logout } from "../../config/firebase";
+import { subirAvatarCloudinary } from "../../config/cloudinary";
+import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { BrandThumb } from "../BrandThumb";
 
 interface Props {
@@ -79,6 +83,34 @@ function ProfileSection({ title, children }: { title: string; children: React.Re
 export default function Perfil({ cliente, email, isAdmin, onCambiarCliente, onContactanos }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ejecutivo = cliente?.ejecutivo ?? "Vista360";
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
+  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+
+  useEffect(() => {
+    setAvatarUrl(cliente?.avatarUrl ?? "");
+    setAvatarError("");
+  }, [cliente?.id, cliente?.avatarUrl]);
+
+  async function cambiarFotoPerfil(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !cliente?.id || !db) return;
+
+    setAvatarError("");
+    setSubiendoAvatar(true);
+    try {
+      const webp = await comprimirAvatarWebp(file);
+      const url = await subirAvatarCloudinary(webp);
+      await updateDoc(doc(db, "clientes", cliente.id), { avatarUrl: url, avatarKey: "custom" });
+      setAvatarUrl(url);
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
+    } finally {
+      setSubiendoAvatar(false);
+    }
+  }
 
   return (
     <div className="profile-screen">
@@ -93,11 +125,27 @@ export default function Perfil({ cliente, email, isAdmin, onCambiarCliente, onCo
 
       <main className="profile-content">
         <section className="profile-company-card">
-          <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={cliente?.avatarUrl} size={64} radius={32} iconScale={0.82} />
+          <div className="profile-avatar-wrap">
+            <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={64} radius={32} iconScale={0.82} />
+            {isAdmin && (
+              <>
+                <input ref={fileRef} type="file" accept="image/*" className="profile-avatar-input" onChange={cambiarFotoPerfil} />
+                <button
+                  type="button"
+                  className="profile-avatar-edit"
+                  onClick={() => !subiendoAvatar && fileRef.current?.click()}
+                  disabled={subiendoAvatar}
+                >
+                  {subiendoAvatar ? "..." : "Cambiar"}
+                </button>
+              </>
+            )}
+          </div>
           <div className="profile-company-copy">
             <h1>{empresa}</h1>
             <p>{email || cliente?.email || "Cliente desde Enero 2024"}</p>
             <span className="profile-verified">Cuenta verificada</span>
+            {isAdmin && avatarError && <div className="profile-avatar-error">{avatarError}</div>}
           </div>
         </section>
 

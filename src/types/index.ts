@@ -112,6 +112,8 @@ export interface SolicitudCampana {
   presupuesto?: number;
   ciudades: string[];
   comentarios?: string;
+  imagenReferencialUrl?: string;
+  imagenReferencialFecha?: string;
   estado: "Pendiente" | "Revisada" | "Convertida" | "Rechazada";
   estadoActualizadoEn?: Timestamp | null;
   /** Comprobante de pago (ej. captura de Yape/Plin) que el cliente

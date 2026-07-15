@@ -52,7 +52,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
     : 0;
-  const headerBg = "radial-gradient(circle at 50% 0%, #123E7A 0%, #0B2243 38%, #07152A 76%)";
+  const headerBg = "radial-gradient(circle at 16% 0%, rgba(37,99,235,0.58) 0%, transparent 34%), radial-gradient(circle at 86% 12%, rgba(249,115,22,0.28) 0%, transparent 30%), linear-gradient(145deg, #07152A 0%, #10245A 48%, #24124A 100%)";
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
@@ -125,7 +125,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
-      <div style={{ flex:1, overflowY:"auto", background:"#F8FAFD", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
+      <div style={{ flex:1, overflowY:"auto", background:"linear-gradient(180deg, #F8FAFD 0%, #F5F3FF 46%, #FFF7ED 100%)", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
 
         {isAdmin && (
           <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
@@ -144,16 +144,16 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
           {[
-            { bg:"#DBEAFE", label:"Campañas activas", val:String(activas.length),
+            { bg:"linear-gradient(135deg,#DBEAFE,#E0E7FF)", label:"Campañas activas", val:String(activas.length),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
-            { bg:"#DCFCE7", label:"Pantallas activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
+            { bg:"linear-gradient(135deg,#DCFCE7,#CCFBF1)", label:"Pantallas activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"#E0F2FE", label:"Última evidencia", val:ultima ? ultima.foto.fecha : "—",
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
-            { bg:"#E2E8F0", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
+            { bg:"linear-gradient(135deg,#F3E8FF,#EDE9FE)", label:"Última evidencia", val:ultima ? ultima.foto.fecha : "—",
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
+            { bg:"linear-gradient(135deg,#FFEDD5,#FEF3C7)", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
             ...(!isAdmin ? [{
-              bg:"#FEE2E2", label:"Facturas pendientes", val:String(facturasPendientes),
+              bg:"linear-gradient(135deg,#FEE2E2,#FFE4E6)", label:"Facturas pendientes", val:String(facturasPendientes),
               icon:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
               onClick: () => onGoTo("facturas"),
             }] : []),
@@ -179,14 +179,14 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:18 }}>
           {[
-            { bg:"#FFFFFF", label:"Mis campañas", tab:"campanas" as const,
+            { bg:"linear-gradient(180deg,#FFFFFF,#EFF6FF)", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
-            { bg:"#FFFFFF", label:"Mis pantallas", tab:"mispantallas" as const,
+            { bg:"linear-gradient(180deg,#FFFFFF,#ECFDF5)", label:"Mis pantallas", tab:"mispantallas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"#FFFFFF", label:"Reportes", tab:"reportes" as const,
-              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0284C7" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="7" x2="19" y2="7"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="17" x2="19" y2="17"/></svg> },
-            { bg:"#FFFFFF", label:"Nueva campaña", tab:"nueva" as const,
-              icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+            { bg:"linear-gradient(180deg,#FFFFFF,#F5F3FF)", label:"Reportes", tab:"reportes" as const,
+              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="7" x2="19" y2="7"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="17" x2="19" y2="17"/></svg> },
+            { bg:"linear-gradient(180deg,#FFFFFF,#FFF7ED)", label:"Nueva campaña", tab:"nueva" as const,
+              icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
           ].map(q => (
             <div key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, background:q.bg, border:"1px solid #E8EDF5", borderRadius:13, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 7px 16px rgba(15,23,42,0.035)" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:28 }}>
