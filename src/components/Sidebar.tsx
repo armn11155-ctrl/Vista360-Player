@@ -33,8 +33,6 @@ const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: bool
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "contactanos",  icon: <IconContactanos />,  label: "Contáctanos" },
-  { id: "solicitudes",  icon: "🎯",                 label: "Solicitudes de campaña", adminOnly: true },
-  { id: "accesos",      icon: "🔑",                 label: "Usuarios", adminOnly: true },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
 ];
 
