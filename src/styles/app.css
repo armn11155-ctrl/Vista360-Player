@@ -730,29 +730,93 @@
   .report-admin-copy { margin-bottom: 10px; }
   .report-admin-title { color: #fff; font-size: 13px; font-weight: 700; }
   .report-admin-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
-  .report-admin-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .report-admin-controls { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+  .report-month-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 168px;
+    flex: 0 1 220px;
+  }
+  .report-month-field span {
+    color: rgba(226,232,240,.72);
+    font-size: 11px;
+    font-weight: 700;
+  }
   .report-month-input {
-    min-height: 34px;
+    width: 100%;
+    min-height: 40px;
     border: 1px solid rgba(148, 163, 184, 0.2);
     border-radius: 8px;
     background: rgba(2, 6, 23, 0.55);
     color: #fff;
-    padding: 0 10px;
-    font-size: 12px;
+    padding: 0 12px;
+    font-size: 13px;
+    color-scheme: dark;
   }
   .report-generate-btn {
-    min-height: 34px;
+    min-height: 40px;
     border: 0;
     border-radius: 8px;
     background: #3B82F6;
     color: #fff;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    padding: 0 12px;
+    padding: 0 18px;
     cursor: pointer;
   }
   .report-generate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-  .report-admin-status { color: #93C5FD; font-size: 11px; margin-top: 8px; }
+  .report-admin-hint {
+    color: rgba(226,232,240,.58);
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 9px;
+  }
+  .report-admin-status {
+    font-size: 11.5px;
+    line-height: 1.45;
+    margin-top: 9px;
+    border-radius: 8px;
+    padding: 9px 10px;
+  }
+  .report-admin-status.ok {
+    color: #86EFAC;
+    background: rgba(34,197,94,.12);
+  }
+  .report-admin-status.error {
+    color: #FCA5A5;
+    background: rgba(239,68,68,.12);
+  }
+  .report-empty-state {
+    margin-top: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: rgba(15, 23, 42, 0.72);
+    border-radius: 8px;
+    padding: 22px 18px;
+    text-align: center;
+  }
+  .report-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    border-radius: 8px;
+    background: rgba(59,130,246,.16);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .report-empty-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 800;
+  }
+  .report-empty-sub {
+    color: rgba(226,232,240,.62);
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 6px auto 0;
+    max-width: 360px;
+  }
   .report-meta { font-size: 10px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
   .report-tag {
     background: rgba(255,255,255,0.08);
