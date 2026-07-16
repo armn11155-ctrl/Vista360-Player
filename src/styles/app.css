@@ -1887,6 +1887,12 @@
       min-height: 0;
       background: #EEF2F7;
     }
+    .main-area {
+      background:
+        radial-gradient(circle at 26% 0%, rgba(37,99,235,.28), transparent 30%),
+        radial-gradient(circle at 92% 4%, rgba(14,165,233,.15), transparent 28%),
+        linear-gradient(145deg, #07152A 0%, #081B38 46%, #040B18 100%);
+    }
     .screens {
       flex: 1;
       overflow-y: auto;
@@ -1963,10 +1969,11 @@
     .inicio-header {
       padding: 42px 48px 54px !important;
       background:
-        radial-gradient(circle at 18% 10%, rgba(37,99,235,.28), transparent 32%),
-        radial-gradient(circle at 86% 18%, rgba(14,165,233,.14), transparent 28%),
-        linear-gradient(145deg, #07152A 0%, #081B38 52%, #040B18 100%) !important;
-      border-bottom: 1px solid rgba(255,255,255,.07);
+        radial-gradient(circle at -14% 8%, rgba(37,99,235,.28), transparent 34%),
+        radial-gradient(circle at 84% 8%, rgba(14,165,233,.14), transparent 30%),
+        linear-gradient(145deg, #07152A 0%, #081B38 48%, #040B18 100%) !important;
+      border-bottom: 0;
+      box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
     }
     .inicio-header > div,
     .inicio-header > div + div,
@@ -2219,12 +2226,12 @@
       height: 100dvh;
       min-height: 100vh;
       min-height: 100dvh;
-      box-shadow: inset -1px 0 0 rgba(255,255,255,0.06), 18px 0 42px rgba(2,6,23,0.10);
+      box-shadow: none;
       border-right: 0;
       background:
-        radial-gradient(circle at 18% 10%, rgba(37,99,235,.26), transparent 34%),
-        radial-gradient(circle at 86% 18%, rgba(14,165,233,.12), transparent 30%),
-        linear-gradient(145deg, #07152A 0%, #081B38 52%, #040B18 100%);
+        radial-gradient(circle at 74% 0%, rgba(37,99,235,.28), transparent 36%),
+        radial-gradient(circle at 110% 12%, rgba(14,165,233,.12), transparent 30%),
+        linear-gradient(145deg, #07152A 0%, #081B38 48%, #040B18 100%);
       display: flex;
       flex-direction: column;
       position: relative !important;
@@ -2236,6 +2243,7 @@
       inset: 0;
       background:
         linear-gradient(180deg, rgba(255,255,255,.045), transparent 24%),
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,.025) 100%),
         radial-gradient(circle at 52% 102%, rgba(59,130,246,.12), transparent 34%);
       pointer-events: none;
     }
