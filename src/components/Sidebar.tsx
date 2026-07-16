@@ -29,7 +29,7 @@ interface Props {
 const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: boolean }[] = [
   { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
-  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Pantallas" },
+  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },

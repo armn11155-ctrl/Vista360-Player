@@ -21,16 +21,16 @@ export default function MisPantallas({ paneles, onBack }: Props) {
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
         </div>
-        <div className="simple-title">Mis Pantallas</div>
+        <div className="simple-title">Mis Publicidades</div>
         <div style={{ width: 32 }} />
       </div>
       <div className="content-area screens-premium-area">
         <div className="screens-premium-hero">
           <div>
             <div className="screens-premium-kicker">Vista360 Player</div>
-            <div className="screens-premium-title">Monitoreo de pantallas</div>
+            <div className="screens-premium-title">Publicidades activas</div>
             <div className="screens-premium-sub">
-              Estado operativo de las ubicaciones activas de tu campaña.
+              Estado operativo de las ubicaciones donde tu campaña está publicada.
             </div>
           </div>
           <div className="screens-premium-metric">
@@ -46,7 +46,7 @@ export default function MisPantallas({ paneles, onBack }: Props) {
                 <path d="M8 21h8M12 17v4" />
               </svg>
             </div>
-            <div className="screens-empty-title">Aún no hay pantallas activas</div>
+            <div className="screens-empty-title">Aún no hay publicidades activas</div>
             <div className="screens-empty-sub">
               Cuando tu campaña esté publicada, aquí verás cada ubicación y su estado.
             </div>

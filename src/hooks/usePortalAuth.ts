@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import type { User } from "firebase/auth";
-import { auth, db, onUserChange } from "../config/firebase";
+import { auth, db, logout, onUserChange } from "../config/firebase";
 import type { PortalRole, PortalUser } from "../types";
 
 export type AuthState =
@@ -41,6 +41,14 @@ export function usePortalAuth(): AuthState {
           return;
         }
         const data = snap.data() as Omit<PortalUser, "uid">;
+        if (data.archived) {
+          await logout();
+          setState({
+            status: "error",
+            message: "Tu usuario está archivado. Pide al administrador que lo restaure.",
+          });
+          return;
+        }
         const role: PortalRole = data.role ?? "cliente";
         setState({
           status: "in",

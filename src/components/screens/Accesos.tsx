@@ -2,6 +2,7 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
+import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
@@ -20,10 +21,50 @@ function fmtFecha(inv: { createdAt?: { toDate: () => Date } | null }): string {
     " · " + d.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
 }
 
+function MenuButton({ label, onClick, danger, disabled }: { label: string; onClick: () => void; danger?: boolean; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        width: "100%", border: "none", background: "transparent", borderRadius: 9,
+        padding: "10px 11px", textAlign: "left", fontSize: 12.5, fontWeight: 800,
+        color: disabled ? "#CBD5E1" : danger ? "#DC2626" : "#0F172A",
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function MenuLink({ label, href, disabled }: { label: string; href: string; disabled?: boolean }) {
+  if (disabled) {
+    return <MenuButton label={label} onClick={() => undefined} disabled />;
+  }
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      style={{
+        display: "block", borderRadius: 9, padding: "10px 11px", textAlign: "left",
+        fontSize: 12.5, fontWeight: 800, color: "#0F172A", textDecoration: "none",
+      }}
+    >
+      {label}
+    </a>
+  );
+}
+
 export default function Accesos({ onBack }: Props) {
   const state = useInvitaciones(true);
   const clientesState = useClientesAdmin();
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
+  const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
+  const [tab, setTab] = useState<"activos" | "archivados">("activos");
+  const [accionandoId, setAccionandoId] = useState<string | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [clienteId, setClienteId] = useState("");
   const [email, setEmail] = useState("");
@@ -38,6 +79,7 @@ export default function Accesos({ onBack }: Props) {
   const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
 
   async function copiar(id: string, link: string) {
+    if (!link) return;
     try {
       await navigator.clipboard.writeText(link);
       setCopiadoId(id);
@@ -48,6 +90,9 @@ export default function Accesos({ onBack }: Props) {
   }
 
   const invitaciones = state.status === "ready" ? state.invitaciones : [];
+  const usuariosActivos = invitaciones.filter((inv) => !inv.archived);
+  const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
+  const usuariosVisibles = tab === "activos" ? usuariosActivos : usuariosArchivados;
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
   const clienteSeleccionado = clientes.find((c) => c.id === clienteId);
 
@@ -62,6 +107,37 @@ export default function Accesos({ onBack }: Props) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo preparar el avatar.");
     } finally {
       setSubiendoAvatar(false);
+    }
+  }
+
+  async function administrarUsuario(inv: InvitacionPortal, accion: "archivar" | "restaurar" | "eliminar") {
+    if (!cloudFunctions) {
+      setErrorCrear("Firebase Functions no está configurado.");
+      return;
+    }
+
+    const nombre = inv.clienteNombre || inv.email;
+    const confirmado =
+      accion === "archivar"
+        ? window.confirm(`¿Seguro que quieres archivar el usuario de ${nombre}? No podrá entrar hasta que lo restaures.`)
+        : accion === "eliminar"
+          ? window.confirm(`¿Seguro que quieres eliminar definitivamente el usuario de ${nombre}? Esta acción no se puede deshacer.`)
+          : true;
+    if (!confirmado) return;
+
+    setAccionandoId(inv.id);
+    setMenuAbierto(null);
+    setErrorCrear("");
+    try {
+      const fn = httpsCallable<
+        { invitacionId: string; uid?: string; email: string; accion: "archivar" | "restaurar" | "eliminar" },
+        { ok: boolean }
+      >(cloudFunctions, "administrarUsuarioPortal");
+      await fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion });
+    } catch (err) {
+      setErrorCrear(err instanceof Error ? err.message : "No se pudo actualizar el usuario.");
+    } finally {
+      setAccionandoId(null);
     }
   }
 
@@ -116,11 +192,32 @@ export default function Accesos({ onBack }: Props) {
       </div>
 
       <div className="content-area">
-        <div className="card" style={{ background: "rgba(59,130,246,0.12)" }}>
-          <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
-            Aquí administras los usuarios del portal. Cada usuario queda vinculado a un cliente
-            existente de tu base de datos mediante su <strong>clienteId</strong>.
-          </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {[
+            { id: "activos" as const, label: "Activos", count: usuariosActivos.length },
+            { id: "archivados" as const, label: "Archivados", count: usuariosArchivados.length },
+          ].map((item) => {
+            const active = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setTab(item.id)}
+                style={{
+                  border: active ? "1px solid #2563EB" : "1px solid #E5E7EB",
+                  background: active ? "rgba(37,99,235,0.09)" : "#fff",
+                  color: active ? "#1D4ED8" : "#64748B",
+                  borderRadius: 12,
+                  minHeight: 42,
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                {item.label} <span style={{ color: active ? "#7C3AED" : "#94A3B8" }}>{item.count}</span>
+              </button>
+            );
+          })}
         </div>
 
         <button
@@ -206,22 +303,22 @@ export default function Accesos({ onBack }: Props) {
             {state.message}
           </div>
         )}
-        {state.status === "ready" && invitaciones.length === 0 && (
+        {state.status === "ready" && usuariosVisibles.length === 0 && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            Aún no se ha creado ningún usuario.
+            {tab === "activos" ? "Aún no hay usuarios activos." : "No hay usuarios archivados."}
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-          {invitaciones.map((inv) => {
+          {usuariosVisibles.map((inv) => {
             const yaCopiado = copiadoId === inv.id;
             const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
               `Hola, aquí tienes tu acceso a Vista360 Player. Crea tu contraseña con este link: ${inv.link}`
             )}`;
             return (
-              <div className="card" key={inv.id}>
-                <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
-                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={38} radius={10} />
+              <div className="card" key={inv.id} style={{ padding: 12, position: "relative" }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={42} radius={12} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {inv.clienteNombre || inv.email}
@@ -234,31 +331,52 @@ export default function Accesos({ onBack }: Props) {
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 1 }}>{inv.email}</div>
                     <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>{fmtFecha(inv)}</div>
                   </div>
-                </div>
-                <div style={{ display: "flex", gap: 8 }}>
                   <button
-                    onClick={() => copiar(inv.id, inv.link)}
+                    type="button"
+                    onClick={() => setMenuAbierto((id) => id === inv.id ? null : inv.id)}
                     style={{
-                      flex: 1, background: yaCopiado ? "rgba(34,197,94,0.12)" : "var(--accent)",
-                      color: yaCopiado ? "var(--green)" : "#fff", border: "none", borderRadius: 10,
-                      padding: "10px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer",
+                      width: 34, height: 34, borderRadius: 17, border: "1px solid #E5E7EB",
+                      background: "#fff", color: "#64748B", fontSize: 18, fontWeight: 900,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: "pointer", flexShrink: 0, lineHeight: 1,
                     }}
+                    aria-label="Opciones del usuario"
                   >
-                    {yaCopiado ? "✓ Copiado" : "📋 Copiar link"}
+                    ⋯
                   </button>
-                  <a
-                    href={whatsappHref}
-                    target="_blank"
-                    rel="noreferrer"
+                </div>
+                {accionandoId === inv.id && (
+                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>
+                    Actualizando...
+                  </div>
+                )}
+                {yaCopiado && (
+                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#16A34A", fontWeight: 800 }}>
+                    Link copiado
+                  </div>
+                )}
+                {menuAbierto === inv.id && (
+                  <div
                     style={{
-                      background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
-                      borderRadius: 10, padding: "10px 14px", color: "#16A34A", fontSize: 12.5,
-                      fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center",
+                      position: "absolute", top: 52, right: 12, zIndex: 20, minWidth: 178,
+                      background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12,
+                      boxShadow: "0 18px 38px rgba(15,23,42,0.16)", padding: 6,
                     }}
                   >
-                    💬
-                  </a>
-                </div>
+                    {tab === "activos" ? (
+                      <>
+                        <MenuButton label="Copiar link" onClick={() => copiar(inv.id, inv.link)} disabled={!inv.link} />
+                        <MenuLink label="Enviar por WhatsApp" href={whatsappHref} disabled={!inv.link} />
+                        <MenuButton label="Archivar usuario" danger onClick={() => administrarUsuario(inv, "archivar")} />
+                      </>
+                    ) : (
+                      <>
+                        <MenuButton label="Restaurar usuario" onClick={() => administrarUsuario(inv, "restaurar")} />
+                        <MenuButton label="Eliminar definitivo" danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}

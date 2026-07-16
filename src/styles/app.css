@@ -5,6 +5,7 @@
   :root {
     --app-height: 100dvh;
     --visual-height: 100dvh;
+    --app-bg: #060C1A;
     --bg: #F2F4F8;
     --dark: #0D1629;
     --darker: #07101F;
@@ -65,7 +66,7 @@
     min-height: var(--app-height);
     overflow: hidden;
     overscroll-behavior: none;
-    background: var(--bg);
+    background: var(--app-bg);
     -webkit-text-size-adjust: 100%;
   }
 
@@ -87,7 +88,7 @@
     min-height: 100dvh;
     min-height: var(--app-height);
     overflow: hidden;
-    background: var(--bg);
+    background: var(--app-bg);
   }
 
   /* Contenedor principal — en móvil ocupa toda la pantalla (ver
@@ -97,7 +98,7 @@
     width: 100%;
     height: var(--app-height);
     min-height: var(--app-height);
-    background: var(--bg);
+    background: var(--app-bg);
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -246,15 +247,14 @@
       min-height: 100%;
       min-height: -webkit-fill-available;
       min-height: var(--app-height);
-      background: var(--bg);
+      background: var(--app-bg);
     }
     .app-shell {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: var(--app-height);
-      min-height: var(--app-height);
+      inset: 0;
+      width: auto;
+      height: auto;
+      min-height: 0;
       max-height: none;
       margin: 0;
       background: var(--bg);
@@ -1518,7 +1518,7 @@
   }
   .profile-metric-row.blue strong { color: #2563EB; }
   .profile-metric-row.green strong { color: #16A34A; }
-  .profile-metric-row.orange strong { color: #F97316; }
+  .profile-metric-row.orange strong { color: #7C3AED; }
   .menu-item.danger .menu-item-icon { background: rgba(239,68,68,0.14); }
 
   .facturas-screen {
@@ -1766,6 +1766,7 @@
     background-image:
       linear-gradient(180deg, rgba(4,10,24,0.76) 0%, rgba(5,14,32,0.40) 44%, rgba(4,10,24,0.08) 74%, rgba(4,10,24,0.30) 100%),
       url('/login-bg.jpg');
+    background-color: var(--app-bg);
     background-size: cover;
     background-position: center bottom;
     background-repeat: no-repeat;
@@ -2849,7 +2850,7 @@
   .solicitud-action.secondary { background: #F1F5F9; color: #0D1629; }
   .solicitud-action.whatsapp { background: #22C55E; color: #fff; }
 
-  /* ===== Botón de regreso genérico (Portafolio/Cobertura/Mis Pantallas/Impacto/Contáctanos) ===== */
+  /* ===== Botón de regreso genérico (Portafolio/Cobertura/Mis Publicidades/Impacto/Contáctanos) ===== */
   .back-btn {
     width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
@@ -3286,7 +3287,7 @@
   .coverage-bar-track { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.08); margin-top: 5px; overflow: hidden; }
   .coverage-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
 
-  /* ===== Mis Pantallas ===== */
+  /* ===== Mis Publicidades ===== */
   .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .screens-premium-area { background: #08111f; }
   .screens-premium-hero {

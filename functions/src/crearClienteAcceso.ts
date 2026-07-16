@@ -110,6 +110,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
     }, { merge: true });
 
     await db.collection("invitacionesPortal").add({
+      uid: userRecord.uid,
       email,
       clienteId,
       clienteNombre: empresa,

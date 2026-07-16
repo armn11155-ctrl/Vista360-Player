@@ -4,15 +4,17 @@ import { db } from "../config/firebase";
 
 export interface InvitacionPortal {
   id: string;
-  uid: string;
+  uid?: string;
   email: string;
   clienteId: string | null;
   clienteNombre: string;
   avatarKey?: string;
   avatarUrl?: string;
-  esAdmin: boolean;
+  esAdmin?: boolean;
   link: string;
+  archived?: boolean;
   createdAt?: { toDate: () => Date } | null;
+  archivedAt?: { toDate: () => Date } | null;
 }
 
 export type InvitacionesState =
@@ -29,7 +31,7 @@ export function useInvitaciones(isAdmin: boolean): InvitacionesState {
 
   useEffect(() => {
     if (!db || !isAdmin) return;
-    const q = query(collection(db, "invitacionesPortal"), orderBy("createdAt", "desc"), limit(30));
+    const q = query(collection(db, "invitacionesPortal"), orderBy("createdAt", "desc"), limit(80));
     const unsub = onSnapshot(
       q,
       (snap) => {

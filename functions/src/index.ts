@@ -6,3 +6,4 @@ export { generarReporteCliente } from "./generarReporteCliente.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
 export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
+export { administrarUsuarioPortal } from "./administrarUsuarioPortal.js";

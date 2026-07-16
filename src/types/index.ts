@@ -94,6 +94,7 @@ export interface PortalUser {
   nombre?: string;
   avatarKey?: string;
   avatarUrl?: string;
+  archived?: boolean;
   createdAt?: Timestamp | null;
 }
 

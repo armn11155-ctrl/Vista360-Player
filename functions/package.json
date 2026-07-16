@@ -6,7 +6,7 @@
   "engines": { "node": "20" },
   "scripts": {
     "build": "tsc",
-    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:registrarVisita,functions:listarAccesosClientes,functions:generarReporteCliente,functions:crearClienteAcceso,functions:actualizarAvatarCliente,functions:comprimirFacturaPdf"
+    "deploy": "firebase deploy --only functions:getCloudinarySignature,functions:registrarAcceso,functions:registrarVisita,functions:listarAccesosClientes,functions:generarReporteCliente,functions:crearClienteAcceso,functions:actualizarAvatarCliente,functions:comprimirFacturaPdf,functions:administrarUsuarioPortal"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.731.1",

@@ -12,7 +12,7 @@ const NOMBRES_PANTALLA: Record<string, string> = {
   nueva: "Nueva campaña",
   portafolio: "Portafolio",
   cobertura: "Cobertura",
-  mispantallas: "Mis Pantallas",
+  mispantallas: "Mis Publicidades",
   impacto: "Impacto",
   contactanos: "Contáctanos",
 };
