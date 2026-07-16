@@ -3068,6 +3068,12 @@
     }
     .sidebar-head { background: #050A12; }
     .sidebar-panel.open { transform: translateX(0); }
+    /* Pill de vidrio deslizante — solo escritorio (ver @media min-width:900px
+       más arriba, donde se define display:block y el estilo real). Antes esto
+       vivía como regla suelta más abajo en el archivo y, por venir DESPUÉS
+       en el orden del CSS que el override de escritorio, ganaba la cascada
+       en TODOS los anchos (bug: el pill nunca se veía ni en desktop). */
+    .sidebar-pill { display: none; }
   }
 
   /* Layout compartido del sidebar — idéntico en móvil y escritorio */
@@ -3106,9 +3112,6 @@
     position: relative;
     z-index: 1;
   }
-  /* Pill de vidrio deslizante detrás del ítem activo — solo escritorio,
-     ver estilos reales dentro de @media (min-width: 900px) más arriba. */
-  .sidebar-pill { display: none; }
   .sidebar-item-desktop-only { display: none; }
   .sidebar-item-icon {
     font-size: 19px; width: 26px; height: 26px; flex-shrink: 0;
