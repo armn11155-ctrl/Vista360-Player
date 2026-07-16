@@ -4,3 +4,4 @@ export { registrarVisita } from "./registrarVisita.js";
 export { listarAccesosClientes } from "./listarAccesosClientes.js";
 export { generarReporteCliente } from "./generarReporteCliente.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
+export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";

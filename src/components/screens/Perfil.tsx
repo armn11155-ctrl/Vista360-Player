@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato } from "../../types";
 import { estadoCampana } from "../../types";
-import { app, db, logout } from "../../config/firebase";
+import { cloudFunctions, db, logout } from "../../config/firebase";
 import { subirAvatarCloudinary } from "../../config/cloudinary";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
@@ -31,27 +30,6 @@ type ProfileIcon =
   | "logout";
 
 type MetricTone = "blue" | "green" | "orange";
-
-function avatarStorageKey(clienteId?: string) {
-  return clienteId ? `vista360:cliente-avatar:${clienteId}` : "";
-}
-
-function guardarAvatarLocal(clienteId: string, url: string) {
-  try {
-    window.localStorage.setItem(avatarStorageKey(clienteId), url);
-  } catch {
-    // Si el navegador bloquea localStorage, Firestore sigue siendo la fuente principal.
-  }
-}
-
-function leerAvatarLocal(clienteId?: string) {
-  try {
-    const key = avatarStorageKey(clienteId);
-    return key ? window.localStorage.getItem(key) || "" : "";
-  } catch {
-    return "";
-  }
-}
 
 function rucCliente(cliente: Cliente | null) {
   return cliente?.ruc || cliente?.documento || cliente?.documentoIdentidad || cliente?.numDoc || cliente?.numeroDocumento || cliente?.cliente_doc || "";
@@ -142,22 +120,18 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     : 0;
   const fileRef = useRef<HTMLInputElement>(null);
   const pendingAvatarRef = useRef("");
-  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl || leerAvatarLocal(cliente?.id));
+  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
 
   useEffect(() => {
     if (cliente?.avatarUrl) {
       pendingAvatarRef.current = "";
-      guardarAvatarLocal(cliente.id, cliente.avatarUrl);
       setAvatarUrl(cliente.avatarUrl);
       return;
     }
 
-    const localAvatar = leerAvatarLocal(cliente?.id);
-    if (localAvatar) {
-      setAvatarUrl(localAvatar);
-    } else if (!pendingAvatarRef.current) {
+    if (!pendingAvatarRef.current) {
       setAvatarUrl("");
     }
     setAvatarError("");
@@ -167,6 +141,10 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file || !cliente?.id || !db) return;
+    if (!cloudFunctions) {
+      setAvatarError("Firebase Functions no está configurado.");
+      return;
+    }
 
     setAvatarError("");
     setSubiendoAvatar(true);
@@ -174,13 +152,12 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
       const webp = await comprimirAvatarWebp(file);
       const url = await subirAvatarCloudinary(webp);
       pendingAvatarRef.current = url;
-      guardarAvatarLocal(cliente.id, url);
       setAvatarUrl(url);
-      await updateDoc(doc(db, "clientes", cliente.id), { avatarUrl: url, avatarKey: "custom" });
-      const uid = getAuth(app ?? undefined).currentUser?.uid;
-      if (uid) {
-        await updateDoc(doc(db, "portalUsers", uid), { avatarUrl: url, avatarKey: "custom" }).catch(() => undefined);
-      }
+      const fn = httpsCallable<{ clienteId: string; avatarUrl: string }, { clienteId: string; avatarUrl: string }>(
+        cloudFunctions,
+        "actualizarAvatarCliente"
+      );
+      await fn({ clienteId: cliente.id, avatarUrl: url });
     } catch (err) {
       setAvatarError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
     } finally {
