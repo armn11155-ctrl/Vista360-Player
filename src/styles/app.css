@@ -3080,11 +3080,12 @@
       overflow: hidden;
     }
     .sidebar-head {
-      background: transparent;
+      background: #050A12 !important;
       padding-left: 18px;
       padding-right: 16px;
     }
     .sidebar-head .sidebar-logo-img { width: 154px; }
+    .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     .sidebar-list { padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
     .sidebar-item {
@@ -3097,19 +3098,21 @@
       color: rgba(255,255,255,0.74);
     }
     .sidebar-item-icon,
-    .sidebar-item-label { color: rgba(255,255,255,0.74); }
+    .sidebar-item-label { color: #fff !important; }
     .sidebar-item-label { font-size: 14px; }
     .sidebar-item-chevron { display: none; }
     .sidebar-item-active .sidebar-item-icon,
     .sidebar-item-active .sidebar-item-label { color: #fff; }
     .sidebar-item-active .sidebar-item-label { font-weight: 700; }
     .sidebar-item-danger .sidebar-item-icon,
-    .sidebar-item-danger .sidebar-item-label { color: #fb7185; }
+    .sidebar-item-danger .sidebar-item-label { color: #fff !important; }
     .sidebar-bottom { gap: 7px; }
+    .sidebar-bottom-section-switch,
     .sidebar-bottom-section-logout {
       border-top-color: rgba(255,255,255,0.1);
       padding-top: 7px;
     }
+    .sidebar-bottom-section-switch { border-top: 1px solid rgba(255,255,255,0.1); }
     .sidebar-pill {
       display: block;
       position: absolute;
