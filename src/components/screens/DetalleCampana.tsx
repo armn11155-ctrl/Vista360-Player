@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { db } from "../../config/firebase";
@@ -41,13 +41,50 @@ function StatBox({ label, value }: { label: string; value: string }) {
   );
 }
 
+function HeaderIcon({ type }: { type: "calendar" | "pin" }) {
+  const common = {
+    width: 13,
+    height: 13,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  return (
+    <svg {...common} aria-hidden="true">
+      {type === "calendar" ? (
+        <>
+          <rect x="3" y="4" width="18" height="18" rx="2" />
+          <path d="M16 2v4M8 2v4M3 10h18" />
+        </>
+      ) : (
+        <>
+          <path d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
+          <circle cx="12" cy="10" r="2.4" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+function EmptyReportsIcon() {
+  return (
+    <svg width="42" height="42" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <rect x="7" y="8" width="34" height="32" rx="7" fill="#EEF4FF" />
+      <path d="M14 31l7-8 6 6 4-5 4 7" stroke="#2563EB" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="32" cy="17" r="3" fill="#93C5FD" />
+      <rect x="7" y="8" width="34" height="32" rx="7" stroke="#BFDBFE" strokeWidth="2" />
+    </svg>
+  );
+}
+
 export default function DetalleCampana({ contrato, panel, clienteNombre, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
-  const [subiendo, setSubiendo] = useState(false);
   const [subiendoPortada, setSubiendoPortada] = useState(false);
   const [error, setError] = useState("");
   const [portadaUrl, setPortadaUrl] = useState(contrato.imagenCampaniaUrl ?? "");
-  const fileRef = useRef<HTMLInputElement>(null);
   const portadaRef = useRef<HTMLInputElement>(null);
 
   const estado = estadoCampana(contrato);
@@ -57,24 +94,6 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
   useEffect(() => {
     setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
   }, [contrato.id, contrato.imagenCampaniaUrl]);
-
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !db) return;
-    setError("");
-    setSubiendo(true);
-    try {
-      const archivoOptimizado = await comprimirImagen(file);
-      const url = await subirEvidenciaCloudinary(archivoOptimizado);
-      const fecha = new Date().toISOString().slice(0, 10);
-      await updateDoc(doc(db, "contratos", contrato.id), { fotos_campania: arrayUnion({ url, fecha }) });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo subir la foto.");
-    } finally {
-      setSubiendo(false);
-    }
-  }
 
   async function cambiarPortada(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -107,7 +126,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
-      <div style={{ background: "#0D1629", padding: "calc(22px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
+      <div style={{ background: "#060C1A", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
@@ -117,7 +136,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
         </div>
 
         {/* Campaign card in header */}
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
             {imagenPortada ? (
               <img
@@ -152,22 +171,30 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
             </div>
             <Badge estado={estado} />
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 6, display: "flex", gap: 12 }}>
-              <span>📅 {contrato.inicio} – {contrato.fin}</span>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 7, display: "flex", gap: 6, alignItems: "center" }}>
+              <HeaderIcon type="calendar" />
+              <span>{contrato.inicio} - {contrato.fin}</span>
             </div>
-            {panel && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>📍 {panel.nombre} · {panel.ciudad}</div>}
+            {panel && (
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 3, display: "flex", gap: 6, alignItems: "center" }}>
+                <HeaderIcon type="pin" />
+                <span>{panel.nombre} · {panel.ciudad}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      <div style={{ height: 3, background: "#2563EB", flexShrink: 0 }} />
+
       {/* Tabs */}
-      <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {TABS.map((t) => (
           <div key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: "13px 18px", fontSize: 13, fontWeight: tab === t.id ? 600 : 400,
+            padding: "16px 0 14px", fontSize: 15, fontWeight: tab === t.id ? 800 : 500,
             color: tab === t.id ? "#2563EB" : "#6B7280",
-            borderBottom: tab === t.id ? "2px solid #2563EB" : "2px solid transparent",
-            cursor: "pointer",
+            borderBottom: tab === t.id ? "3px solid #2563EB" : "3px solid transparent",
+            cursor: "pointer", textAlign: "center",
           }}>
             {t.label}
           </div>
@@ -228,7 +255,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               <div style={{ fontSize: 13, color: "#6B7280", display: "flex", flexDirection: "column", gap: 6 }}>
                 <div>Cara del panel: <strong style={{ color: "#0D1629" }}>{contrato.cara ?? "—"}</strong></div>
                 <div>Monto: <strong style={{ color: "#0D1629" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
-                <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado ✓" : "Pendiente"}</strong></div>
+                <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
               </div>
             </div>
           </>
@@ -237,49 +264,17 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
         {/* ── TAB REPORTES ── */}
         {tab === "reportes" && (
           <div>
-            {/* Zona de subida — siempre arriba y prominente para el admin */}
-            {isAdmin && (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 12 }}>
-                  Subir reporte
-                </div>
-                <input ref={fileRef} type="file" accept="image/*,video/*" capture="environment" style={{ display: "none" }} onChange={handleFile} />
-                {error && (
-                  <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
-                    {error}
-                  </div>
-                )}
-                <div
-                  onClick={() => !subiendo && fileRef.current?.click()}
-                  style={{
-                    border: "2px dashed #BFDBFE", borderRadius: 14, padding: "20px 16px",
-                    textAlign: "center", cursor: subiendo ? "default" : "pointer",
-                    background: subiendo ? "#F0F9FF" : "#EFF6FF",
-                    transition: "background 0.15s",
-                  }}
-                >
-                  {subiendo ? (
-                    <>
-                      <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Subiendo foto…</div>
-                      <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>Espera un momento</div>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Toca para agregar foto o video del reporte</div>
-                      <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
-                    </>
-                  )}
-                </div>
+            {error && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
+                {error}
               </div>
             )}
 
             {/* Galería de evidencias */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629" }}>
-                  Reportes registrados
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629" }}>
+                  Reportes de campaña
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>
                   {fotos.length} foto{fotos.length !== 1 ? "s" : ""}
@@ -325,9 +320,10 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                 </div>
               ) : (
                 <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF" }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>🖼️</div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                    <EmptyReportsIcon />
+                  </div>
                   <div style={{ fontSize: 13 }}>Aún no hay reportes registrados</div>
-                  {isAdmin && <div style={{ fontSize: 12, marginTop: 4 }}>Usa el botón de arriba para agregar el primero</div>}
                 </div>
               )}
             </div>
