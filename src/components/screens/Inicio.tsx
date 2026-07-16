@@ -130,7 +130,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
           {isAdmin ? "Hola Admin" : nombre}
         </div>
         {/* Pill */}
-        <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"7px 13px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
+        <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"7px 13px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
           <div style={{ width:9, height:9, borderRadius:"50%", background:"#22C55E" }} />
           <span style={{ fontSize:13, color:"#fff", fontWeight:650 }}>{todoOk ? "Todo funcionando" : "Revisa tus campañas"}</span>
         </div>
