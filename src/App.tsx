@@ -125,7 +125,7 @@ export default function App() {
         : auth.status === "out"
           ? "#050A12"
           : auth.role === "admin" && !adminClienteId
-            ? "#0B1220"
+            ? "#050A12"
             : VIEW_COLORS[view] ?? "#0B1220";
   const pageBackground =
     auth.status === "in" && !(auth.role === "admin" && !adminClienteId)

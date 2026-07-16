@@ -5,6 +5,7 @@
   :root {
     --app-height: 100dvh;
     --visual-height: 100dvh;
+    --app-bleed-bottom: 140px;
     --app-bg: #050A12;
     --bg: #F6F8FB;
     --dark: #0B1220;
@@ -262,6 +263,14 @@
       margin: 0;
       background: var(--app-bg);
       overscroll-behavior: none;
+    }
+    .app-shell.no-bottom-nav,
+    .app-shell:has(.login-shell),
+    .app-shell:has(.state-screen),
+    .app-shell:has(.admin-picker-shell) {
+      bottom: calc(-1 * var(--app-bleed-bottom));
+      height: calc(var(--app-height) + var(--app-bleed-bottom));
+      max-height: none;
     }
     .main-area,
     .screens {
@@ -2421,8 +2430,8 @@
      grid que se adapta solo de móvil a escritorio. */
   .admin-picker-shell {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom));
-    min-height: var(--app-height);
+    top: 0; left: 0; right: 0; bottom: calc(-1 * var(--app-bleed-bottom));
+    min-height: calc(var(--app-height) + var(--app-bleed-bottom));
     z-index: 5;
     display: flex;
     flex-direction: column;
@@ -2434,8 +2443,8 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: -80px;
-    height: calc(96px + env(safe-area-inset-bottom));
+    bottom: calc(-1 * var(--app-bleed-bottom));
+    height: calc(var(--app-bleed-bottom) + env(safe-area-inset-bottom));
     background: #050A12;
     pointer-events: none;
   }
