@@ -30,6 +30,8 @@ type ProfileIcon =
   | "switch"
   | "logout";
 
+type MetricTone = "blue" | "green" | "orange";
+
 function Icon({ type }: { type: ProfileIcon }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   const paths: Record<ProfileIcon, React.ReactNode> = {
@@ -88,6 +90,21 @@ function ProfileSection({ title, children }: { title: string; children: React.Re
   );
 }
 
+function ProfileMetricRow({ icon, label, value, tone }: {
+  icon: ProfileIcon;
+  label: string;
+  value: string;
+  tone: MetricTone;
+}) {
+  return (
+    <div className={`profile-metric-row ${tone}`}>
+      <span className="profile-metric-icon"><Icon type={icon} /></span>
+      <span className="profile-metric-label">{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ejecutivo = cliente?.ejecutivo ?? "Vista360";
@@ -140,18 +157,17 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
   return (
     <div className="profile-screen">
       <header className="profile-top">
-        <div className="profile-top-spacer" />
-        <img src="/logo-player.png" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
-        <button type="button" className="profile-bell" aria-label="Notificaciones">
-          <Icon type="bell" />
-          <span>1</span>
-        </button>
-      </header>
+        <div className="profile-top-bar">
+          <img src="/logo-player.png" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
+          <button type="button" className="profile-bell" aria-label="Notificaciones">
+            <Icon type="bell" />
+            <span>1</span>
+          </button>
+        </div>
 
-      <main className="profile-content">
-        <section className="profile-company-card">
+        <section className="profile-hero-company">
           <div className="profile-avatar-wrap">
-            <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={64} radius={32} iconScale={0.82} />
+            <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
             {isAdmin && (
               <>
                 <input ref={fileRef} type="file" accept="image/*" className="profile-avatar-input" onChange={cambiarFotoPerfil} />
@@ -168,12 +184,19 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
           </div>
           <div className="profile-company-copy">
             <h1>{empresa}</h1>
-            <p>{email || cliente?.email || "Cliente desde Enero 2024"}</p>
-            <span className="profile-verified">Cuenta verificada</span>
+            <p>{email || cliente?.email || "Cliente Vista360"}</p>
+            <span className="profile-verified">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+              Cuenta verificada
+            </span>
             {isAdmin && avatarError && <div className="profile-avatar-error">{avatarError}</div>}
           </div>
         </section>
+      </header>
 
+      <main className="profile-content">
         <ProfileSection title="Información de la empresa">
           <ProfileRow icon="company" label="RUC cliente" value={cliente?.ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
@@ -181,19 +204,17 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
         </ProfileSection>
 
         <ProfileSection title="Resumen de cuenta">
-          <ProfileRow icon="campaign" label="Campañas activas" value={String(activas)} />
-          <ProfileRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} />
-          <ProfileRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} />
-          <ProfileRow icon="clock" label="Ciudad principal" value={cliente?.ciudad || "Lima"} />
+          <div className="profile-metric-card">
+            <ProfileMetricRow icon="campaign" label="Campañas activas" value={String(activas)} tone="blue" />
+            <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
+            <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="orange" />
+          </div>
         </ProfileSection>
 
         <ProfileSection title="Soporte">
           <ProfileRow icon="executive" label="Contáctanos" value={ejecutivo} onClick={onContactanos} />
-        </ProfileSection>
-
-        <div className="profile-logout-card">
           <ProfileRow icon="logout" label="Cerrar sesión" danger onClick={() => logout()} />
-        </div>
+        </ProfileSection>
       </main>
     </div>
   );
