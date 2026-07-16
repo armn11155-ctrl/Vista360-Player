@@ -171,33 +171,31 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           const pct = progreso(c);
           const panelNombre = paneles[c.panel_id]?.nombre ?? c.panel_id;
           return (
-            <div key={c.id} onClick={() => onAbrir(c)} style={{
-              background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12,
-              boxShadow: "0 1px 4px rgba(0,0,0,0.07)", cursor: "pointer", display: "flex", gap: 13, alignItems: "flex-start",
-            }}>
+            <div key={c.id} className="premium-campaign-card" onClick={() => onAbrir(c)}>
               <BrandThumb name={clienteNombre || panelNombre} size={72} radius={12} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#0B1220" }}>{panelNombre}</div>
+                  <div className="premium-campaign-title">{panelNombre}</div>
                 </div>
                 <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 6, padding: "2px 8px", marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>{estado}</span>
                 </div>
-                <div style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 4, marginBottom: 2 }}>
+                <div className="premium-campaign-meta">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
                   {panelNombre}
                 </div>
-                <div style={{ fontSize: 12, color: "#6B7280", display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                <div className="premium-campaign-meta premium-campaign-date">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   {c.inicio} – {c.fin}
                 </div>
                 {estado !== "Finalizada" && (
                   <div>
-                    <div style={{ height: 4, background: "#E5E7EB", borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: "#0877FF", borderRadius: 4, transition: "width .3s" }} />
+                    <div className="premium-campaign-progress">
+                      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#0877FF,#52A5FF)", borderRadius: 4, transition: "width .3s" }} />
                     </div>
-                    <div style={{ fontSize: 12, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
+                    <div className="premium-campaign-progress-label">{pct}% completado</div>
                   </div>
                 )}
                 {!isAdmin && estado === "Finalizada" && (
@@ -254,7 +252,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                   )
                 )}
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" style={{ marginTop: 4, flexShrink: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" style={{ marginTop: 4, flexShrink: 0 }}>
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </div>
