@@ -10,6 +10,7 @@ import { logout } from "./config/firebase";
 import ConfigMissing from "./components/ConfigMissing";
 import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
+import BrandLoader from "./components/BrandLoader";
 import AdminClientPicker from "./components/AdminClientPicker";
 import BottomNav, { type Tab } from "./components/BottomNav";
 import Sidebar from "./components/Sidebar";
@@ -136,9 +137,7 @@ export default function App() {
     return (
       <div className="app-shell">
         <OfflineBanner online={online} />
-        <div className="state-screen">
-          <div className="state-title">Cargando…</div>
-        </div>
+        <BrandLoader />
       </div>
     );
   }
@@ -173,9 +172,7 @@ export default function App() {
             <OfflineBanner online={online} />
             <Suspense
               fallback={
-                <div className="state-screen">
-                  <div className="state-title">Cargando…</div>
-                </div>
+                <BrandLoader />
               }
             >
               {view === "solicitudes"
@@ -292,9 +289,7 @@ function AuthenticatedApp({
 
   if (contratosState.status === "loading") {
     content = (
-      <div className="state-screen">
-        <div className="state-title">Cargando campañas…</div>
-      </div>
+      <BrandLoader label="Cargando campañas" />
     );
   } else if (contratosState.status === "error") {
     content = (
@@ -455,9 +450,7 @@ function AuthenticatedApp({
           <div className="screen active">
             <Suspense
               fallback={
-                <div className="state-screen">
-                  <div className="state-title">Cargando…</div>
-                </div>
+                <BrandLoader />
               }
             >
               {content}
