@@ -34,6 +34,8 @@ export interface Cliente {
   ejecutivo?: string;
   avatarKey?: string;
   avatarUrl?: string;
+  archived?: boolean;
+  archivedAt?: Timestamp | null;
   createdAt?: Timestamp | null;
 }
 
