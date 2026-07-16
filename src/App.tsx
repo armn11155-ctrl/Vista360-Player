@@ -65,24 +65,24 @@ type View =
 // el background de su header (.header-dark, .header-light, etc). Se usa
 // para sincronizar la barra de estado (ver useThemeColor).
 const VIEW_COLORS: Record<View, string> = {
-  inicio: "#07152A",
-  campanas: "#0D1629",
-  detalle: "#0D1629",
-  evidencias: "#0D1629",
-  reportes: "#0D1629",
-  perfil: "#07152A",
-  nueva: "#0D1629",
-  portafolio: "#0D1629",
-  cobertura: "#0D1629",
-  mispantallas: "#0D1629",
-  impacto: "#0D1629",
-  contactanos: "#0D1629",
-  analitica: "#0D1629",
-  solicitudes: "#0D1629",
-  accesos: "#0D1629",
-  facturas: "#0D1629",
-  notificaciones: "#0D1629",
-  nuevoCliente: "#0D1629",
+  inicio: "#050A12",
+  campanas: "#0B1220",
+  detalle: "#0B1220",
+  evidencias: "#0B1220",
+  reportes: "#0B1220",
+  perfil: "#050A12",
+  nueva: "#0B1220",
+  portafolio: "#0B1220",
+  cobertura: "#0B1220",
+  mispantallas: "#0B1220",
+  impacto: "#0B1220",
+  contactanos: "#0B1220",
+  analitica: "#0B1220",
+  solicitudes: "#0B1220",
+  accesos: "#0B1220",
+  facturas: "#0B1220",
+  notificaciones: "#0B1220",
+  nuevoCliente: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -121,12 +121,12 @@ export default function App() {
     envMissing.length > 0
       ? "#1a0707"
       : auth.status === "loading" || auth.status === "error"
-        ? "#0D1629"
+        ? "#0B1220"
         : auth.status === "out"
-          ? "#060C1A"
+          ? "#050A12"
           : auth.role === "admin" && !adminClienteId
-            ? "#0D1629"
-            : VIEW_COLORS[view] ?? "#0D1629";
+            ? "#0B1220"
+            : VIEW_COLORS[view] ?? "#0B1220";
   const pageBackground =
     auth.status === "in" && !(auth.role === "admin" && !adminClienteId)
       ? "#FFFFFF"

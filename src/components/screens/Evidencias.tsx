@@ -87,7 +87,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
         {/* Zona de subida — solo admin */}
         {isAdmin && (
           <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0D1629", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 12 }}>
               📸 Subir evidencia
             </div>
 
@@ -100,7 +100,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
                 <select
                   value={contratoSeleccionado}
                   onChange={(e) => setContratoSeleccionado(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E5E7EB", fontSize: 14, color: "#0D1629", background: "#fff", boxSizing: "border-box" as const }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E5E7EB", fontSize: 14, color: "#0B1220", background: "#fff", boxSizing: "border-box" as const }}
                 >
                   <option value="">Selecciona una campaña…</option>
                   {contratos.map((c) => (
@@ -135,12 +135,12 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
               {subiendo ? (
                 <>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Subiendo…</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#0877FF" }}>Subiendo…</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2563EB" }}>Toca para agregar foto o video</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#0877FF" }}>Toca para agregar foto o video</div>
                   <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
                 </>
               )}

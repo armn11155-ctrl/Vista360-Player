@@ -27,7 +27,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 12,
   padding: "12px 13px",
   fontSize: 14,
-  color: "#0D1629",
+  color: "#0B1220",
   boxSizing: "border-box",
   outline: "none",
 };
@@ -119,7 +119,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8FAFD" }}>
-      <div style={{ background: "#0D1629", padding: "calc(18px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
+      <div style={{ background: "#0B1220", padding: "calc(18px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <BackChevron />
@@ -133,7 +133,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
         <div style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
           <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 16 }}>
-            Cliente seleccionado: <strong style={{ color: "#0D1629" }}>{cliente?.empresa ?? "Cliente actual"}</strong>. Aquí sólo se crea el acceso al portal.
+            Cliente seleccionado: <strong style={{ color: "#0B1220" }}>{cliente?.empresa ?? "Cliente actual"}</strong>. Aquí sólo se crea el acceso al portal.
           </div>
 
           <div style={{ display: "grid", gap: 12 }}>
@@ -188,7 +188,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           {!resultado && (
             <button onClick={crear} disabled={creando || subiendoAvatar} style={{
               width: "100%", marginTop: 16, padding: "14px", border: "none", borderRadius: 12,
-              background: creando || subiendoAvatar ? "#93C5FD" : "#2563EB", color: "#fff", fontWeight: 800, fontSize: 14,
+              background: creando || subiendoAvatar ? "#93C5FD" : "#0877FF", color: "#fff", fontWeight: 800, fontSize: 14,
               cursor: creando || subiendoAvatar ? "not-allowed" : "pointer",
             }}>
               {creando ? "Creando usuario..." : subiendoAvatar ? "Preparando avatar..." : "Crear usuario y contraseña"}
@@ -197,7 +197,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
         </div>
 
         {resultado && (
-          <div style={{ background: "#0D1629", border: "1px solid rgba(147,197,253,0.18)", borderRadius: 16, padding: 16, marginTop: 14, color: "#fff" }}>
+          <div style={{ background: "#0B1220", border: "1px solid rgba(147,197,253,0.18)", borderRadius: 16, padding: 16, marginTop: 14, color: "#fff" }}>
             <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>Acceso listo</div>
             <div style={{ fontSize: 12.5, color: "rgba(226,232,240,0.72)", marginBottom: 12 }}>
               Copia o envía este acceso al usuario del cliente.
@@ -209,7 +209,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
               <a href={whatsappHref} target="_blank" rel="noreferrer" style={{ textAlign: "center", textDecoration: "none", background: "#22C55E", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13 }}>
                 Enviar WhatsApp
               </a>
-              <a href={mailHref} style={{ textAlign: "center", textDecoration: "none", background: "#3B82F6", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13 }}>
+              <a href={mailHref} style={{ textAlign: "center", textDecoration: "none", background: "#0877FF", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13 }}>
                 Enviar correo
               </a>
             </div>

@@ -1,17 +1,15 @@
 /**
- * Genera un color premium consistente a partir del nombre de la empresa.
- * Tiene colores vivos, pero controlados con base oscura para que combinen
- * con Vista360 en vez de verse como bloques planos aleatorios.
+ * Genera una marca visual consistente a partir del nombre de la empresa.
+ * Mantiene la paleta Vista360: negro premium, azul noche, azul eléctrico
+ * y blanco, sin colores aleatorios que rompan la identidad.
  */
 const PALETTE = [
-  { bg: "linear-gradient(145deg, #0B1728 0%, #1D4ED8 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #10213A 0%, #7C3AED 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #0E2B2F 0%, #22C55E 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #1E1A12 0%, #F59E0B 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #10213A 0%, #38BDF8 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #1B1028 0%, #DB2777 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #0D1629 0%, #2563EB 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #111827 0%, #475569 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #050A12 0%, #0877FF 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0B1220 0%, #0B3F8A 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #111B2D 0%, #0877FF 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #050A12 0%, #111B2D 58%, #0877FF 100%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #0B1220 0%, #FFFFFF 180%)", text: "#fff" },
+  { bg: "linear-gradient(145deg, #050A12 0%, #0B1220 48%, #0B3F8A 100%)", text: "#fff" },
 ];
 
 export function brandColor(name: string): { bg: string; text: string } {

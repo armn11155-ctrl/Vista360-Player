@@ -24,7 +24,7 @@ interface Props {
 
 const BADGE: Record<string, { bg: string; color: string }> = {
   Activa:    { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
-  Programada:{ bg: "rgba(59,130,246,0.15)", color: "#2563EB" },
+  Programada:{ bg: "rgba(8,119,255,0.15)", color: "#0877FF" },
   Finalizada:{ bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
 };
 
@@ -119,7 +119,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
       {/* Header */}
-      <div style={{ background: "#0D1629", padding: "calc(24px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
+      <div style={{ background: "#0B1220", padding: "calc(24px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>Mis campañas</div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
@@ -134,8 +134,8 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           <div key={f} onClick={() => setFiltro(f)} style={{
             flex: 1, textAlign: "center",
             padding: "12px 6px", fontSize: 13, fontWeight: filtro === f ? 600 : 400,
-            color: filtro === f ? "#2563EB" : "#6B7280",
-            borderBottom: filtro === f ? "2px solid #2563EB" : "2px solid transparent", cursor: "pointer",
+            color: filtro === f ? "#0877FF" : "#6B7280",
+            borderBottom: filtro === f ? "2px solid #0877FF" : "2px solid transparent", cursor: "pointer",
             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
           }}>
             {f === "Activa" ? "Activas" : f === "Programada" ? "Programadas" : f === "Finalizada" ? "Finalizadas" : f}
@@ -174,7 +174,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#0D1629" }}>{panelNombre}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: "#0B1220" }}>{panelNombre}</div>
                 </div>
                 <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 6, padding: "2px 8px", marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>{estado}</span>
@@ -190,7 +190,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                 {estado !== "Finalizada" && (
                   <div>
                     <div style={{ height: 4, background: "#E5E7EB", borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: "#2563EB", borderRadius: 4, transition: "width .3s" }} />
+                      <div style={{ height: "100%", width: `${pct}%`, background: "#0877FF", borderRadius: 4, transition: "width .3s" }} />
                     </div>
                     <div style={{ fontSize: 12, color: "#6B7280", marginTop: 3 }}>{pct}% completado</div>
                   </div>
@@ -261,7 +261,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           ¿Quieres lanzar una nueva campaña?
         </div>
         <button onClick={onNueva} style={{
-          width: "100%", padding: "14px", background: "#2563EB", color: "#fff", fontWeight: 600,
+          width: "100%", padding: "14px", background: "#0877FF", color: "#fff", fontWeight: 600,
           fontSize: 15, border: "none", borderRadius: 14, cursor: "pointer", marginBottom: 16,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
         }}>
@@ -290,11 +290,11 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           >
             {(modal.estado === "confirmando" || modal.estado === "enviando") && (
               <>
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629", marginBottom: 6 }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
                   ¿Confirmas la renovación?
                 </div>
                 <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
-                  Vamos a solicitar renovar <strong style={{ color: "#0D1629" }}>{modal.panelNombre}</strong> por
+                  Vamos a solicitar renovar <strong style={{ color: "#0B1220" }}>{modal.panelNombre}</strong> por
                   un mes más. Nuestro equipo te contactará para coordinar el pago.
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
@@ -312,7 +312,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     onClick={confirmarRenovacion}
                     disabled={modal.estado === "enviando"}
                     style={{
-                      flex: 1, padding: "13px", background: "#2563EB", border: "none", borderRadius: 12,
+                      flex: 1, padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,
                       color: "#fff", fontWeight: 700, fontSize: 14,
                       cursor: modal.estado === "enviando" ? "not-allowed" : "pointer",
                     }}
@@ -334,7 +334,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629", marginBottom: 6 }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
                     Solicitud enviada
                   </div>
                   <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20 }}>
@@ -419,7 +419,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                   <button
                     onClick={confirmarRenovacion}
                     style={{
-                      flex: 1, padding: "13px", background: "#2563EB", border: "none", borderRadius: 12,
+                      flex: 1, padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,
                       color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
                     }}
                   >

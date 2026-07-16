@@ -21,7 +21,7 @@ type TabId = "resumen" | "reportes";
 function Badge({ estado }: { estado: string }) {
   const map: Record<string, { bg: string; color: string }> = {
     Activa:     { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
-    Programada: { bg: "rgba(59,130,246,0.15)", color: "#2563EB" },
+    Programada: { bg: "rgba(8,119,255,0.15)", color: "#0877FF" },
     Finalizada: { bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
   };
   const s = map[estado] ?? map.Finalizada;
@@ -36,7 +36,7 @@ function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
       <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: "#0D1629" }}>{value}</div>
+      <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1220" }}>{value}</div>
     </div>
   );
 }
@@ -73,7 +73,7 @@ function EmptyReportsIcon() {
   return (
     <svg width="42" height="42" viewBox="0 0 48 48" fill="none" aria-hidden="true">
       <rect x="7" y="8" width="34" height="32" rx="7" fill="#EEF4FF" />
-      <path d="M14 31l7-8 6 6 4-5 4 7" stroke="#2563EB" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 31l7-8 6 6 4-5 4 7" stroke="#0877FF" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx="32" cy="17" r="3" fill="#93C5FD" />
       <rect x="7" y="8" width="34" height="32" rx="7" stroke="#BFDBFE" strokeWidth="2" />
     </svg>
@@ -126,7 +126,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
-      <div style={{ background: "#060C1A", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0 }}>
+      <div style={{ background: "#050A12", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
@@ -157,7 +157,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                   style={{
                     position: "absolute", left: "50%", bottom: -8, transform: "translateX(-50%)",
                     minHeight: 22, border: "1px solid rgba(147,197,253,.35)", borderRadius: 999,
-                    background: "#fff", color: "#2563EB", padding: "0 9px", fontSize: 10.5,
+                    background: "#fff", color: "#0877FF", padding: "0 9px", fontSize: 10.5,
                     fontWeight: 900, boxShadow: "0 8px 18px rgba(2,6,23,.22)", cursor: subiendoPortada ? "default" : "pointer",
                   }}
                 >
@@ -185,15 +185,15 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
         </div>
       </div>
 
-      <div style={{ height: 3, background: "#2563EB", flexShrink: 0 }} />
+      <div style={{ height: 3, background: "#0877FF", flexShrink: 0 }} />
 
       {/* Tabs */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {TABS.map((t) => (
           <div key={t.id} onClick={() => setTab(t.id)} style={{
             padding: "16px 0 14px", fontSize: 15, fontWeight: tab === t.id ? 800 : 500,
-            color: tab === t.id ? "#2563EB" : "#6B7280",
-            borderBottom: tab === t.id ? "3px solid #2563EB" : "3px solid transparent",
+            color: tab === t.id ? "#0877FF" : "#6B7280",
+            borderBottom: tab === t.id ? "3px solid #0877FF" : "3px solid transparent",
             cursor: "pointer", textAlign: "center",
           }}>
             {t.label}
@@ -209,11 +209,11 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
           <>
             {/* Estado general */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 10 }}>Estado general</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Estado general</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                  background: estado === "Activa" ? "#22C55E" : estado === "Programada" ? "#3B82F6" : "#6B7280",
+                  background: estado === "Activa" ? "#22C55E" : estado === "Programada" ? "#0877FF" : "#6B7280",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
@@ -221,7 +221,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#0D1629" }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#0B1220" }}>
                     {estado === "Activa" ? "Todo funcionando" : estado === "Programada" ? "Por iniciar" : "Campaña finalizada"}
                   </div>
                   <div style={{ fontSize: 12, color: "#6B7280" }}>Sin incidencias reportadas</div>
@@ -232,7 +232,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
             {/* Info del panel */}
             {panel && (
               <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 10 }}>Ubicación de pantalla</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Ubicación de pantalla</div>
                 {panel.lat && panel.lng ? (
                   <div style={{ borderRadius: 12, overflow: "hidden", height: 140, background: "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <iframe
@@ -251,10 +251,10 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
 
             {/* Próxima reproducción placeholder */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629", marginBottom: 6 }}>Información de la campaña</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
               <div style={{ fontSize: 13, color: "#6B7280", display: "flex", flexDirection: "column", gap: 6 }}>
-                <div>Cara del panel: <strong style={{ color: "#0D1629" }}>{contrato.cara ?? "—"}</strong></div>
-                <div>Monto: <strong style={{ color: "#0D1629" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
+                <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara ?? "—"}</strong></div>
+                <div>Monto: <strong style={{ color: "#0B1220" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
                 <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
             {/* Galería de evidencias */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#0D1629" }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220" }}>
                   Reportes de campaña
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>

@@ -25,7 +25,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "#fff", border: "1.5px solid #E5E7EB",
-  borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#0D1629",
+  borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#0B1220",
   outline: "none", boxSizing: "border-box",
 };
 
@@ -126,7 +126,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     const paneles = panelesState.status === "ready" ? panelesState.paneles : [];
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-        <div style={{ background: "#0D1629", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ background: "#0B1220", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
           </button>
@@ -135,7 +135,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629", marginBottom: 18 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>
               Crear campaña para este cliente
             </div>
 
@@ -184,9 +184,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
                 type="button"
                 onClick={() => imagenAdminRef.current?.click()}
                 style={{
-                  width: "100%", minHeight: 58, border: "1.5px dashed #A78BFA", borderRadius: 12,
-                  background: "linear-gradient(135deg, rgba(139,92,246,0.10), rgba(249,115,22,0.10))",
-                  color: "#5B21B6", fontSize: 13, fontWeight: 800, cursor: "pointer",
+                  width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
+                  background: "linear-gradient(135deg, rgba(8,119,255,0.10), rgba(8,119,255,0.10))",
+                  color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
                 }}
               >
                 {imagenAdmin ? `Lista: ${imagenAdmin.name}` : "Elegir foto para esta campaña"}
@@ -198,7 +198,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
 
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
           <button onClick={crearContrato} disabled={creando} style={{
-            width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#2563EB", color: "#fff",
+            width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#0877FF", color: "#fff",
             fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: creando ? "default" : "pointer",
           }}>
             {creando ? "Creando…" : "Crear contrato"}
@@ -211,7 +211,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
-      <div style={{ background: "#0D1629", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ background: "#0B1220", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
         <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
         </button>
@@ -221,7 +221,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
       {/* Form */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
         <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629", marginBottom: 18 }}>Información de la campaña</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
 
           {error && (
             <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>
@@ -259,9 +259,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
               type="button"
               onClick={() => imagenRef.current?.click()}
               style={{
-                width: "100%", minHeight: 58, border: "1.5px dashed #F97316", borderRadius: 12,
-                background: "linear-gradient(135deg, rgba(249,115,22,0.10), rgba(34,197,94,0.10))",
-                color: "#9A3412", fontSize: 13, fontWeight: 800, cursor: "pointer",
+                width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
+                background: "linear-gradient(135deg, rgba(8,119,255,0.10), rgba(255,255,255,0.92))",
+                color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
               }}
             >
               {imagenCampana ? `Lista: ${imagenCampana.name}` : "Elegir foto o diseño de la campaña"}
@@ -274,7 +274,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
       {/* Footer */}
       <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
         <button onClick={enviar} disabled={enviando} style={{
-          width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#2563EB", color: "#fff",
+          width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#0877FF", color: "#fff",
           fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: enviando ? "default" : "pointer",
         }}>
           {enviando ? "Enviando…" : "Enviar solicitud"}

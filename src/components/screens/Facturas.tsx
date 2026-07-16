@@ -18,7 +18,7 @@ const FACTURACION_WEB_URL = "https://facturacion-web-abi.pages.dev";
 const BADGE: Record<FacturaEstado, { bg: string; color: string }> = {
   Pagada:    { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
   Aceptada:  { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
-  Emitida:   { bg: "rgba(59,130,246,0.15)", color: "#2563EB" },
+  Emitida:   { bg: "rgba(8,119,255,0.15)", color: "#0877FF" },
   Pendiente: { bg: "rgba(245,158,11,0.15)", color: "#D97706" },
   Vencida:   { bg: "rgba(239,68,68,0.15)",  color: "#DC2626" },
   Rechazada: { bg: "rgba(239,68,68,0.15)",  color: "#DC2626" },
@@ -187,7 +187,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
                   {f.pdfPesoBytes != null && (
                     <span style={{
                       display: "inline-block", marginTop: 6, marginLeft: 6, fontSize: 12, fontWeight: 700,
-                      padding: "2px 8px", borderRadius: 20, background: "rgba(59,130,246,0.10)", color: "#2563EB",
+                      padding: "2px 8px", borderRadius: 20, background: "rgba(8,119,255,0.10)", color: "#0877FF",
                     }}>
                       {formatoBytes(f.pdfPesoBytes)}
                     </span>

@@ -70,7 +70,7 @@ export default function OnboardingTour({ onClose }: Props) {
         }}
       >
         <div style={{ fontSize: 44, marginBottom: 14 }}>{actual.emoji}</div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#0D1629", marginBottom: 10 }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#0B1220", marginBottom: 10 }}>
           {actual.titulo}
         </div>
         <div style={{ fontSize: 14, color: "#4B5563", lineHeight: 1.6, marginBottom: 22 }}>
@@ -83,7 +83,7 @@ export default function OnboardingTour({ onClose }: Props) {
               key={i}
               style={{
                 width: i === paso ? 20 : 7, height: 7, borderRadius: 20,
-                background: i === paso ? "#2563EB" : "#E5E7EB",
+                background: i === paso ? "#0877FF" : "#E5E7EB",
                 transition: "all 0.2s ease",
               }}
             />
@@ -105,7 +105,7 @@ export default function OnboardingTour({ onClose }: Props) {
           <button
             onClick={() => (esUltimo ? cerrar() : setPaso((p) => p + 1))}
             style={{
-              flex: 1, padding: "13px", background: "#2563EB", border: "none", borderRadius: 12,
+              flex: 1, padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,
               color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
             }}
           >

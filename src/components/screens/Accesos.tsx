@@ -204,9 +204,9 @@ export default function Accesos({ onBack }: Props) {
                 type="button"
                 onClick={() => setTab(item.id)}
                 style={{
-                  border: active ? "1px solid #2563EB" : "1px solid #E5E7EB",
-                  background: active ? "rgba(37,99,235,0.09)" : "#fff",
-                  color: active ? "#1D4ED8" : "#64748B",
+                  border: active ? "1px solid #0877FF" : "1px solid #E5E7EB",
+                  background: active ? "rgba(8,119,255,0.09)" : "#fff",
+                  color: active ? "#0877FF" : "#64748B",
                   borderRadius: 12,
                   minHeight: 42,
                   fontSize: 12.5,
@@ -214,7 +214,7 @@ export default function Accesos({ onBack }: Props) {
                   cursor: "pointer",
                 }}
               >
-                {item.label} <span style={{ color: active ? "#7C3AED" : "#94A3B8" }}>{item.count}</span>
+                {item.label} <span style={{ color: active ? "#0B3F8A" : "#94A3B8" }}>{item.count}</span>
               </button>
             );
           })}
@@ -223,7 +223,7 @@ export default function Accesos({ onBack }: Props) {
         <button
           onClick={() => setMostrarForm((v) => !v)}
           style={{
-            width: "100%", margin: "12px 0", background: "#2563EB", color: "#fff",
+            width: "100%", margin: "12px 0", background: "#0877FF", color: "#fff",
             border: "none", borderRadius: 12, padding: "13px", fontSize: 13,
             fontWeight: 800, cursor: "pointer",
           }}
@@ -278,7 +278,7 @@ export default function Accesos({ onBack }: Props) {
             <button
               onClick={crearUsuario}
               disabled={creando || subiendoAvatar}
-              style={{ width: "100%", marginTop: 12, background: creando || subiendoAvatar ? "#93C5FD" : "#0D1629", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando || subiendoAvatar ? "not-allowed" : "pointer" }}
+              style={{ width: "100%", marginTop: 12, background: creando || subiendoAvatar ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando || subiendoAvatar ? "not-allowed" : "pointer" }}
             >
               {creando ? "Creando..." : subiendoAvatar ? "Preparando avatar..." : "Crear usuario y contraseña"}
             </button>
@@ -288,7 +288,7 @@ export default function Accesos({ onBack }: Props) {
                 <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAcceso}</div>
                 <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                   <a href={`https://wa.me/${celular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAcceso)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
-                  <a href={`mailto:${accesoCreado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAcceso)}`} style={{ flex: 1, textAlign: "center", background: "#3B82F6", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                  <a href={`mailto:${accesoCreado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAcceso)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
                 </div>
               </div>
             )}
@@ -323,7 +323,7 @@ export default function Accesos({ onBack }: Props) {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {inv.clienteNombre || inv.email}
                       {inv.esAdmin && (
-                        <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#7C3AED", background: "rgba(139,92,246,0.12)", padding: "2px 6px", borderRadius: 20 }}>
+                        <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#0B3F8A", background: "rgba(8,119,255,0.12)", padding: "2px 6px", borderRadius: 20 }}>
                           ADMIN
                         </span>
                       )}

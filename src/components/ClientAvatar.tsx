@@ -15,8 +15,8 @@ interface Props {
   size?: number;
 }
 
-const WINDOWS = ["#DBEAFE", "#BFDBFE", "#E0F2FE", "#CCFBF1", "#FEF3C7", "#FCE7F3"];
-const ACCENTS = ["#2563EB", "#0891B2", "#0F766E", "#7C3AED", "#EA580C", "#16A34A"];
+const WINDOWS = ["#FFFFFF", "#EAF3FF", "#D7E9FF", "#BFDBFE", "#EEF4FF", "#F8FAFC"];
+const ACCENTS = ["#0877FF", "#0B3F8A", "#111B2D", "#2F8DFF", "#0B1220", "#66A9FF"];
 
 function hashName(name: string) {
   let hash = 0;
@@ -49,7 +49,7 @@ export function ClientAvatar({ name, avatarKey, size = 44 }: Props) {
       {key === "tower" && (
         <>
           <path d="M30 88V20c0-4 3-7 7-7h26c4 0 7 3 7 7v68H30z" fill={dark} />
-          <path d="M36 23h28v65H36V23z" fill="#1E3A8A" />
+          <path d="M36 23h28v65H36V23z" fill="#0B3F8A" />
           {[30, 42, 54, 66].map((y) => (
             <g key={y}>
               <rect x="41" y={y} width="7" height="7" rx="1.5" fill={windowColor} />
@@ -63,7 +63,7 @@ export function ClientAvatar({ name, avatarKey, size = 44 }: Props) {
       {key === "store" && (
         <>
           <path d="M22 45h56v40H22V45z" fill={dark} />
-          <path d="M27 49h46v36H27V49z" fill="#164E63" />
+          <path d="M27 49h46v36H27V49z" fill="#0B3F8A" />
           <path d="M20 38h60l-7-16H27l-7 16z" fill={accent} />
           <path d="M24 38h8v9a4 4 0 0 1-8 0v-9zm16 0h8v9a4 4 0 0 1-8 0v-9zm16 0h8v9a4 4 0 0 1-8 0v-9zm16 0h8v9a4 4 0 0 1-8 0v-9z" fill="#F8FAFC" />
           <rect x="36" y="58" width="12" height="27" rx="2" fill="#0F172A" />

@@ -61,7 +61,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
       </div>
 
       <div className="content-area solicitudes-area">
-        <div className="card" style={{ background: "rgba(139,92,246,0.12)" }}>
+        <div className="card" style={{ background: "rgba(8,119,255,0.12)" }}>
           <div style={{ fontSize: 12.5, color: "#6D28D9", lineHeight: 1.5 }}>
             Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
           </div>
