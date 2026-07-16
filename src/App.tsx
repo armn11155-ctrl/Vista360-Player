@@ -436,7 +436,7 @@ function AuthenticatedApp({
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}`}>
       <OfflineBanner online={online} />
       {mostrarOnboarding && <OnboardingTour onClose={() => setMostrarOnboarding(false)} />}
       <Sidebar
