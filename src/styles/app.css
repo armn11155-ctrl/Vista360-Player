@@ -3132,11 +3132,32 @@
   .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
   .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: auto; }
   .sidebar-item-danger .sidebar-item-label { color: var(--red); }
-  .sidebar-footer {
+  .sidebar-bottom {
     margin-top: auto;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-  .sidebar-footer .sidebar-item-danger { margin-top: 0; }
+  .sidebar-bottom-section {
+    flex-shrink: 0;
+  }
+  .sidebar-bottom-section-logout {
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+  }
+  .sidebar-bottom .sidebar-item-danger {
+    margin-top: 0;
+    border-top: 0;
+  }
+
+  @media (min-width: 900px) {
+    .sidebar-bottom { gap: 6px; }
+    .sidebar-bottom-section-logout {
+      border-top-color: rgba(255,255,255,0.1);
+      padding-top: 6px;
+    }
+  }
 
   @media (min-width: 900px) {
     .sidebar-item-desktop-only { display: flex; }

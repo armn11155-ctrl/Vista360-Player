@@ -131,24 +131,28 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               <span className="sidebar-item-chevron">›</span>
             </div>
           ))}
-          <div className="sidebar-footer">
+          <div className="sidebar-bottom">
             {isAdmin && onCambiarCliente && (
-              <div
-                className="sidebar-item sidebar-item-switch"
-                onClick={() => { onCambiarCliente(); onClose(); }}
-              >
-                <span className="sidebar-item-icon"><IconCambiarCliente /></span>
-                <span className="sidebar-item-label">Cambiar cliente</span>
-                <span className="sidebar-item-chevron">›</span>
+              <div className="sidebar-bottom-section sidebar-bottom-section-switch">
+                <div
+                  className="sidebar-item sidebar-item-switch"
+                  onClick={() => { onCambiarCliente(); onClose(); }}
+                >
+                  <span className="sidebar-item-icon"><IconCambiarCliente /></span>
+                  <span className="sidebar-item-label">Cambiar cliente</span>
+                  <span className="sidebar-item-chevron">›</span>
+                </div>
               </div>
             )}
-            <div
-              className="sidebar-item sidebar-item-danger"
-              onClick={() => { onLogout(); onClose(); }}
-            >
-              <span className="sidebar-item-icon"><IconCerrarSesion /></span>
-              <span className="sidebar-item-label">Cerrar Sesión</span>
-              <span className="sidebar-item-chevron">›</span>
+            <div className="sidebar-bottom-section sidebar-bottom-section-logout">
+              <div
+                className="sidebar-item sidebar-item-danger"
+                onClick={() => { onLogout(); onClose(); }}
+              >
+                <span className="sidebar-item-icon"><IconCerrarSesion /></span>
+                <span className="sidebar-item-label">Cerrar Sesión</span>
+                <span className="sidebar-item-chevron">›</span>
+              </div>
             </div>
           </div>
         </div>
