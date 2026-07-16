@@ -106,7 +106,7 @@ export default function Accesos({ onBack }: Props) {
     : "";
 
   return (
-    <div>
+    <div className="admin-tool-screen accesos-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />

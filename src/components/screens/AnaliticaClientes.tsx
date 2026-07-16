@@ -62,7 +62,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
   const state = useAccesosClientes(true);
 
   return (
-    <div>
+    <div className="admin-tool-screen analitica-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />

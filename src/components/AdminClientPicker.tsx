@@ -10,6 +10,7 @@ interface Props {
   onSelect: (clienteId: string) => void;
   onOpenUsuarios?: () => void;
   onOpenSolicitudes?: () => void;
+  onOpenAnalitica?: () => void;
 }
 
 /**
@@ -18,7 +19,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica }: Props) {
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
 
@@ -42,6 +43,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </button>
           <button type="button" onClick={onOpenSolicitudes} className="admin-picker-action">
             Solicitudes de campaña
+          </button>
+          <button type="button" onClick={onOpenAnalitica} className="admin-picker-action">
+            Analítica de accesos
           </button>
         </div>
 

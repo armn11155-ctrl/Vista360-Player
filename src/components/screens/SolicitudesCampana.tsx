@@ -51,7 +51,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   }
 
   return (
-    <div className="solicitudes-screen">
+    <div className="admin-tool-screen solicitudes-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />

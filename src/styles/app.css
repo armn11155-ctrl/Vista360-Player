@@ -2161,6 +2161,29 @@
       padding: 0 22px;
     }
 
+    .admin-tool-screen {
+      height: 100% !important;
+      min-height: 100% !important;
+      background: #EEF2F7;
+      overflow: hidden;
+    }
+    .admin-tool-screen .detail-header {
+      flex-shrink: 0;
+      padding-left: 48px;
+      padding-right: 48px;
+      background: #0D1629;
+    }
+    .admin-tool-screen > .content-area {
+      width: 100%;
+      padding: 36px 48px 56px;
+      background: #EEF2F7;
+    }
+    .admin-tool-screen > .content-area > * {
+      width: min(1040px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
     /* Más aire y más columnas en el contenido, ya no es una pantalla de celular */
     .content-area { padding: 36px 48px; }
     .header-dark, .header-light, .evidencias-header, .profile-header,
@@ -2474,11 +2497,13 @@
   .admin-picker-sub { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px; }
   .admin-picker-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 10px;
     margin: -4px 0 18px;
   }
   .admin-picker-action {
+    min-height: 38px;
     border: 1px solid rgba(147,197,253,0.22);
     background: rgba(59,130,246,0.16);
     color: #BFDBFE;
@@ -2487,6 +2512,7 @@
     font-size: 12.5px;
     font-weight: 800;
     cursor: pointer;
+    white-space: nowrap;
   }
   .admin-picker-action:hover { background: rgba(59,130,246,0.24); }
 
@@ -2687,11 +2713,23 @@
   .admin-picker-logout:hover { background: rgba(239,68,68,0.16); }
 
   /* ===== Solicitudes de campaña ===== */
-  .solicitudes-screen {
+  .admin-tool-screen {
     height: 100%;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     background: var(--bg);
+  }
+  .admin-tool-screen > .content-area {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .solicitudes-screen {
+    height: 100%;
+    min-height: 0;
   }
   .solicitudes-area {
     flex: 1;
