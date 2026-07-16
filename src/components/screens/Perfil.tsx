@@ -198,9 +198,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
             <p>{email || cliente?.email || "Cliente Vista360"}</p>
             <span className="profile-verified">
               <span className="profile-verified-mark" aria-hidden="true">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6 9 17l-5-5" />
-                </svg>
+                <img src="/verified-check.svg" alt="" draggable={false} />
               </span>
               <span>Cuenta verificada</span>
             </span>
