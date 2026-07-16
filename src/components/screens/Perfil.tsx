@@ -15,6 +15,8 @@ interface Props {
   isAdmin?: boolean;
   onCambiarCliente?: () => void;
   onContactanos?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
 }
 
 type ProfileIcon =
@@ -108,7 +110,7 @@ function ProfileMetricRow({ icon, label, value, tone }: {
   );
 }
 
-export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos }: Props) {
+export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ejecutivo = cliente?.ejecutivo ?? "Vista360";
   const ruc = rucCliente(cliente);
@@ -170,9 +172,9 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
       <header className="profile-top">
         <div className="profile-top-bar">
           <img src="/logo-player.png" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
-          <button type="button" className="profile-bell" aria-label="Notificaciones">
+          <button type="button" className="profile-bell" aria-label="Notificaciones" onClick={onNotifClick}>
             <Icon type="bell" />
-            <span>1</span>
+            {totalNotifs > 0 && <span>{totalNotifs > 9 ? "9+" : totalNotifs}</span>}
           </button>
         </div>
 

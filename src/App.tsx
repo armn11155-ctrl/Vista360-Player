@@ -372,6 +372,8 @@ function AuthenticatedApp({
             isAdmin={isAdmin}
             onCambiarCliente={onCambiarCliente}
             onContactanos={() => setView("contactanos")}
+            onNotifClick={() => setView("notificaciones")}
+            totalNotifs={totalNotifs}
           />
         );
         break;
