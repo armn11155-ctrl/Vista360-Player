@@ -68,7 +68,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
       if (eRect.width === 0 || eRect.height === 0) { setPill(null); return; }
       const lRect = list.getBoundingClientRect();
       setPill({
-        top: eRect.top - lRect.top + list.scrollTop,
+        top: eRect.top - lRect.top,
         left: eRect.left - lRect.left,
         width: eRect.width,
         height: eRect.height,
