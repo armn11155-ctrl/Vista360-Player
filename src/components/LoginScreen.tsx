@@ -24,7 +24,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     e.preventDefault();
     setError("");
     if (!email.trim() || !password) {
-      setError("Ingresa tu correo y contraseña.");
+      setError("Ingresa tu usuario y contraseña.");
       return;
     }
     setBusy(true);
@@ -43,7 +43,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       await login(email.trim(), password);
       onLoggedIn();
     } catch {
-      setError("Correo o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360.");
+      setError("Usuario o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360.");
     } finally {
       setBusy(false);
     }
@@ -56,11 +56,11 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       </div>
       <div className="login-card">
         <div className="login-title">Bienvenido</div>
-        <div className="login-sub">Ingresa con la cuenta que te proporcionó tu ejecutivo de Vista360.</div>
+        <div className="login-sub">Ingresa con tu acceso privado de Vista360 Player.</div>
         {error && <div className="login-error">{error}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
-            <label className="form-label">Correo</label>
+            <label className="form-label">Usuario</label>
             <input
               className="form-input"
               type="email"
