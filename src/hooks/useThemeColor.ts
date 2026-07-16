@@ -11,7 +11,7 @@ import { useLayoutEffect } from "react";
  * antes de que React monte. useLayoutEffect corre ANTES del primer paint
  * del navegador, así que el cambio de color es instantáneo, sin parpadeo.
  */
-export function useThemeColor(color: string) {
+export function useThemeColor(color: string, pageBackground = color) {
   useLayoutEffect(() => {
     let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
     if (!meta) {
@@ -20,7 +20,7 @@ export function useThemeColor(color: string) {
       document.head.appendChild(meta);
     }
     meta.setAttribute("content", color);
-    document.documentElement.style.background = "#0D1629";
-    document.body.style.background = "#0D1629";
-  }, [color]);
+    document.documentElement.style.background = pageBackground;
+    document.body.style.background = pageBackground;
+  }, [color, pageBackground]);
 }

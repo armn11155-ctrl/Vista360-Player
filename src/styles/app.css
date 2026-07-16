@@ -61,6 +61,7 @@
     height: -webkit-fill-available;
     min-height: 100vh;
     min-height: 100dvh;
+    min-height: var(--app-height);
     overflow: hidden;
     overscroll-behavior: none;
     background: var(--bg);
@@ -83,6 +84,7 @@
     height: -webkit-fill-available;
     min-height: 100vh;
     min-height: 100dvh;
+    min-height: var(--app-height);
     overflow: hidden;
     background: var(--bg);
   }
@@ -239,8 +241,10 @@
     #root {
       height: 100%;
       height: -webkit-fill-available;
+      height: var(--app-height);
       min-height: 100%;
       min-height: -webkit-fill-available;
+      min-height: var(--app-height);
       background: var(--bg);
     }
     .app-shell {
@@ -262,15 +266,16 @@
       background: var(--bg);
     }
     .app-shell.has-bottom-nav .main-area {
+      background: #FFFFFF;
       padding-bottom: calc(76px + env(safe-area-inset-bottom));
     }
     .app-shell.has-bottom-nav .bottom-nav {
       position: fixed !important;
       left: 0;
       right: 0;
-      bottom: 0;
-      min-height: calc(76px + env(safe-area-inset-bottom));
-      padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
+      bottom: -1px;
+      min-height: calc(78px + env(safe-area-inset-bottom));
+      padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 1px) !important;
       background: #FFFFFF !important;
       z-index: 160;
       box-shadow: 0 -10px 30px rgba(15,23,42,.08);
@@ -280,8 +285,8 @@
       position: fixed;
       left: 0;
       right: 0;
-      bottom: 0;
-      height: max(22px, env(safe-area-inset-bottom));
+      bottom: -36px;
+      height: calc(58px + env(safe-area-inset-bottom));
       background: #FFFFFF;
       z-index: 150;
       pointer-events: none;

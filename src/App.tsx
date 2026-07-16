@@ -127,7 +127,11 @@ export default function App() {
           : auth.role === "admin" && !adminClienteId
             ? "#0D1629"
             : VIEW_COLORS[view] ?? "#0D1629";
-  useThemeColor(themeColor);
+  const pageBackground =
+    auth.status === "in" && !(auth.role === "admin" && !adminClienteId)
+      ? "#FFFFFF"
+      : themeColor;
+  useThemeColor(themeColor, pageBackground);
 
   if (envMissing.length > 0) {
     return <ConfigMissing missing={envMissing} />;
