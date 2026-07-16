@@ -717,6 +717,20 @@
     padding: calc(24px + env(safe-area-inset-top)) 24px 18px;
     flex-shrink: 0;
   }
+  .reports-header {
+    background: #050A12;
+    border-bottom: 3px solid #0877FF;
+    padding-bottom: 16px;
+  }
+  .reports-header .ev-logo-row {
+    margin-bottom: 0;
+  }
+  .reports-header-title {
+    color: #FFFFFF;
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
   .ev-logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .ev-filter-row {
     display: flex;
@@ -3118,9 +3132,19 @@
     min-height: 100%;
   }
   .coverage-header-compact {
+    background: #050A12;
+    border-bottom: 3px solid #0877FF;
+    justify-content: flex-start;
+    gap: 12px;
     padding-top: calc(12px + env(safe-area-inset-top));
-    padding-bottom: 10px;
+    padding-bottom: 12px;
     min-height: 46px;
+  }
+  .coverage-header-compact .simple-title {
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 900;
+    line-height: 1.1;
   }
   .coverage-map-box {
     background: #0B1220;

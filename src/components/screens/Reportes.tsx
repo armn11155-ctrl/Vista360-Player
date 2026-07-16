@@ -178,9 +178,9 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
   return (
     <div>
-      <div className="evidencias-header">
+      <div className="evidencias-header reports-header">
         <div className="ev-logo-row">
-          <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>Reportes</div>
+          <div className="reports-header-title">Reportes</div>
         </div>
       </div>
 

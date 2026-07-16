@@ -182,13 +182,12 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
   return (
     <div className="coverage-screen">
       <div className="detail-header coverage-header-compact">
-        {onBack ? (
+        {onBack && (
           <div className="back-btn" onClick={onBack}>
             <BackChevron />
           </div>
-        ) : <div style={{ width: 32 }} />}
+        )}
         <div className="simple-title">Cobertura</div>
-        <div style={{ width: 32 }} />
       </div>
 
       <div className="content-area coverage-premium-area">
