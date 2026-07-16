@@ -3105,7 +3105,7 @@
     .sidebar-item-active .sidebar-item-label { color: #fff; }
     .sidebar-item-active .sidebar-item-label { font-weight: 700; }
     .sidebar-item-danger .sidebar-item-icon,
-    .sidebar-item-danger .sidebar-item-label { color: #fff !important; }
+    .sidebar-item-danger .sidebar-item-label { color: #fb7185 !important; }
     .sidebar-bottom { gap: 7px; }
     .sidebar-bottom-section-switch,
     .sidebar-bottom-section-logout {
