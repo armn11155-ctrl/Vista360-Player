@@ -1720,12 +1720,23 @@
      que el fondo de cualquier login de escritorio real.
      En mobile no cambia nada (todo vive dentro de este media query). ===== */
   @media (min-width: 900px) {
+    html,
+    body,
+    #root {
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: var(--bg);
+    }
     body { margin: 0; }
 
     .app-shell {
       flex-direction: row;
       width: 100%;
-      height: 100%;
+      height: 100vh;
+      height: 100dvh;
       max-width: none;
       min-height: 0;
       margin: 0;
@@ -1734,11 +1745,16 @@
       overflow: hidden;
     }
 
+    .main-area,
+    .screens {
+      height: 100%;
+      min-height: 0;
+      background: #EEF2F7;
+    }
     .screens {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      min-height: 0;
     }
 
     /* Login / estados de carga-error / selector de cliente del admin no
@@ -1800,7 +1816,79 @@
     .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { stroke: var(--accent); }
     .nav-item:hover:not(.active) { background: rgba(255,255,255,0.05); }
 
-    .screens { background: var(--bg); }
+    .screens { background: #EEF2F7; }
+
+    .inicio-screen {
+      height: 100% !important;
+      min-height: 100% !important;
+      background: #EEF2F7 !important;
+      overflow: hidden;
+    }
+    .inicio-header {
+      padding: 42px 48px 54px !important;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .inicio-header > div,
+    .inicio-header > div + div,
+    .inicio-header > div + div + div,
+    .inicio-header > div + div + div + div {
+      width: min(1320px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .inicio-header > div:first-child {
+      justify-content: flex-end !important;
+      margin-bottom: 0 !important;
+      min-height: 0;
+    }
+    .inicio-header > div:first-child > div:last-child {
+      right: 0 !important;
+    }
+    .inicio-content {
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
+      margin-top: 0 !important;
+      border-radius: 0 !important;
+      padding: 28px 48px 52px !important;
+      background:
+        linear-gradient(180deg, #F8FAFD 0%, #F4F7FB 55%, #EEF2F7 100%) !important;
+      overflow-y: auto !important;
+    }
+    .inicio-content > * {
+      width: min(1320px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .inicio-section-title {
+      font-size: 20px !important;
+      margin-bottom: 14px !important;
+    }
+    .inicio-summary-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 14px !important;
+      margin-bottom: 26px !important;
+    }
+    .inicio-summary-grid > div {
+      min-height: 106px !important;
+      padding: 18px !important;
+      border-radius: 14px !important;
+    }
+    .inicio-divider {
+      margin-bottom: 22px !important;
+    }
+    .inicio-quick-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 14px !important;
+      margin-bottom: 26px !important;
+    }
+    .inicio-quick-grid > div {
+      min-height: 100px !important;
+      border-radius: 14px !important;
+    }
+    .inicio-evidence-card {
+      border-radius: 14px !important;
+      min-height: 140px;
+    }
 
     .profile-screen {
       height: auto;
@@ -1944,10 +2032,15 @@
       transform: none !important;
       width: 240px;
       min-width: 240px;
-      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
       box-shadow: none;
       border-right: 1px solid rgba(255,255,255,0.08);
       background: var(--dark);
+      display: flex;
+      flex-direction: column;
     }
     .sidebar-panel .sidebar-head {
       background: var(--dark);

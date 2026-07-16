@@ -55,10 +55,10 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
   const headerBg = "radial-gradient(circle at 16% 0%, rgba(37,99,235,0.58) 0%, transparent 34%), radial-gradient(circle at 86% 12%, rgba(249,115,22,0.28) 0%, transparent 30%), linear-gradient(145deg, #07152A 0%, #10245A 48%, #24124A 100%)";
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
+    <div className="inicio-screen" style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
 
       {/* ── HEADER ── */}
-      <div style={{ padding:"calc(14px + env(safe-area-inset-top)) 22px 42px", flexShrink:0, background:headerBg }}>
+      <div className="inicio-header" style={{ padding:"calc(14px + env(safe-area-inset-top)) 22px 42px", flexShrink:0, background:headerBg }}>
         {/* Logo + menú + campana */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:24 }}>
           {/* Botón menú lateral ☰ — solo visible en móvil, en escritorio el nav siempre está abierto */}
@@ -125,10 +125,10 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
-      <div style={{ flex:1, overflowY:"auto", background:"linear-gradient(180deg, #F8FAFD 0%, #F5F3FF 46%, #FFF7ED 100%)", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
+      <div className="inicio-content" style={{ flex:1, overflowY:"auto", background:"linear-gradient(180deg, #F8FAFD 0%, #F5F3FF 46%, #FFF7ED 100%)", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
 
         {isAdmin && (
-          <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
+          <div className="inicio-admin-actions" style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
             <button
               type="button"
               onClick={onCambiarCliente}
@@ -141,8 +141,8 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         )}
 
         {/* RESUMEN GENERAL — título suelto, cards individuales */}
-        <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
+        <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
+        <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
           {[
             { bg:"linear-gradient(135deg,#DBEAFE,#E0E7FF)", label:"Campañas activas", val:String(activas.length),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
@@ -175,9 +175,9 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         </div>
 
         {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
-        <div style={{ height:1, background:"#E6EAF1", marginBottom:16 }} />
-        <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:18 }}>
+        <div className="inicio-divider" style={{ height:1, background:"#E6EAF1", marginBottom:16 }} />
+        <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
+        <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:18 }}>
           {[
             { bg:"linear-gradient(180deg,#FFFFFF,#EFF6FF)", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
@@ -198,7 +198,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         </div>
 
         {/* ÚLTIMA EVIDENCIA — sí es una card (igual al mockup) */}
-        <div style={{ background:"#fff", border:"1px solid #E8EDF5", borderRadius:18, padding:"18px", boxShadow:"0 10px 24px rgba(15,23,42,0.045)" }}>
+        <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E8EDF5", borderRadius:18, padding:"18px", boxShadow:"0 10px 24px rgba(15,23,42,0.045)" }}>
           <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Última evidencia recibida</div>
           {ultima ? (
             <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
