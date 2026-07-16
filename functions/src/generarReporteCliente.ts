@@ -231,11 +231,11 @@ async function comprimirConGhostscript(input: Buffer, dpi: 72 | 150) {
     ]);
     return await readFile(output);
   } catch (error) {
-    console.error(`No se pudo comprimir el reporte a ${dpi} DPI.`, error);
-    throw new HttpsError(
-      "failed-precondition",
-      "Ghostscript no está disponible para comprimir el PDF. Configura GS_BINARY o despliega esta función en un entorno con Ghostscript."
-    );
+    // Firebase Functions no incluye Ghostscript de forma estándar. La
+    // compresión es una optimización, no debe impedir que el reporte se
+    // genere. En ese entorno publicamos el PDF original de PDFKit.
+    console.warn(`Ghostscript no disponible para ${dpi} DPI; se usará el PDF original.`, error);
+    return input;
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
@@ -344,79 +344,88 @@ function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemen
 export const generarReporteCliente = onCall(
   { timeoutSeconds: 540, memory: "1GiB", secrets: REPORT_SECRETS },
   async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+    try {
+      const uid = request.auth?.uid;
+      if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
 
-    const db = getFirestore();
-    const userSnap = await db.doc(`portalUsers/${uid}`).get();
-    const user = userSnap.data();
-    if (!userSnap.exists || user?.role !== "admin") {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede generar reportes.");
-    }
+      const db = getFirestore();
+      const userSnap = await db.doc(`portalUsers/${uid}`).get();
+      const user = userSnap.data();
+      if (!userSnap.exists || user?.role !== "admin") {
+        throw new HttpsError("permission-denied", "Solo la cuenta admin puede generar reportes.");
+      }
 
-    const clienteId = String(request.data?.clienteId ?? "");
-    const mes = String(request.data?.mes ?? new Date().toISOString().slice(0, 7));
-    if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {
-      throw new HttpsError("invalid-argument", "Envía clienteId y mes en formato YYYY-MM.");
-    }
+      const clienteId = String(request.data?.clienteId ?? "");
+      const mes = String(request.data?.mes ?? new Date().toISOString().slice(0, 7));
+      if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {
+        throw new HttpsError("invalid-argument", "Envía clienteId y mes en formato YYYY-MM.");
+      }
 
-    const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
-    if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
-    const clienteData = clienteSnap.data() ?? {};
-    const ubicacionDb = String(clienteData.ciudad ?? "");
-    const ubicacionPanel = await cargarUbicacionCliente(clienteId);
-    const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
-    const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
-    const elementos = elementosSubidos.length > 0 ? elementosSubidos : await cargarElementos(clienteId, mes);
-    if (elementos.length === 0) {
-      throw new HttpsError("failed-precondition", "Agrega fotos para generar el reporte.");
-    }
+      const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
+      if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
+      const clienteData = clienteSnap.data() ?? {};
+      const ubicacionDb = String(clienteData.ciudad ?? "");
+      const ubicacionPanel = await cargarUbicacionCliente(clienteId);
+      const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
+      const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
+      const elementos = elementosSubidos.length > 0 ? elementosSubidos : await cargarElementos(clienteId, mes);
+      if (elementos.length === 0) {
+        throw new HttpsError("failed-precondition", "Agrega fotos para generar el reporte.");
+      }
 
-    const cliente: ClienteReporte = {
-      id: clienteId,
-      nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
-      periodo: nombreMes(mes),
-      ubicacion,
-    };
+      const cliente: ClienteReporte = {
+        id: clienteId,
+        nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
+        periodo: nombreMes(mes),
+        ubicacion,
+      };
 
-    const reporte = await generarReporte(cliente, elementos);
-    const [digital, hd] = await Promise.all([
-      comprimirConGhostscript(reporte.buffer, 72),
-      comprimirConGhostscript(reporte.buffer, 150),
-    ]);
+      const reporte = await generarReporte(cliente, elementos);
+      const [digital, hd] = await Promise.all([
+        comprimirConGhostscript(reporte.buffer, 72),
+        comprimirConGhostscript(reporte.buffer, 150),
+      ]);
 
-    const baseKey = `clientes/${clienteId}/reportes/${mes}`;
-    const [urlDigital, urlHd] = await Promise.all([
-      subirReporteR2(`${baseKey}/reporte-digital.pdf`, digital),
-      subirReporteR2(`${baseKey}/reporte-hd.pdf`, hd),
-    ]);
+      const baseKey = `clientes/${clienteId}/reportes/${mes}`;
+      const [urlDigital, urlHd] = await Promise.all([
+        subirReporteR2(`${baseKey}/reporte-digital.pdf`, digital),
+        subirReporteR2(`${baseKey}/reporte-hd.pdf`, hd),
+      ]);
 
-    await db.collection("informesCliente").doc(`${clienteId}_${mes}`).set(
-      {
-        cliente_id: clienteId,
-        mes,
-        mesLabel: cliente.periodo,
-        url: urlDigital,
+      await db.collection("informesCliente").doc(`${clienteId}_${mes}`).set(
+        {
+          cliente_id: clienteId,
+          mes,
+          mesLabel: cliente.periodo,
+          url: urlDigital,
+          urlDigital,
+          urlHd,
+          storage: "r2",
+          r2Keys: {
+            digital: `${baseKey}/reporte-digital.pdf`,
+            hd: `${baseKey}/reporte-hd.pdf`,
+          },
+          digitalBytes: digital.length,
+          hdBytes: hd.length,
+          numCampanas: reporte.numElementos,
+          numEvidencias: reporte.numEvidencias,
+          createdAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      return {
+        ok: true,
         urlDigital,
         urlHd,
-        storage: "r2",
-        r2Keys: {
-          digital: `${baseKey}/reporte-digital.pdf`,
-          hd: `${baseKey}/reporte-hd.pdf`,
-        },
-        numCampanas: reporte.numElementos,
-        numEvidencias: reporte.numEvidencias,
-        createdAt: FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
-
-    return {
-      ok: true,
-      urlDigital,
-      urlHd,
-      digitalBytes: digital.length,
-      hdBytes: hd.length,
-    };
+        digitalBytes: digital.length,
+        hdBytes: hd.length,
+      };
+    } catch (error) {
+      if (error instanceof HttpsError) throw error;
+      console.error("Error inesperado al generar el reporte.", error);
+      const detail = error instanceof Error ? error.message : "Error desconocido";
+      throw new HttpsError("internal", `No se pudo generar el PDF: ${detail}`);
+    }
   }
 );
