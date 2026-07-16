@@ -4,6 +4,7 @@
      azul con glow), consistente con la marca Vista360. ─────────────── */
   :root {
     --app-height: 100dvh;
+    --visual-height: 100dvh;
     --bg: #F2F4F8;
     --dark: #0D1629;
     --darker: #07101F;
@@ -249,13 +250,11 @@
     }
     .app-shell {
       position: fixed;
-      inset: 0;
       top: 0;
-      right: 0;
-      bottom: 0;
       left: 0;
-      height: auto;
-      min-height: 0;
+      width: 100%;
+      height: var(--app-height);
+      min-height: var(--app-height);
       max-height: none;
       margin: 0;
       background: var(--bg);
@@ -267,18 +266,25 @@
     }
     .app-shell.has-bottom-nav .main-area {
       background: #FFFFFF;
-      padding-bottom: calc(76px + env(safe-area-inset-bottom));
+      padding-bottom: 0;
     }
     .app-shell.has-bottom-nav .bottom-nav {
-      position: fixed !important;
-      left: 0;
-      right: 0;
-      bottom: -1px;
+      position: relative !important;
       min-height: calc(78px + env(safe-area-inset-bottom));
       padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 1px) !important;
       background: #FFFFFF !important;
       z-index: 160;
       box-shadow: 0 -10px 30px rgba(15,23,42,.08);
+    }
+    .app-shell.has-bottom-nav .bottom-nav::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 80px;
+      background: #FFFFFF;
+      pointer-events: none;
     }
     .app-shell.has-bottom-nav::after {
       content: "";
@@ -286,7 +292,7 @@
       left: 0;
       right: 0;
       bottom: -36px;
-      height: calc(58px + env(safe-area-inset-bottom));
+      height: calc(96px + env(safe-area-inset-bottom));
       background: #FFFFFF;
       z-index: 150;
       pointer-events: none;
