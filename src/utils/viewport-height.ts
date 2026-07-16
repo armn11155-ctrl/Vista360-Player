@@ -3,11 +3,16 @@
 // Safari/WKWebView de iPhone instalado, que a veces no calculan bien
 // el viewport contra la pantalla física real.
 export function setupRealViewportHeight() {
+  const isStandaloneApp = () =>
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
   const readViewportHeight = () => {
     const visualHeight = window.visualViewport?.height || 0;
     const innerHeight = window.innerHeight || 0;
     const clientHeight = document.documentElement.clientHeight || 0;
-    return Math.round(Math.max(innerHeight, clientHeight, visualHeight));
+    const screenHeight = isStandaloneApp() ? window.screen?.height || 0 : 0;
+    return Math.round(Math.max(innerHeight, clientHeight, visualHeight, screenHeight));
   };
 
   let stableHeight = readViewportHeight();
