@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
-  IconFacturas, IconAnalitica, IconCerrar,
+  IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
 } from "./SidebarIcons";
 
 type SidebarView =
@@ -131,22 +131,25 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               <span className="sidebar-item-chevron">›</span>
             </div>
           ))}
-          {isAdmin && onCambiarCliente && (
+          <div className="sidebar-footer">
+            {isAdmin && onCambiarCliente && (
+              <div
+                className="sidebar-item sidebar-item-switch"
+                onClick={() => { onCambiarCliente(); onClose(); }}
+              >
+                <span className="sidebar-item-icon"><IconCambiarCliente /></span>
+                <span className="sidebar-item-label">Cambiar cliente</span>
+                <span className="sidebar-item-chevron">›</span>
+              </div>
+            )}
             <div
-              className="sidebar-item sidebar-item-switch"
-              onClick={() => { onCambiarCliente(); onClose(); }}
+              className="sidebar-item sidebar-item-danger"
+              onClick={() => { onLogout(); onClose(); }}
             >
-              <span className="sidebar-item-icon">⇄</span>
-              <span className="sidebar-item-label">Cambiar cliente</span>
+              <span className="sidebar-item-icon"><IconCerrarSesion /></span>
+              <span className="sidebar-item-label">Cerrar Sesión</span>
               <span className="sidebar-item-chevron">›</span>
             </div>
-          )}
-          <div
-            className="sidebar-item sidebar-item-danger"
-            onClick={() => { onLogout(); onClose(); }}
-          >
-            <span className="sidebar-item-icon">🚪</span>
-            <span className="sidebar-item-label">Cerrar Sesión</span>
           </div>
         </div>
       </div>

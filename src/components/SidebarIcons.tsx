@@ -86,6 +86,28 @@ export function IconCerrar({ size = 14 }: Props) {
   );
 }
 
+/** Dos perfiles con flechas de intercambio para "Cambiar cliente". */
+export function IconCambiarCliente({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M8.5 10.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3.5 17.5c.4-3 2.2-4.7 5-4.7 1.4 0 2.5.4 3.3 1.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="m15 7 2-2 2 2M17 5v5.5M19 17l-2 2-2-2M17 19v-5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Puerta con flecha de salida, dibujada en SVG para sustituir el emoji. */
+export function IconCerrarSesion({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M10 4H6.8A1.8 1.8 0 0 0 5 5.8v12.4A1.8 1.8 0 0 0 6.8 20H10" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+      <path d="M13 8.5 16.5 12 13 15.5M16 12H9" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M18.5 5.5v13" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" opacity=".45" />
+    </svg>
+  );
+}
+
 /** Diseño propio — recibo/factura simple con línea de detalle y "S/". */
 export function IconFacturas({ size = 20 }: Props) {
   return (
