@@ -91,7 +91,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   )}
                 </span>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
-                {c.ciudad && <span className="admin-picker-tile-city">📍 {c.ciudad}</span>}
+                <span className="admin-picker-tile-config">Configuración</span>
               </button>
             );
           })}
