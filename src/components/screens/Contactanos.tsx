@@ -8,7 +8,7 @@ interface Props {
 
 export default function Contactanos({ cliente, onBack }: Props) {
   return (
-    <div>
+    <div className="contact-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
@@ -16,45 +16,45 @@ export default function Contactanos({ cliente, onBack }: Props) {
         <div className="simple-title">Contáctanos</div>
         <div style={{ width: 32 }} />
       </div>
-      <div className="content-area">
-        <div className="card">
+      <div className="content-area contact-area">
+        <div className="contact-card">
           <div className="section-title">Tu ejecutivo de cuenta</div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text)" }}>
+          <div className="contact-name">
             {cliente?.ejecutivo ?? "Equipo Vista360"}
           </div>
-          <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 3, lineHeight: 1.5 }}>
+          <div className="contact-copy">
             Te ayuda con cotizaciones, renovaciones y soporte de tus campañas.
           </div>
         </div>
 
-        <div className="card">
+        <div className="contact-card">
           <div className="section-title">Canales de contacto</div>
-          <a className="contact-btn" style={{ background: "rgba(34,197,94,0.14)" }} href="https://wa.me/51999999999" target="_blank" rel="noreferrer">
-            <div className="contact-btn-icon" style={{ background: "#22C55E" }}>💬</div>
+          <a className="contact-btn" href="https://wa.me/51999999999" target="_blank" rel="noreferrer">
+            <div className="contact-btn-icon">WA</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>WhatsApp</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>+51 999 999 999</div>
+              <div className="contact-btn-title">WhatsApp</div>
+              <div className="contact-btn-sub">+51 999 999 999</div>
             </div>
           </a>
-          <a className="contact-btn" style={{ background: "rgba(59,130,246,0.14)" }} href="tel:+5115550199">
-            <div className="contact-btn-icon" style={{ background: "#3B82F6" }}>📞</div>
+          <a className="contact-btn" href="tel:+5115550199">
+            <div className="contact-btn-icon">TL</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>Llamar</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>(01) 555 0199</div>
+              <div className="contact-btn-title">Llamar</div>
+              <div className="contact-btn-sub">(01) 555 0199</div>
             </div>
           </a>
-          <a className="contact-btn" style={{ background: "rgba(245,158,11,0.14)" }} href="mailto:contacto@vista360.pe">
-            <div className="contact-btn-icon" style={{ background: "#D97706" }}>✉️</div>
+          <a className="contact-btn" href="mailto:contacto@vista360.pe">
+            <div className="contact-btn-icon">EM</div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--text)" }}>Correo</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>contacto@vista360.pe</div>
+              <div className="contact-btn-title">Correo</div>
+              <div className="contact-btn-sub">contacto@vista360.pe</div>
             </div>
           </a>
         </div>
 
-        <div className="card">
+        <div className="contact-card">
           <div className="section-title">Horario de atención</div>
-          <div style={{ fontSize: 13, color: "var(--text)", lineHeight: 1.7 }}>
+          <div className="contact-copy strong">
             Lunes a viernes: 9:00 am – 6:30 pm
             <br />
             Sábados: 9:00 am – 1:00 pm

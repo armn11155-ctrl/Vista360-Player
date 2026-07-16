@@ -20,6 +20,11 @@ export interface Cliente {
   id: string;
   empresa: string;
   ruc?: string;
+  documento?: string;
+  documentoIdentidad?: string;
+  numDoc?: string;
+  numeroDocumento?: string;
+  cliente_doc?: string;
   contacto?: string;
   celular?: string;
   email?: string;

@@ -32,6 +32,31 @@ type ProfileIcon =
 
 type MetricTone = "blue" | "green" | "orange";
 
+function avatarStorageKey(clienteId?: string) {
+  return clienteId ? `vista360:cliente-avatar:${clienteId}` : "";
+}
+
+function guardarAvatarLocal(clienteId: string, url: string) {
+  try {
+    window.localStorage.setItem(avatarStorageKey(clienteId), url);
+  } catch {
+    // Si el navegador bloquea localStorage, Firestore sigue siendo la fuente principal.
+  }
+}
+
+function leerAvatarLocal(clienteId?: string) {
+  try {
+    const key = avatarStorageKey(clienteId);
+    return key ? window.localStorage.getItem(key) || "" : "";
+  } catch {
+    return "";
+  }
+}
+
+function rucCliente(cliente: Cliente | null) {
+  return cliente?.ruc || cliente?.documento || cliente?.documentoIdentidad || cliente?.numDoc || cliente?.numeroDocumento || cliente?.cliente_doc || "";
+}
+
 function Icon({ type }: { type: ProfileIcon }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   const paths: Record<ProfileIcon, React.ReactNode> = {
@@ -108,7 +133,8 @@ function ProfileMetricRow({ icon, label, value, tone }: {
 export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ejecutivo = cliente?.ejecutivo ?? "Vista360";
-  const facturasState = useFacturas(cliente?.ruc);
+  const ruc = rucCliente(cliente);
+  const facturasState = useFacturas(ruc);
   const activas = contratos.filter((contrato) => estadoCampana(contrato) === "Activa").length;
   const pantallas = new Set(contratos.map((contrato) => contrato.panel_id)).size;
   const facturasPendientes = facturasState.status === "ready"
@@ -116,14 +142,21 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     : 0;
   const fileRef = useRef<HTMLInputElement>(null);
   const pendingAvatarRef = useRef("");
-  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl || leerAvatarLocal(cliente?.id));
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState("");
 
   useEffect(() => {
     if (cliente?.avatarUrl) {
       pendingAvatarRef.current = "";
+      guardarAvatarLocal(cliente.id, cliente.avatarUrl);
       setAvatarUrl(cliente.avatarUrl);
+      return;
+    }
+
+    const localAvatar = leerAvatarLocal(cliente?.id);
+    if (localAvatar) {
+      setAvatarUrl(localAvatar);
     } else if (!pendingAvatarRef.current) {
       setAvatarUrl("");
     }
@@ -141,6 +174,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
       const webp = await comprimirAvatarWebp(file);
       const url = await subirAvatarCloudinary(webp);
       pendingAvatarRef.current = url;
+      guardarAvatarLocal(cliente.id, url);
       setAvatarUrl(url);
       await updateDoc(doc(db, "clientes", cliente.id), { avatarUrl: url, avatarKey: "custom" });
       const uid = getAuth(app ?? undefined).currentUser?.uid;
@@ -186,10 +220,12 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
             <h1>{empresa}</h1>
             <p>{email || cliente?.email || "Cliente Vista360"}</p>
             <span className="profile-verified">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-              Cuenta verificada
+              <span className="profile-verified-mark" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              <span>Cuenta verificada</span>
             </span>
             {isAdmin && avatarError && <div className="profile-avatar-error">{avatarError}</div>}
           </div>
@@ -198,7 +234,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
 
       <main className="profile-content">
         <ProfileSection title="Información de la empresa">
-          <ProfileRow icon="company" label="RUC cliente" value={cliente?.ruc || "Por registrar"} />
+          <ProfileRow icon="company" label="RUC cliente" value={ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
