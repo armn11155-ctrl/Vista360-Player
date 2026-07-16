@@ -3022,7 +3022,7 @@
       width: 82%; max-width: 320px;
       height: var(--app-height);
       max-height: var(--app-height);
-      background: #050A12;
+      background: var(--card);
       transform: translateX(-100%);
       transition: transform .28s ease;
       z-index: 210;
@@ -3030,11 +3030,6 @@
       box-shadow: 4px 0 28px rgba(0,0,0,0.22);
     }
     .sidebar-head { background: #050A12; }
-    .sidebar-item { color: rgba(255,255,255,0.75); }
-    .sidebar-item-label { color: rgba(255,255,255,0.75); }
-    .sidebar-item-icon { color: rgba(255,255,255,0.75); }
-    .sidebar-item-chevron { color: rgba(255,255,255,0.32); }
-    .sidebar-item-danger { border-top-color: rgba(255,255,255,0.10); }
     .sidebar-panel.open { transform: translateX(0); }
   }
 
