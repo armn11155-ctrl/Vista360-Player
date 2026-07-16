@@ -2246,6 +2246,28 @@
     .sidebar-item:hover { background: rgba(255,255,255,0.075); }
     .sidebar-item-icon { filter: none; }
 
+    /* Ítem activo + pill de vidrio deslizante (estilo "liquid glass",
+       igual al de facturacion-web) — solo en el sidebar de escritorio. */
+    .sidebar-item-active .sidebar-item-icon,
+    .sidebar-item-active .sidebar-item-label { color: #fff !important; }
+    .sidebar-item-active .sidebar-item-chevron { color: rgba(255,255,255,0.55) !important; }
+    .sidebar-pill {
+      display: block;
+      position: absolute;
+      z-index: 0;
+      border-radius: 10px;
+      pointer-events: none;
+      background: rgba(37, 99, 235, 0.18);
+      border: 1.5px solid rgba(37, 99, 235, 0.35);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+        0 3px 14px rgba(0, 0, 0, 0.25);
+    }
+
     /* El bottom-nav desaparece en escritorio */
     .bottom-nav { display: none !important; }
     .header-dark .logo-row { justify-content: flex-end; }
@@ -3074,12 +3096,18 @@
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
+    position: relative;
   }
   .sidebar-item {
     display: flex; align-items: center; gap: 14px;
     padding: 14px 20px;
     cursor: pointer;
+    position: relative;
+    z-index: 1;
   }
+  /* Pill de vidrio deslizante detrás del ítem activo — solo escritorio,
+     ver estilos reales dentro de @media (min-width: 900px) más arriba. */
+  .sidebar-pill { display: none; }
   .sidebar-item-desktop-only { display: none; }
   .sidebar-item-icon {
     font-size: 19px; width: 26px; height: 26px; flex-shrink: 0;

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar,
@@ -25,6 +25,9 @@ interface Props {
   onCambiarCliente?: () => void;
   isAdmin?: boolean;
   solicitudesPendientes?: number;
+  /** Vista actual de la app — solo se usa para resaltar el ítem activo
+   *  y deslizar el pill de vidrio en el sidebar de escritorio. */
+  active?: string;
 }
 
 const ITEMS: {
@@ -44,8 +47,40 @@ const ITEMS: {
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
+
+  // ── Pill de vidrio deslizante (solo escritorio — ver .sidebar-pill en app.css) ──
+  const listRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [pill, setPill] = useState<{ top: number; left: number; width: number; height: number } | null>(null);
+  const [pillReady, setPillReady] = useState(false);
+
+  useLayoutEffect(() => {
+    function medir() {
+      const activeIdx = items.findIndex((it) => it.id === active);
+      const list = listRef.current;
+      const el = activeIdx === -1 ? null : itemRefs.current[activeIdx];
+      if (!list || !el) { setPill(null); return; }
+      const eRect = el.getBoundingClientRect();
+      // El ítem activo está oculto (display:none) en este breakpoint —
+      // p.ej. un ítem "mobileOnly" mientras estamos en escritorio.
+      if (eRect.width === 0 || eRect.height === 0) { setPill(null); return; }
+      const lRect = list.getBoundingClientRect();
+      setPill({
+        top: eRect.top - lRect.top + list.scrollTop,
+        left: eRect.left - lRect.left,
+        width: eRect.width,
+        height: eRect.height,
+      });
+      requestAnimationFrame(() => setPillReady(true));
+    }
+    medir();
+    window.addEventListener("resize", medir);
+    return () => window.removeEventListener("resize", medir);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, items.length, isAdmin]);
+
   return (
     <>
       <div className={`sidebar-overlay ${open ? "open" : ""}`} onClick={onClose} />
@@ -56,12 +91,28 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             <IconCerrar size={13} />
           </div>
         </div>
-        <div className="sidebar-list">
-          {items.map((it) => (
+        <div className="sidebar-list" ref={listRef}>
+          {pill && (
+            <div
+              className="sidebar-pill"
+              style={{
+                top: pill.top,
+                left: pill.left,
+                width: pill.width,
+                height: pill.height,
+                transition: pillReady
+                  ? "top 0.38s cubic-bezier(0.34,1.4,0.64,1), left 0.38s cubic-bezier(0.34,1.4,0.64,1)"
+                  : "none",
+              }}
+            />
+          )}
+          {items.map((it, idx) => (
             <div
               key={it.id}
+              ref={(el) => { itemRefs.current[idx] = el; }}
               className={[
                 "sidebar-item",
+                it.id === active ? "sidebar-item-active" : "",
                 it.desktopOnly ? "sidebar-item-desktop-only" : "",
                 it.mobileOnly ? "sidebar-item-mobile-only" : "",
               ].filter(Boolean).join(" ")}

@@ -451,6 +451,7 @@ function AuthenticatedApp({
         onCambiarCliente={onCambiarCliente}
         isAdmin={isAdmin}
         solicitudesPendientes={solCampPendientes}
+        active={view}
       />
       <div className="main-area">
         <div className="screens">
