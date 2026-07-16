@@ -2199,14 +2199,21 @@
 
     /* "Cambiar de cliente" se ancla al fondo del sidebar en vez de quedar pegado al último tab */
     .nav-item-switch { margin-top: auto; }
+    /* "Cambiar cliente" se ancla arriba de "Cerrar Sesión" y quedan
+       juntos como grupo al fondo del sidebar de escritorio — el switch
+       absorbe todo el espacio libre y el botón de salir, que por
+       defecto también tiene margin-top:auto, se desactiva para no
+       separarse de él. */
+    .sidebar-item-switch { margin-top: auto; }
+    .sidebar-item-switch ~ .sidebar-item-danger { margin-top: 0; }
 
     /* En escritorio el sidebar drawer se convierte en columna fija izquierda */
     .sidebar-overlay { display: none !important; }
     .sidebar-panel {
       position: static !important;
       transform: none !important;
-      width: 240px;
-      min-width: 240px;
+      width: 196px;
+      min-width: 196px;
       height: 100vh;
       height: 100dvh;
       min-height: 100vh;
@@ -2236,7 +2243,13 @@
       justify-content: center;
     }
     .sidebar-panel .sidebar-head img { filter: none; }
+    .sidebar-panel .sidebar-head { padding: 20px 14px 16px; }
+    .sidebar-panel .sidebar-logo-img { width: 140px; }
     .sidebar-close { display: none !important; }
+    /* Columna más angosta: ítems con menos aire para que quepan bien */
+    .sidebar-item { padding: 12px 12px; gap: 10px; }
+    .sidebar-item-icon { width: 22px; height: 22px; font-size: 16px; }
+    .sidebar-item-label { font-size: 13.5px; }
     .sidebar-item { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-icon { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-label { color: rgba(255,255,255,0.75) !important; display: block !important; }

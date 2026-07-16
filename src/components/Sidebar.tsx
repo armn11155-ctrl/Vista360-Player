@@ -133,7 +133,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           ))}
           {isAdmin && onCambiarCliente && (
             <div
-              className="sidebar-item"
+              className="sidebar-item sidebar-item-switch"
               onClick={() => { onCambiarCliente(); onClose(); }}
             >
               <span className="sidebar-item-icon">⇄</span>
