@@ -122,9 +122,9 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
             maxZoom: 19,
-            attribution: "&copy; OpenStreetMap",
+            attribution: "&copy; OpenStreetMap &copy; CARTO",
           }).addTo(mapRef.current);
         }
 
@@ -211,7 +211,7 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
             <>
               <div ref={mapEl} className="coverage-leaflet-map" />
               {!mapReady && !mapError && (
-                <div className="coverage-map-loading">Cargando mapa gratuito...</div>
+                <div className="coverage-map-loading">Cargando mapa...</div>
               )}
               {mapError && (
                 <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>

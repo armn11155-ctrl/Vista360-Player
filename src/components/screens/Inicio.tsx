@@ -160,7 +160,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
             { bg:"linear-gradient(135deg,#DCFCE7,#CCFBF1)", label:"Pantallas activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"linear-gradient(135deg,#F3E8FF,#EDE9FE)", label:"Última evidencia", val:ultima ? ultima.foto.fecha : "—",
+            { bg:"linear-gradient(135deg,#F3E8FF,#EDE9FE)", label:"Último reporte", val:ultima ? ultima.foto.fecha : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
             { bg:"linear-gradient(135deg,#FFEDD5,#FEF3C7)", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
@@ -209,9 +209,9 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
           ))}
         </div>
 
-        {/* ÚLTIMA EVIDENCIA — sí es una card (igual al mockup) */}
+        {/* ÚLTIMO REPORTE — sí es una card (igual al mockup) */}
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E8EDF5", borderRadius:18, padding:"18px", boxShadow:"0 10px 24px rgba(15,23,42,0.045)" }}>
-          <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Última evidencia recibida</div>
+          <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
           {ultima ? (
             <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
               <div style={{ width:168, height:118, borderRadius:12, overflow:"hidden", flexShrink:0, background:"#F3F4F6" }}>
@@ -237,7 +237,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               </div>
             </div>
           ) : (
-            <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Aún no hay evidencias registradas.</div>
+            <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Aún no hay reportes registrados.</div>
           )}
         </div>
 
