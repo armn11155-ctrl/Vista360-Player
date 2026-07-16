@@ -3098,7 +3098,7 @@
 
   /* ===== Cobertura ===== */
   .coverage-screen {
-    background: #08111f;
+    background: #050A12;
     min-height: 100%;
   }
   .coverage-header-compact {
@@ -3111,23 +3111,23 @@
     border-radius: 16px; padding: 26px 16px; margin-bottom: 16px; text-align: center;
   }
   .coverage-premium-area {
-    background: #08111f;
-    margin-top: -42px;
-    padding-top: 4px;
-    border-radius: 18px 18px 0 0;
+    background: #050A12;
+    margin-top: 0;
+    padding-top: 12px;
+    border-radius: 0;
   }
   .coverage-hero {
-    background: #08111F;
-    border: 1px solid rgba(147,197,253,0.16);
+    background: #0B1220;
+    border: 1px solid rgba(8,119,255,0.34);
     border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: 14px;
   }
-  .coverage-kicker { color: #38BDF8; font-size: 11px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; }
+  .coverage-kicker { color: #0877FF; font-size: 11px; font-weight: 900; letter-spacing: .4px; text-transform: uppercase; }
   .coverage-title { color: #fff; font-size: 19px; font-weight: 800; margin-top: 5px; }
   .coverage-sub { color: rgba(226,232,240,.72); font-size: 12px; line-height: 1.45; margin-top: 4px; }
   .coverage-count {
@@ -3135,7 +3135,8 @@
     min-width: 72px;
     height: 72px;
     border-radius: 8px;
-    background: rgba(255,255,255,.08);
+    background: rgba(8,119,255,.16);
+    border: 1px solid rgba(8,119,255,.32);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -3146,11 +3147,11 @@
   .coverage-map-real {
     position: relative;
     min-height: 380px;
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
     margin-bottom: 12px;
-    border: 1px solid rgba(203,213,225,.82);
-    box-shadow: 0 22px 55px rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.95);
+    border: 1px solid rgba(8,119,255,.24);
+    box-shadow: 0 22px 48px rgba(0,0,0,.28);
     background: #FFFFFF;
   }
   .coverage-map-real::after {
@@ -3246,7 +3247,7 @@
     align-items: center;
     justify-content: center;
     padding: 22px;
-    background: #08111F;
+    background: #0B1220;
     color: rgba(226,232,240,.78);
     text-align: center;
     font-size: 13px;
@@ -3312,18 +3313,18 @@
     padding: 24px;
   }
   .coverage-selected-card {
-    background: rgba(15,23,42,.92);
-    border: 1px solid rgba(147,197,253,.16);
+    background: #FFFFFF;
+    border: 1px solid rgba(8,119,255,.18);
     border-radius: 8px;
-    padding: 13px;
+    padding: 14px;
     margin-bottom: 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
   }
-  .coverage-selected-name { color: #fff; font-size: 14px; font-weight: 800; }
-  .coverage-selected-address { color: rgba(226,232,240,.62); font-size: 11.5px; margin-top: 3px; line-height: 1.35; }
+  .coverage-selected-name { color: #050A12; font-size: 14px; font-weight: 900; }
+  .coverage-selected-address { color: #64748B; font-size: 11.5px; margin-top: 3px; line-height: 1.35; }
   .coverage-selected-status {
     display: inline-flex;
     align-items: center;
@@ -3346,8 +3347,8 @@
   }
   .coverage-google-link {
     border-radius: 999px;
-    background: rgba(8,119,255,.16);
-    color: #93C5FD;
+    background: #0877FF;
+    color: #FFFFFF;
     text-decoration: none;
     font-size: 11px;
     font-weight: 800;
@@ -3355,16 +3356,16 @@
     white-space: nowrap;
   }
   .coverage-panel-card {
-    background: #08111F;
-    border: 1px solid rgba(147,197,253,.16);
+    background: #FFFFFF;
+    border: 1px solid rgba(8,119,255,.18);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 14px 30px rgba(2,6,23,.24);
+    box-shadow: 0 18px 38px rgba(0,0,0,.18);
   }
   .coverage-panel-card .section-title {
-    color: #FFFFFF;
+    color: #050A12;
     margin: 0;
-    padding: 14px 14px 4px;
+    padding: 16px 14px 6px;
   }
   .coverage-panel-row {
     width: 100%;
@@ -3372,15 +3373,15 @@
     align-items: center;
     gap: 10px;
     border: 0;
-    border-bottom: 1px solid rgba(147,197,253,.12);
+    border-bottom: 1px solid rgba(8,119,255,.12);
     background: transparent;
-    padding: 12px 10px;
+    padding: 13px 12px;
     text-align: left;
     cursor: pointer;
     border-radius: 8px;
   }
   .coverage-panel-row:last-child { border-bottom: 0; }
-  .coverage-panel-row:hover { background: rgba(8,119,255,.12); }
+  .coverage-panel-row:hover { background: rgba(8,119,255,.07); }
   .coverage-panel-dot {
     width: 12px;
     height: 12px;
@@ -3389,8 +3390,8 @@
     box-shadow: 0 0 0 5px rgba(8,119,255,.10);
   }
   .coverage-panel-info { flex: 1; min-width: 0; }
-  .coverage-panel-name { color: #FFFFFF; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .coverage-panel-meta { color: rgba(226,232,240,.62); font-size: 11px; margin-top: 3px; }
+  .coverage-panel-name { color: #050A12; font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .coverage-panel-meta { color: #64748B; font-size: 11px; margin-top: 3px; }
   .coverage-panel-state { font-size: 11px; font-weight: 800; white-space: nowrap; }
   .coverage-city-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
   .coverage-city-row:last-child { border-bottom: none; }
