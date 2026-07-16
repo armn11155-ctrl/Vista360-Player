@@ -38,6 +38,7 @@ function portalUrl() {
 
 export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
   const [email, setEmail] = useState(cliente?.email ?? "");
+  const [password, setPassword] = useState("");
   const [contacto, setContacto] = useState(cliente?.contacto ?? "");
   const [celular, setCelular] = useState(cliente?.celular ?? "");
   const [avatarKey, setAvatarKey] = useState(cliente?.avatarKey ?? "tower");
@@ -89,12 +90,13 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     setCreando(true);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
+        { clienteId: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
         CrearClienteResponse
       >(cloudFunctions, "crearClienteAcceso");
       const res = await fn({
         clienteId,
         email: email.trim(),
+        password: password.trim(),
         contacto: contacto.trim(),
         celular: celular.trim(),
         avatarKey,
@@ -138,6 +140,16 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
               Correo del usuario
               <input style={{ ...inputStyle, marginTop: 6 }} value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="cliente@empresa.com" />
+            </label>
+            <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
+              Contraseña inicial
+              <input
+                style={{ ...inputStyle, marginTop: 6 }}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="text"
+                placeholder="Déjalo vacío para generar una"
+              />
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>

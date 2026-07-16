@@ -27,6 +27,7 @@ export default function Accesos({ onBack }: Props) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [clienteId, setClienteId] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [contacto, setContacto] = useState("");
   const [celular, setCelular] = useState("");
   const [avatarKey, setAvatarKey] = useState("tower");
@@ -78,10 +79,10 @@ export default function Accesos({ onBack }: Props) {
     setAccesoCreado(null);
     try {
       const fn = httpsCallable<
-        { clienteId: string; email: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
+        { clienteId: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
         { clienteId: string; empresa: string; email: string; password: string }
       >(cloudFunctions, "crearClienteAcceso");
-      const res = await fn({ clienteId, email: email.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey, avatarUrl });
+      const res = await fn({ clienteId, email: email.trim(), password: password.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey, avatarUrl });
       setAccesoCreado(res.data);
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario.");
@@ -156,6 +157,7 @@ export default function Accesos({ onBack }: Props) {
                 ))}
               </select>
               <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <input value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <input value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <div>

@@ -15,6 +15,7 @@ interface CrearClienteAccesoData {
   celular?: string;
   avatarKey?: string;
   avatarUrl?: string;
+  password?: string;
 }
 
 const AVATAR_KEYS = new Set(["tower", "store", "factory", "mall", "office", "media"]);
@@ -26,6 +27,10 @@ function limpiar(value?: string) {
 function generarPassword() {
   const token = randomBytes(5).toString("base64url");
   return `Vista360-${token}`;
+}
+
+function validarPassword(password: string) {
+  return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
 }
 
 export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request) => {
@@ -48,9 +53,13 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
   const avatarKey = AVATAR_KEYS.has(avatarKeyRaw) ? avatarKeyRaw : "";
   const avatarUrl = limpiar(request.data.avatarUrl);
   const recibioAvatarUrl = Object.prototype.hasOwnProperty.call(request.data, "avatarUrl");
+  const passwordSolicitada = limpiar(request.data.password);
 
   if (!clienteId || !email) {
     throw new HttpsError("invalid-argument", "Cliente y correo son obligatorios.");
+  }
+  if (passwordSolicitada && !validarPassword(passwordSolicitada)) {
+    throw new HttpsError("invalid-argument", "La contraseña debe tener mínimo 8 caracteres, letras y números.");
   }
 
   const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
@@ -61,7 +70,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
   const empresa = String(cliente.empresa ?? clienteId);
 
   const auth = getAuth();
-  const password = generarPassword();
+  const password = passwordSolicitada || generarPassword();
   let userRecord;
 
   try {

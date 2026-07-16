@@ -202,33 +202,6 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               </div>
             </div>
 
-            {/* Alcance — datos de cámara IA */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0D1629" }}>Alcance estimado</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(59,130,246,0.1)", borderRadius: 20, padding: "3px 10px" }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#3B82F6", animation: "pulse 1.5s infinite" }} />
-                  <span style={{ fontSize: 11, fontWeight: 600, color: "#2563EB" }}>Cámara IA</span>
-                </div>
-              </div>
-              <div style={{ display: "flex", gap: 8 }}>
-                {[
-                  { label: "Impresiones", icon: "👁️" },
-                  { label: "Personas alcanzadas", icon: "👥" },
-                  { label: "Horas de reprod.", icon: "⏱️" },
-                ].map((m) => (
-                  <div key={m.label} style={{ flex: 1, textAlign: "center", padding: "12px 6px", background: "#F8F9FB", borderRadius: 12, border: "1px dashed #E2E8F0" }}>
-                    <div style={{ fontSize: 16, marginBottom: 4 }}>{m.icon}</div>
-                    <div style={{ fontSize: 11, color: "#9CA3AF", marginBottom: 2 }}>{m.label}</div>
-                    <div style={{ fontSize: 12, color: "#CBD5E1", fontWeight: 600 }}>Pendiente</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 10, fontSize: 12, color: "#9CA3AF", textAlign: "center" }}>
-                Los datos se actualizarán automáticamente cuando la cámara IA esté conectada.
-              </div>
-            </div>
-
             {/* Info del panel */}
             {panel && (
               <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>

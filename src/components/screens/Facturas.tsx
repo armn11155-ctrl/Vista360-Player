@@ -112,7 +112,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
           <div className="card factura-upload-card">
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
             <div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Subir factura PDF</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Agregar PDF</div>
               <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.35 }}>
                 Se optimiza en versión digital antes de enviarla al cliente.
               </div>
@@ -123,7 +123,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
               disabled={subiendo || preparando}
               className="factura-upload-btn"
             >
-              {preparando ? "Optimizando..." : "Elegir PDF"}
+              {preparando ? "Optimizando..." : "Agregar PDF"}
             </button>
             {pdfListo && (
               <button
