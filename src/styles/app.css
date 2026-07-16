@@ -2250,22 +2250,23 @@
        igual al de facturacion-web) — solo en el sidebar de escritorio. */
     .sidebar-item-active .sidebar-item-icon,
     .sidebar-item-active .sidebar-item-label { color: #fff !important; }
-    .sidebar-item-active .sidebar-item-chevron { color: rgba(255,255,255,0.55) !important; }
+    .sidebar-item-active .sidebar-item-label { font-weight: 700 !important; }
+    .sidebar-item-active .sidebar-item-chevron { color: rgba(255,255,255,0.65) !important; }
     .sidebar-pill {
       display: block;
       position: absolute;
       z-index: 0;
       border-radius: 10px;
       pointer-events: none;
-      background: rgba(37, 99, 235, 0.18);
-      border: 1.5px solid rgba(37, 99, 235, 0.35);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: linear-gradient(135deg, rgba(91,140,255,0.38), rgba(37,99,235,0.22));
+      border: 1.5px solid rgba(120,160,255,0.55);
+      backdrop-filter: blur(8px) saturate(1.3);
+      -webkit-backdrop-filter: blur(8px) saturate(1.3);
       box-shadow:
         0 0 0 1px rgba(0, 0, 0, 0.55),
-        inset 0 1px 0 rgba(255, 255, 255, 0.82),
-        inset 0 -1px 0 rgba(255, 255, 255, 0.55),
-        0 3px 14px rgba(0, 0, 0, 0.25);
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.4),
+        0 4px 18px rgba(37, 99, 235, 0.35);
     }
 
     /* El bottom-nav desaparece en escritorio */
