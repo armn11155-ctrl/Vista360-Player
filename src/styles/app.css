@@ -1881,12 +1881,16 @@
     .inicio-screen {
       height: 100% !important;
       min-height: 100% !important;
-      background: #EEF2F7 !important;
+      background: #07152A !important;
       overflow: hidden;
     }
     .inicio-header {
       padding: 42px 48px 54px !important;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(circle at 18% 10%, rgba(37,99,235,.28), transparent 32%),
+        radial-gradient(circle at 86% 18%, rgba(14,165,233,.14), transparent 28%),
+        linear-gradient(145deg, #07152A 0%, #081B38 52%, #040B18 100%) !important;
+      border-bottom: 1px solid rgba(255,255,255,.07);
     }
     .inicio-header > div,
     .inicio-header > div + div,
@@ -1931,7 +1935,7 @@
       border-radius: 0 !important;
       padding: 28px 48px 52px !important;
       background:
-        linear-gradient(180deg, #F8FAFD 0%, #F4F7FB 55%, #EEF2F7 100%) !important;
+        linear-gradient(180deg, #F8FAFD 0%, #F4F7FB 58%, #EEF2F7 100%) !important;
       overflow-y: auto !important;
     }
     .inicio-content > * {

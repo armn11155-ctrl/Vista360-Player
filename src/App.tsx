@@ -64,12 +64,12 @@ type View =
 // el background de su header (.header-dark, .header-light, etc). Se usa
 // para sincronizar la barra de estado (ver useThemeColor).
 const VIEW_COLORS: Record<View, string> = {
-  inicio: "#0D1B2E",
+  inicio: "#07152A",
   campanas: "#0D1629",
   detalle: "#0D1629",
   evidencias: "#0D1629",
   reportes: "#0D1629",
-  perfil: "#0D1629",
+  perfil: "#07152A",
   nueva: "#0D1629",
   portafolio: "#0D1629",
   cobertura: "#0D1629",
