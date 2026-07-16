@@ -7,7 +7,7 @@ export function setupRealViewportHeight() {
     const visualHeight = window.visualViewport?.height || 0;
     const innerHeight = window.innerHeight || 0;
     const clientHeight = document.documentElement.clientHeight || 0;
-    return Math.round(visualHeight || innerHeight || clientHeight);
+    return Math.round(Math.max(innerHeight, clientHeight, visualHeight));
   };
 
   let stableHeight = readViewportHeight();

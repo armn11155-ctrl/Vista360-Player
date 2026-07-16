@@ -254,13 +254,13 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: auto;
+      bottom: 0;
       width: 100%;
       height: var(--app-height);
       min-height: 0;
       max-height: var(--app-height);
       margin: 0;
-      background: var(--bg);
+      background: var(--app-bg);
       overscroll-behavior: none;
     }
     .main-area,
@@ -2421,12 +2421,23 @@
      grid que se adapta solo de móvil a escritorio. */
   .admin-picker-shell {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0; left: 0; right: 0; bottom: calc(-1 * env(safe-area-inset-bottom));
+    min-height: var(--app-height);
     z-index: 5;
     display: flex;
     flex-direction: column;
     overflow: hidden;
     background: #050A12;
+  }
+  .admin-picker-shell::after {
+    content: "";
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: -80px;
+    height: calc(96px + env(safe-area-inset-bottom));
+    background: #050A12;
+    pointer-events: none;
   }
   .admin-picker-header {
     flex-shrink: 0;
