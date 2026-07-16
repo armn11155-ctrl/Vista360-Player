@@ -121,7 +121,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
                   display:"flex", alignItems:"center", justifyContent:"center",
                   fontSize: totalNotifs > 9 ? 9 : 11, color:"#fff", fontWeight:900,
                   padding: totalNotifs > 9 ? "0 4px" : 0,
-                  boxShadow:"0 6px 14px rgba(239,68,68,0.36)",
+                  boxShadow:"none",
                 }}>
                   {totalNotifs > 9 ? "9+" : totalNotifs}
                 </div>
