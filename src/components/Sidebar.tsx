@@ -109,6 +109,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           {items.map((it, idx) => (
             <div
               key={it.id}
+              data-sidebar-id={it.id}
               ref={(el) => { itemRefs.current[idx] = el; }}
               className={[
                 "sidebar-item",

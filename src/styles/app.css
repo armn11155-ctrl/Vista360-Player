@@ -3071,7 +3071,7 @@
     .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     .sidebar-panel {
       position: fixed; top: 0; bottom: 0; left: 0;
-      width: 86%; max-width: 340px;
+      width: 78%; max-width: 292px;
       height: var(--app-height);
       max-height: var(--app-height);
       background: #050A12;
@@ -3092,6 +3092,13 @@
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     .sidebar-list { padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
+    .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
+    .sidebar-item[data-sidebar-id="reportes"] { order: 2; }
+    .sidebar-item[data-sidebar-id="facturas"] { order: 3; }
+    .sidebar-item[data-sidebar-id="cobertura"] { order: 4; }
+    .sidebar-item[data-sidebar-id="mispantallas"] { order: 5; }
+    .sidebar-item[data-sidebar-id="analitica"] { order: 6; }
+    .sidebar-bottom { order: 100; }
     .sidebar-item {
       margin: 3px 10px;
       width: calc(100% - 20px);
