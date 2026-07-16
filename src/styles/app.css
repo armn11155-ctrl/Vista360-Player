@@ -359,6 +359,9 @@
     color: #fff;
   }
   .green-dot { width: 7px; height: 7px; background: #22C55E; border-radius: 50%; }
+  .inicio-profile-top-btn {
+    display: none;
+  }
 
   .content-area {
     background: #F4F6FB;
@@ -1894,6 +1897,26 @@
     }
     .inicio-header > div:first-child > div:last-child {
       right: 0 !important;
+    }
+    .inicio-profile-top-btn {
+      height: 40px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+      color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 13px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 26px rgba(0,0,0,.16);
+    }
+    .inicio-profile-top-btn:hover {
+      background: rgba(255,255,255,.13);
     }
     .inicio-content {
       flex: 1 1 auto !important;

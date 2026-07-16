@@ -7,7 +7,7 @@ interface Props {
   cliente: Cliente | null;
   contratos: Contrato[];
   paneles: Record<string, Panel>;
-  onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente") => void;
+  onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente" | "perfil") => void;
   onMenuClick?: () => void;
   onNotifClick?: () => void;
   onCambiarCliente?: () => void;
@@ -74,7 +74,19 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
             </svg>
           </div>
           <img src="/logo-player.png" alt="Vista360 Player" className="inicio-logo" style={{ height:36, maxWidth:"64%", objectFit:"contain" }} />
-          <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center" }}>
+          <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center", gap:10 }}>
+            <button
+              type="button"
+              className="inicio-profile-top-btn"
+              onClick={() => onGoTo("perfil")}
+              aria-label="Perfil"
+            >
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21a8 8 0 0 0-16 0" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span>Perfil</span>
+            </button>
             <div
               onClick={onNotifClick}
               style={{
