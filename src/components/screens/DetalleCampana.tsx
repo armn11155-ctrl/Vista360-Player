@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
-import { db } from "../../config/firebase";
+import { cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaCloudinary } from "../../config/cloudinary";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
@@ -98,19 +98,24 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
   async function cambiarPortada(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !db) return;
+    if (!file) return;
+    if (!cloudFunctions) {
+      setError("Firebase Functions no está configurado.");
+      return;
+    }
     setError("");
     setSubiendoPortada(true);
     try {
       const archivoOptimizado = await comprimirImagen(file);
       const url = await subirEvidenciaCloudinary(archivoOptimizado);
-      const fecha = new Date().toISOString().slice(0, 10);
       setPortadaUrl(url);
-      await updateDoc(doc(db, "contratos", contrato.id), {
-        imagenCampaniaUrl: url,
-        imagenCampaniaFecha: fecha,
-      });
+      const actualizarImagenCampania = httpsCallable<
+        { contratoId: string; imagenUrl: string },
+        { contratoId: string; imagenUrl: string; fecha: string }
+      >(cloudFunctions, "actualizarImagenCampania");
+      await actualizarImagenCampania({ contratoId: contrato.id, imagenUrl: url });
     } catch (err) {
+      setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
       setError(err instanceof Error ? err.message : "No se pudo cambiar la foto de campaña.");
     } finally {
       setSubiendoPortada(false);

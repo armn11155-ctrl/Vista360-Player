@@ -110,7 +110,8 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   function mensajeErrorReporte(error: unknown) {
     const raw = error instanceof Error ? error.message : String(error || "");
     if (raw.toLowerCase().includes("internal")) {
-      return "No se pudo generar todavía. La función del PDF necesita estar desplegada y configurada con R2 y Ghostscript.";
+      return raw.replace("FirebaseError: ", "").replace(/^functions\/internal:\s*/i, "")
+        || "No se pudo generar el PDF. Revisa la configuración de almacenamiento.";
     }
     if (raw.toLowerCase().includes("not-found")) {
       return "No encuentro la función para generar PDFs. Falta desplegar las Functions.";
@@ -301,7 +302,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               const mensaje = mensajeReporte(informe.mesLabel, cliente, urlDigital, urlHd);
               const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
               const emailTo = cliente?.email ?? "";
-              const hdSize = formatoBytes((informe as { hdBytes?: number }).hdBytes);
+              const hdSize = formatoBytes(informe.hdBytes);
 
               return (
                 <div className="report-card" key={informe.id}>

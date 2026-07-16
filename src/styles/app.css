@@ -3080,6 +3080,7 @@
     padding: 14px 20px;
     cursor: pointer;
   }
+  .sidebar-item-desktop-only { display: none; }
   .sidebar-item-icon {
     font-size: 19px; width: 26px; height: 26px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -3088,6 +3089,11 @@
   .sidebar-item-chevron { color: var(--muted); font-size: 16px; }
   .sidebar-item-danger { border-top: 1px solid var(--border); margin-top: auto; }
   .sidebar-item-danger .sidebar-item-label { color: var(--red); }
+
+  @media (min-width: 900px) {
+    .sidebar-item-desktop-only { display: flex; }
+    .sidebar-item-mobile-only { display: none; }
+  }
 
   .solicitud-detail-image {
     display: block;

@@ -172,6 +172,8 @@ export interface InformeCliente {
   urlDigital?: string;
   /** PDF de mayor calidad para descarga del cliente (150 DPI). */
   urlHd?: string;
+  digitalBytes?: number;
+  hdBytes?: number;
   storage?: "firebase" | "r2";
   numCampanas: number;
   numEvidencias: number;

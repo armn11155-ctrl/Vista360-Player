@@ -6,6 +6,7 @@ import {
 
 type SidebarView =
   | "inicio"
+  | "campanas"
   | "portafolio"
   | "cobertura"
   | "mispantallas"
@@ -26,13 +27,21 @@ interface Props {
   solicitudesPendientes?: number;
 }
 
-const ITEMS: { id: SidebarView; icon: ReactNode; label: string; adminOnly?: boolean }[] = [
+const ITEMS: {
+  id: SidebarView;
+  icon: ReactNode;
+  label: string;
+  adminOnly?: boolean;
+  desktopOnly?: boolean;
+  mobileOnly?: boolean;
+}[] = [
   { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
+  { id: "campanas",     icon: <IconMisPantallas />, label: "Campañas", desktopOnly: true },
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
-  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
-  { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
-  { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true },
+  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades", mobileOnly: true },
+  { id: "facturas",     icon: <IconFacturas />,     label: "Facturas", mobileOnly: true },
+  { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
 ];
 
 export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes }: Props) {
@@ -51,7 +60,11 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           {items.map((it) => (
             <div
               key={it.id}
-              className="sidebar-item"
+              className={[
+                "sidebar-item",
+                it.desktopOnly ? "sidebar-item-desktop-only" : "",
+                it.mobileOnly ? "sidebar-item-mobile-only" : "",
+              ].filter(Boolean).join(" ")}
               onClick={() => { onNavigate(it.id); onClose(); }}
             >
               <span className="sidebar-item-icon">{it.icon}</span>
