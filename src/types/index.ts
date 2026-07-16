@@ -41,6 +41,8 @@ export interface Cliente {
 
 export interface FotoCampania {
   url: string;
+  /** Key de la miniatura WebP nítida generada en el navegador al subir. */
+  thumbKey?: string;
   fecha: string;
 }
 
@@ -175,6 +177,9 @@ export interface InformeCliente {
   digitalBytes?: number;
   hdBytes?: number;
   storage?: "firebase" | "r2";
+  /** Keys reales en R2 — se usan para re-firmar la URL cuando la
+   *  guardada en `url`/`urlDigital`/`urlHd` ya expiró (dura 6h). */
+  r2Keys?: { digital: string; hd: string };
   numCampanas: number;
   numEvidencias: number;
   createdAt?: Timestamp | null;

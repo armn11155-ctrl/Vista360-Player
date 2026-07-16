@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { esKeyValida } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -13,10 +14,6 @@ interface ActualizarImagenCampaniaData {
 
 function limpiar(value?: string) {
   return value?.trim() ?? "";
-}
-
-function esUrlImagenCloudinary(url: string) {
-  return /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\//.test(url);
 }
 
 export const actualizarImagenCampania = onCall<ActualizarImagenCampaniaData>(async (request) => {
@@ -36,8 +33,8 @@ export const actualizarImagenCampania = onCall<ActualizarImagenCampaniaData>(asy
   if (!contratoId) {
     throw new HttpsError("invalid-argument", "Campaña requerida.");
   }
-  if (!imagenUrl || !esUrlImagenCloudinary(imagenUrl)) {
-    throw new HttpsError("invalid-argument", "La foto debe ser una imagen subida a Cloudinary.");
+  if (!imagenUrl || !esKeyValida(imagenUrl)) {
+    throw new HttpsError("invalid-argument", "La foto debe ser una imagen subida a R2.");
   }
 
   const contratoRef = db.doc(`contratos/${contratoId}`);

@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato } from "../../types";
 import { estadoCampana } from "../../types";
 import { cloudFunctions, db, logout } from "../../config/firebase";
-import { subirAvatarCloudinary } from "../../config/cloudinary";
+import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
 import { BrandThumb } from "../BrandThumb";
@@ -152,7 +152,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     setSubiendoAvatar(true);
     try {
       const webp = await comprimirAvatarWebp(file);
-      const url = await subirAvatarCloudinary(webp);
+      const { key: url } = await subirAvatarR2(webp);
       pendingAvatarRef.current = url;
       setAvatarUrl(url);
       const fn = httpsCallable<{ clienteId: string; avatarUrl: string }, { clienteId: string; avatarUrl: string }>(

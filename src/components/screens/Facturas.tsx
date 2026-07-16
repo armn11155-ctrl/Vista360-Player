@@ -3,7 +3,8 @@ import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import BackChevron from "../BackChevron";
 import { useFacturas } from "../../hooks/useFacturas";
 import { db } from "../../config/firebase";
-import { subirFacturaPdfCloudinary } from "../../config/cloudinary";
+import { subirFacturaR2 } from "../../config/r2";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
 import type { Factura, FacturaEstado } from "../../types";
 
@@ -34,6 +35,9 @@ function fmtMonto(f: Factura): string {
 export default function Facturas({ ruc, onBack, isAdmin }: Props) {
   const state = useFacturas(ruc);
   const facturas = state.status === "ready" ? state.facturas : [];
+  const keysAFirmar = facturas.map((f) => f.pdfUrl).filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
+  const urlsFirmadas = useSignedUrls(keysAFirmar);
+  const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
   const fileRef = useRef<HTMLInputElement>(null);
   const [pdfListo, setPdfListo] = useState<File | null>(null);
   const [pesoOriginal, setPesoOriginal] = useState(0);
@@ -71,7 +75,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
     setMensaje("");
     setSubiendo(true);
     try {
-      const pdfUrl = await subirFacturaPdfCloudinary(pdfListo);
+      const { key: pdfUrl } = await subirFacturaR2(pdfListo);
       const hoy = new Date().toISOString().slice(0, 10);
       await addDoc(collection(db, "facturas"), {
         cliente_doc: ruc,
@@ -195,7 +199,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
                 </div>
                 <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   {f.pdfUrl && (
-                    <a href={f.pdfUrl} target="_blank" rel="noreferrer" className="factura-link">
+                    <a href={resolverUrl(f.pdfUrl)} target="_blank" rel="noreferrer" className="factura-link">
                       PDF
                     </a>
                   )}

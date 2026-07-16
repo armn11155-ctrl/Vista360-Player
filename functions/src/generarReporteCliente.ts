@@ -4,10 +4,10 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import PDFDocument from "pdfkit";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { R2_SECRETS, firmarLecturaR2, subirBufferR2 } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -53,16 +53,6 @@ const CONTENT_X = PAGE.margin + 42;
 const CONTENT_W = 570;
 const SIDE_W = 236;
 const SIDE_X = PAGE.width - PAGE.margin - SIDE_W - 20;
-
-const REPORT_SECRETS = ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"];
-
-function requireEnv(name: string) {
-  const value = process.env[name];
-  if (!value) {
-    throw new HttpsError("failed-precondition", `Falta configurar ${name}.`);
-  }
-  return value;
-}
 
 function normalizeFoto(foto: FotoInput) {
   return typeof foto === "string" ? { url: foto } : foto;
@@ -241,31 +231,11 @@ async function comprimirConGhostscript(input: Buffer, dpi: 72 | 150) {
   }
 }
 
-function r2Client() {
-  const accountId = requireEnv("R2_ACCOUNT_ID");
-  return new S3Client({
-    region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: requireEnv("R2_ACCESS_KEY_ID"),
-      secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY"),
-    },
-  });
-}
-
 async function subirReporteR2(key: string, buffer: Buffer) {
-  const bucket = requireEnv("R2_BUCKET");
-  await r2Client().send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: "application/pdf",
-      CacheControl: "public, max-age=31536000, immutable",
-    })
-  );
-  const publicBase = requireEnv("R2_PUBLIC_BASE_URL").replace(/\/$/, "");
-  return `${publicBase}/${key}`;
+  await subirBufferR2(key, buffer, "application/pdf");
+  // Bucket privado: la URL real se firma bajo demanda (6h) al listar
+  // reportes en el frontend, no se guarda una URL pública permanente.
+  return firmarLecturaR2(key, 6 * 60 * 60);
 }
 
 async function cargarElementos(clienteId: string, mes: string) {
@@ -342,7 +312,7 @@ function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemen
 }
 
 export const generarReporteCliente = onCall(
-  { timeoutSeconds: 540, memory: "1GiB", secrets: REPORT_SECRETS },
+  { timeoutSeconds: 540, memory: "1GiB", secrets: R2_SECRETS },
   async (request) => {
     try {
       const uid = request.auth?.uid;

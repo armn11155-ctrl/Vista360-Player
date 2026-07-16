@@ -1,4 +1,5 @@
-export { getCloudinarySignature } from "./cloudinarySignature.js";
+export { crearSubidaR2 } from "./crearSubidaR2.js";
+export { firmarUrlsR2 } from "./firmarUrlsR2.js";
 export { registrarAcceso } from "./registrarAcceso.js";
 export { registrarVisita } from "./registrarVisita.js";
 export { listarAccesosClientes } from "./listarAccesosClientes.js";

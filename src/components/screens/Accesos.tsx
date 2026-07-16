@@ -6,7 +6,7 @@ import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
-import { subirAvatarCloudinary } from "../../config/cloudinary";
+import { subirAvatarR2 } from "../../config/r2";
 import { cloudFunctions } from "../../config/firebase";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 
@@ -101,7 +101,7 @@ export default function Accesos({ onBack }: Props) {
     setErrorCrear("");
     try {
       const webp = await comprimirAvatarWebp(file);
-      const url = await subirAvatarCloudinary(webp);
+      const { key: url } = await subirAvatarR2(webp);
       setAvatarUrl(url);
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo preparar el avatar.");

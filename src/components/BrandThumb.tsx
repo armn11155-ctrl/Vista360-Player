@@ -1,9 +1,12 @@
 import { brandColor } from "../utils/brandColor";
 import { ClientAvatar } from "./ClientAvatar";
+import { useSignedUrls } from "../hooks/useSignedUrls";
 
 interface Props {
   name: string;
   avatarKey?: string;
+  /** Puede ser una key de R2 (nueva) o, por compatibilidad con datos
+   *  viejos, una URL completa de Cloudinary (empieza con "http"). */
   avatarUrl?: string;
   size?: number;
   radius?: number;
@@ -18,6 +21,9 @@ interface Props {
 export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12, iconScale = 0.58 }: Props) {
   const { bg } = brandColor(name);
   const iconSize = size * iconScale;
+  const esKeyR2 = Boolean(avatarUrl) && !avatarUrl!.startsWith("http");
+  const firmadas = useSignedUrls(esKeyR2 ? [avatarUrl] : []);
+  const src = esKeyR2 ? firmadas[avatarUrl!] : avatarUrl;
 
   return (
     <div style={{
@@ -25,8 +31,8 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
       background: bg, display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", userSelect: "none",
     }}>
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      {src ? (
+        <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
       ) : (
         <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
       )}

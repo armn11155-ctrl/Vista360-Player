@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../config/firebase";
-import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
@@ -55,9 +55,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
     setEnviando(true);
     try {
-      const imagenUrl = imagenCampana
-        ? await subirEvidenciaCloudinary(await comprimirImagen(imagenCampana))
-        : "";
+      const subidaCampana = imagenCampana
+        ? await subirEvidenciaR2(await comprimirImagen(imagenCampana))
+        : null;
+      const imagenUrl = subidaCampana?.key ?? "";
       await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
         nombre: nombre.trim(),
@@ -97,9 +98,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
-      const imagenUrl = imagenAdmin
-        ? await subirEvidenciaCloudinary(await comprimirImagen(imagenAdmin))
-        : "";
+      const subidaAdmin = imagenAdmin
+        ? await subirEvidenciaR2(await comprimirImagen(imagenAdmin))
+        : null;
+      const imagenUrl = subidaAdmin?.key ?? "";
       const fechaImagen = new Date().toISOString().slice(0, 10);
       await addDoc(collection(db, "contratos"), {
         panel_id: panelId,
@@ -108,7 +110,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         fin,
         monto: Number(monto),
         pagado: false,
-        fotos_campania: imagenUrl ? [{ url: imagenUrl, fecha: fechaImagen }] : [],
+        fotos_campania: imagenUrl
+          ? [subidaAdmin?.thumbKey ? { url: imagenUrl, thumbKey: subidaAdmin.thumbKey, fecha: fechaImagen } : { url: imagenUrl, fecha: fechaImagen }]
+          : [],
         ...(imagenUrl ? { imagenCampaniaUrl: imagenUrl, imagenCampaniaFecha: fechaImagen } : {}),
         createdAt: serverTimestamp(),
       });

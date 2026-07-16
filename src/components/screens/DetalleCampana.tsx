@@ -3,9 +3,10 @@ import { httpsCallable } from "firebase/functions";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
-import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
-import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
+import { esVideo, keyDeMiniatura } from "../../utils/r2Media";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { BrandThumb } from "../BrandThumb";
 
 interface Props {
@@ -91,6 +92,13 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
   const fotos = contrato.fotos_campania ?? [];
   const imagenPortada = portadaUrl || contrato.imagenCampaniaUrl || fotos[0]?.url || "";
 
+  const keysAFirmar = [
+    imagenPortada,
+    ...fotos.flatMap((f) => [f.url, f.thumbKey]),
+  ].filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
+  const urlsFirmadas = useSignedUrls(keysAFirmar);
+  const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
+
   useEffect(() => {
     setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
   }, [contrato.id, contrato.imagenCampaniaUrl]);
@@ -107,7 +115,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
     setSubiendoPortada(true);
     try {
       const archivoOptimizado = await comprimirImagen(file);
-      const url = await subirEvidenciaCloudinary(archivoOptimizado);
+      const { key: url } = await subirEvidenciaR2(archivoOptimizado);
       setPortadaUrl(url);
       const actualizarImagenCampania = httpsCallable<
         { contratoId: string; imagenUrl: string },
@@ -145,7 +153,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
           <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
             {imagenPortada ? (
               <img
-                src={cloudinaryThumb(imagenPortada, 180)}
+                src={resolverUrl(imagenPortada)}
                 alt=""
                 style={{ width: 72, height: 72, borderRadius: 14, objectFit: "cover", display: "block" }}
               />
@@ -288,31 +296,35 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
 
               {fotos.length > 0 ? (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-                  {[...fotos].reverse().map((f, i) => (
-                    <a key={i} href={f.url} target="_blank" rel="noreferrer"
-                      style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
-                      <img
-                        src={cloudinaryThumb(f.url, 200)}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                      />
-                      {esVideo(f.url) && (
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            position: "absolute", top: 4, right: 4,
-                            width: 20, height: 20, borderRadius: 5,
-                            background: "rgba(0,0,0,0.45)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                          }}
-                        >
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
-                            <path d="M8 5v14l11-7z" />
-                          </svg>
-                        </span>
-                      )}
+                  {[...fotos].reverse().map((f, i) => {
+                    const href = resolverUrl(f.url);
+                    const srcThumb = resolverUrl(keyDeMiniatura(f.url, f.thumbKey));
+                    if (!href || !srcThumb) return null;
+                    return (
+                      <a key={i} href={href} target="_blank" rel="noreferrer"
+                        style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
+                        <img
+                          src={srcThumb}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                        {esVideo(f.url) && (
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              position: "absolute", top: 4, right: 4,
+                              width: 20, height: 20, borderRadius: 5,
+                              background: "rgba(0,0,0,0.45)",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                            }}
+                          >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          </span>
+                        )}
                       <span style={{
                         position: "absolute", bottom: 0, left: 0, right: 0,
                         background: "rgba(0,0,0,0.62)",
@@ -321,7 +333,8 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                         {f.fecha}
                       </span>
                     </a>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF" }}>

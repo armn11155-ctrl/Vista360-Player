@@ -5,7 +5,7 @@ import { db } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
-import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { SolicitudCampana } from "../../types";
 
 interface Props {
@@ -26,6 +26,12 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const solicitudes = state.status === "ready" ? state.solicitudes : [];
   const pendientes = solicitudes.filter((s) => s.estado === "Pendiente");
   const resueltas = solicitudes.filter((s) => s.estado !== "Pendiente");
+
+  const keysAFirmar = solicitudes
+    .flatMap((s) => [s.imagenReferencialUrl, s.comprobantePagoUrl])
+    .filter((v): v is string => Boolean(v) && !v!.startsWith("http"));
+  const urlsFirmadas = useSignedUrls(keysAFirmar);
+  const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
 
   async function resolver(id: string, estado: "Revisada" | "Rechazada") {
     if (!db) return;
@@ -112,7 +118,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     )}
                     {s.comprobantePagoUrl && (
                       <a
-                        href={s.comprobantePagoUrl}
+                        href={resolverUrl(s.comprobantePagoUrl)}
                         target="_blank"
                         rel="noreferrer"
                         style={{
@@ -128,7 +134,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 </div>
                 {s.imagenReferencialUrl && (
                   <img
-                    src={cloudinaryThumb(s.imagenReferencialUrl, 260)}
+                    src={resolverUrl(s.imagenReferencialUrl)}
                     alt=""
                     loading="lazy"
                     decoding="async"
@@ -254,15 +260,15 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
               </div>
             )}
             {seleccionada.imagenReferencialUrl && (
-              <a href={seleccionada.imagenReferencialUrl} target="_blank" rel="noreferrer" className="solicitud-detail-image">
-                <img src={cloudinaryThumb(seleccionada.imagenReferencialUrl, 640)} alt="" />
+              <a href={resolverUrl(seleccionada.imagenReferencialUrl)} target="_blank" rel="noreferrer" className="solicitud-detail-image">
+                <img src={resolverUrl(seleccionada.imagenReferencialUrl)} alt="" />
                 <span>Ver imagen de referencia</span>
               </a>
             )}
 
             <div className="solicitud-detail-actions">
               {seleccionada.comprobantePagoUrl && (
-                <a href={seleccionada.comprobantePagoUrl} target="_blank" rel="noreferrer" className="solicitud-action secondary">
+                <a href={resolverUrl(seleccionada.comprobantePagoUrl)} target="_blank" rel="noreferrer" className="solicitud-action secondary">
                   Ver comprobante
                 </a>
               )}

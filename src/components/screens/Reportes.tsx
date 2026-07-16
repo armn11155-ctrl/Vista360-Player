@@ -2,6 +2,7 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { Cliente, Contrato, Panel } from "../../types";
 
 interface Props {
@@ -96,6 +97,10 @@ function mensajeReporte(mesLabel: string, cliente: Cliente | null, urlDigital: s
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
+  // Las URLs guardadas expiran a las 6h (bucket privado) — re-firmamos
+  // con las r2Keys reales cada vez que se abre la pantalla.
+  const keysReportes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital, i.r2Keys.hd] : []));
+  const urlsFirmadas = useSignedUrls(keysReportes);
   const [mes, setMes] = useState(mesActual());
   const [generando, setGenerando] = useState(false);
   const [procesandoFotos, setProcesandoFotos] = useState(false);
@@ -297,8 +302,8 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         {informes.length > 0 && (
           <div className="reports-list">
             {informes.map((informe) => {
-              const urlDigital = informe.urlDigital || informe.url;
-              const urlHd = informe.urlHd || informe.urlDigital || informe.url;
+              const urlDigital = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
+              const urlHd = (informe.r2Keys && urlsFirmadas[informe.r2Keys.hd]) || informe.urlHd || informe.urlDigital || informe.url;
               const mensaje = mensajeReporte(informe.mesLabel, cliente, urlDigital, urlHd);
               const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
               const emailTo = cliente?.email ?? "";

@@ -1,6 +1,7 @@
 import type { Cliente, Contrato, FotoCampania, Panel } from "../../types";
 import { estadoCampana } from "../../types";
-import { cloudinaryThumb } from "../../utils/cloudinaryUrl";
+import { keyDeMiniatura } from "../../utils/r2Media";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useFacturas } from "../../hooks/useFacturas";
 
 interface Props {
@@ -43,6 +44,10 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map(c => c.panel_id)).size;
   const ultima = ultimaFoto(contratos);
+  const ultimaKey = ultima ? keyDeMiniatura(ultima.foto.url, ultima.foto.thumbKey) : undefined;
+  const esUrlViejaUltima = Boolean(ultimaKey) && ultimaKey!.startsWith("http");
+  const urlsFirmadas = useSignedUrls(esUrlViejaUltima ? [] : [ultimaKey]);
+  const srcUltima = esUrlViejaUltima ? ultimaKey : (ultimaKey ? urlsFirmadas[ultimaKey] : undefined);
   const proxVenc = proximoVencimiento(contratos);
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
@@ -216,7 +221,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
             <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
               <div style={{ width:168, height:118, borderRadius:12, overflow:"hidden", flexShrink:0, background:"#F3F4F6" }}>
                 <img
-                  src={cloudinaryThumb(ultima.foto.url, 320)}
+                  src={srcUltima}
                   alt=""
                   loading="lazy"
                   decoding="async"

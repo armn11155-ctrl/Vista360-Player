@@ -2,9 +2,10 @@ import { useRef, useState } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
 import { db } from "../../config/firebase";
-import { subirEvidenciaCloudinary } from "../../config/cloudinary";
+import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
-import { cloudinaryThumb, esVideo } from "../../utils/cloudinaryUrl";
+import { esVideo, keyDeMiniatura } from "../../utils/r2Media";
+import { useSignedUrls } from "../../hooks/useSignedUrls";
 
 interface Props {
   contratos: Contrato[];
@@ -14,6 +15,7 @@ interface Props {
 
 interface FotoConContexto {
   url: string;
+  thumbKey?: string;
   fecha: string;
   panelNombre: string;
   contratoId: string;
@@ -31,6 +33,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
     for (const f of c.fotos_campania ?? []) {
       fotos.push({
         url: f.url,
+        thumbKey: f.thumbKey,
         fecha: f.fecha,
         panelNombre: paneles[c.panel_id]?.nombre ?? c.panel_id,
         contratoId: c.id,
@@ -46,6 +49,9 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
     grupos.get(key)!.push(f);
   }
 
+  const keysAFirmar = fotos.flatMap((f) => [f.url, f.thumbKey].filter((k): k is string => Boolean(k)));
+  const urlsFirmadas = useSignedUrls(keysAFirmar);
+
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -60,10 +66,10 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
     setError(""); setExito(""); setSubiendo(true);
     try {
       const archivoOptimizado = await comprimirImagen(file);
-      const url = await subirEvidenciaCloudinary(archivoOptimizado);
+      const { key: url, thumbKey } = await subirEvidenciaR2(archivoOptimizado);
       const fecha = new Date().toISOString().slice(0, 10);
       await updateDoc(doc(db, "contratos", targetId), {
-        fotos_campania: arrayUnion({ url, fecha }),
+        fotos_campania: arrayUnion(thumbKey ? { url, thumbKey, fecha } : { url, fecha }),
       });
       setExito("✓ Evidencia subida correctamente");
       setTimeout(() => setExito(""), 3000);
@@ -164,28 +170,39 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
             <div key={fecha}>
               <div className="ev-section-title">{fecha}</div>
               <div className="photo-grid">
-                {items.map((f, i) => (
-                  <a className="photo-item" key={`${fecha}-${i}`} href={f.url} target="_blank" rel="noreferrer">
-                    <img
-                      src={cloudinaryThumb(f.url, 240)}
-                      className="evidence-photo-real"
-                      alt={`Evidencia ${f.panelNombre}`}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    {esVideo(f.url) && (
-                      <div className="photo-type-icon" aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+                {items.map((f, i) => {
+                  const esUrlVieja = f.url.startsWith("http");
+                  const hrefCompleto = esUrlVieja ? f.url : urlsFirmadas[f.url];
+                  const thumbKeyElegida = keyDeMiniatura(f.url, f.thumbKey);
+                  const srcThumb = esUrlVieja
+                    ? f.url
+                    : thumbKeyElegida
+                    ? urlsFirmadas[thumbKeyElegida]
+                    : undefined;
+                  if (!hrefCompleto || !srcThumb) return null;
+                  return (
+                    <a className="photo-item" key={`${fecha}-${i}`} href={hrefCompleto} target="_blank" rel="noreferrer">
+                      <img
+                        src={srcThumb}
+                        className="evidence-photo-real"
+                        alt={`Evidencia ${f.panelNombre}`}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      {esVideo(f.url) && (
+                        <div className="photo-type-icon" aria-hidden="true">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="photo-overlay">
+                        <div className="photo-time">{f.fecha}</div>
+                        <div className="photo-loc">{f.panelNombre}</div>
                       </div>
-                    )}
-                    <div className="photo-overlay">
-                      <div className="photo-time">{f.fecha}</div>
-                      <div className="photo-loc">{f.panelNombre}</div>
-                    </div>
-                  </a>
-                ))}
+                    </a>
+                  );
+                })}
               </div>
             </div>
           ))

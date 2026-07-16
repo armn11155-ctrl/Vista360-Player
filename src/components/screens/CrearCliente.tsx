@@ -4,7 +4,7 @@ import { cloudFunctions } from "../../config/firebase";
 import type { Cliente } from "../../types";
 import BackChevron from "../BackChevron";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
-import { subirAvatarCloudinary } from "../../config/cloudinary";
+import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 
 interface Props {
@@ -68,7 +68,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     setError("");
     try {
       const webp = await comprimirAvatarWebp(file);
-      const url = await subirAvatarCloudinary(webp);
+      const { key: url } = await subirAvatarR2(webp);
       setAvatarUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo preparar el avatar.");

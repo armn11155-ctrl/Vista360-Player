@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { esKeyValida } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -13,10 +14,6 @@ interface ActualizarAvatarClienteData {
 
 function limpiar(value?: string) {
   return value?.trim() ?? "";
-}
-
-function esUrlImagenCloudinary(url: string) {
-  return /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\//.test(url);
 }
 
 export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>(async (request) => {
@@ -40,8 +37,8 @@ export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>(async
   if (!clienteId) {
     throw new HttpsError("invalid-argument", "Cliente requerido.");
   }
-  if (!avatarUrl || !esUrlImagenCloudinary(avatarUrl)) {
-    throw new HttpsError("invalid-argument", "La foto debe ser una imagen subida a Cloudinary.");
+  if (!avatarUrl || !esKeyValida(avatarUrl)) {
+    throw new HttpsError("invalid-argument", "La foto debe ser una imagen subida a R2.");
   }
   if (role !== "admin" && clienteId !== limpiar(String(propio.clienteId ?? ""))) {
     throw new HttpsError("permission-denied", "No puedes cambiar otro cliente.");
