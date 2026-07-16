@@ -310,7 +310,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
                       )}
                       <span style={{
                         position: "absolute", bottom: 0, left: 0, right: 0,
-                        background: "linear-gradient(transparent, rgba(0,0,0,0.6))",
+                        background: "rgba(0,0,0,0.62)",
                         padding: "12px 6px 4px", fontSize: 9, color: "#fff", textAlign: "center",
                       }}>
                         {f.fecha}

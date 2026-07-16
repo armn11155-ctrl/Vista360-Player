@@ -4,12 +4,12 @@
  * y blanco, sin colores aleatorios que rompan la identidad.
  */
 const PALETTE = [
-  { bg: "linear-gradient(145deg, #050A12 0%, #0877FF 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #0B1220 0%, #0B3F8A 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #111B2D 0%, #0877FF 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #050A12 0%, #111B2D 58%, #0877FF 100%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #0B1220 0%, #FFFFFF 180%)", text: "#fff" },
-  { bg: "linear-gradient(145deg, #050A12 0%, #0B1220 48%, #0B3F8A 100%)", text: "#fff" },
+  { bg: "#050A12", text: "#fff" },
+  { bg: "#0B1220", text: "#fff" },
+  { bg: "#111B2D", text: "#fff" },
+  { bg: "#0B3F8A", text: "#fff" },
+  { bg: "#0877FF", text: "#fff" },
+  { bg: "#1E293B", text: "#fff" },
 ];
 
 export function brandColor(name: string): { bg: string; text: string } {

@@ -165,10 +165,7 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background:
-      radial-gradient(circle at 50% 42%, rgba(37, 99, 235, 0.13), transparent 31%),
-      radial-gradient(circle at 50% 58%, rgba(255, 255, 255, 0.07), transparent 20%),
-      linear-gradient(180deg, #020713 0%, #030918 52%, #01040d 100%);
+    background: #050A12;
   }
   .brand-loader-mark {
     width: min(260px, 56vw);
@@ -184,7 +181,7 @@
     position: absolute;
     inset: 17%;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,.20) 0%, rgba(8,119,255,.22) 36%, transparent 68%);
+    background: rgba(8,119,255,.14);
     filter: blur(10px);
     transform: scale(.72);
     animation: brandLoaderGlow 1.8s ease-in-out infinite;
@@ -215,7 +212,7 @@
     width: 34%;
     left: -46%;
     transform: rotate(18deg);
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.42), transparent);
+    background: rgba(255,255,255,.32);
     filter: blur(7px);
     animation: brandLoaderSweep 1.7s ease-in-out infinite;
   }
@@ -456,7 +453,7 @@
   }
 
   .content-area {
-    background: linear-gradient(180deg, #FFFFFF 0%, #F6F8FB 68%, #EEF4FF 100%);
+    background: #F7F9FC;
     flex: 1;
     padding: 20px 16px;
     overflow-y: auto;
@@ -613,7 +610,7 @@
 
   .campaign-meta { font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
   .progress-bar { background: var(--border); border-radius: 3px; height: 4px; margin-top: 6px; }
-  .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), #60A5FA); }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--accent); }
   .progress-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
   .chevron { color: var(--muted); font-size: 16px; flex-shrink: 0; }
@@ -716,7 +713,7 @@
 
   .map-placeholder {
     width: 100%; height: 110px;
-    background: linear-gradient(135deg, #0E1A3B 0%, #16213D 100%);
+    background: #0B1220;
     border-radius: 10px;
     margin-top: 10px;
     position: relative;
@@ -796,12 +793,12 @@
   .photo-placeholder {
     width: 100%; height: 100%;
     display: flex; align-items: flex-end;
-    background: linear-gradient(180deg, #1a2744 0%, #0B1220 100%);
+    background: #0B1220;
   }
   .photo-overlay {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.6));
+    background: rgba(0,0,0,0.62);
     padding: 6px 8px;
   }
   .photo-time { font-size: 10px; color: #fff; font-weight: 600; }
@@ -819,9 +816,7 @@
   .reports-screen-body {
     flex: 1;
     overflow-y: auto;
-    background:
-      radial-gradient(circle at 15% 0%, rgba(37, 99, 235, 0.14), transparent 34%),
-      linear-gradient(180deg, #07101F 0%, #050B14 100%);
+    background: #050A12;
     padding: 0 14px 18px;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
@@ -851,8 +846,7 @@
     padding-bottom: 4px;
   }
   .report-card {
-    background:
-      linear-gradient(135deg, rgba(13, 26, 47, 0.96), rgba(5, 12, 22, 0.98));
+    background: #08111F;
     border: 1px solid rgba(148, 163, 184, 0.14);
     border-radius: 14px;
     padding: 22px;
@@ -1231,10 +1225,7 @@
   .profile-top {
     min-height: 255px;
     padding: calc(25px + env(safe-area-inset-top)) 22px 34px;
-    background:
-      radial-gradient(circle at 18% 10%, rgba(8,119,255,.28), transparent 32%),
-      radial-gradient(circle at 86% 18%, rgba(14,165,233,.14), transparent 28%),
-      linear-gradient(145deg, #050A12 0%, #111B2D 52%, #050A12 100%);
+    background: #050A12;
     color: #FFFFFF;
     display: flex;
     flex-direction: column;
@@ -1545,7 +1536,7 @@
     grid-template-columns: 1fr auto auto;
     gap: 10px;
     align-items: center;
-    background: linear-gradient(135deg, rgba(8,119,255,.10), rgba(8,119,255,.10));
+    background: #EEF4FF;
   }
   .factura-upload-btn {
     border: 0;
@@ -1704,17 +1695,17 @@
 
   /* Billboards styled */
   .bb-cocacola {
-    background: linear-gradient(135deg, #CC0000 0%, #880000 100%);
+    background: #CC0000;
     display: flex; align-items: center; justify-content: center;
     border-radius: inherit;
   }
   .bb-sprite {
-    background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+    background: #1565C0;
     display: flex; align-items: center; justify-content: center;
     border-radius: inherit;
   }
   .bb-powerade {
-    background: linear-gradient(135deg, #1a1a1a 0%, #333 100%);
+    background: #1A1A1A;
     display: flex; align-items: center; justify-content: center;
     border-radius: inherit;
   }
@@ -1728,7 +1719,7 @@
   }
   .billboard-night {
     width: 100%; height: 100%;
-    background: linear-gradient(180deg, #1a1a2e 0%, #0a0a1a 100%);
+    background: #0B1220;
     display: flex; align-items: center; justify-content: center;
     position: relative;
   }
@@ -1767,14 +1758,8 @@
     min-height: calc(100dvh + 160px);
     padding: calc(32px + env(safe-area-inset-top)) 28px calc(190px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    background-color: #061126;
-    background-image:
-      linear-gradient(180deg, rgba(4,10,24,0.76) 0%, rgba(5,14,32,0.40) 44%, rgba(4,10,24,0.08) 74%, rgba(4,10,24,0.30) 100%),
-      url('/login-bg.jpg');
     background-color: var(--app-bg);
-    background-size: cover;
-    background-position: center bottom;
-    background-repeat: no-repeat;
+    background-image: none;
     isolation: isolate;
   }
   .login-logo { text-align: center; margin-bottom: 42px; }
@@ -1784,7 +1769,7 @@
     filter: drop-shadow(0 16px 36px rgba(0,0,0,.36));
   }
   .login-card {
-    background: linear-gradient(180deg, rgba(8,18,38,0.72), rgba(6,15,31,0.82));
+    background: #08111F;
     backdrop-filter: blur(22px) saturate(155%);
     -webkit-backdrop-filter: blur(22px) saturate(155%);
     border: 1px solid rgba(148,163,184,0.20);
@@ -1839,7 +1824,7 @@
   }
   .login-btn {
     width: 100%;
-    background: linear-gradient(180deg, #4A8DFF 0%, #0877FF 100%);
+    background: #0877FF;
     color: #fff;
     border: none;
     border-radius: 14px;
@@ -1894,10 +1879,7 @@
       background: #EEF2F7;
     }
     .main-area {
-      background:
-        radial-gradient(circle at 26% 0%, rgba(8,119,255,.28), transparent 30%),
-        radial-gradient(circle at 92% 4%, rgba(14,165,233,.15), transparent 28%),
-        linear-gradient(145deg, #050A12 0%, #111B2D 46%, #050A12 100%);
+      background: #050A12;
     }
     .screens {
       flex: 1;
@@ -1974,11 +1956,8 @@
     }
     .inicio-header {
       padding: 42px 48px 54px !important;
-      background:
-        radial-gradient(circle at -14% 8%, rgba(8,119,255,.28), transparent 34%),
-        radial-gradient(circle at 84% 8%, rgba(14,165,233,.14), transparent 30%),
-        linear-gradient(145deg, #050A12 0%, #111B2D 48%, #050A12 100%) !important;
-      border-bottom: 0;
+      background: #050A12 !important;
+      border-bottom: 3px solid var(--premium-rule) !important;
       box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
     }
     .inicio-header > div,
@@ -2023,8 +2002,7 @@
       margin-top: 0 !important;
       border-radius: 0 !important;
       padding: 28px 48px 52px !important;
-      background:
-        linear-gradient(180deg, #F8FAFD 0%, #F4F7FB 58%, #EEF2F7 100%) !important;
+      background: #F7F9FC !important;
       overflow-y: auto !important;
     }
     .inicio-content > * {
@@ -2067,8 +2045,7 @@
       height: auto;
       min-height: 100%;
       overflow-y: auto;
-      background:
-        linear-gradient(180deg, #F7F9FC 0%, #EEF3FA 100%);
+      background: #F7F9FC;
     }
     .profile-top {
       min-height: auto;
@@ -2234,10 +2211,7 @@
       min-height: 100dvh;
       box-shadow: none;
       border-right: 0;
-      background:
-        radial-gradient(circle at 74% 0%, rgba(8,119,255,.28), transparent 36%),
-        radial-gradient(circle at 110% 12%, rgba(14,165,233,.12), transparent 30%),
-        linear-gradient(145deg, #050A12 0%, #111B2D 48%, #050A12 100%);
+      background: #050A12;
       display: flex;
       flex-direction: column;
       position: relative !important;
@@ -2247,10 +2221,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.045), transparent 24%),
-        linear-gradient(90deg, transparent 0%, rgba(255,255,255,.025) 100%),
-        radial-gradient(circle at 52% 102%, rgba(8,119,255,.12), transparent 34%);
+      background: transparent;
       pointer-events: none;
     }
     .sidebar-panel .sidebar-list,
@@ -2323,9 +2294,7 @@
   .config-missing-screen {
     min-height: 100vh;
     min-height: 100dvh;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(8,119,255,.16), transparent 34%),
-      linear-gradient(180deg, #0B1220 0%, #070B14 100%);
+    background: #050A12;
   }
   .config-missing-logo {
     width: min(210px, 62vw);
@@ -2358,7 +2327,7 @@
   }
   .report-action-primary {
     color: #FFFFFF;
-    background: linear-gradient(180deg, #1683FF 0%, #0B68F4 100%);
+    background: #0877FF;
     box-shadow: 0 10px 22px rgba(14, 107, 244, 0.28);
   }
   .report-action-muted {
@@ -2484,13 +2453,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background-image:
-      radial-gradient(circle at 50% 0%, rgba(8,119,255,0.26), transparent 34%),
-      linear-gradient(180deg, rgba(6,12,26,0.92) 0%, rgba(8,14,28,0.82) 46%, rgba(6,12,26,0.88) 100%),
-      url('/login-bg.jpg');
-    background-size: cover;
-    background-position: center bottom;
-    background-repeat: no-repeat;
+    background: #050A12;
   }
   .admin-picker-header {
     flex-shrink: 0;
@@ -2629,7 +2592,7 @@
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #0B1220, #0877FF);
+    background: #0B1220;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2668,7 +2631,7 @@
     width: 48px;
     height: 48px;
     border-radius: 14px;
-    background: linear-gradient(135deg, #0B1220, #0877FF);
+    background: #0B1220;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3004,7 +2967,7 @@
     min-height: 46px;
   }
   .coverage-map-box {
-    background: linear-gradient(160deg, #0B1220, #16213D);
+    background: #0B1220;
     border-radius: 16px; padding: 26px 16px; margin-bottom: 16px; text-align: center;
   }
   .coverage-premium-area {
@@ -3014,7 +2977,7 @@
     border-radius: 18px 18px 0 0;
   }
   .coverage-hero {
-    background: linear-gradient(135deg, #0B1728 0%, #10213A 58%, #123E63 100%);
+    background: #08111F;
     border: 1px solid rgba(147,197,253,0.16);
     border-radius: 8px;
     padding: 12px 14px;
@@ -3048,7 +3011,7 @@
     margin-bottom: 12px;
     border: 1px solid rgba(203,213,225,.82);
     box-shadow: 0 22px 55px rgba(15,23,42,.14), inset 0 1px 0 rgba(255,255,255,.95);
-    background: linear-gradient(180deg, #FFFFFF 0%, #EEF4FB 100%);
+    background: #FFFFFF;
   }
   .coverage-map-real::after {
     content: "";
@@ -3056,9 +3019,7 @@
     inset: 0;
     z-index: 1;
     pointer-events: none;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.12), transparent 28%, rgba(15,23,42,.04)),
-      radial-gradient(circle at 50% 50%, transparent 58%, rgba(15,23,42,.10) 100%);
+    background: transparent;
   }
   .coverage-map-osm {
     background: #EAF1F8;
@@ -3145,9 +3106,7 @@
     align-items: center;
     justify-content: center;
     padding: 22px;
-    background:
-      radial-gradient(circle at 40% 20%, rgba(8,119,255,.24), transparent 28%),
-      linear-gradient(145deg, rgba(11,23,40,.94), rgba(8,17,31,.96));
+    background: #08111F;
     color: rgba(226,232,240,.78);
     text-align: center;
     font-size: 13px;
@@ -3156,9 +3115,7 @@
   .coverage-map-grid {
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(rgba(148,163,184,.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148,163,184,.1) 1px, transparent 1px);
+    background-image: none;
     background-size: 42px 42px;
     opacity: .42;
   }
@@ -3258,7 +3215,7 @@
     white-space: nowrap;
   }
   .coverage-panel-card {
-    background: linear-gradient(135deg, #0B1728 0%, #111D33 62%, #08111F 100%);
+    background: #08111F;
     border: 1px solid rgba(147,197,253,.16);
     border-radius: 8px;
     overflow: hidden;
@@ -3307,7 +3264,7 @@
   .screen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .screens-premium-area { background: #08111f; }
   .screens-premium-hero {
-    background: linear-gradient(135deg, #0B1728 0%, #10213A 58%, #123E63 100%);
+    background: #08111F;
     border: 1px solid rgba(147,197,253,0.16);
     border-radius: 8px;
     padding: 16px;
@@ -3355,9 +3312,7 @@
   .screen-card { background: #0F1D32; border: 1px solid rgba(147,197,253,.14); border-radius: 8px; overflow: hidden; box-shadow: 0 16px 30px -20px rgba(0,0,0,0.8); }
   .screen-thumb {
     position: relative; height: 96px;
-    background:
-      radial-gradient(circle at 75% 20%, rgba(56,189,248,.32), transparent 30%),
-      linear-gradient(135deg, #1E293B, #07111F);
+    background: #0B1220;
     display: flex; align-items: center; justify-content: center;
   }
   .screen-live-badge {

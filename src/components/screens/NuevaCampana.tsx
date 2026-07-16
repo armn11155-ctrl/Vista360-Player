@@ -185,7 +185,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
                 onClick={() => imagenAdminRef.current?.click()}
                 style={{
                   width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
-                  background: "linear-gradient(135deg, rgba(8,119,255,0.10), rgba(8,119,255,0.10))",
+                  background: "#EEF4FF",
                   color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
                 }}
               >
@@ -260,7 +260,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
               onClick={() => imagenRef.current?.click()}
               style={{
                 width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
-                background: "linear-gradient(135deg, rgba(8,119,255,0.10), rgba(255,255,255,0.92))",
+                background: "#EEF4FF",
                 color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
               }}
             >

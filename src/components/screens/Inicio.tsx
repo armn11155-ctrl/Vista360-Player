@@ -52,7 +52,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
     : 0;
-  const headerBg = "radial-gradient(circle at 16% 0%, rgba(8,119,255,0.58) 0%, transparent 34%), radial-gradient(circle at 86% 12%, rgba(8,119,255,0.20) 0%, transparent 32%), linear-gradient(145deg, #050A12 0%, #0B1220 48%, #111B2D 100%)";
+  const headerBg = "#050A12";
 
   return (
     <div className="inicio-screen" style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
@@ -137,7 +137,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
-      <div className="inicio-content" style={{ flex:1, overflowY:"auto", background:"linear-gradient(180deg, #FFFFFF 0%, #F6F8FB 52%, #EEF4FF 100%)", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
+      <div className="inicio-content" style={{ flex:1, overflowY:"auto", background:"#F7F9FC", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
 
         {isAdmin && (
           <div className="inicio-admin-actions" style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
@@ -156,16 +156,16 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
         <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
           {[
-            { bg:"linear-gradient(135deg,#DBEAFE,#E0E7FF)", label:"Campañas activas", val:String(activas.length),
+            { bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
-            { bg:"linear-gradient(135deg,#EAF3FF,#D7E9FF)", label:"Publicidades activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
+            { bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"linear-gradient(135deg,#EEF4FF,#E3ECF8)", label:"Último reporte", val:ultima ? ultima.foto.fecha : "—",
+            { bg:"#F1F5F9", label:"Último reporte", val:ultima ? ultima.foto.fecha : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
-            { bg:"linear-gradient(135deg,#F8FAFC,#EAF3FF)", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
+            { bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
             ...(!isAdmin ? [{
-              bg:"linear-gradient(135deg,#EAF3FF,#F8FAFC)", label:"Facturas pendientes", val:String(facturasPendientes), valColor:"#0B3F8A",
+              bg:"#EAF3FF", label:"Facturas pendientes", val:String(facturasPendientes), valColor:"#0B3F8A",
               icon:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
               onClick: () => onGoTo("facturas"),
             }] : []),
@@ -173,7 +173,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
             <div
               key={i}
               onClick={k.onClick}
-              style={{ background:"#fff", border:"1px solid #E8EDF5", borderRadius:13, padding:"11px 10px", minHeight:76, display:"flex", alignItems:"center", gap:9, boxShadow:"0 7px 16px rgba(15,23,42,0.04)", cursor: k.onClick ? "pointer" : "default" }}
+              style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor: k.onClick ? "pointer" : "default" }}
             >
               <div style={{ width:38, height:38, borderRadius:19, background:k.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {k.icon}
@@ -191,16 +191,16 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:18 }}>
           {[
-            { bg:"linear-gradient(180deg,#FFFFFF,#EFF6FF)", label:"Mis campañas", tab:"campanas" as const,
+            { bg:"#FFFFFF", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
-            { bg:"linear-gradient(180deg,#FFFFFF,#EAF3FF)", label:"Mis publicidades", tab:"mispantallas" as const,
+            { bg:"#FFFFFF", label:"Mis publicidades", tab:"mispantallas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"linear-gradient(180deg,#FFFFFF,#EEF4FF)", label:"Reportes", tab:"reportes" as const,
+            { bg:"#FFFFFF", label:"Reportes", tab:"reportes" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="7" x2="19" y2="7"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="17" x2="19" y2="17"/></svg> },
-            { bg:"linear-gradient(180deg,#FFFFFF,#F8FAFC)", label:"Nueva campaña", tab:"nueva" as const,
+            { bg:"#FFFFFF", label:"Nueva campaña", tab:"nueva" as const,
               icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
           ].map(q => (
-            <div key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, background:q.bg, border:"1px solid #E8EDF5", borderRadius:13, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 7px 16px rgba(15,23,42,0.035)" }}>
+            <div key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, background:q.bg, border:"1px solid #E2E8F0", borderRadius:8, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 12px 26px rgba(15,23,42,0.05)" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:28 }}>
                 {q.icon}
               </div>
@@ -210,7 +210,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         </div>
 
         {/* ÚLTIMO REPORTE — sí es una card (igual al mockup) */}
-        <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E8EDF5", borderRadius:18, padding:"18px", boxShadow:"0 10px 24px rgba(15,23,42,0.045)" }}>
+        <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
           <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
           {ultima ? (
             <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
