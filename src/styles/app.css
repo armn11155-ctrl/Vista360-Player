@@ -2206,7 +2206,7 @@
       background: transparent;
       justify-content: center;
     }
-    .sidebar-panel .sidebar-head img { filter: brightness(10); }
+    .sidebar-panel .sidebar-head img { filter: none; }
     .sidebar-close { display: none !important; }
     .sidebar-item { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-icon { color: rgba(255,255,255,0.75) !important; }
@@ -3014,6 +3014,13 @@
     flex-shrink: 0;
   }
   .sidebar-head img { height: 26px; width: auto; display: block; }
+  .sidebar-head .sidebar-logo-img {
+    width: 176px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
   .sidebar-close {
     width: 30px; height: 30px; border-radius: 50%;
     background: rgba(255,255,255,0.12);

@@ -42,7 +42,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
       <div className={`sidebar-overlay ${open ? "open" : ""}`} onClick={onClose} />
       <div className={`sidebar-panel ${open ? "open" : ""}`}>
         <div className="sidebar-head">
-          <img src="/logo-player.png" alt="Vista360 Player" />
+          <img src="/logo-sidebar-player.png" alt="Vista360 Player" className="sidebar-logo-img" />
           <div className="sidebar-close" onClick={onClose}>
             <IconCerrar size={13} />
           </div>
