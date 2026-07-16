@@ -3067,24 +3067,64 @@
     .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     .sidebar-panel {
       position: fixed; top: 0; bottom: 0; left: 0;
-      width: 82%; max-width: 320px;
+      width: 86%; max-width: 340px;
       height: var(--app-height);
       max-height: var(--app-height);
-      background: var(--card);
+      background: #050A12;
       transform: translateX(-100%);
       transition: transform .28s ease;
       z-index: 210;
       display: flex; flex-direction: column;
-      box-shadow: 4px 0 28px rgba(0,0,0,0.22);
+      box-shadow: 12px 0 42px rgba(0,0,0,0.48);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
     }
-    .sidebar-head { background: #050A12; }
+    .sidebar-head {
+      background: transparent;
+      padding-left: 18px;
+      padding-right: 16px;
+    }
+    .sidebar-head .sidebar-logo-img { width: 154px; }
     .sidebar-panel.open { transform: translateX(0); }
-    /* Pill de vidrio deslizante — solo escritorio (ver @media min-width:900px
-       más arriba, donde se define display:block y el estilo real). Antes esto
-       vivía como regla suelta más abajo en el archivo y, por venir DESPUÉS
-       en el orden del CSS que el override de escritorio, ganaba la cascada
-       en TODOS los anchos (bug: el pill nunca se veía ni en desktop). */
-    .sidebar-pill { display: none; }
+    .sidebar-list { padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
+    .sidebar-item {
+      margin: 3px 10px;
+      width: calc(100% - 20px);
+      padding: 13px 14px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      gap: 12px;
+      color: rgba(255,255,255,0.74);
+    }
+    .sidebar-item-icon,
+    .sidebar-item-label { color: rgba(255,255,255,0.74); }
+    .sidebar-item-label { font-size: 14px; }
+    .sidebar-item-chevron { display: none; }
+    .sidebar-item-active .sidebar-item-icon,
+    .sidebar-item-active .sidebar-item-label { color: #fff; }
+    .sidebar-item-active .sidebar-item-label { font-weight: 700; }
+    .sidebar-item-danger .sidebar-item-icon,
+    .sidebar-item-danger .sidebar-item-label { color: #fb7185; }
+    .sidebar-bottom { gap: 7px; }
+    .sidebar-bottom-section-logout {
+      border-top-color: rgba(255,255,255,0.1);
+      padding-top: 7px;
+    }
+    .sidebar-pill {
+      display: block;
+      position: absolute;
+      z-index: 0;
+      border-radius: 12px;
+      pointer-events: none;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.28);
+      backdrop-filter: blur(10px) saturate(1.4);
+      -webkit-backdrop-filter: blur(10px) saturate(1.4);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.58),
+        inset 0 -1px 0 rgba(255,255,255,0.1),
+        0 5px 16px rgba(0,0,0,0.28);
+    }
   }
 
   /* Layout compartido del sidebar — idéntico en móvil y escritorio */
