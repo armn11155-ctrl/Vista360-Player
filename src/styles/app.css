@@ -16,6 +16,9 @@
     --accent: #0877FF;
     --accent-lt: rgba(8,119,255,0.14);
     --border: rgba(8,119,255,0.13);
+    --premium-rule: #0877FF;
+    --premium-shadow: 0 22px 52px rgba(5,10,18,0.10);
+    --premium-shadow-soft: 0 12px 32px rgba(5,10,18,0.07);
     --green: #22C55E;
     --red: #EF4444;
     --amber: #F59E0B;
@@ -339,7 +342,7 @@
   .sidebar-brand { display: none; }
   .bottom-nav {
     background: #FFFFFF;
-    border-top: 1px solid #EBEBEB;
+    border-top: 1px solid rgba(8,119,255,.12);
     padding: 6px 0 max(8px, env(safe-area-inset-bottom));
     display: flex;
     justify-content: space-around;
@@ -382,9 +385,10 @@
 
   /* ===== SCREEN 1: INICIO ===== */
   .header-dark {
-    background: var(--dark);
+    background: var(--app-bg);
     padding: calc(20px + env(safe-area-inset-top)) 24px 48px;
     flex-shrink: 0;
+    border-bottom: 3px solid var(--premium-rule);
   }
   .header-dark .logo-row {
     display: flex;
@@ -452,7 +456,7 @@
   }
 
   .content-area {
-    background: #F4F6FB;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F6F8FB 68%, #EEF4FF 100%);
     flex: 1;
     padding: 20px 16px;
     overflow-y: auto;
@@ -466,11 +470,11 @@
 
   .card {
     background: #FFFFFF;
-    border: none;
-    border-radius: 16px;
+    border: 1px solid rgba(226,232,240,.9);
+    border-radius: 14px;
     padding: 16px;
     margin-bottom: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: var(--premium-shadow-soft);
   }
 
   .section-title {
@@ -639,17 +643,17 @@
 
   /* ===== SCREEN 3: DETALLE ===== */
   .detail-header {
-    background: var(--dark);
+    background: var(--app-bg);
     padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 3px solid var(--premium-rule);
     flex-shrink: 0;
   }
 
   .campaign-hero {
-    background: var(--dark);
+    background: var(--app-bg);
     padding: 16px;
     display: flex;
     gap: 14px;
@@ -1236,6 +1240,7 @@
     flex-direction: column;
     justify-content: flex-start;
     flex-shrink: 0;
+    border-bottom: 3px solid var(--premium-rule);
   }
   .profile-top-bar {
     display: flex;
