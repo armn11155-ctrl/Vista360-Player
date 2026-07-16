@@ -2253,10 +2253,10 @@
     .sidebar-item { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-icon { color: rgba(255,255,255,0.75) !important; }
     .sidebar-item-label { color: rgba(255,255,255,0.75) !important; display: block !important; }
-    .sidebar-item-chevron { color: rgba(255,255,255,0.3) !important; }
+    .sidebar-item-chevron { display: none !important; }
     .sidebar-item-danger .sidebar-item-label { color: var(--red) !important; }
     .sidebar-item-danger { border-top-color: rgba(255,255,255,0.1) !important; }
-    .sidebar-item:hover { background: rgba(255,255,255,0.075); }
+    .sidebar-item:hover { background: transparent !important; }
     .sidebar-item-icon { filter: none; }
 
     /* Ítem activo + pill deslizante — calcado 1:1 del sidebar de
@@ -2272,7 +2272,6 @@
     .sidebar-item-active .sidebar-item-icon,
     .sidebar-item-active .sidebar-item-label { color: #fff !important; }
     .sidebar-item-active .sidebar-item-label { font-weight: 700 !important; }
-    .sidebar-item-active .sidebar-item-chevron { color: rgba(255,255,255,0.65) !important; }
     .sidebar-pill {
       display: block;
       position: absolute;
