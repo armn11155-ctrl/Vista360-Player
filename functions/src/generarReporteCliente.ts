@@ -356,6 +356,22 @@ async function paginaEvidenciaOscura(
 const CONTACTO_EMAIL = "contacto@vista360.pe";
 const CONTACTO_TELEFONO = "+51 987 654 321";
 
+/** Icono simple de sobre/correo, dibujado con lineas (sin depender de
+ *  fuentes con glifos de icono). */
+function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
+  doc.roundedRect(x, y, w, h, 2.5).lineWidth(2).strokeColor(color).stroke();
+  doc.moveTo(x + 3, y + 4)
+    .lineTo(x + w / 2, y + h / 2 + 3)
+    .lineTo(x + w - 3, y + 4)
+    .lineWidth(2).strokeColor(color).stroke();
+}
+
+/** Icono simple de telefono movil (cuerpo redondeado + altavoz arriba). */
+function drawPhoneIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
+  doc.roundedRect(x, y, w, h, h * 0.24).lineWidth(2).strokeColor(color).stroke();
+  doc.moveTo(x + w * 0.32, y + h * 0.16).lineTo(x + w * 0.68, y + h * 0.16).lineWidth(2).strokeColor(color).stroke();
+}
+
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
   if (existsSync(CIERRE_BG)) {
     drawImageCover(doc, CIERRE_BG, 0, 0, PAGE.width, PAGE.height, 0);
@@ -367,30 +383,39 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     drawRingAsset(doc, 1001, 0, 599);
   }
 
-  // Todo el bloque alineado a la izquierda (antes estaba centrado):
-  // logo, frase, raya divisoria y contacto, uno debajo del otro.
+  // Todo el bloque alineado a la izquierda: logo, frase, raya
+  // divisoria y contacto, uno debajo del otro. Todo mas grande que
+  // antes (logo, textos, raya) y el correo/telefono cada uno en su
+  // propia linea con su icono.
   const leftX = PAGE.margin;
-  let y = PAGE.height * 0.36;
+  let y = PAGE.height * 0.24;
 
-  const logoW = 300;
+  const logoW = 420;
   doc.image(LOGO_WORDMARK_WHITE, leftX, y, { width: logoW });
-  y += 92;
+  y += 130;
 
-  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text("Publicidad exterior premium", leftX, y, { width: 760 });
-  y += 44;
-  doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Presencia visual, evidencia clara y marca visible.", leftX, y, { width: 640 });
-  y += 46;
+  doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
+    .text("Publicidad exterior premium", leftX, y, { width: 900 });
+  y += 58;
+  doc.font("Helvetica").fontSize(18).fillColor(COLORS.muted)
+    .text("Presencia visual, evidencia clara y marca visible.", leftX, y, { width: 700 });
+  y += 62;
 
-  doc.moveTo(leftX, y).lineTo(leftX + 220, y).lineWidth(1.5).strokeColor(COLORS.line).stroke();
-  y += 30;
+  doc.moveTo(leftX, y).lineTo(leftX + 320, y).lineWidth(3).strokeColor(COLORS.accent2).stroke();
+  y += 40;
 
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent)
+  doc.font("Helvetica-Bold").fontSize(15).fillColor(COLORS.accent)
     .text("CONTACTO", leftX, y, { characterSpacing: 1.5 });
-  y += 24;
-  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
-    .text(`${CONTACTO_EMAIL}   /   ${CONTACTO_TELEFONO}`, leftX, y);
+  y += 34;
+
+  drawEmailIcon(doc, leftX, y + 4, 26, 19, COLORS.accent2);
+  doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
+    .text(CONTACTO_EMAIL, leftX + 40, y);
+  y += 52;
+
+  drawPhoneIcon(doc, leftX + 3, y + 2, 20, 24, COLORS.accent2);
+  doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
+    .text(CONTACTO_TELEFONO, leftX + 40, y);
 
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
