@@ -226,13 +226,13 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // no un dibujo por codigo, para que sea exactamente el mismo grafico.
   drawRingAsset(doc, 1001, 0, 599);
 
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 68, { width: 345 });
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 365 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 200, COLORS.accent, 17);
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 212, COLORS.accent, 18);
 
-  doc.font("Helvetica-Bold").fontSize(80).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 252, { characterSpacing: 0.5 });
-  doc.font("Helvetica-Bold").fontSize(80).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 344, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 266, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 362, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
