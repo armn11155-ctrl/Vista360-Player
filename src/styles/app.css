@@ -2721,6 +2721,24 @@
     margin-bottom: 16px;
   }
   .admin-picker-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #0877FF; }
+  .admin-picker-storage {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top));
+    right: 16px;
+    z-index: 6;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    padding: 6px 11px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+  }
   .admin-picker-title { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .admin-picker-sub { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px; }
   .admin-picker-actions {

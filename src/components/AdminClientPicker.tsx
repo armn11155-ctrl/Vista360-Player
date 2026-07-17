@@ -1,11 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { collection, doc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch, type Query } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
-import { db, logout } from "../config/firebase";
+import { db, cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
+
+function formatoEspacio(bytes: number) {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
+/** Espacio total usado en R2 (todos los clientes juntos) — solo el admin lo ve. */
+function useEspacioR2() {
+  const [estado, setEstado] = useState<{ status: "loading" | "ready" | "error"; bytes?: number }>({ status: "loading" });
+
+  useEffect(() => {
+    if (!cloudFunctions) {
+      setEstado({ status: "error" });
+      return;
+    }
+    let cancelado = false;
+    const fn = httpsCallable<Record<string, never>, { totalBytes: number; totalObjetos: number }>(
+      cloudFunctions,
+      "obtenerEspacioR2"
+    );
+    fn()
+      .then(({ data }) => {
+        if (!cancelado) setEstado({ status: "ready", bytes: data.totalBytes });
+      })
+      .catch(() => {
+        if (!cancelado) setEstado({ status: "error" });
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  return estado;
+}
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -22,6 +58,7 @@ interface Props {
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica }: Props) {
   const state = useClientesAdmin();
+  const espacio = useEspacioR2();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
@@ -127,6 +164,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   return (
     <div className="admin-picker-shell">
+      {espacio.status === "ready" && espacio.bytes !== undefined && (
+        <div className="admin-picker-storage" title="Espacio total usado en R2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <ellipse cx="12" cy="5" rx="8" ry="3" />
+            <path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+            <path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3" />
+          </svg>
+          {formatoEspacio(espacio.bytes)}
+        </div>
+      )}
       <div className="admin-picker-header">
         <img src="/logo-player.png" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
         <div className="admin-picker-badge">
