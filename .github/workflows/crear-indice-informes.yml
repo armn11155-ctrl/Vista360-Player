@@ -1,0 +1,46 @@
+name: 🔎 Crear índice de Reportes (informesCliente)
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  crear-indice:
+    name: Crear índice compuesto para la lista de reportes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias del script
+        run: |
+          cd scripts
+          npm install google-auth-library --no-save
+
+      - name: Crear índice
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set +e
+          node scripts/create-informes-index-direct.mjs > /tmp/index-out.txt 2>&1
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          cat /tmp/index-out.txt
+
+      - name: Guardar resultado (diagnóstico)
+        if: always()
+        run: |
+          mkdir -p .debug
+          cp /tmp/index-out.txt .debug/crear-indice-out.txt 2>/dev/null || true
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add .debug/crear-indice-out.txt 2>/dev/null || true
+          git commit -m "debug: resultado de crear índice de informes" || echo "sin cambios"
+          git push origin HEAD:debug-deploy-functions --force

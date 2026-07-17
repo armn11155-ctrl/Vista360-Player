@@ -285,6 +285,12 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
         )}
 
+        {hayContratos && informesState.status === "error" && (
+          <div className="report-admin-status error" style={{ marginTop: 24 }}>
+            No se pudo cargar la lista de reportes: {informesState.message}
+          </div>
+        )}
+
         {hayContratos && informesState.status === "ready" && informes.length === 0 && (
           <div className="report-empty-state">
             <div className="report-empty-icon">
