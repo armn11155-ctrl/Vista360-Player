@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot, orderBy, query, where } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { useCallback, useEffect, useState } from "react";
+import { httpsCallable } from "firebase/functions";
+import { cloudFunctions } from "../config/firebase";
 import type { InformeCliente } from "../types";
 
 export type InformesState =
@@ -8,26 +8,41 @@ export type InformesState =
   | { status: "ready"; informes: InformeCliente[] }
   | { status: "error"; message: string };
 
-export function useInformes(clienteId: string): InformesState {
+export type UseInformesResult = InformesState & { recargar: () => void };
+
+type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
+
+/**
+ * La lista de reportes sale directo de R2 (Cloud Function
+ * listarReportesCliente), no de Firestore: los PDFs ya viven ahí con
+ * una key predecible por cliente/mes, así que no hace falta mantener
+ * un catálogo aparte ni gastar lecturas de Firestore para mostrarlos.
+ * No es en tiempo real (no hay onSnapshot) — por eso generarReporte()
+ * en Reportes.tsx llama a recargar() después de generar un PDF nuevo.
+ */
+export function useInformes(clienteId: string): UseInformesResult {
   const [state, setState] = useState<InformesState>({ status: "loading" });
 
-  useEffect(() => {
-    if (!clienteId || !db) return;
-    const q = query(
-      collection(db, "informesCliente"),
-      where("cliente_id", "==", clienteId),
-      orderBy("mes", "desc")
+  const recargar = useCallback(() => {
+    if (!clienteId || !cloudFunctions) {
+      setState({ status: "ready", informes: [] });
+      return;
+    }
+    setState({ status: "loading" });
+    const listarReportesCliente = httpsCallable<{ clienteId: string }, ListarReportesResponse>(
+      cloudFunctions,
+      "listarReportesCliente"
     );
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const informes = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<InformeCliente, "id">) }));
-        setState({ status: "ready", informes });
-      },
-      (err) => setState({ status: "error", message: err.message })
-    );
-    return unsub;
+    listarReportesCliente({ clienteId })
+      .then((res) => setState({ status: "ready", informes: res.data.informes }))
+      .catch((err) =>
+        setState({ status: "error", message: err instanceof Error ? err.message : "Error desconocido" })
+      );
   }, [clienteId]);
 
-  return state;
+  useEffect(() => {
+    recargar();
+  }, [recargar]);
+
+  return { ...state, recargar };
 }

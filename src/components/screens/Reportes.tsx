@@ -46,6 +46,10 @@ function fechaGenerada(createdAt: unknown, mes: string) {
     const toDate = (createdAt as { toDate?: () => Date }).toDate;
     if (typeof toDate === "function") return fechaCorta(toDate());
   }
+  if (typeof createdAt === "string") {
+    const parsed = new Date(createdAt);
+    if (!Number.isNaN(parsed.getTime())) return fechaCorta(parsed);
+  }
   const fallback = new Date(`${mes || mesActual()}-01T12:00:00`);
   return fechaCorta(Number.isNaN(fallback.getTime()) ? new Date() : fallback);
 }
@@ -174,6 +178,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       setMensajeAdminTipo("ok");
       setMensajeAdmin("Reporte generado. Ya puedes verlo y enviarlo desde la lista.");
       setFotosReporte([]);
+      informesState.recargar();
     } catch (error) {
       setMensajeAdminTipo("error");
       setMensajeAdmin(mensajeErrorReporte(error));

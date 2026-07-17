@@ -180,7 +180,7 @@ export interface InformeCliente {
   /** Keys reales en R2 — se usan para re-firmar la URL cuando la
    *  guardada en `url`/`urlDigital`/`urlHd` ya expiró (dura 6h). */
   r2Keys?: { digital: string; hd: string };
-  numCampanas: number;
-  numEvidencias: number;
-  createdAt?: Timestamp | null;
+  numCampanas?: number;
+  numEvidencias?: number;
+  createdAt?: Timestamp | string | null;
 }
