@@ -1,4 +1,5 @@
 export { crearSubidaR2 } from "./crearSubidaR2.js";
+export { subirAvatarServidor } from "./subirAvatarServidor.js";
 export { firmarUrlsR2 } from "./firmarUrlsR2.js";
 export { registrarAcceso } from "./registrarAcceso.js";
 export { registrarVisita } from "./registrarVisita.js";

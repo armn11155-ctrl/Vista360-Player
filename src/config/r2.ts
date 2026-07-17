@@ -145,8 +145,48 @@ export async function subirEvidenciaR2(file: File): Promise<SubidaR2> {
   return subirArchivoYMiniatura(file, "vista360/campanas");
 }
 
+function blobABase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const resultado = reader.result as string;
+      // El resultado viene como "data:image/webp;base64,AAAA..." — nos
+      // quedamos solo con la parte de datos.
+      resolve(resultado.slice(resultado.indexOf(",") + 1));
+    };
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * El avatar NO sube directo a R2 como el resto de archivos — pasa por
+ * el servidor (subirAvatarServidor). Es un archivo chico (ya se
+ * comprimió a ~320x320 en el navegador antes de llegar acá), así que
+ * no pesa subirlo así, y evita depender de que el bucket de R2 tenga
+ * CORS configurado para el dominio exacto de la app.
+ */
 export async function subirAvatarR2(file: File): Promise<SubidaR2> {
-  return subirArchivoYMiniatura(file, "vista360/avatares");
+  const auth = getAuth(app ?? undefined);
+  if (!auth.currentUser) {
+    throw new Error("Debes iniciar sesión para subir archivos.");
+  }
+
+  const contentType = file.type || "image/webp";
+  const dataBase64 = await blobABase64(file);
+
+  const functions = getFunctions(app ?? undefined);
+  const subirAvatarServidor = httpsCallable<{ dataBase64: string; contentType: string }, { key: string }>(
+    functions,
+    "subirAvatarServidor"
+  );
+
+  try {
+    const { data } = await subirAvatarServidor({ dataBase64, contentType });
+    return { key: data.key };
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : "No se pudo subir la foto.");
+  }
 }
 
 export async function subirFacturaR2(file: File): Promise<{ key: string }> {
