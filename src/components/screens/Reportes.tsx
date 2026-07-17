@@ -40,7 +40,7 @@ const NOMBRES_MES = [
 function aniosDisponibles() {
   const actual = new Date().getFullYear();
   const anios: number[] = [];
-  for (let a = actual - 3; a <= actual + 1; a++) anios.push(a);
+  for (let a = actual - 3; a <= 2080; a++) anios.push(a);
   return anios;
 }
 
