@@ -337,15 +337,38 @@ async function paginaEvidenciaOscura(
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
     .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
 
-  // En la referencia, la pagina oscura NO lleva tarjeta: la foto va
-  // centrada en la pagina (x:249-1351 y:228-781 aprox.).
-  const photoX = 249;
-  const photoY = 228;
-  const photoW = 1102;
-  const photoH = 553;
+  // Misma composicion que la pagina blanca (foto + tarjeta flotante a
+  // la derecha), pero con la tarjeta en blanco para que resalte contra
+  // el fondo oscuro (en la pagina blanca la tarjeta es oscura).
+  const photoX = 74;
+  const photoY = 195;
+  const photoW = 996;
+  const photoH = 546;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
+
+  const cardW = 346;
+  const cardH = 269;
+  const cardX = 1518 - cardW;
+  const cardY = photoY + (photoH - cardH) / 2;
+  const cx = cardX + cardW / 2;
+  doc.save();
+  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
+  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.white);
+  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
+  doc.restore();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
+    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.ink)
+    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
+  doc.font("Helvetica").fontSize(12).fillColor(COLORS.mutedOnLight)
+    .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
+  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent).stroke();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
+    .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
+    .text(fechaCorta(foto.fecha), cardX, cardY + 202, { width: cardW, align: "center" });
 
   drawFooterLine(doc, pad2(pageNum), true, false);
 }
