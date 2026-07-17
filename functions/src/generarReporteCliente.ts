@@ -60,6 +60,7 @@ const COLORS = {
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png");
+const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 const CIERRE_BG = join(ASSETS_DIR, "backgrounds/ciudad-noche.jpg");
@@ -165,17 +166,11 @@ function drawImageCover(doc: PDFKit.PDFDocument, src: Buffer | string, x: number
   doc.restore();
 }
 
-/** Anillos decorativos de vidrio azul (portada / cierre de respaldo). */
-function drawRings(doc: PDFKit.PDFDocument, cx: number, cy: number, maxR: number) {
-  [maxR, maxR * 0.72, maxR * 0.46].forEach((r, i) => {
-    const grad = doc.radialGradient(cx, cy, r * 0.7, cx, cy, r);
-    grad.stop(0, COLORS.accent, 0.42 - i * 0.06).stop(1, COLORS.accent, 0);
-    doc.circle(cx, cy, r).fill(grad as never);
-  });
-  [maxR * 0.99, maxR * 0.7, maxR * 0.44].forEach((r) => {
-    doc.circle(cx, cy, r).lineWidth(1.3).strokeColor(COLORS.accent2).strokeOpacity(0.5).stroke();
-  });
-  doc.strokeOpacity(1);
+/** Anillo decorativo: recortado directo del PDF de referencia del
+ *  cliente (no dibujado por codigo), para que sea exactamente el mismo
+ *  gráfico, pixel por pixel. */
+function drawRingAsset(doc: PDFKit.PDFDocument, x: number, y: number, width: number) {
+  doc.image(RING_PORTADA, x, y, { width });
 }
 
 function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent) {
@@ -212,9 +207,9 @@ function drawFooterBar(doc: PDFKit.PDFDocument, num: string) {
 function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   // El anillo se sale del borde superior-derecho de la pagina (bleed),
-  // tal como en la referencia: centro fuera de la pagina, el propio
-  // recorte de la pagina hace el resto.
-  drawRings(doc, PAGE.width + 60, 60, 480);
+  // tal como en la referencia. Es un recorte real del PDF de referencia,
+  // no un dibujo por codigo, para que sea exactamente el mismo grafico.
+  drawRingAsset(doc, 1001, 0, 599);
 
   doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 54, { width: 220 });
 
@@ -336,7 +331,7 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     doc.rect(0, 0, PAGE.width, PAGE.height).fill(overlay as never);
   } else {
     doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-    drawRings(doc, PAGE.width / 2, PAGE.height * 0.36, 320);
+    drawRingAsset(doc, 1001, 0, 599);
   }
 
   const logoW = 320;
