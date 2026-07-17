@@ -2,9 +2,9 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
-import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { Cliente, Contrato, Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
+import { ReportCard } from "../ReportCard";
 
 interface Props {
   cliente: Cliente | null;
@@ -48,30 +48,6 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
-function fechaCorta(date: Date) {
-  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  return `${String(date.getDate()).padStart(2, "0")} ${meses[date.getMonth()]} ${date.getFullYear()}`;
-}
-
-function fechaGenerada(createdAt: unknown, mes: string) {
-  if (createdAt && typeof createdAt === "object" && "toDate" in createdAt) {
-    const toDate = (createdAt as { toDate?: () => Date }).toDate;
-    if (typeof toDate === "function") return fechaCorta(toDate());
-  }
-  if (typeof createdAt === "string") {
-    const parsed = new Date(createdAt);
-    if (!Number.isNaN(parsed.getTime())) return fechaCorta(parsed);
-  }
-  const fallback = new Date(`${mes || mesActual()}-01T12:00:00`);
-  return fechaCorta(Number.isNaN(fallback.getTime()) ? new Date() : fallback);
-}
-
-function formatoBytes(bytes?: number) {
-  if (!bytes || bytes <= 0) return null;
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 async function fotoADataUrl(file: File): Promise<string> {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const reader = new FileReader();
@@ -96,34 +72,15 @@ async function fotoADataUrl(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
-function mensajeReporte(mesLabel: string, cliente: Cliente | null, url: string) {
-  const nombre = nombreCliente(cliente);
-  return [
-    `Hola ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
-    "",
-    "Lo preparamos con una presentación premium, listo para ver o descargar.",
-    "",
-    `Puedes verlo aquí: ${url}`,
-    "",
-    "También queda disponible en tu portal Vista360 para consultarlo cuando lo necesites.",
-  ].join("\n");
-}
-
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
-  // Las URLs guardadas expiran a las 6h (bucket privado) — re-firmamos
-  // con las r2Keys reales cada vez que se abre la pantalla.
-  const keysReportes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
-  const urlsFirmadas = useSignedUrls(keysReportes);
   const [mes, setMes] = useState(mesActual());
   const [generando, setGenerando] = useState(false);
   const [procesandoFotos, setProcesandoFotos] = useState(false);
   const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
-  const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
-  const [eliminando, setEliminando] = useState<string | null>(null);
   const panelPrincipal = contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined;
   const ubicacionAuto = [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
     .filter(Boolean)
@@ -169,30 +126,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
   function quitarFoto(id: string) {
     setFotosReporte((actuales) => actuales.filter((foto) => foto.id !== id));
-  }
-
-  async function eliminarReporte(informe: { id: string; mes: string; mesLabel: string }) {
-    if (!cloudFunctions || eliminando) return;
-    const confirmado = window.confirm(
-      `¿Eliminar el reporte de ${informe.mesLabel}? Se borra el PDF de R2 y no se puede deshacer.`
-    );
-    if (!confirmado) return;
-    setMenuAbierto(null);
-    setEliminando(informe.id);
-    setMensajeAdmin(null);
-    try {
-      const eliminarReporteCliente = httpsCallable<{ clienteId: string; mes: string }, { ok: boolean }>(
-        cloudFunctions,
-        "eliminarReporteCliente"
-      );
-      await eliminarReporteCliente({ clienteId, mes: informe.mes });
-      informesState.recargar();
-    } catch (error) {
-      setMensajeAdminTipo("error");
-      setMensajeAdmin(error instanceof Error ? error.message : "No se pudo eliminar el reporte.");
-    } finally {
-      setEliminando(null);
-    }
   }
 
   async function generarReporte() {
@@ -371,95 +304,16 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
         {informes.length > 0 && (
           <div className="reports-list">
-            {informes.map((informe) => {
-              const url = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
-              const mensaje = mensajeReporte(informe.mesLabel, cliente, url);
-              const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
-              const emailTo = cliente?.email ?? "";
-              const tamano = formatoBytes(informe.digitalBytes);
-
-              return (
-                <div className="report-card" key={informe.id}>
-                  {isAdmin && (
-                    <div className="report-card-menu">
-                      <button
-                        type="button"
-                        className="report-card-menu-btn"
-                        aria-label="Opciones del reporte"
-                        onClick={() => setMenuAbierto((actual) => (actual === informe.id ? null : informe.id))}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="5" r="1.9" />
-                          <circle cx="12" cy="12" r="1.9" />
-                          <circle cx="12" cy="19" r="1.9" />
-                        </svg>
-                      </button>
-                      {menuAbierto === informe.id && (
-                        <div className="report-card-menu-dropdown">
-                          <button
-                            type="button"
-                            className="report-card-menu-item"
-                            onClick={() => eliminarReporte(informe)}
-                            disabled={eliminando === informe.id}
-                          >
-                            {eliminando === informe.id ? "Eliminando..." : "Eliminar reporte"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="report-card-main">
-                    <div className="report-pdf-icon" aria-hidden="true">
-                      <svg width="46" height="58" viewBox="0 0 46 58" fill="none">
-                        <path d="M7 1.5h22.5L44.5 16v35A5.5 5.5 0 0 1 39 56.5H7A5.5 5.5 0 0 1 1.5 51V7A5.5 5.5 0 0 1 7 1.5Z" fill="#123778" stroke="#4B7FE7" />
-                        <path d="M29.5 1.5V12A4.5 4.5 0 0 0 34 16.5h10.5" fill="#6FA2FF" fillOpacity=".35" />
-                        <rect x="12.5" y="22.5" width="21" height="19" rx="1.5" stroke="#BFD5FF" strokeWidth="1.6" />
-                        <path d="M17 28h8M17 32h12M17 36h15" stroke="#BFD5FF" strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
-                      <span>PDF</span>
-                    </div>
-                    <div className="report-card-copy">
-                      <div className="report-kicker">Reporte mensual</div>
-                      <div className="report-title">{informe.mesLabel}</div>
-                      <div className="report-meta">Generado el {fechaGenerada(informe.createdAt, informe.mes)}</div>
-                      {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
-                    </div>
-                    <div className="report-ready-badge">Listo</div>
-                  </div>
-                  <div className="report-actions">
-                    <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer">
-                      Ver / Descargar
-                    </a>
-                    {isAdmin && (
-                      <>
-                        <a
-                          className="report-action report-action-muted report-action-whatsapp"
-                          href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                            <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L4 20l.9-4a8.4 8.4 0 1 1 15.6-4.3Z" />
-                            <path d="M9.2 8.7c.2-.5.4-.5.7-.5h.6c.2 0 .5.1.6.4.2.5.7 1.7.8 1.8.1.2.1.4 0 .6l-.4.5c-.1.2-.3.3-.1.6.2.3.8 1.3 1.8 2 .9.7 1.7.9 2 .9.2.1.4 0 .6-.2l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.3.4.4 0 .5-.3 1.4-.8 1.7-.4.3-1.2.5-2.1.2-1-.3-2.2-.8-3.6-2-1.6-1.4-2.6-3-3-4-.4-1-.4-1.8-.1-2.4Z" />
-                          </svg>
-                          WhatsApp
-                        </a>
-                        <a
-                          className="report-action report-action-muted"
-                          href={`mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensaje)}`}
-                        >
-                          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                            <rect x="3" y="5" width="18" height="14" rx="2" />
-                            <path d="m4 7 8 6 8-6" />
-                          </svg>
-                          Correo
-                        </a>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {informes.map((informe) => (
+              <ReportCard
+                key={informe.id}
+                informe={informe}
+                cliente={cliente}
+                clienteId={clienteId}
+                isAdmin={isAdmin}
+                onEliminado={informesState.recargar}
+              />
+            ))}
           </div>
         )}
       </div>

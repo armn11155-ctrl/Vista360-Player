@@ -346,6 +346,7 @@ function AuthenticatedApp({
             contrato={contratoAbierto}
             panel={paneles[contratoAbierto.panel_id]}
             clienteNombre={cliente?.empresa ?? ""}
+            cliente={cliente}
             onBack={() => setView("campanas")}
             isAdmin={isAdmin}
           />

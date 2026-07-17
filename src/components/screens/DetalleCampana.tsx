@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import type { Contrato, Panel } from "../../types";
+import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
-import { esVideo, keyDeMiniatura } from "../../utils/r2Media";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
+import { ReportCard } from "../ReportCard";
 
 interface Props {
   contrato: Contrato;
   panel: Panel | undefined;
   clienteNombre: string;
+  cliente: Cliente | null;
   onBack: () => void;
   isAdmin: boolean;
 }
@@ -82,7 +83,7 @@ function EmptyReportsIcon() {
   );
 }
 
-export default function DetalleCampana({ contrato, panel, clienteNombre, onBack, isAdmin }: Props) {
+export default function DetalleCampana({ contrato, panel, clienteNombre, cliente, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
   const [subiendoPortada, setSubiendoPortada] = useState(false);
   const [error, setError] = useState("");
@@ -292,118 +293,39 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               </div>
             )}
 
-            {/* PDF del reporte mensual (mismo que en la pantalla de Reportes) */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 12 }}>
-                Reporte fotográfico (PDF)
+            {informesState.status === "loading" && (
+              <div style={{ fontSize: 13, color: "#6B7280", textAlign: "center", padding: "24px 0" }}>Cargando…</div>
+            )}
+
+            {informesState.status === "error" && (
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12 }}>
+                No se pudo cargar la lista de reportes: {informesState.message}
               </div>
+            )}
 
-              {informesState.status === "loading" && (
-                <div style={{ fontSize: 13, color: "#6B7280" }}>Cargando…</div>
-              )}
-
-              {informesState.status === "error" && (
-                <div style={{ fontSize: 12, color: "#DC2626" }}>
-                  No se pudo cargar la lista de reportes: {informesState.message}
+            {informesState.status === "ready" && informes.length === 0 && (
+              <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)", textAlign: "center" }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+                  <EmptyReportsIcon />
                 </div>
-              )}
-
-              {informesState.status === "ready" && informes.length === 0 && (
-                <div style={{ textAlign: "center", padding: "20px 0", color: "#9CA3AF" }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
-                    <EmptyReportsIcon />
-                  </div>
-                  <div style={{ fontSize: 13 }}>Aún no hay un reporte PDF generado para este cliente.</div>
-                </div>
-              )}
-
-              {informesState.status === "ready" && informes.length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {informes.map((informe) => {
-                    const url = (informe.r2Keys && urlsInformesFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
-                    return (
-                      <a
-                        key={informe.id}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: "flex", alignItems: "center", justifyContent: "space-between",
-                          padding: "12px 14px", borderRadius: 10, background: "#F3F4F6",
-                          textDecoration: "none",
-                        }}
-                      >
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#0B1220" }}>{informe.mesLabel}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#0877FF" }}>Ver / Descargar</span>
-                      </a>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Galería de evidencias */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220" }}>
-                  Fotos de evidencia
-                </div>
-                <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>
-                  {fotos.length} foto{fotos.length !== 1 ? "s" : ""}
-                </div>
+                <div style={{ fontSize: 13, color: "#6B7280" }}>Aún no hay un reporte PDF generado para este cliente.</div>
               </div>
+            )}
 
-              {fotos.length > 0 ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
-                  {[...fotos].reverse().map((f, i) => {
-                    const href = resolverUrl(f.url);
-                    const srcThumb = resolverUrl(keyDeMiniatura(f.url, f.thumbKey));
-                    if (!href || !srcThumb) return null;
-                    return (
-                      <a key={i} href={href} target="_blank" rel="noreferrer"
-                        style={{ display: "block", borderRadius: 10, overflow: "hidden", aspectRatio: "1", position: "relative" }}>
-                        <img
-                          src={srcThumb}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                        {esVideo(f.url) && (
-                          <span
-                            aria-hidden="true"
-                            style={{
-                              position: "absolute", top: 4, right: 4,
-                              width: 20, height: 20, borderRadius: 5,
-                              background: "rgba(0,0,0,0.45)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}
-                          >
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff">
-                              <path d="M8 5v14l11-7z" />
-                            </svg>
-                          </span>
-                        )}
-                      <span style={{
-                        position: "absolute", bottom: 0, left: 0, right: 0,
-                        background: "rgba(0,0,0,0.62)",
-                        padding: "12px 6px 4px", fontSize: 9, color: "#fff", textAlign: "center",
-                      }}>
-                        {f.fecha}
-                      </span>
-                    </a>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "#9CA3AF" }}>
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-                    <EmptyReportsIcon />
-                  </div>
-                  <div style={{ fontSize: 13 }}>Aún no hay reportes registrados</div>
-                </div>
-              )}
-            </div>
+            {informesState.status === "ready" && informes.length > 0 && (
+              <div className="reports-list">
+                {informes.map((informe) => (
+                  <ReportCard
+                    key={informe.id}
+                    informe={informe}
+                    cliente={cliente}
+                    clienteId={contrato.cliente_id}
+                    isAdmin={isAdmin}
+                    onEliminado={informesState.recargar}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
