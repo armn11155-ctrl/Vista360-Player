@@ -86,7 +86,17 @@ export async function comprimirAvatarWebp(file: File): Promise<File> {
     throw new Error("El avatar debe ser una imagen estática.");
   }
 
-  const bitmap = await createImageBitmap(file);
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    // Pasa sobre todo con fotos HEIC/HEIF (formato nativo de iPhone) en
+    // navegadores que no las decodifican fuera de Safari/iOS — el canvas
+    // nunca llega a recibir la imagen.
+    throw new Error(
+      "No se pudo abrir esa foto. Si es un archivo HEIC (típico de iPhone), conviértela a JPG o PNG y vuelve a intentar."
+    );
+  }
   const side = Math.min(bitmap.width, bitmap.height);
   const sx = Math.round((bitmap.width - side) / 2);
   const sy = Math.round((bitmap.height - side) / 2);

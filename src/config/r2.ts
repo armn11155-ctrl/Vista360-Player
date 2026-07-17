@@ -33,13 +33,24 @@ async function pedirUrlFirmada(folder: string, extension: string, contentType: s
 }
 
 async function subirBlob(uploadUrl: string, blob: Blob, contentType: string) {
-  const res = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
+  let res: Response;
+  try {
+    res = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: blob,
+    });
+  } catch {
+    // fetch() solo lanza esto por una falla de RED (sin conexión, CORS
+    // bloqueado, etc.) — nunca por un error del servidor. Safari lo
+    // muestra como "Load failed", Chrome como "Failed to fetch"; en
+    // ambos casos el navegador no llegó a hablar con R2.
+    throw new Error(
+      "No se pudo conectar con el almacenamiento para subir el archivo. Revisa tu conexión a internet y vuelve a intentar."
+    );
+  }
   if (!res.ok) {
-    throw new Error("No se pudo subir el archivo a R2. Intenta de nuevo.");
+    throw new Error(`No se pudo subir el archivo a R2 (código ${res.status}). Intenta de nuevo.`);
   }
 }
 
