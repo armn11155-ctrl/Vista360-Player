@@ -223,17 +223,10 @@
   .brand-loader-logo-fill {
     filter: brightness(1.08) contrast(1.03);
   }
-  .brand-loader-liquid::after {
-    content: "";
-    position: absolute;
-    left: -8%;
-    right: -8%;
-    top: 0;
-    height: 2px;
-    background: rgba(255,255,255,.7);
-    filter: blur(.5px);
-    box-shadow: 0 0 12px rgba(255,255,255,.38);
-  }
+  /* Antes habia una linea blanca (::after) pensada como el "borde del
+   * agua" del relleno, pero al estar fija en top:0 del contenedor
+   * clip-path, se quedaba pegada arriba del logo en vez de moverse
+   * con el llenado — se veia como un defecto. Se quito. */
   @keyframes brandLoaderGlow {
     0%, 100% { opacity: .35; transform: scale(.82); }
     50% { opacity: .8; transform: scale(1.08); }
