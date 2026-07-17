@@ -43,7 +43,7 @@ const ITEMS: {
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades", mobileOnly: true },
-  { id: "facturas",     icon: <IconFacturas />,     label: "Facturas", mobileOnly: true },
+  { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
 ];
 

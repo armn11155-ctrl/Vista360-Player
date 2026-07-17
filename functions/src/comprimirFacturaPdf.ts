@@ -82,22 +82,30 @@ export const comprimirFacturaPdf = onCall<ComprimirFacturaPdfData>({
     throw new HttpsError("invalid-argument", "El PDF es demasiado pesado. Usa un archivo menor a 12 MB.");
   }
 
+  // Ghostscript no esta garantizado en el runtime de Cloud Functions
+  // (buildpack de Google, sin gs instalado por defecto). Si no esta
+  // disponible, no debe tumbar la subida de la factura — se sube el
+  // PDF original sin comprimir en vez de fallar por completo.
+  let finalPdf = original;
+  let compressed = false;
   try {
     const comprimido120 = await comprimirConGhostscript(original, 120);
     const comprimido96 = comprimido120.byteLength > 4 * 1024 * 1024
       ? await comprimirConGhostscript(original, 96)
       : comprimido120;
-    const finalPdf = comprimido96.byteLength < original.byteLength ? comprimido96 : original;
-
-    return {
-      nombre: nombre.replace(/\.[^.]+$/, "") + ".pdf",
-      pdfBase64: finalPdf.toString("base64"),
-      originalBytes: original.byteLength,
-      finalBytes: finalPdf.byteLength,
-      compressed: finalPdf.byteLength < original.byteLength,
-    };
+    if (comprimido96.byteLength < original.byteLength) {
+      finalPdf = comprimido96;
+      compressed = true;
+    }
   } catch (error) {
-    console.error("No se pudo comprimir factura PDF.", error);
-    throw new HttpsError("failed-precondition", "No se pudo comprimir el PDF en el servidor.");
+    console.warn("No se pudo comprimir la factura (Ghostscript no disponible); se sube el PDF original.", error);
   }
+
+  return {
+    nombre: nombre.replace(/\.[^.]+$/, "") + ".pdf",
+    pdfBase64: finalPdf.toString("base64"),
+    originalBytes: original.byteLength,
+    finalBytes: finalPdf.byteLength,
+    compressed,
+  };
 });
