@@ -1082,6 +1082,9 @@
     font-size: 14px;
     font-weight: 820;
     line-height: 1;
+    /* Deja espacio para que no choque con el boton de 3 puntitos
+     * (absoluto, arriba a la derecha de la tarjeta). */
+    margin-right: 36px;
   }
   .report-header-blue {
     background: rgba(8,119,255,0.14);
