@@ -1161,6 +1161,27 @@
     font-size: 13px;
     color-scheme: dark;
   }
+  .report-month-selects {
+    display: flex;
+    gap: 8px;
+  }
+  .report-month-select {
+    min-height: 40px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.55);
+    color: #fff;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 650;
+    color-scheme: dark;
+    flex: 1 1 auto;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .report-month-select-anio {
+    flex: 0 0 84px;
+  }
   .report-photo-picker {
     display: flex;
     flex-direction: column;

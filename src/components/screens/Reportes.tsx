@@ -32,6 +32,18 @@ function mesActual() {
   return new Date().toISOString().slice(0, 7);
 }
 
+const NOMBRES_MES = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+function aniosDisponibles() {
+  const actual = new Date().getFullYear();
+  const anios: number[] = [];
+  for (let a = actual - 3; a <= actual + 1; a++) anios.push(a);
+  return anios;
+}
+
 function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
@@ -240,16 +252,35 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               </div>
             </div>
             <div className="report-admin-controls">
-              <label className="report-month-field">
+              <div className="report-month-field">
                 <span>Mes del reporte</span>
-                <input
-                  className="report-month-input"
-                  type="month"
-                  value={mes}
-                  onChange={(e) => setMes(e.target.value)}
-                  aria-label="Mes del reporte"
-                />
-              </label>
+                <div className="report-month-selects">
+                  <select
+                    className="report-month-select"
+                    value={mes.slice(5, 7)}
+                    onChange={(e) => setMes(`${mes.slice(0, 4)}-${e.target.value}`)}
+                    aria-label="Mes"
+                  >
+                    {NOMBRES_MES.map((nombre, i) => (
+                      <option key={nombre} value={String(i + 1).padStart(2, "0")}>
+                        {nombre}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    className="report-month-select report-month-select-anio"
+                    value={mes.slice(0, 4)}
+                    onChange={(e) => setMes(`${e.target.value}-${mes.slice(5, 7)}`)}
+                    aria-label="Año"
+                  >
+                    {aniosDisponibles().map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <label className="report-photo-picker">
                 <span>Fotos del reporte</span>
                 <input

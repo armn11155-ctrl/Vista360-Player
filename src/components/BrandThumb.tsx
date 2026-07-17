@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { brandColor } from "../utils/brandColor";
 import { ClientAvatar } from "./ClientAvatar";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -24,6 +25,13 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
   const esKeyR2 = Boolean(avatarUrl) && !avatarUrl!.startsWith("http");
   const firmadas = useSignedUrls(esKeyR2 ? [avatarUrl] : []);
   const src = esKeyR2 ? firmadas[avatarUrl!] : avatarUrl;
+  // Si la foto real ya no existe en la nube (o el link vencio y algo
+  // fallo al re-firmar), el navegador la marca como rota ("Load
+  // failed" en Safari). En vez de mostrar eso, volvemos al icono por
+  // defecto.
+  const [fallo, setFallo] = useState(false);
+  useEffect(() => setFallo(false), [src]);
+  const mostrarFoto = Boolean(src) && !fallo;
 
   return (
     <div style={{
@@ -31,8 +39,13 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
       background: bg, display: "flex", alignItems: "center", justifyContent: "center",
       overflow: "hidden", userSelect: "none",
     }}>
-      {src ? (
-        <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      {mostrarFoto ? (
+        <img
+          src={src}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          onError={() => setFallo(true)}
+        />
       ) : (
         <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
       )}
