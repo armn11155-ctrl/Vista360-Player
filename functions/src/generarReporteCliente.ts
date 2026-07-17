@@ -122,25 +122,21 @@ async function imageBuffer(url: string) {
   return Buffer.from(await response.arrayBuffer());
 }
 
-type Calidad = "digital" | "hd";
-
 /** Ghostscript no esta disponible en el runtime de Cloud Functions (por
  *  eso el PDF nunca se comprimia de verdad antes) — la compresion real
  *  se hace aca, reduciendo cada foto antes de insertarla en el PDF.
- *  "digital" queda liviano para ver rapido en el portal; "hd" se queda
- *  con mas resolucion para descarga. */
-const CALIDAD_FOTO: Record<Calidad, { maxWidth: number; quality: number }> = {
-  digital: { maxWidth: 1100, quality: 62 },
-  hd: { maxWidth: 2000, quality: 84 },
-};
+ *  Un solo nivel de calidad para todo el reporte (ya no se genera una
+ *  version "HD" aparte: duplicaba espacio en R2 sin necesidad). El
+ *  ancho y la calidad de JPEG se eligieron para que se vea muy bien en
+ *  pantalla y siga siendo aceptable para imprimir, sin pesar de mas. */
+const FOTO_CONFIG = { maxWidth: 1500, quality: 72 };
 
-async function comprimirFoto(buffer: Buffer, calidad: Calidad) {
-  const cfg = CALIDAD_FOTO[calidad];
+async function comprimirFoto(buffer: Buffer) {
   try {
     return await sharp(buffer)
       .rotate()
-      .resize({ width: cfg.maxWidth, withoutEnlargement: true })
-      .jpeg({ quality: cfg.quality, mozjpeg: true })
+      .resize({ width: FOTO_CONFIG.maxWidth, withoutEnlargement: true })
+      .jpeg({ quality: FOTO_CONFIG.quality, mozjpeg: true })
       .toBuffer();
   } catch (error) {
     console.warn("No se pudo comprimir una foto del reporte; se usa el original.", error);
@@ -148,9 +144,9 @@ async function comprimirFoto(buffer: Buffer, calidad: Calidad) {
   }
 }
 
-async function cargarFotoComprimida(url: string, calidad: Calidad) {
+async function cargarFotoComprimida(url: string) {
   const raw = await imageBuffer(url);
-  return comprimirFoto(raw, calidad);
+  return comprimirFoto(raw);
 }
 
 /** Dibuja una imagen cubriendo un rectángulo (crop centrado), con esquinas redondeadas. */
@@ -212,7 +208,7 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // no un dibujo por codigo, para que sea exactamente el mismo grafico.
   drawRingAsset(doc, 1001, 0, 599);
 
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 54, { width: 220 });
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 46, { width: 268 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
   drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
@@ -238,7 +234,7 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // Tarjeta oscura: Ubicacion
   const cardX2 = 1012;
   const cardW2 = 418;
-  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).strokeColor(COLORS.line).stroke();
+  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).fillAndStroke(COLORS.card, COLORS.line);
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
   const [lugar, ...resto] = sinTildes(cliente.ubicacion).split(" - ");
   doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 46, { width: cardW2 - 60 });
@@ -253,15 +249,14 @@ async function paginaEvidenciaBlanca(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
   pageNum: number,
-  indice: number,
-  calidad: Calidad
+  indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
-    .text(`Evidencia ${indice}`, PAGE.margin, 98, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
     .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
 
@@ -270,7 +265,7 @@ async function paginaEvidenciaBlanca(
   const photoY = 195;
   const photoW = 996;
   const photoH = 546;
-  const buffer = await cargarFotoComprimida(foto.url, calidad);
+  const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
 
@@ -306,15 +301,14 @@ async function paginaEvidenciaOscura(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
   pageNum: number,
-  indice: number,
-  calidad: Calidad
+  indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text(`Evidencia ${indice}`, PAGE.margin, 98, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
     .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
 
@@ -324,7 +318,7 @@ async function paginaEvidenciaOscura(
   const photoY = 228;
   const photoW = 1102;
   const photoH = 553;
-  const buffer = await cargarFotoComprimida(foto.url, calidad);
+  const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
 
@@ -355,7 +349,7 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
 
-export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[], calidad: Calidad): Promise<ReportePdf> {
+export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
   const doc = new PDFDocument({ size: [PAGE.width, PAGE.height], margin: 0, autoFirstPage: false });
   const chunks: Buffer[] = [];
   doc.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -376,9 +370,9 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     // Empieza en blanco y alterna: blanco, negro, blanco, negro...
     const dark = i % 2 === 1;
     if (dark) {
-      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, i + 1, calidad);
+      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, i + 1);
     } else {
-      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, i + 1, calidad);
+      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, i + 1);
     }
     pageNum++;
   }
@@ -517,18 +511,16 @@ export const generarReporteCliente = onCall(
         ciudad: ubicacionDb || "Peru",
       };
 
-      const [reporteDigital, reporteHd] = await Promise.all([
-        generarReporte(cliente, elementos, "digital"),
-        generarReporte(cliente, elementos, "hd"),
-      ]);
-      const digital = reporteDigital.buffer;
-      const hd = reporteHd.buffer;
+      // Un solo PDF por reporte (ya no se genera una version "HD"
+      // aparte): duplicaba el espacio ocupado en R2 sin que nadie
+      // usara la version pesada. La compresion de fotos en
+      // FOTO_CONFIG ya deja este archivo liviano y con buena calidad.
+      const reporte = await generarReporte(cliente, elementos);
+      const digital = reporte.buffer;
 
       const baseKey = `clientes/${clienteId}/reportes/${mes}`;
-      const [urlDigital, urlHd] = await Promise.all([
-        subirReporteR2(`${baseKey}/reporte-digital.pdf`, digital),
-        subirReporteR2(`${baseKey}/reporte-hd.pdf`, hd),
-      ]);
+      const keyDigital = `${baseKey}/reporte-digital.pdf`;
+      const urlDigital = await subirReporteR2(keyDigital, digital);
 
       await db.collection("informesCliente").doc(`${clienteId}_${mes}`).set(
         {
@@ -537,16 +529,13 @@ export const generarReporteCliente = onCall(
           mesLabel: cliente.periodo,
           url: urlDigital,
           urlDigital,
-          urlHd,
           storage: "r2",
           r2Keys: {
-            digital: `${baseKey}/reporte-digital.pdf`,
-            hd: `${baseKey}/reporte-hd.pdf`,
+            digital: keyDigital,
           },
           digitalBytes: digital.length,
-          hdBytes: hd.length,
-          numCampanas: reporteDigital.numElementos,
-          numEvidencias: reporteDigital.numEvidencias,
+          numCampanas: reporte.numElementos,
+          numEvidencias: reporte.numEvidencias,
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }
@@ -554,10 +543,8 @@ export const generarReporteCliente = onCall(
 
       return {
         ok: true,
-        urlDigital,
-        urlHd,
-        digitalBytes: digital.length,
-        hdBytes: hd.length,
+        url: urlDigital,
+        bytes: digital.length,
       };
     } catch (error) {
       if (error instanceof HttpsError) throw error;

@@ -168,18 +168,15 @@ export interface InformeCliente {
   cliente_id: string;
   mes: string; // "2026-06"
   mesLabel: string; // "Junio 2026"
-  /** Compatibilidad con reportes antiguos. En reportes nuevos equivale a urlDigital. */
+  /** Un solo PDF por reporte (ya no hay version HD aparte). */
   url: string;
-  /** PDF comprimido para vista dentro del portal (72-96 DPI). */
+  /** Compatibilidad con el nombre de campo anterior; mismo archivo que `url`. */
   urlDigital?: string;
-  /** PDF de mayor calidad para descarga del cliente (150 DPI). */
-  urlHd?: string;
   digitalBytes?: number;
-  hdBytes?: number;
   storage?: "firebase" | "r2";
-  /** Keys reales en R2 — se usan para re-firmar la URL cuando la
-   *  guardada en `url`/`urlDigital`/`urlHd` ya expiró (dura 6h). */
-  r2Keys?: { digital: string; hd: string };
+  /** Key real en R2 — se usa para re-firmar la URL cuando la
+   *  guardada en `url`/`urlDigital` ya expiró (dura 6h). */
+  r2Keys?: { digital: string };
   numCampanas?: number;
   numEvidencias?: number;
   createdAt?: Timestamp | string | null;

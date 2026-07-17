@@ -24,10 +24,8 @@ type FotoReporte = {
 
 type GenerarReporteResponse = {
   ok: boolean;
-  urlDigital: string;
-  urlHd: string;
-  digitalBytes: number;
-  hdBytes: number;
+  url: string;
+  bytes: number;
 };
 
 function mesActual() {
@@ -86,15 +84,14 @@ async function fotoADataUrl(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.82);
 }
 
-function mensajeReporte(mesLabel: string, cliente: Cliente | null, urlDigital: string, urlHd: string) {
+function mensajeReporte(mesLabel: string, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   return [
     `Hola ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
     "",
-    "Lo preparamos en formato digital para que puedas revisarlo de forma rápida, segura y con una presentación premium.",
+    "Lo preparamos con una presentación premium, listo para ver o descargar.",
     "",
-    `Puedes verlo aquí: ${urlDigital}`,
-    `Descarga en máxima calidad: ${urlHd}`,
+    `Puedes verlo aquí: ${url}`,
     "",
     "También queda disponible en tu portal Vista360 para consultarlo cuando lo necesites.",
   ].join("\n");
@@ -105,7 +102,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const informes = informesState.status === "ready" ? informesState.informes : [];
   // Las URLs guardadas expiran a las 6h (bucket privado) — re-firmamos
   // con las r2Keys reales cada vez que se abre la pantalla.
-  const keysReportes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital, i.r2Keys.hd] : []));
+  const keysReportes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
   const urlsFirmadas = useSignedUrls(keysReportes);
   const [mes, setMes] = useState(mesActual());
   const [generando, setGenerando] = useState(false);
@@ -344,12 +341,11 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         {informes.length > 0 && (
           <div className="reports-list">
             {informes.map((informe) => {
-              const urlDigital = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
-              const urlHd = (informe.r2Keys && urlsFirmadas[informe.r2Keys.hd]) || informe.urlHd || informe.urlDigital || informe.url;
-              const mensaje = mensajeReporte(informe.mesLabel, cliente, urlDigital, urlHd);
+              const url = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
+              const mensaje = mensajeReporte(informe.mesLabel, cliente, url);
               const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
               const emailTo = cliente?.email ?? "";
-              const hdSize = formatoBytes(informe.hdBytes);
+              const tamano = formatoBytes(informe.digitalBytes);
 
               return (
                 <div className="report-card" key={informe.id}>
@@ -395,16 +391,13 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                       <div className="report-kicker">Reporte mensual</div>
                       <div className="report-title">{informe.mesLabel}</div>
                       <div className="report-meta">Generado el {fechaGenerada(informe.createdAt, informe.mes)}</div>
-                      {hdSize && <div className="report-meta">Tamaño HD: {hdSize}</div>}
+                      {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
                     </div>
                     <div className="report-ready-badge">Listo</div>
                   </div>
                   <div className="report-actions">
-                    <a className="report-action report-action-outline" href={urlDigital} target="_blank" rel="noreferrer">
-                      Ver digital
-                    </a>
-                    <a className="report-action report-action-primary" href={urlHd} target="_blank" rel="noreferrer">
-                      Descargar HD
+                    <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer">
+                      Ver / Descargar
                     </a>
                     {isAdmin && (
                       <>

@@ -14,11 +14,9 @@ interface InformeListado {
   mesLabel: string;
   url: string;
   urlDigital: string;
-  urlHd: string;
-  hdBytes: number;
   digitalBytes: number;
   storage: "r2";
-  r2Keys: { digital: string; hd: string };
+  r2Keys: { digital: string };
   createdAt: string;
 }
 
@@ -66,44 +64,41 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       new ListObjectsV2Command({ Bucket: r2Bucket(), Prefix: prefix })
     );
 
-    const porMes = new Map<string, { digital?: { size: number; fecha?: Date }; hd?: { size: number; fecha?: Date } }>();
+    // Cada mes tiene un unico PDF (reporte-digital.pdf). Reportes
+    // viejos pueden tener ademas un reporte-hd.pdf de cuando existia
+    // esa version aparte; si por alguna razon falta el digital pero
+    // quedo el hd viejo, lo usamos como respaldo para no perder el
+    // reporte de la lista.
+    const porMes = new Map<string, { key: string; size: number; fecha?: Date }>();
     for (const obj of listado.Contents ?? []) {
       if (!obj.Key) continue;
       const resto = obj.Key.slice(prefix.length); // "{mes}/reporte-digital.pdf"
       const [mes, archivo] = resto.split("/");
       if (!mes || !archivo) continue;
-      const entry = porMes.get(mes) ?? {};
-      const info = { size: obj.Size ?? 0, fecha: obj.LastModified };
-      if (archivo === "reporte-digital.pdf") entry.digital = info;
-      if (archivo === "reporte-hd.pdf") entry.hd = info;
-      porMes.set(mes, entry);
+      const info = { key: obj.Key, size: obj.Size ?? 0, fecha: obj.LastModified };
+      if (archivo === "reporte-digital.pdf") {
+        porMes.set(mes, info);
+      } else if (archivo === "reporte-hd.pdf" && !porMes.has(mes)) {
+        porMes.set(mes, info);
+      }
     }
 
     const informes: InformeListado[] = await Promise.all(
-      [...porMes.entries()]
-        .filter(([, v]) => v.digital || v.hd)
-        .map(async ([mes, v]) => {
-          const keyDigital = `${prefix}${mes}/reporte-digital.pdf`;
-          const keyHd = `${prefix}${mes}/reporte-hd.pdf`;
-          const [urlDigital, urlHd] = await Promise.all([
-            v.digital ? firmarLecturaR2(keyDigital, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
-            v.hd ? firmarLecturaR2(keyHd, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
-          ]);
-          const fecha = v.digital?.fecha ?? v.hd?.fecha ?? new Date();
-          return {
-            id: `${clienteId}_${mes}`,
-            mes,
-            mesLabel: nombreMes(mes),
-            url: urlDigital || urlHd,
-            urlDigital: urlDigital || urlHd,
-            urlHd: urlHd || urlDigital,
-            hdBytes: v.hd?.size ?? 0,
-            digitalBytes: v.digital?.size ?? 0,
-            storage: "r2" as const,
-            r2Keys: { digital: keyDigital, hd: keyHd },
-            createdAt: fecha.toISOString(),
-          };
-        })
+      [...porMes.entries()].map(async ([mes, v]) => {
+        const url = await firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS);
+        const fecha = v.fecha ?? new Date();
+        return {
+          id: `${clienteId}_${mes}`,
+          mes,
+          mesLabel: nombreMes(mes),
+          url,
+          urlDigital: url,
+          digitalBytes: v.size,
+          storage: "r2" as const,
+          r2Keys: { digital: v.key },
+          createdAt: fecha.toISOString(),
+        };
+      })
     );
 
     informes.sort((a, b) => (a.mes < b.mes ? 1 : -1));
