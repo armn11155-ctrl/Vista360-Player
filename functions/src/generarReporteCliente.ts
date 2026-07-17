@@ -1,5 +1,7 @@
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -36,23 +38,38 @@ interface ReportePdf {
   numElementos: number;
 }
 
-const PAGE = {
-  width: 1080,
-  height: 1350,
-  margin: 64,
-  bg: "#07111f",
-  panel: "#0d1b2e",
-  card: "#111f33",
-  accent: "#38bdf8",
-  accent2: "#22c55e",
-  text: "#f8fafc",
-  muted: "#94a3b8",
+/**
+ * Diseño horizontal (16:9) — replica el modelo
+ * "Reporte_Fotografico_Mensual_VISTA360_Horizontal_Premium.pdf":
+ * portada oscura, páginas de evidencia alternando fondo blanco/oscuro
+ * (empezando en blanco) una foto grande por página, y cierre con foto
+ * de fondo a página completa. Los logos vienen de functions/assets/logos
+ * (ya en PNG con transparencia real). El fondo del cierre es opcional:
+ * si no existe el archivo todavía, se usa un degradado oscuro de
+ * respaldo para no romper el despliegue.
+ */
+const PAGE = { width: 1600, height: 900, margin: 56 };
+
+const COLORS = {
+  bg: "#0a0f1c",
+  card: "#0d1729",
+  accent: "#2f6fed",
+  accent2: "#5b93ff",
+  white: "#ffffff",
+  ink: "#0a0f1c",
+  muted: "#8b96ad",
+  mutedOnLight: "#64748b",
+  line: "#1c2942",
+  lineLight: "#e2e8f0",
 };
 
-const CONTENT_X = PAGE.margin + 42;
-const CONTENT_W = 570;
-const SIDE_W = 236;
-const SIDE_X = PAGE.width - PAGE.margin - SIDE_W - 20;
+const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
+const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png");
+const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
+const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
+const CIERRE_BG = join(ASSETS_DIR, "backgrounds/ciudad-noche.jpg");
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 function normalizeFoto(foto: FotoInput) {
   return typeof foto === "string" ? { url: foto } : foto;
@@ -61,7 +78,8 @@ function normalizeFoto(foto: FotoInput) {
 function nombreMes(mes: string) {
   const [year, month] = mes.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, 1));
-  return new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric" }).format(date);
+  const label = new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric" }).format(date);
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
 function monthRange(mes: string) {
@@ -78,6 +96,15 @@ function timestampToIso(value: unknown) {
   return "";
 }
 
+function fechaCorta(iso?: string) {
+  if (!iso) {
+    return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date());
+  }
+  const d = new Date(`${iso}T12:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
+}
+
 async function imageBuffer(url: string) {
   if (url.startsWith("data:image/")) {
     const base64 = url.split(",")[1];
@@ -91,75 +118,154 @@ async function imageBuffer(url: string) {
   return Buffer.from(await response.arrayBuffer());
 }
 
-function drawBackground(doc: PDFKit.PDFDocument) {
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(PAGE.bg);
-  doc
-    .roundedRect(PAGE.margin, PAGE.margin, PAGE.width - PAGE.margin * 2, PAGE.height - PAGE.margin * 2, 32)
-    .fill(PAGE.panel);
+/** Dibuja una imagen cubriendo un rectángulo (crop centrado), con esquinas redondeadas. */
+function drawImageCover(doc: PDFKit.PDFDocument, src: Buffer | string, x: number, y: number, w: number, h: number, radius = 22) {
+  const img = (doc as unknown as { openImage: (s: Buffer | string) => { width: number; height: number } }).openImage(src);
+  const scale = Math.max(w / img.width, h / img.height);
+  const iw = img.width * scale;
+  const ih = img.height * scale;
+  const ix = x + (w - iw) / 2;
+  const iy = y + (h - ih) / 2;
+  doc.save();
+  doc.roundedRect(x, y, w, h, radius).clip();
+  doc.image(src, ix, iy, { width: iw, height: ih });
+  doc.restore();
 }
 
-function drawLateralCard(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
-  const x = SIDE_X;
-  doc.roundedRect(x, 120, SIDE_W, 310, 24).fill(PAGE.card);
-  doc.fillColor(PAGE.accent).fontSize(18).text("CLIENTE", x + 28, 156);
-  doc.fillColor(PAGE.text).fontSize(25).text(cliente.nombre, x + 28, 190, { width: 180 });
-  doc.fillColor(PAGE.muted).fontSize(16).text(cliente.periodo, x + 28, 286, { width: 180 });
-  doc.moveTo(x + 28, 335).lineTo(x + 208, 335).strokeColor("#20344f").lineWidth(2).stroke();
-  doc.fillColor(PAGE.muted).fontSize(14).text("LUGAR", x + 28, 360);
-  doc.fillColor(PAGE.text).fontSize(17).text(cliente.ubicacion, x + 28, 384, { width: 180 });
+/** Anillos decorativos de vidrio azul (portada / cierre de respaldo). */
+function drawRings(doc: PDFKit.PDFDocument, cx: number, cy: number, maxR: number) {
+  [maxR, maxR * 0.72, maxR * 0.46].forEach((r, i) => {
+    const grad = doc.radialGradient(cx, cy, r * 0.7, cx, cy, r);
+    grad.stop(0, COLORS.accent, 0.42 - i * 0.06).stop(1, COLORS.accent, 0);
+    doc.circle(cx, cy, r).fill(grad as never);
+  });
+  [maxR * 0.99, maxR * 0.7, maxR * 0.44].forEach((r) => {
+    doc.circle(cx, cy, r).lineWidth(1.3).strokeColor(COLORS.accent2).strokeOpacity(0.5).stroke();
+  });
+  doc.strokeOpacity(1);
 }
 
-function drawHeader(doc: PDFKit.PDFDocument, title: string, cliente: ClienteReporte) {
-  drawBackground(doc);
-  doc.fillColor(PAGE.accent).fontSize(20).text("VISTA360", PAGE.margin + 42, 118);
-  doc.fillColor(PAGE.text).fontSize(42).text(title, PAGE.margin + 42, 162, { width: 620 });
-  doc.fillColor(PAGE.muted).fontSize(18).text(cliente.periodo, PAGE.margin + 42, 222);
-  drawLateralCard(doc, cliente);
+function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent) {
+  const upper = text.toUpperCase();
+  doc.font("Helvetica-Bold").fontSize(14).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
+  const w = doc.widthOfString(upper, { characterSpacing: 2 });
+  doc.moveTo(x, y + 22).lineTo(x + Math.min(w, 84), y + 22).lineWidth(2).strokeColor(color).stroke();
+}
+
+function drawFooter(doc: PDFKit.PDFDocument, num: string, dark: boolean) {
+  const y = PAGE.height - 44;
+  doc.moveTo(PAGE.margin, y).lineTo(PAGE.width - PAGE.margin, y).lineWidth(1)
+    .strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
+  doc.font("Helvetica").fontSize(10.5).fillColor(dark ? COLORS.muted : COLORS.mutedOnLight)
+    .text("VISTA360 · REPORTE FOTOGRÁFICO", PAGE.margin, y + 12, { characterSpacing: 1 });
+  doc.font("Helvetica-Bold").fontSize(11).fillColor(dark ? COLORS.white : COLORS.ink)
+    .text(num, PAGE.width - PAGE.margin - 40, y + 12, { width: 40, align: "right" });
 }
 
 function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
-  drawBackground(doc);
-  doc.fillColor(PAGE.accent).fontSize(24).text("VISTA360", PAGE.margin + 70, 190);
-  doc.fillColor(PAGE.text).fontSize(76).text("Reporte mensual", PAGE.margin + 70, 270, { width: 720 });
-  doc.fillColor(PAGE.muted).fontSize(28).text(cliente.periodo, PAGE.margin + 72, 470);
-  doc.roundedRect(PAGE.margin + 70, 600, 650, 190, 28).fill(PAGE.card);
-  doc.fillColor(PAGE.muted).fontSize(18).text("CLIENTE", PAGE.margin + 110, 640);
-  doc.fillColor(PAGE.text).fontSize(36).text(cliente.nombre, PAGE.margin + 110, 675, { width: 560 });
-  doc.fillColor(PAGE.muted).fontSize(18).text(cliente.ubicacion, PAGE.margin + 110, 748, { width: 560 });
-  doc.circle(PAGE.width - 220, PAGE.height - 210, 88).fill(PAGE.accent);
-  doc.circle(PAGE.width - 220, PAGE.height - 210, 54).fill(PAGE.bg);
-  doc.fillColor(PAGE.text).fontSize(18).text("Reporte digital", PAGE.width - 330, PAGE.height - 92, { width: 220, align: "center" });
-}
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  drawRings(doc, PAGE.width - 250, 220, 270);
 
-function cierre(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
-  drawBackground(doc);
-  doc.fillColor(PAGE.text).fontSize(54).text("Gracias", PAGE.margin + 70, 310);
-  doc.fillColor(PAGE.muted).fontSize(25).text("Tu campaña sigue visible y monitoreada por Vista360.", PAGE.margin + 70, 394, { width: 650 });
-  doc.roundedRect(PAGE.margin + 70, 560, 650, 210, 28).fill(PAGE.card);
-  doc.fillColor(PAGE.accent2).fontSize(18).text("REPORTE GENERADO", PAGE.margin + 110, 606);
-  doc.fillColor(PAGE.text).fontSize(30).text(cliente.nombre, PAGE.margin + 110, 644, { width: 560 });
-  doc.fillColor(PAGE.muted).fontSize(20).text(cliente.periodo, PAGE.margin + 110, 698);
-}
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 54, { width: 220 });
 
-async function paginaUnaFoto(doc: PDFKit.PDFDocument, cliente: ClienteReporte, elemento: ReporteElemento) {
-  drawHeader(doc, elemento.titulo, { ...cliente, ubicacion: elemento.ubicacion || cliente.ubicacion });
-  const foto = normalizeFoto(elemento.fotos[0]);
-  const buffer = await imageBuffer(foto.url);
-  doc.roundedRect(CONTENT_X, 330, CONTENT_W, 820, 30).fill(PAGE.card);
-  doc.image(buffer, CONTENT_X + 26, 356, { fit: [CONTENT_W - 52, 768], align: "center", valign: "center" });
-  if (foto.fecha) {
-    doc.fillColor(PAGE.muted).fontSize(16).text(`Fecha: ${foto.fecha}`, CONTENT_X + 26, 1168);
+  const ciudad = cliente.ubicacion.split(" - ").pop() || "Perú";
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
+
+  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 244, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("FOTOGRÁFICO", PAGE.margin, 316, { characterSpacing: 0.5 });
+
+  const cardY = PAGE.height - 214;
+
+  // Tarjeta blanca: Cliente / Período
+  const cardW1 = 440;
+  doc.roundedRect(PAGE.margin, cardY, cardW1, 132, 18).fill(COLORS.white);
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", PAGE.margin + 30, cardY + 24, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(21).fillColor(COLORS.ink).text(cliente.nombre, PAGE.margin + 30, cardY + 46, { width: 190 });
+  doc.moveTo(PAGE.margin + 230, cardY + 24).lineTo(PAGE.margin + 230, cardY + 108).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERÍODO", PAGE.margin + 260, cardY + 24, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(21).fillColor(COLORS.ink).text(cliente.periodo, PAGE.margin + 260, cardY + 46, { width: 150 });
+
+  // Tarjeta oscura: Ubicación
+  const cardX2 = PAGE.margin + cardW1 + 32;
+  const cardW2 = Math.min(420, PAGE.width - PAGE.margin - cardX2);
+  doc.roundedRect(cardX2, cardY, cardW2, 132, 18).lineWidth(1.3).strokeColor(COLORS.line).stroke();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACIÓN", cardX2 + 30, cardY + 24, { characterSpacing: 1.5 });
+  const [lugar, ...resto] = cliente.ubicacion.split(" - ");
+  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white).text(lugar || cliente.ubicacion, cardX2 + 30, cardY + 48, { width: cardW2 - 60 });
+  if (resto.length > 0) {
+    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 74, { width: cardW2 - 60 });
   }
+
+  drawFooter(doc, "01", true);
 }
 
-async function paginaDosFotos(doc: PDFKit.PDFDocument, cliente: ClienteReporte, elemento: ReporteElemento) {
-  drawHeader(doc, elemento.titulo, { ...cliente, ubicacion: elemento.ubicacion || cliente.ubicacion });
-  const fotos = elemento.fotos.slice(0, 2).map(normalizeFoto);
-  const [first, second] = await Promise.all(fotos.map((foto) => imageBuffer(foto.url)));
-  doc.roundedRect(CONTENT_X, 330, CONTENT_W, 382, 28).fill(PAGE.card);
-  doc.image(first, CONTENT_X + 24, 354, { fit: [CONTENT_W - 48, 334], align: "center", valign: "center" });
-  doc.roundedRect(CONTENT_X, 752, CONTENT_W, 382, 28).fill(PAGE.card);
-  doc.image(second, CONTENT_X + 24, 776, { fit: [CONTENT_W - 48, 334], align: "center", valign: "center" });
+async function paginaEvidencia(
+  doc: PDFKit.PDFDocument,
+  foto: { url: string; fecha?: string; ubicacion?: string },
+  opts: { dark: boolean; pageNum: number }
+) {
+  const { dark, pageNum } = opts;
+  const bg = dark ? COLORS.bg : COLORS.white;
+  const ink = dark ? COLORS.white : COLORS.ink;
+  const mutedColor = dark ? COLORS.muted : COLORS.mutedOnLight;
+
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(bg);
+
+  const logoImg = dark ? LOGO_PLAYER_WHITE : LOGO_PLAYER_BLACK;
+  doc.image(logoImg, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+
+  const kicker = dark ? "EVIDENCIA" : "REGISTRO";
+  drawKicker(doc, `${pad2(pageNum)} / ${kicker}`, PAGE.margin, 62);
+  doc.font("Helvetica-Bold").fontSize(30).fillColor(ink)
+    .text(dark ? "Evidencia fotográfica de campaña" : "Guía de registro fotográfico", PAGE.margin, 98, { width: 760 });
+  doc.font("Helvetica").fontSize(14).fillColor(mutedColor)
+    .text(dark ? "Registro visual del soporte en campaña." : "Resumen visual de la evidencia enviada.", PAGE.margin, 138, { width: 760 });
+
+  const photoX = PAGE.margin;
+  const photoY = 190;
+  const photoW = 900;
+  const photoH = PAGE.height - photoY - PAGE.margin - 50;
+  const buffer = await imageBuffer(foto.url);
+  drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
+  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
+
+  const cardX = photoX + photoW + 40;
+  const cardW = PAGE.width - PAGE.margin - cardX;
+  const cardH = 250;
+  doc.roundedRect(cardX, photoY, cardW, cardH, 18).fill(COLORS.card);
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2).text("REPORTE FOTOGRÁFICO", cardX + 26, photoY + 28, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text("Evidencia de campaña", cardX + 26, photoY + 54, { width: cardW - 52 });
+  doc.font("Helvetica").fontSize(12.5).fillColor(COLORS.muted)
+    .text("Evidencia clara del soporte instalado.", cardX + 26, photoY + 88, { width: cardW - 52 });
+  doc.moveTo(cardX + 26, photoY + 146).lineTo(cardX + cardW - 26, photoY + 146).lineWidth(1).strokeColor(COLORS.line).stroke();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2).text("FECHA DE REGISTRO", cardX + 26, photoY + 166, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(16).fillColor(COLORS.white).text(fechaCorta(foto.fecha), cardX + 26, photoY + 188);
+
+  drawFooter(doc, pad2(pageNum), dark);
+}
+
+function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
+  if (existsSync(CIERRE_BG)) {
+    drawImageCover(doc, CIERRE_BG, 0, 0, PAGE.width, PAGE.height, 0);
+    const overlay = doc.linearGradient(0, PAGE.height * 0.3, 0, PAGE.height);
+    overlay.stop(0, "#000000", 0).stop(1, "#000000", 0.72);
+    doc.rect(0, 0, PAGE.width, PAGE.height).fill(overlay as never);
+  } else {
+    doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+    drawRings(doc, PAGE.width / 2, PAGE.height * 0.36, 320);
+  }
+
+  const logoW = 320;
+  doc.image(LOGO_WORDMARK_WHITE, (PAGE.width - logoW) / 2, PAGE.height * 0.44, { width: logoW });
+  doc.font("Helvetica-Bold").fontSize(28).fillColor(COLORS.white)
+    .text("Publicidad exterior premium", 0, PAGE.height * 0.44 + 86, { align: "center", width: PAGE.width });
+  doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
+    .text("Presencia visual, evidencia clara y marca visible.", 0, PAGE.height * 0.44 + 126, { align: "center", width: PAGE.width });
+
+  doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
+    .text("VISTA360 · REPORTE FOTOGRÁFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
+  doc.font("Helvetica-Bold").fontSize(11).fillColor(COLORS.white)
+    .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
 
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
@@ -170,19 +276,24 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
   doc.addPage();
   portada(doc, cliente);
 
-  for (const elemento of elementos) {
-    const fotos = elemento.fotos.filter(Boolean).slice(0, 2);
-    if (fotos.length === 0) continue;
+  const fotosFlat = elementos.flatMap((elemento) =>
+    elemento.fotos.filter(Boolean).map((foto) => {
+      const f = normalizeFoto(foto);
+      return { url: f.url, fecha: f.fecha, ubicacion: elemento.ubicacion };
+    })
+  );
+
+  let pageNum = 2;
+  for (let i = 0; i < fotosFlat.length; i++) {
     doc.addPage();
-    if (fotos.length === 1) {
-      await paginaUnaFoto(doc, cliente, { ...elemento, fotos });
-    } else {
-      await paginaDosFotos(doc, cliente, { ...elemento, fotos });
-    }
+    // Empieza en blanco y alterna: blanco, negro, blanco, negro...
+    const dark = i % 2 === 1;
+    await paginaEvidencia(doc, fotosFlat[i], { dark, pageNum });
+    pageNum++;
   }
 
   doc.addPage();
-  cierre(doc, cliente);
+  cierre(doc, pageNum);
   doc.end();
 
   await new Promise<void>((resolve, reject) => {
@@ -192,7 +303,7 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
 
   return {
     buffer: Buffer.concat(chunks),
-    numEvidencias: elementos.reduce((sum, item) => sum + Math.min(item.fotos.length, 2), 0),
+    numEvidencias: fotosFlat.length,
     numElementos: elementos.length,
   };
 }
@@ -300,15 +411,11 @@ function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemen
     .map(normalizeFoto)
     .filter((foto) => typeof foto.url === "string" && foto.url.startsWith("data:image/"))
     .slice(0, 12);
-  const elementos: ReporteElemento[] = [];
-  for (let i = 0; i < fotos.length; i += 2) {
-    elementos.push({
-      titulo: "Evidencia de campaña",
-      ubicacion,
-      fotos: fotos.slice(i, i + 2),
-    });
-  }
-  return elementos;
+  return [{
+    titulo: "Evidencia de campaña",
+    ubicacion,
+    fotos,
+  }];
 }
 
 export const generarReporteCliente = onCall(
@@ -338,7 +445,9 @@ export const generarReporteCliente = onCall(
       const ubicacionPanel = await cargarUbicacionCliente(clienteId);
       const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
       const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
-      const elementos = elementosSubidos.length > 0 ? elementosSubidos : await cargarElementos(clienteId, mes);
+      const elementos = elementosSubidos.length > 0 && elementosSubidos[0].fotos.length > 0
+        ? elementosSubidos
+        : await cargarElementos(clienteId, mes);
       if (elementos.length === 0) {
         throw new HttpsError("failed-precondition", "Agrega fotos para generar el reporte.");
       }
