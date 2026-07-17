@@ -421,7 +421,7 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     .text("Publicidad exterior premium", leftX, y, { width: 900 });
   y += 58;
   doc.font("Helvetica").fontSize(18).fillColor(COLORS.muted)
-    .text("Presencia visual, evidencia clara y marca visible.", leftX, y, { width: 700 });
+    .text("Presencia que impacta. Evidencia que respalda. Marca que se recuerda.", leftX, y, { width: 760 });
   y += 62;
 
   doc.moveTo(leftX, y).lineTo(leftX + 320, y).lineWidth(3).strokeColor(COLORS.accent2).stroke();
