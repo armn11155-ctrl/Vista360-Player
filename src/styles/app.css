@@ -965,7 +965,9 @@
   }
   .report-card-menu {
     position: absolute;
-    top: 14px;
+    /* Alineado a la misma altura que el badge "Listo" (que arranca
+     * donde empieza el grid, justo despues del padding de la tarjeta). */
+    top: 22px;
     right: 14px;
     z-index: 4;
   }
