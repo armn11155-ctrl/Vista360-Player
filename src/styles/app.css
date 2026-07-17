@@ -2721,23 +2721,54 @@
     margin-bottom: 16px;
   }
   .admin-picker-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #0877FF; }
-  .admin-picker-storage {
+  .admin-picker-perfil-btn {
     position: absolute;
     top: calc(16px + env(safe-area-inset-top));
     right: 16px;
     z-index: 6;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.75);
-    font-size: 11px;
-    font-weight: 700;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.22);
+    background: linear-gradient(145deg, #0877FF, #0B3F8A);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
     letter-spacing: 0.2px;
-    padding: 6px 11px;
-    border-radius: 20px;
-    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(8,119,255,0.35);
+  }
+  .admin-picker-perfil-btn:active { transform: scale(0.96); }
+
+  .admin-perfil-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 22px 16px 6px;
+  }
+  .admin-perfil-avatar {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #0877FF, #0B3F8A);
+    color: #fff;
+    font-size: 26px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 12px 26px rgba(8,119,255,0.28);
+    margin-bottom: 14px;
+  }
+  .admin-perfil-nombre { font-size: 19px; font-weight: 800; color: #0B1220; margin-bottom: 3px; }
+  .admin-perfil-email { font-size: 13px; color: #64748B; margin-bottom: 12px; }
+  .admin-perfil-hero .profile-verified { color: #0877FF; }
+  .admin-perfil-hero .profile-verified-mark img {
+    filter: brightness(0) saturate(100%) invert(29%) sepia(94%) saturate(3000%) hue-rotate(205deg) brightness(97%) contrast(101%);
   }
   .admin-picker-title { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 6px; }
   .admin-picker-sub { color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px; }

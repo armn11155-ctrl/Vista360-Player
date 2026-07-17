@@ -12,6 +12,7 @@ import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
 import BrandLoader from "./components/BrandLoader";
 import AdminClientPicker from "./components/AdminClientPicker";
+import AdminPerfil from "./components/screens/AdminPerfil";
 import BottomNav, { type Tab } from "./components/BottomNav";
 import Sidebar from "./components/Sidebar";
 import Inicio from "./components/screens/Inicio";
@@ -59,7 +60,8 @@ type View =
   | "accesos"
   | "facturas"
   | "notificaciones"
-  | "nuevoCliente";
+  | "nuevoCliente"
+  | "miPerfil";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -83,6 +85,7 @@ const VIEW_COLORS: Record<View, string> = {
   facturas: "#0B1220",
   notificaciones: "#0B1220",
   nuevoCliente: "#0B1220",
+  miPerfil: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -170,7 +173,7 @@ export default function App() {
   // auth.status === "in"
   if (auth.role === "admin") {
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica") {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil") {
         return (
           <div className="app-shell">
             <OfflineBanner online={online} />
@@ -189,7 +192,9 @@ export default function App() {
                   />
                 : view === "accesos"
                   ? <Accesos onBack={() => setView("inicio")} />
-                  : <AnaliticaClientes onBack={() => setView("inicio")} />}
+                  : view === "miPerfil"
+                    ? <AdminPerfil nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
+                    : <AnaliticaClientes onBack={() => setView("inicio")} />}
             </Suspense>
           </div>
         );
@@ -202,6 +207,8 @@ export default function App() {
             onOpenUsuarios={() => setView("accesos")}
             onOpenSolicitudes={() => setView("solicitudes")}
             onOpenAnalitica={() => setView("analitica")}
+            onOpenPerfil={() => setView("miPerfil")}
+            adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
           />
         </div>
       );
