@@ -15,9 +15,15 @@
  * en el navegador requiere librerías pesadas que no valen la pena para
  * este caso de uso.
  */
-const MAX_DIMENSION = 1920; // suficiente para verse nítido en cualquier pantalla
-const WEBP_QUALITY = 0.82; // visualmente ≥ que JPEG 80%, y más liviano
-const JPEG_QUALITY = 0.8;
+// Las fotos de campaña son "fotitos" chicas dentro de la app (grid +
+// reporte en PDF, que igual las vuelve a comprimir a 1200px del lado
+// del servidor) — no hace falta guardarlas grandes. Bajado de 1920px
+// calidad 82% a esto: probado contra un cielo degradado (peor caso de
+// banding) y un panel con texto (peor caso de nitidez), sin pérdida
+// visible en ninguno de los dos.
+const MAX_DIMENSION = 1280;
+const WEBP_QUALITY = 0.68;
+const JPEG_QUALITY = 0.66;
 const AVATAR_SIZE = 320;
 const AVATAR_WEBP_QUALITY = 0.86;
 
