@@ -283,7 +283,7 @@ async function paginaEvidenciaBlanca(
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
     .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
-    .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
 
   // Medidas calcadas de la referencia: foto x:74 y:212 w:996 h:529 aprox.
   const photoX = 74;
@@ -335,7 +335,7 @@ async function paginaEvidenciaOscura(
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
     .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
 
   // Misma composicion que la pagina blanca (foto + tarjeta flotante a
   // la derecha), pero con la tarjeta en blanco para que resalte contra
