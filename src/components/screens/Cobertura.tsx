@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import BackChevron from "../BackChevron";
+import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
 
 declare global {
@@ -12,6 +13,7 @@ interface Props {
   paneles: Record<string, Panel>;
   contratos: Contrato[];
   onBack?: () => void;
+  onMenuClick?: () => void;
 }
 
 type PanelConUso = Panel & {
@@ -81,7 +83,7 @@ function cargarLeaflet() {
   });
 }
 
-export default function Cobertura({ paneles, contratos, onBack }: Props) {
+export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
@@ -182,6 +184,7 @@ export default function Cobertura({ paneles, contratos, onBack }: Props) {
   return (
     <div className="coverage-screen">
       <div className="detail-header coverage-header-compact">
+        <MobileSidebarButton onClick={onMenuClick} />
         {onBack && (
           <div className="back-btn" onClick={onBack}>
             <BackChevron />

@@ -7,11 +7,13 @@ import { subirFacturaR2 } from "../../config/r2";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
 import type { Factura, FacturaEstado } from "../../types";
+import MobileSidebarButton from "../MobileSidebarButton";
 
 interface Props {
   ruc: string | undefined;
   onBack: () => void;
   isAdmin?: boolean;
+  onMenuClick?: () => void;
 }
 
 const FACTURACION_WEB_URL = "https://facturacion-web-abi.pages.dev";
@@ -32,7 +34,7 @@ function fmtMonto(f: Factura): string {
   return `${f.moneda === "USD" ? "US$" : "S/"} ${monto}`;
 }
 
-export default function Facturas({ ruc, onBack, isAdmin }: Props) {
+export default function Facturas({ ruc, onBack, isAdmin, onMenuClick }: Props) {
   const state = useFacturas(ruc);
   const facturas = state.status === "ready" ? state.facturas : [];
   const keysAFirmar = facturas.map((f) => f.pdfUrl).filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
@@ -104,6 +106,7 @@ export default function Facturas({ ruc, onBack, isAdmin }: Props) {
   return (
     <div className="facturas-screen">
       <div className="detail-header">
+        <MobileSidebarButton onClick={onMenuClick} />
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
         </div>

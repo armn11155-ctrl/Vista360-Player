@@ -4,6 +4,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { Cliente, Contrato, Panel } from "../../types";
+import MobileSidebarButton from "../MobileSidebarButton";
 
 interface Props {
   cliente: Cliente | null;
@@ -12,6 +13,7 @@ interface Props {
   contratos?: Contrato[];
   paneles?: Record<string, Panel>;
   isAdmin?: boolean;
+  onMenuClick?: () => void;
 }
 
 type FotoReporte = {
@@ -98,7 +100,7 @@ function mensajeReporte(mesLabel: string, cliente: Cliente | null, urlDigital: s
   ].join("\n");
 }
 
-export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin }: Props) {
+export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   // Las URLs guardadas expiran a las 6h (bucket privado) — re-firmamos
@@ -191,7 +193,10 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
     <div>
       <div className="evidencias-header reports-header">
         <div className="ev-logo-row">
-          <div className="reports-header-title">Reportes</div>
+          <div className="mobile-header-title-group">
+            <MobileSidebarButton onClick={onMenuClick} />
+            <div className="reports-header-title">Reportes</div>
+          </div>
         </div>
       </div>
 

@@ -1,9 +1,11 @@
 import BackChevron from "../BackChevron";
 import type { Panel } from "../../types";
+import MobileSidebarButton from "../MobileSidebarButton";
 
 interface Props {
   paneles: Record<string, Panel>;
   onBack: () => void;
+  onMenuClick?: () => void;
 }
 
 function estadoInfo(estado: Panel["estado"]) {
@@ -12,12 +14,13 @@ function estadoInfo(estado: Panel["estado"]) {
   return { color: "#22C55E", label: "Transmitiendo" };
 }
 
-export default function MisPantallas({ paneles, onBack }: Props) {
+export default function MisPantallas({ paneles, onBack, onMenuClick }: Props) {
   const lista = Object.values(paneles);
 
   return (
     <div>
       <div className="detail-header">
+        <MobileSidebarButton onClick={onMenuClick} />
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
         </div>

@@ -336,6 +336,7 @@ function AuthenticatedApp({
             onNueva={() => setView("nueva")}
             isAdmin={isAdmin}
             clienteId={clienteId}
+            onMenuClick={() => setSidebarOpen(true)}
           />
         );
         break;
@@ -362,6 +363,7 @@ function AuthenticatedApp({
             contratos={contratos}
             paneles={paneles}
             isAdmin={isAdmin}
+            onMenuClick={() => setSidebarOpen(true)}
           />
         );
         break;
@@ -393,10 +395,10 @@ function AuthenticatedApp({
         content = <Portafolio onBack={() => setView("inicio")} onContactar={() => setView("contactanos")} />;
         break;
       case "cobertura":
-        content = <Cobertura paneles={paneles} contratos={contratos} />;
+        content = <Cobertura paneles={paneles} contratos={contratos} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "mispantallas":
-        content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} />;
+        content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "impacto":
         content = <Impacto onBack={() => setView("inicio")} />;
@@ -422,7 +424,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
-        content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} isAdmin={isAdmin} />;
+        content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;

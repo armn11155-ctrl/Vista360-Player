@@ -6,6 +6,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
+import MobileSidebarButton from "../MobileSidebarButton";
 
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
 // placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
@@ -20,6 +21,7 @@ interface Props {
   onNueva: () => void;
   isAdmin?: boolean;
   clienteId?: string;
+  onMenuClick?: () => void;
 }
 
 const BADGE: Record<string, { bg: string; color: string }> = {
@@ -41,7 +43,7 @@ function diasParaVencer(c: Contrato): number {
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
 type ComprobanteEstado = "idle" | "subiendo" | "subido" | "error";
 
-export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId }: Props) {
+export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
@@ -126,7 +128,10 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
         flexShrink: 0,
       }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: "#fff" }}>Mis campañas</div>
+          <div className="mobile-header-title-group">
+            <MobileSidebarButton onClick={onMenuClick} />
+            <div style={{ fontSize: 17, fontWeight: 900, color: "#fff" }}>Mis campañas</div>
+          </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
           </svg>

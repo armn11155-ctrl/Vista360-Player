@@ -552,6 +552,32 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
+  .mobile-sidebar-header-btn {
+    display: none;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 10px;
+    background: rgba(255,255,255,.08);
+    color: #fff;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .mobile-header-title-group {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+  }
+
+  @media (max-width: 899px) {
+    .mobile-sidebar-header-btn { display: inline-flex; }
+    .detail-header > .mobile-sidebar-header-btn + .back-btn { display: none; }
+    .coverage-header-compact { justify-content: flex-start; gap: 11px; }
+  }
 
   .tabs {
     background: var(--dark);
@@ -2387,8 +2413,8 @@
 
     /* En escritorio el botón ☰ y el logo de Inicio no se necesitan —
        la navegación siempre está visible en el sidebar izquierdo */
-    .mobile-menu-btn { display: none !important; }
-    .inicio-logo { display: none !important; }
+  .mobile-menu-btn { display: none !important; }
+  .inicio-logo { display: none !important; }
 
     /* Selector de cliente del admin: versión espaciosa tipo "perfiles",
        tiles más grandes y grid centrado con más aire alrededor. */
