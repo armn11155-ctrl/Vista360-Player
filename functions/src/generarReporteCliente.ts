@@ -312,7 +312,7 @@ async function paginaEvidenciaBlanca(
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.white)
     .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
   doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
-    .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
+    .text("Presencia confirmada en punto de exhibicion.", cardX + 20, cardY + 92, { width: cardW - 40, align: "center" });
   doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent2).stroke();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
     .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
@@ -363,7 +363,7 @@ async function paginaEvidenciaOscura(
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.ink)
     .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
   doc.font("Helvetica").fontSize(12).fillColor(COLORS.mutedOnLight)
-    .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
+    .text("Presencia confirmada en punto de exhibicion.", cardX + 20, cardY + 92, { width: cardW - 40, align: "center" });
   doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent).stroke();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
     .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
