@@ -48,7 +48,7 @@ interface ReportePdf {
  * si no existe el archivo todavía, se usa un degradado oscuro de
  * respaldo para no romper el despliegue.
  */
-const PAGE = { width: 1600, height: 900, margin: 56 };
+const PAGE = { width: 1600, height: 900, margin: 74 };
 
 const COLORS = {
   bg: "#0a0f1c",
@@ -70,6 +70,13 @@ const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 const CIERRE_BG = join(ASSETS_DIR, "backgrounds/ciudad-noche.jpg");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
+
+/** El diseño de referencia no usa tildes en ningún texto (mayúsculas
+ *  incluidas) — replicamos eso exactamente en vez de "corregir" la
+ *  ortografía. */
+function sinTildes(s: string) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
 
 function normalizeFoto(foto: FotoInput) {
   return typeof foto === "string" ? { url: foto } : foto;
@@ -146,102 +153,151 @@ function drawRings(doc: PDFKit.PDFDocument, cx: number, cy: number, maxR: number
 }
 
 function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent) {
-  const upper = text.toUpperCase();
+  const upper = sinTildes(text.toUpperCase());
   doc.font("Helvetica-Bold").fontSize(14).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
   const w = doc.widthOfString(upper, { characterSpacing: 2 });
   doc.moveTo(x, y + 22).lineTo(x + Math.min(w, 84), y + 22).lineWidth(2).strokeColor(color).stroke();
 }
 
-function drawFooter(doc: PDFKit.PDFDocument, num: string, dark: boolean) {
+/** Pie de pagina fino (portada y paginas oscuras): una linea + texto. */
+function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean) {
   const y = PAGE.height - 44;
   doc.moveTo(PAGE.margin, y).lineTo(PAGE.width - PAGE.margin, y).lineWidth(1)
     .strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
   doc.font("Helvetica").fontSize(10.5).fillColor(dark ? COLORS.muted : COLORS.mutedOnLight)
-    .text("VISTA360 · REPORTE FOTOGRÁFICO", PAGE.margin, y + 12, { characterSpacing: 1 });
+    .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, y + 12, { characterSpacing: 1 });
   doc.font("Helvetica-Bold").fontSize(11).fillColor(dark ? COLORS.white : COLORS.ink)
     .text(num, PAGE.width - PAGE.margin - 40, y + 12, { width: 40, align: "right" });
 }
 
+/** Pie de pagina de barra (paginas blancas de evidencia): barra oscura de
+ *  103px con una linea de acento azul de 5px justo encima, a todo el ancho. */
+function drawFooterBar(doc: PDFKit.PDFDocument, num: string) {
+  const barH = 103;
+  const barY = PAGE.height - barH;
+  doc.rect(0, barY - 5, PAGE.width, 5).fill(COLORS.accent);
+  doc.rect(0, barY, PAGE.width, barH).fill(COLORS.bg);
+  doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
+    .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, barY + (barH - 11) / 2, { characterSpacing: 1 });
+  doc.font("Helvetica-Bold").fontSize(11).fillColor(COLORS.white)
+    .text(num, PAGE.width - PAGE.margin - 40, barY + (barH - 11) / 2, { width: 40, align: "right" });
+}
+
 function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  drawRings(doc, PAGE.width - 250, 220, 270);
+  // El anillo se sale del borde superior-derecho de la pagina (bleed),
+  // tal como en la referencia: centro fuera de la pagina, el propio
+  // recorte de la pagina hace el resto.
+  drawRings(doc, PAGE.width + 60, 60, 480);
 
   doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 54, { width: 220 });
 
-  const ciudad = cliente.ubicacion.split(" - ").pop() || "Perú";
+  const ciudad = sinTildes(cliente.ubicacion.split(" - ").pop() || "Peru");
   drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
 
   doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 244, { characterSpacing: 0.5 });
-  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("FOTOGRÁFICO", PAGE.margin, 316, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 316, { characterSpacing: 0.5 });
 
-  const cardY = PAGE.height - 214;
+  // Medidas calcadas del PDF de referencia (1600x900): tarjeta blanca
+  // x:74-939 y:604-755, tarjeta oscura x:1012-1430, misma fila.
+  const cardY = 604;
+  const cardH = 151;
 
-  // Tarjeta blanca: Cliente / Período
-  const cardW1 = 440;
-  doc.roundedRect(PAGE.margin, cardY, cardW1, 132, 18).fill(COLORS.white);
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", PAGE.margin + 30, cardY + 24, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(21).fillColor(COLORS.ink).text(cliente.nombre, PAGE.margin + 30, cardY + 46, { width: 190 });
-  doc.moveTo(PAGE.margin + 230, cardY + 24).lineTo(PAGE.margin + 230, cardY + 108).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERÍODO", PAGE.margin + 260, cardY + 24, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(21).fillColor(COLORS.ink).text(cliente.periodo, PAGE.margin + 260, cardY + 46, { width: 150 });
+  // Tarjeta blanca: Cliente / Periodo
+  const cardX1 = 74;
+  const cardW1 = 865;
+  doc.roundedRect(cardX1, cardY, cardW1, cardH, 18).fill(COLORS.white);
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", cardX1 + 42, cardY + 26, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.nombre), cardX1 + 42, cardY + 50, { width: 380 });
+  doc.moveTo(cardX1 + 488, cardY + 26).lineTo(cardX1 + 488, cardY + 112).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERIODO", cardX1 + 528, cardY + 26, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.periodo), cardX1 + 528, cardY + 50, { width: 280 });
 
-  // Tarjeta oscura: Ubicación
-  const cardX2 = PAGE.margin + cardW1 + 32;
-  const cardW2 = Math.min(420, PAGE.width - PAGE.margin - cardX2);
-  doc.roundedRect(cardX2, cardY, cardW2, 132, 18).lineWidth(1.3).strokeColor(COLORS.line).stroke();
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACIÓN", cardX2 + 30, cardY + 24, { characterSpacing: 1.5 });
-  const [lugar, ...resto] = cliente.ubicacion.split(" - ");
-  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white).text(lugar || cliente.ubicacion, cardX2 + 30, cardY + 48, { width: cardW2 - 60 });
+  // Tarjeta oscura: Ubicacion
+  const cardX2 = 1012;
+  const cardW2 = 418;
+  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).strokeColor(COLORS.line).stroke();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 26, { characterSpacing: 1.5 });
+  const [lugar, ...resto] = sinTildes(cliente.ubicacion).split(" - ");
+  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 50, { width: cardW2 - 60 });
   if (resto.length > 0) {
-    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 74, { width: cardW2 - 60 });
+    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 78, { width: cardW2 - 60 });
   }
 
-  drawFooter(doc, "01", true);
+  drawFooterLine(doc, "01", true);
 }
 
-async function paginaEvidencia(
+async function paginaEvidenciaBlanca(
   doc: PDFKit.PDFDocument,
-  foto: { url: string; fecha?: string; ubicacion?: string },
-  opts: { dark: boolean; pageNum: number }
+  foto: { url: string; fecha?: string },
+  pageNum: number
 ) {
-  const { dark, pageNum } = opts;
-  const bg = dark ? COLORS.bg : COLORS.white;
-  const ink = dark ? COLORS.white : COLORS.ink;
-  const mutedColor = dark ? COLORS.muted : COLORS.mutedOnLight;
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
+  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(bg);
+  drawKicker(doc, `${pad2(pageNum)} / REGISTRO`, PAGE.margin, 62);
+  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
+    .text("Guia de registro fotografico", PAGE.margin, 98, { width: 760 });
+  doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
+    .text("Resumen visual de la evidencia enviada.", PAGE.margin, 138, { width: 760 });
 
-  const logoImg = dark ? LOGO_PLAYER_WHITE : LOGO_PLAYER_BLACK;
-  doc.image(logoImg, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
-
-  const kicker = dark ? "EVIDENCIA" : "REGISTRO";
-  drawKicker(doc, `${pad2(pageNum)} / ${kicker}`, PAGE.margin, 62);
-  doc.font("Helvetica-Bold").fontSize(30).fillColor(ink)
-    .text(dark ? "Evidencia fotográfica de campaña" : "Guía de registro fotográfico", PAGE.margin, 98, { width: 760 });
-  doc.font("Helvetica").fontSize(14).fillColor(mutedColor)
-    .text(dark ? "Registro visual del soporte en campaña." : "Resumen visual de la evidencia enviada.", PAGE.margin, 138, { width: 760 });
-
-  const photoX = PAGE.margin;
-  const photoY = 190;
-  const photoW = 900;
-  const photoH = PAGE.height - photoY - PAGE.margin - 50;
+  // Medidas calcadas de la referencia: foto x:74 y:212 w:996 h:529 aprox.
+  const photoX = 74;
+  const photoY = 195;
+  const photoW = 996;
+  const photoH = 546;
   const buffer = await imageBuffer(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
-  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
+  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
 
-  const cardX = photoX + photoW + 40;
-  const cardW = PAGE.width - PAGE.margin - cardX;
-  const cardH = 250;
-  doc.roundedRect(cardX, photoY, cardW, cardH, 18).fill(COLORS.card);
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2).text("REPORTE FOTOGRÁFICO", cardX + 26, photoY + 28, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text("Evidencia de campaña", cardX + 26, photoY + 54, { width: cardW - 52 });
-  doc.font("Helvetica").fontSize(12.5).fillColor(COLORS.muted)
-    .text("Evidencia clara del soporte instalado.", cardX + 26, photoY + 88, { width: cardW - 52 });
-  doc.moveTo(cardX + 26, photoY + 146).lineTo(cardX + cardW - 26, photoY + 146).lineWidth(1).strokeColor(COLORS.line).stroke();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2).text("FECHA DE REGISTRO", cardX + 26, photoY + 166, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(16).fillColor(COLORS.white).text(fechaCorta(foto.fecha), cardX + 26, photoY + 188);
+  // Tarjeta oscura flotante, centrada verticalmente frente a la foto,
+  // con todo el contenido centrado (calcado de x:1172-1518 y:386-655).
+  const cardW = 346;
+  const cardH = 269;
+  const cardX = 1518 - cardW;
+  const cardY = photoY + (photoH - cardH) / 2;
+  const cx = cardX + cardW / 2;
+  doc.roundedRect(cardX, cardY, cardW, cardH, 18).fill(COLORS.card);
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
+    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.white)
+    .text("Guia de registro", cardX, cardY + 58, { width: cardW, align: "center" });
+  doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
+    .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
+  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1).strokeColor(COLORS.line).stroke();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
+    .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
+    .text(fechaCorta(foto.fecha), cardX, cardY + 202, { width: cardW, align: "center" });
 
-  drawFooter(doc, pad2(pageNum), dark);
+  drawFooterBar(doc, pad2(pageNum));
+}
+
+async function paginaEvidenciaOscura(
+  doc: PDFKit.PDFDocument,
+  foto: { url: string; fecha?: string },
+  pageNum: number
+) {
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
+  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
+    .text("Evidencia fotografica nocturna", PAGE.margin, 98, { width: 760 });
+  doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
+    .text("Registro visual del soporte iluminado.", PAGE.margin, 138, { width: 760 });
+
+  // En la referencia, la pagina oscura NO lleva tarjeta: la foto va
+  // centrada en la pagina (x:249-1351 y:228-781 aprox.).
+  const photoX = 249;
+  const photoY = 228;
+  const photoW = 1102;
+  const photoH = 553;
+  const buffer = await imageBuffer(foto.url);
+  drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
+  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
+
+  drawFooterLine(doc, pad2(pageNum), true);
 }
 
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
@@ -263,7 +319,7 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     .text("Presencia visual, evidencia clara y marca visible.", 0, PAGE.height * 0.44 + 126, { align: "center", width: PAGE.width });
 
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
-    .text("VISTA360 · REPORTE FOTOGRÁFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
+    .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
   doc.font("Helvetica-Bold").fontSize(11).fillColor(COLORS.white)
     .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
@@ -288,7 +344,11 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     doc.addPage();
     // Empieza en blanco y alterna: blanco, negro, blanco, negro...
     const dark = i % 2 === 1;
-    await paginaEvidencia(doc, fotosFlat[i], { dark, pageNum });
+    if (dark) {
+      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum);
+    } else {
+      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum);
+    }
     pageNum++;
   }
 
