@@ -1,5 +1,5 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { initializeFirestore, type Firestore } from "firebase/firestore";
 import { getFunctions, type Functions } from "firebase/functions";
 import {
   getAuth,
@@ -22,7 +22,14 @@ export let cloudFunctions: Functions | null = null;
 // variable falta, en vez de una pantalla en blanco sin explicación.
 if (envMissing.length === 0) {
   app = initializeApp(env.firebase);
-  db = getFirestore(app);
+  // Safari (con sus protecciones de privacidad) bloquea el tipo de
+  // conexión en tiempo real que Firestore usa por defecto, y las
+  // pantallas que dependen de listeners en vivo (como Reportes) se
+  // quedan sin actualizar aunque el dato ya exista. Con
+  // experimentalAutoDetectLongPolling, Firestore detecta esto solo y
+  // cambia a "long polling" (peticiones normales repetidas) en vez de
+  // la conexión que Safari bloquea.
+  db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
   auth = getAuth(app);
   cloudFunctions = getFunctions(app);
 }
