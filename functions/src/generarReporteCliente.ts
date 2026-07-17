@@ -350,6 +350,12 @@ async function paginaEvidenciaOscura(
   drawFooterLine(doc, pad2(pageNum), true, false);
 }
 
+/** Datos de contacto de Vista360 para el pie de la pagina de cierre.
+ *  TODO: mover esto a config/Firestore si se necesita cambiar sin
+ *  tocar codigo. Por ahora son valores de prueba. */
+const CONTACTO_EMAIL = "contacto@vista360.pe";
+const CONTACTO_TELEFONO = "+51 987 654 321";
+
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
   if (existsSync(CIERRE_BG)) {
     drawImageCover(doc, CIERRE_BG, 0, 0, PAGE.width, PAGE.height, 0);
@@ -361,12 +367,30 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     drawRingAsset(doc, 1001, 0, 599);
   }
 
-  const logoW = 320;
-  doc.image(LOGO_WORDMARK_WHITE, (PAGE.width - logoW) / 2, PAGE.height * 0.44, { width: logoW });
-  doc.font("Helvetica-Bold").fontSize(28).fillColor(COLORS.white)
-    .text("Publicidad exterior premium", 0, PAGE.height * 0.44 + 86, { align: "center", width: PAGE.width });
+  // Todo el bloque alineado a la izquierda (antes estaba centrado):
+  // logo, frase, raya divisoria y contacto, uno debajo del otro.
+  const leftX = PAGE.margin;
+  let y = PAGE.height * 0.36;
+
+  const logoW = 300;
+  doc.image(LOGO_WORDMARK_WHITE, leftX, y, { width: logoW });
+  y += 92;
+
+  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
+    .text("Publicidad exterior premium", leftX, y, { width: 760 });
+  y += 44;
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Presencia visual, evidencia clara y marca visible.", 0, PAGE.height * 0.44 + 126, { align: "center", width: PAGE.width });
+    .text("Presencia visual, evidencia clara y marca visible.", leftX, y, { width: 640 });
+  y += 46;
+
+  doc.moveTo(leftX, y).lineTo(leftX + 220, y).lineWidth(1.5).strokeColor(COLORS.line).stroke();
+  y += 30;
+
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent)
+    .text("CONTACTO", leftX, y, { characterSpacing: 1.5 });
+  y += 24;
+  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
+    .text(`${CONTACTO_EMAIL}   /   ${CONTACTO_TELEFONO}`, leftX, y);
 
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
