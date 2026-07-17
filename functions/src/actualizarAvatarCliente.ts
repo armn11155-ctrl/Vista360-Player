@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { esKeyValida } from "./r2Storage.js";
+import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -16,7 +16,7 @@ function limpiar(value?: string) {
   return value?.trim() ?? "";
 }
 
-export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>(async (request) => {
+export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>({ secrets: R2_SECRETS }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
@@ -49,6 +49,7 @@ export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>(async
   if (!clienteSnap.exists) {
     throw new HttpsError("not-found", "No se encontró ese cliente.");
   }
+  const avatarAnterior = limpiar(String(clienteSnap.data()?.avatarUrl ?? ""));
 
   const update = {
     avatarUrl,
@@ -64,6 +65,13 @@ export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>(async
     batch.set(docSnap.ref, { avatarUrl, avatarKey: "custom" }, { merge: true });
   });
   await batch.commit();
+
+  // Ya quedó guardado el avatar nuevo — borramos el anterior para no
+  // dejarlo ocupando espacio en R2 para siempre (si era una URL vieja
+  // de Cloudinary, esKeyValida la descarta y no se intenta borrar nada).
+  if (avatarAnterior && avatarAnterior !== avatarUrl && esKeyValida(avatarAnterior)) {
+    await borrarObjetoR2(avatarAnterior);
+  }
 
   return { clienteId, avatarUrl };
 });

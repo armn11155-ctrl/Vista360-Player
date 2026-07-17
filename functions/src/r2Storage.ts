@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { HttpsError } from "firebase-functions/v2/https";
 
@@ -61,6 +61,22 @@ export async function firmarSubidaR2(key: string, contentType: string, expiresIn
 export async function firmarLecturaR2(key: string, expiresInSeconds = 21600) {
   const command = new GetObjectCommand({ Bucket: r2Bucket(), Key: key });
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
+}
+
+/**
+ * Borra un objeto de R2 "a mejor esfuerzo" — nunca lanza, solo avisa
+ * en el log si falla o si ya no existía. Se usa para no dejar archivos
+ * huérfanos cuando se reemplaza uno (cambiar avatar, foto de portada
+ * de campaña, etc.) — cada subida genera una key nueva y única, así
+ * que si no se borra la anterior, se queda ocupando espacio para
+ * siempre.
+ */
+export async function borrarObjetoR2(key: string) {
+  try {
+    await r2Client().send(new DeleteObjectCommand({ Bucket: r2Bucket(), Key: key }));
+  } catch (error) {
+    console.warn(`No se pudo borrar ${key} de R2 (puede que ya no exista).`, error);
+  }
 }
 
 /** Genera una key segura y única dentro de una carpeta permitida. */
