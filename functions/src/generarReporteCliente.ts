@@ -182,11 +182,12 @@ function drawRingAsset(doc: PDFKit.PDFDocument, x: number, y: number, width: num
   doc.image(RING_PORTADA, x, y, { width });
 }
 
-function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent) {
+function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent, size = 14) {
   const upper = sinTildes(text.toUpperCase());
-  doc.font("Helvetica-Bold").fontSize(14).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
+  doc.font("Helvetica-Bold").fontSize(size).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
   const w = doc.widthOfString(upper, { characterSpacing: 2 });
-  doc.moveTo(x, y + 22).lineTo(x + Math.min(w, 84), y + 22).lineWidth(2).strokeColor(color).stroke();
+  const lineY = y + size + 8;
+  doc.moveTo(x, lineY).lineTo(x + Math.min(w, 96), lineY).lineWidth(2).strokeColor(color).stroke();
 }
 
 /** Pie de pagina fino (portada y paginas oscuras): una linea + texto.
@@ -225,13 +226,13 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // no un dibujo por codigo, para que sea exactamente el mismo grafico.
   drawRingAsset(doc, 1001, 0, 599);
 
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 64, { width: 320 });
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 56, { width: 320 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 194, COLORS.accent, 17);
 
-  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 244, { characterSpacing: 0.5 });
-  doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 316, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(74).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 240, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(74).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 330, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
@@ -312,7 +313,7 @@ async function paginaEvidenciaBlanca(
     .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
   doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
     .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
-  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1).strokeColor("#3a4f74").stroke();
+  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent2).stroke();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
     .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
