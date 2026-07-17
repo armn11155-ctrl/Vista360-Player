@@ -42,70 +42,77 @@ function nombreMes(mes: string) {
  * del listado, sin tocar Firestore ni gastar sus lecturas.
  */
 export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  try {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+    }
+
+    const clienteId = String(request.data?.clienteId ?? "");
+    if (!clienteId) {
+      throw new HttpsError("invalid-argument", "Falta clienteId.");
+    }
+
+    const db = getFirestore();
+    const propio = await db.doc(`portalUsers/${uid}`).get();
+    const propioData = propio.data();
+    const esAdmin = propioData?.role === "admin";
+    if (!propio.exists || (!esAdmin && propioData?.clienteId !== clienteId)) {
+      throw new HttpsError("permission-denied", "No tienes acceso a los reportes de este cliente.");
+    }
+
+    const prefix = `clientes/${clienteId}/reportes/`;
+    const listado = await r2Client().send(
+      new ListObjectsV2Command({ Bucket: r2Bucket(), Prefix: prefix })
+    );
+
+    const porMes = new Map<string, { digital?: { size: number; fecha?: Date }; hd?: { size: number; fecha?: Date } }>();
+    for (const obj of listado.Contents ?? []) {
+      if (!obj.Key) continue;
+      const resto = obj.Key.slice(prefix.length); // "{mes}/reporte-digital.pdf"
+      const [mes, archivo] = resto.split("/");
+      if (!mes || !archivo) continue;
+      const entry = porMes.get(mes) ?? {};
+      const info = { size: obj.Size ?? 0, fecha: obj.LastModified };
+      if (archivo === "reporte-digital.pdf") entry.digital = info;
+      if (archivo === "reporte-hd.pdf") entry.hd = info;
+      porMes.set(mes, entry);
+    }
+
+    const informes: InformeListado[] = await Promise.all(
+      [...porMes.entries()]
+        .filter(([, v]) => v.digital || v.hd)
+        .map(async ([mes, v]) => {
+          const keyDigital = `${prefix}${mes}/reporte-digital.pdf`;
+          const keyHd = `${prefix}${mes}/reporte-hd.pdf`;
+          const [urlDigital, urlHd] = await Promise.all([
+            v.digital ? firmarLecturaR2(keyDigital, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
+            v.hd ? firmarLecturaR2(keyHd, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
+          ]);
+          const fecha = v.digital?.fecha ?? v.hd?.fecha ?? new Date();
+          return {
+            id: `${clienteId}_${mes}`,
+            mes,
+            mesLabel: nombreMes(mes),
+            url: urlDigital || urlHd,
+            urlDigital: urlDigital || urlHd,
+            urlHd: urlHd || urlDigital,
+            hdBytes: v.hd?.size ?? 0,
+            digitalBytes: v.digital?.size ?? 0,
+            storage: "r2" as const,
+            r2Keys: { digital: keyDigital, hd: keyHd },
+            createdAt: fecha.toISOString(),
+          };
+        })
+    );
+
+    informes.sort((a, b) => (a.mes < b.mes ? 1 : -1));
+
+    return { ok: true, informes };
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    console.error("Error inesperado al listar reportes desde R2.", error);
+    const detail = error instanceof Error ? error.message : "Error desconocido";
+    throw new HttpsError("internal", `No se pudo leer la lista de reportes en R2: ${detail}`);
   }
-
-  const clienteId = String(request.data?.clienteId ?? "");
-  if (!clienteId) {
-    throw new HttpsError("invalid-argument", "Falta clienteId.");
-  }
-
-  const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const propioData = propio.data();
-  const esAdmin = propioData?.role === "admin";
-  if (!propio.exists || (!esAdmin && propioData?.clienteId !== clienteId)) {
-    throw new HttpsError("permission-denied", "No tienes acceso a los reportes de este cliente.");
-  }
-
-  const prefix = `clientes/${clienteId}/reportes/`;
-  const listado = await r2Client().send(
-    new ListObjectsV2Command({ Bucket: r2Bucket(), Prefix: prefix })
-  );
-
-  const porMes = new Map<string, { digital?: { size: number; fecha?: Date }; hd?: { size: number; fecha?: Date } }>();
-  for (const obj of listado.Contents ?? []) {
-    if (!obj.Key) continue;
-    const resto = obj.Key.slice(prefix.length); // "{mes}/reporte-digital.pdf"
-    const [mes, archivo] = resto.split("/");
-    if (!mes || !archivo) continue;
-    const entry = porMes.get(mes) ?? {};
-    const info = { size: obj.Size ?? 0, fecha: obj.LastModified };
-    if (archivo === "reporte-digital.pdf") entry.digital = info;
-    if (archivo === "reporte-hd.pdf") entry.hd = info;
-    porMes.set(mes, entry);
-  }
-
-  const informes: InformeListado[] = await Promise.all(
-    [...porMes.entries()]
-      .filter(([, v]) => v.digital || v.hd)
-      .map(async ([mes, v]) => {
-        const keyDigital = `${prefix}${mes}/reporte-digital.pdf`;
-        const keyHd = `${prefix}${mes}/reporte-hd.pdf`;
-        const [urlDigital, urlHd] = await Promise.all([
-          v.digital ? firmarLecturaR2(keyDigital, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
-          v.hd ? firmarLecturaR2(keyHd, EXPIRACION_SEGUNDOS) : Promise.resolve(""),
-        ]);
-        const fecha = v.digital?.fecha ?? v.hd?.fecha ?? new Date();
-        return {
-          id: `${clienteId}_${mes}`,
-          mes,
-          mesLabel: nombreMes(mes),
-          url: urlDigital || urlHd,
-          urlDigital: urlDigital || urlHd,
-          urlHd: urlHd || urlDigital,
-          hdBytes: v.hd?.size ?? 0,
-          digitalBytes: v.digital?.size ?? 0,
-          storage: "r2" as const,
-          r2Keys: { digital: keyDigital, hd: keyHd },
-          createdAt: fecha.toISOString(),
-        };
-      })
-  );
-
-  informes.sort((a, b) => (a.mes < b.mes ? 1 : -1));
-
-  return { ok: true, informes };
 });
