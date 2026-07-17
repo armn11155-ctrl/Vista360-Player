@@ -2539,6 +2539,11 @@
     color: #FFFFFF;
     background: #0877FF;
     box-shadow: 0 10px 22px rgba(14, 107, 244, 0.28);
+    /* Ocupa toda la fila (boton principal grande); Correo y WhatsApp
+     * quedan juntos en la fila de abajo, a dos columnas. */
+    grid-column: 1 / -1;
+    min-height: 60px;
+    font-size: 16px;
   }
   .report-action-muted {
     color: rgba(255,255,255,.82);
