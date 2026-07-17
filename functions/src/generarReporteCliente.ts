@@ -127,12 +127,17 @@ async function imageBuffer(url: string) {
  *  se hace aca, reduciendo cada foto antes de insertarla en el PDF.
  *  Un solo nivel de calidad para todo el reporte (ya no se genera una
  *  version "HD" aparte: duplicaba espacio en R2 sin necesidad).
- *  Probado contra una foto nocturna con degradado de cielo (el peor
- *  caso para JPEG, donde el banding se nota primero): con mozjpeg
- *  (trellis quantisation + scans optimizados) no hay artefactos
- *  visibles ni bajando bastante la calidad, así que se puede comprimir
- *  bastante mas que antes sin que se note. */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 66 };
+ *
+ *  Se probo contra los dos peores casos posibles para JPEG: (1) un
+ *  degradado suave de cielo nocturno, donde el banding se nota primero,
+ *  y (2) un panel/valla con texto legible (el contenido real que
+ *  importa en estos reportes), donde la nitidez del texto se pierde
+ *  primero. mozjpeg (trellis quantisation + scans optimizados, tabla
+ *  de cuantizacion 3, que salio mejor que las otras 8 en las pruebas)
+ *  aguanta sin artefactos visibles y sin perder el texto incluso muy
+ *  por debajo de esta calidad — se dejo un margen de seguridad arriba
+ *  del piso real para no arriesgar en fotos con mas ruido de camara. */
+const FOTO_CONFIG = { maxWidth: 1200, quality: 55 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
