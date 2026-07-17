@@ -7,6 +7,7 @@ import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import { esVideo, keyDeMiniatura } from "../../utils/r2Media";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
+import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 
 interface Props {
@@ -98,6 +99,14 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
   ].filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
+
+  // PDF del reporte mensual del cliente (el mismo que se ve en la
+  // pantalla de Reportes) — se muestra tambien aca para no tener que
+  // salir de la campaña a buscarlo.
+  const informesState = useInformes(contrato.cliente_id);
+  const informes = informesState.status === "ready" ? informesState.informes : [];
+  const keysInformes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
+  const urlsInformesFirmadas = useSignedUrls(keysInformes);
 
   useEffect(() => {
     setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
@@ -283,11 +292,61 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, onBack,
               </div>
             )}
 
+            {/* PDF del reporte mensual (mismo que en la pantalla de Reportes) */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 12 }}>
+                Reporte fotográfico (PDF)
+              </div>
+
+              {informesState.status === "loading" && (
+                <div style={{ fontSize: 13, color: "#6B7280" }}>Cargando…</div>
+              )}
+
+              {informesState.status === "error" && (
+                <div style={{ fontSize: 12, color: "#DC2626" }}>
+                  No se pudo cargar la lista de reportes: {informesState.message}
+                </div>
+              )}
+
+              {informesState.status === "ready" && informes.length === 0 && (
+                <div style={{ textAlign: "center", padding: "20px 0", color: "#9CA3AF" }}>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                    <EmptyReportsIcon />
+                  </div>
+                  <div style={{ fontSize: 13 }}>Aún no hay un reporte PDF generado para este cliente.</div>
+                </div>
+              )}
+
+              {informesState.status === "ready" && informes.length > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {informes.map((informe) => {
+                    const url = (informe.r2Keys && urlsInformesFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
+                    return (
+                      <a
+                        key={informe.id}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          padding: "12px 14px", borderRadius: 10, background: "#F3F4F6",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#0B1220" }}>{informe.mesLabel}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#0877FF" }}>Ver / Descargar</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             {/* Galería de evidencias */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220" }}>
-                  Reportes de campaña
+                  Fotos de evidencia
                 </div>
                 <div style={{ fontSize: 12, color: "#6B7280", background: "#F3F4F6", borderRadius: 20, padding: "2px 10px" }}>
                   {fotos.length} foto{fotos.length !== 1 ? "s" : ""}
