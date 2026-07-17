@@ -189,11 +189,16 @@ function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number,
   doc.moveTo(x, y + 22).lineTo(x + Math.min(w, 84), y + 22).lineWidth(2).strokeColor(color).stroke();
 }
 
-/** Pie de pagina fino (portada y paginas oscuras): una linea + texto. */
-function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean) {
+/** Pie de pagina fino (portada y paginas oscuras): una linea + texto.
+ *  La linea es opcional (showLine) — en las paginas de evidencia oscuras
+ *  se quita porque queda recargado con el resto del diseño; en la
+ *  portada se deja. */
+function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, showLine = true) {
   const y = PAGE.height - 44;
-  doc.moveTo(PAGE.margin, y).lineTo(PAGE.width - PAGE.margin, y).lineWidth(1)
-    .strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
+  if (showLine) {
+    doc.moveTo(PAGE.margin, y).lineTo(PAGE.width - PAGE.margin, y).lineWidth(1)
+      .strokeColor(dark ? COLORS.line : COLORS.lineLight).stroke();
+  }
   doc.font("Helvetica").fontSize(10.5).fillColor(dark ? COLORS.muted : COLORS.mutedOnLight)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, y + 12, { characterSpacing: 1 });
   doc.font("Helvetica-Bold").fontSize(11).fillColor(dark ? COLORS.white : COLORS.ink)
@@ -220,7 +225,7 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // no un dibujo por codigo, para que sea exactamente el mismo grafico.
   drawRingAsset(doc, 1001, 0, 599);
 
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 46, { width: 268 });
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 64, { width: 320 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
   drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
@@ -243,10 +248,17 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERIODO", cardX1 + 528, cardY + 22, { characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.periodo), cardX1 + 528, cardY + 46, { width: 280 });
 
-  // Tarjeta oscura: Ubicacion
+  // Tarjeta oscura: Ubicacion — mas clara que el fondo (antes se
+  // perdia contra el negro) y con una linea de acento arriba, igual
+  // que la tarjeta flotante de las paginas de evidencia.
   const cardX2 = 1012;
   const cardW2 = 418;
-  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).fillAndStroke(COLORS.card, COLORS.line);
+  doc.save();
+  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).clip();
+  doc.rect(cardX2, cardY, cardW2, cardH).fill("#182a46");
+  doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
+  doc.restore();
+  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
   const [lugar, ...resto] = sinTildes(cliente.ubicacion).split(" - ");
   doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 46, { width: cardW2 - 60 });
@@ -300,7 +312,7 @@ async function paginaEvidenciaBlanca(
     .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
   doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
     .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
-  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1).strokeColor(COLORS.line).stroke();
+  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1).strokeColor("#3a4f74").stroke();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
     .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
@@ -334,7 +346,7 @@ async function paginaEvidenciaOscura(
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
 
-  drawFooterLine(doc, pad2(pageNum), true);
+  drawFooterLine(doc, pad2(pageNum), true, false);
 }
 
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
