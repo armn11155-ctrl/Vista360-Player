@@ -1,11 +1,8 @@
-import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import PDFDocument from "pdfkit";
+import sharp from "sharp";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -14,8 +11,6 @@ import { R2_SECRETS, firmarLecturaR2, subirBufferR2 } from "./r2Storage.js";
 if (getApps().length === 0) {
   initializeApp();
 }
-
-const execFileAsync = promisify(execFile);
 
 type FotoInput = string | { url: string; fecha?: string; titulo?: string };
 
@@ -125,6 +120,37 @@ async function imageBuffer(url: string) {
   return Buffer.from(await response.arrayBuffer());
 }
 
+type Calidad = "digital" | "hd";
+
+/** Ghostscript no esta disponible en el runtime de Cloud Functions (por
+ *  eso el PDF nunca se comprimia de verdad antes) — la compresion real
+ *  se hace aca, reduciendo cada foto antes de insertarla en el PDF.
+ *  "digital" queda liviano para ver rapido en el portal; "hd" se queda
+ *  con mas resolucion para descarga. */
+const CALIDAD_FOTO: Record<Calidad, { maxWidth: number; quality: number }> = {
+  digital: { maxWidth: 1100, quality: 62 },
+  hd: { maxWidth: 2000, quality: 84 },
+};
+
+async function comprimirFoto(buffer: Buffer, calidad: Calidad) {
+  const cfg = CALIDAD_FOTO[calidad];
+  try {
+    return await sharp(buffer)
+      .rotate()
+      .resize({ width: cfg.maxWidth, withoutEnlargement: true })
+      .jpeg({ quality: cfg.quality, mozjpeg: true })
+      .toBuffer();
+  } catch (error) {
+    console.warn("No se pudo comprimir una foto del reporte; se usa el original.", error);
+    return buffer;
+  }
+}
+
+async function cargarFotoComprimida(url: string, calidad: Calidad) {
+  const raw = await imageBuffer(url);
+  return comprimirFoto(raw, calidad);
+}
+
 /** Dibuja una imagen cubriendo un rectángulo (crop centrado), con esquinas redondeadas. */
 function drawImageCover(doc: PDFKit.PDFDocument, src: Buffer | string, x: number, y: number, w: number, h: number, radius = 22) {
   const img = (doc as unknown as { openImage: (s: Buffer | string) => { width: number; height: number } }).openImage(src);
@@ -230,7 +256,8 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
 async function paginaEvidenciaBlanca(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
-  pageNum: number
+  pageNum: number,
+  calidad: Calidad
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
@@ -246,7 +273,7 @@ async function paginaEvidenciaBlanca(
   const photoY = 195;
   const photoW = 996;
   const photoH = 546;
-  const buffer = await imageBuffer(foto.url);
+  const buffer = await cargarFotoComprimida(foto.url, calidad);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
 
@@ -276,7 +303,8 @@ async function paginaEvidenciaBlanca(
 async function paginaEvidenciaOscura(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
-  pageNum: number
+  pageNum: number,
+  calidad: Calidad
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
@@ -293,7 +321,7 @@ async function paginaEvidenciaOscura(
   const photoY = 228;
   const photoW = 1102;
   const photoH = 553;
-  const buffer = await imageBuffer(foto.url);
+  const buffer = await cargarFotoComprimida(foto.url, calidad);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
 
@@ -324,7 +352,7 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
 
-export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
+export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[], calidad: Calidad): Promise<ReportePdf> {
   const doc = new PDFDocument({ size: [PAGE.width, PAGE.height], margin: 0, autoFirstPage: false });
   const chunks: Buffer[] = [];
   doc.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -345,9 +373,9 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     // Empieza en blanco y alterna: blanco, negro, blanco, negro...
     const dark = i % 2 === 1;
     if (dark) {
-      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum);
+      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, calidad);
     } else {
-      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum);
+      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, calidad);
     }
     pageNum++;
   }
@@ -366,40 +394,6 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     numEvidencias: fotosFlat.length,
     numElementos: elementos.length,
   };
-}
-
-async function comprimirConGhostscript(input: Buffer, dpi: 72 | 150) {
-  const dir = await mkdtemp(join(tmpdir(), "vista360-report-"));
-  const source = join(dir, "source.pdf");
-  const output = join(dir, `out-${dpi}.pdf`);
-  await writeFile(source, input);
-  try {
-    await execFileAsync(process.env.GS_BINARY ?? "gs", [
-      "-sDEVICE=pdfwrite",
-      "-dCompatibilityLevel=1.4",
-      "-dNOPAUSE",
-      "-dQUIET",
-      "-dBATCH",
-      "-dDetectDuplicateImages=true",
-      "-dDownsampleColorImages=true",
-      "-dDownsampleGrayImages=true",
-      "-dDownsampleMonoImages=true",
-      `-dColorImageResolution=${dpi}`,
-      `-dGrayImageResolution=${dpi}`,
-      `-dMonoImageResolution=${dpi}`,
-      "-sOutputFile=" + output,
-      source,
-    ]);
-    return await readFile(output);
-  } catch (error) {
-    // Firebase Functions no incluye Ghostscript de forma estándar. La
-    // compresión es una optimización, no debe impedir que el reporte se
-    // genere. En ese entorno publicamos el PDF original de PDFKit.
-    console.warn(`Ghostscript no disponible para ${dpi} DPI; se usará el PDF original.`, error);
-    return input;
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
 }
 
 async function subirReporteR2(key: string, buffer: Buffer) {
@@ -519,11 +513,12 @@ export const generarReporteCliente = onCall(
         ubicacion,
       };
 
-      const reporte = await generarReporte(cliente, elementos);
-      const [digital, hd] = await Promise.all([
-        comprimirConGhostscript(reporte.buffer, 72),
-        comprimirConGhostscript(reporte.buffer, 150),
+      const [reporteDigital, reporteHd] = await Promise.all([
+        generarReporte(cliente, elementos, "digital"),
+        generarReporte(cliente, elementos, "hd"),
       ]);
+      const digital = reporteDigital.buffer;
+      const hd = reporteHd.buffer;
 
       const baseKey = `clientes/${clienteId}/reportes/${mes}`;
       const [urlDigital, urlHd] = await Promise.all([
@@ -546,8 +541,8 @@ export const generarReporteCliente = onCall(
           },
           digitalBytes: digital.length,
           hdBytes: hd.length,
-          numCampanas: reporte.numElementos,
-          numEvidencias: reporte.numEvidencias,
+          numCampanas: reporteDigital.numElementos,
+          numEvidencias: reporteDigital.numEvidencias,
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }

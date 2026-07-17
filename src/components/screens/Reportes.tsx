@@ -113,6 +113,8 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
+  const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
+  const [eliminando, setEliminando] = useState<string | null>(null);
   const panelPrincipal = contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined;
   const ubicacionAuto = [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
     .filter(Boolean)
@@ -158,6 +160,30 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
   function quitarFoto(id: string) {
     setFotosReporte((actuales) => actuales.filter((foto) => foto.id !== id));
+  }
+
+  async function eliminarReporte(informe: { id: string; mes: string; mesLabel: string }) {
+    if (!cloudFunctions || eliminando) return;
+    const confirmado = window.confirm(
+      `¿Eliminar el reporte de ${informe.mesLabel}? Se borra el PDF de R2 y no se puede deshacer.`
+    );
+    if (!confirmado) return;
+    setMenuAbierto(null);
+    setEliminando(informe.id);
+    setMensajeAdmin(null);
+    try {
+      const eliminarReporteCliente = httpsCallable<{ clienteId: string; mes: string }, { ok: boolean }>(
+        cloudFunctions,
+        "eliminarReporteCliente"
+      );
+      await eliminarReporteCliente({ clienteId, mes: informe.mes });
+      informesState.recargar();
+    } catch (error) {
+      setMensajeAdminTipo("error");
+      setMensajeAdmin(error instanceof Error ? error.message : "No se pudo eliminar el reporte.");
+    } finally {
+      setEliminando(null);
+    }
   }
 
   async function generarReporte() {
@@ -327,6 +353,34 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
               return (
                 <div className="report-card" key={informe.id}>
+                  {isAdmin && (
+                    <div className="report-card-menu">
+                      <button
+                        type="button"
+                        className="report-card-menu-btn"
+                        aria-label="Opciones del reporte"
+                        onClick={() => setMenuAbierto((actual) => (actual === informe.id ? null : informe.id))}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="12" cy="5" r="1.9" />
+                          <circle cx="12" cy="12" r="1.9" />
+                          <circle cx="12" cy="19" r="1.9" />
+                        </svg>
+                      </button>
+                      {menuAbierto === informe.id && (
+                        <div className="report-card-menu-dropdown">
+                          <button
+                            type="button"
+                            className="report-card-menu-item"
+                            onClick={() => eliminarReporte(informe)}
+                            disabled={eliminando === informe.id}
+                          >
+                            {eliminando === informe.id ? "Eliminando..." : "Eliminar reporte"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="report-card-main">
                     <div className="report-pdf-icon" aria-hidden="true">
                       <svg width="46" height="58" viewBox="0 0 46 58" fill="none">
