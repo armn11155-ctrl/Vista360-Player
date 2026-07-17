@@ -25,6 +25,7 @@ interface ClienteReporte {
   nombre: string;
   periodo: string;
   ubicacion: string;
+  ciudad: string;
 }
 
 interface ReportePdf {
@@ -213,36 +214,36 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
 
   doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 54, { width: 220 });
 
-  const ciudad = sinTildes(cliente.ubicacion.split(" - ").pop() || "Peru");
+  const ciudad = sinTildes(cliente.ciudad || "Peru");
   drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 196);
 
   doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 244, { characterSpacing: 0.5 });
   doc.font("Helvetica-Bold").fontSize(64).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 316, { characterSpacing: 0.5 });
 
-  // Medidas calcadas del PDF de referencia (1600x900): tarjeta blanca
-  // x:74-939 y:604-755, tarjeta oscura x:1012-1430, misma fila.
-  const cardY = 604;
-  const cardH = 151;
+  // Tarjetas mas compactas (menos espacio vacio que el primer calco de
+  // la referencia — el hueco se notaba mucho con textos cortos reales).
+  const cardY = 626;
+  const cardH = 108;
 
   // Tarjeta blanca: Cliente / Periodo
   const cardX1 = 74;
   const cardW1 = 865;
   doc.roundedRect(cardX1, cardY, cardW1, cardH, 18).fill(COLORS.white);
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", cardX1 + 42, cardY + 26, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.nombre), cardX1 + 42, cardY + 50, { width: 380 });
-  doc.moveTo(cardX1 + 488, cardY + 26).lineTo(cardX1 + 488, cardY + 112).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERIODO", cardX1 + 528, cardY + 26, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.periodo), cardX1 + 528, cardY + 50, { width: 280 });
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", cardX1 + 42, cardY + 22, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.nombre), cardX1 + 42, cardY + 46, { width: 380 });
+  doc.moveTo(cardX1 + 488, cardY + 22).lineTo(cardX1 + 488, cardY + 86).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("PERIODO", cardX1 + 528, cardY + 22, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.periodo), cardX1 + 528, cardY + 46, { width: 280 });
 
   // Tarjeta oscura: Ubicacion
   const cardX2 = 1012;
   const cardW2 = 418;
   doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).strokeColor(COLORS.line).stroke();
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 26, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
   const [lugar, ...resto] = sinTildes(cliente.ubicacion).split(" - ");
-  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 50, { width: cardW2 - 60 });
+  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 46, { width: cardW2 - 60 });
   if (resto.length > 0) {
-    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 78, { width: cardW2 - 60 });
+    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 72, { width: cardW2 - 60 });
   }
 
   drawFooterLine(doc, "01", true);
@@ -252,16 +253,17 @@ async function paginaEvidenciaBlanca(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
   pageNum: number,
+  indice: number,
   calidad: Calidad
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / REGISTRO`, PAGE.margin, 62);
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
-    .text("Guia de registro fotografico", PAGE.margin, 98, { width: 760 });
+    .text(`Evidencia ${indice}`, PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
-    .text("Resumen visual de la evidencia enviada.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
 
   // Medidas calcadas de la referencia: foto x:74 y:212 w:996 h:529 aprox.
   const photoX = 74;
@@ -273,17 +275,22 @@ async function paginaEvidenciaBlanca(
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
 
   // Tarjeta oscura flotante, centrada verticalmente frente a la foto,
-  // con todo el contenido centrado (calcado de x:1172-1518 y:386-655).
+  // con todo el contenido centrado (calcado de x:1172-1518 y:386-655),
+  // con la linea de acento azul arriba (recortada al radio de la tarjeta).
   const cardW = 346;
   const cardH = 269;
   const cardX = 1518 - cardW;
   const cardY = photoY + (photoH - cardH) / 2;
   const cx = cardX + cardW / 2;
-  doc.roundedRect(cardX, cardY, cardW, cardH, 18).fill(COLORS.card);
+  doc.save();
+  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
+  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.card);
+  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
+  doc.restore();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
     .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.white)
-    .text("Guia de registro", cardX, cardY + 58, { width: cardW, align: "center" });
+    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
   doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
     .text("Evidencia clara del soporte instalado.", cardX + 24, cardY + 92, { width: cardW - 48, align: "center" });
   doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1).strokeColor(COLORS.line).stroke();
@@ -299,6 +306,7 @@ async function paginaEvidenciaOscura(
   doc: PDFKit.PDFDocument,
   foto: { url: string; fecha?: string },
   pageNum: number,
+  indice: number,
   calidad: Calidad
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
@@ -306,9 +314,9 @@ async function paginaEvidenciaOscura(
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text("Evidencia fotografica nocturna", PAGE.margin, 98, { width: 760 });
+    .text(`Evidencia ${indice}`, PAGE.margin, 98, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Registro visual del soporte iluminado.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campana.", PAGE.margin, 138, { width: 760 });
 
   // En la referencia, la pagina oscura NO lleva tarjeta: la foto va
   // centrada en la pagina (x:249-1351 y:228-781 aprox.).
@@ -368,9 +376,9 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     // Empieza en blanco y alterna: blanco, negro, blanco, negro...
     const dark = i % 2 === 1;
     if (dark) {
-      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, calidad);
+      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, i + 1, calidad);
     } else {
-      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, calidad);
+      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, i + 1, calidad);
     }
     pageNum++;
   }
@@ -506,6 +514,7 @@ export const generarReporteCliente = onCall(
         nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
         periodo: nombreMes(mes),
         ubicacion,
+        ciudad: ubicacionDb || "Peru",
       };
 
       const [reporteDigital, reporteHd] = await Promise.all([
