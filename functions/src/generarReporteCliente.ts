@@ -126,17 +126,24 @@ async function imageBuffer(url: string) {
  *  eso el PDF nunca se comprimia de verdad antes) — la compresion real
  *  se hace aca, reduciendo cada foto antes de insertarla en el PDF.
  *  Un solo nivel de calidad para todo el reporte (ya no se genera una
- *  version "HD" aparte: duplicaba espacio en R2 sin necesidad). El
- *  ancho y la calidad de JPEG se eligieron para que se vea muy bien en
- *  pantalla y siga siendo aceptable para imprimir, sin pesar de mas. */
-const FOTO_CONFIG = { maxWidth: 1500, quality: 72 };
+ *  version "HD" aparte: duplicaba espacio en R2 sin necesidad).
+ *  Probado contra una foto nocturna con degradado de cielo (el peor
+ *  caso para JPEG, donde el banding se nota primero): con mozjpeg
+ *  (trellis quantisation + scans optimizados) no hay artefactos
+ *  visibles ni bajando bastante la calidad, así que se puede comprimir
+ *  bastante mas que antes sin que se note. */
+const FOTO_CONFIG = { maxWidth: 1200, quality: 66 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
     return await sharp(buffer)
       .rotate()
       .resize({ width: FOTO_CONFIG.maxWidth, withoutEnlargement: true })
-      .jpeg({ quality: FOTO_CONFIG.quality, mozjpeg: true })
+      .jpeg({
+        quality: FOTO_CONFIG.quality,
+        mozjpeg: true,
+        chromaSubsampling: "4:2:0",
+      })
       .toBuffer();
   } catch (error) {
     console.warn("No se pudo comprimir una foto del reporte; se usa el original.", error);
