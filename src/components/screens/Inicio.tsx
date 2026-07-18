@@ -143,7 +143,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
-      <div className="inicio-content" style={{ flex:1, overflowY:"auto", background:"#F7F9FC", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
+      <div className="inicio-content" style={{ flex:1, overflowY:"auto", overflowX:"hidden", background:"#F7F9FC", borderRadius:"26px 26px 0 0", marginTop:-26, padding:"18px 18px 10px", WebkitOverflowScrolling:"touch" as any, overscrollBehavior:"contain" }}>
 
         {isAdmin && (
           <div className="inicio-admin-actions" style={{ display:"grid", gridTemplateColumns:"1fr", gap:10, marginBottom:14 }}>
@@ -160,7 +160,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
 
         {/* RESUMEN GENERAL — título suelto, cards individuales */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
-        <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:18 }}>
+        <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
           {[
             { bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
@@ -179,14 +179,14 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
             <div
               key={i}
               onClick={k.onClick}
-              style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor: k.onClick ? "pointer" : "default" }}
+              style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor: k.onClick ? "pointer" : "default" }}
             >
               <div style={{ width:38, height:38, borderRadius:19, background:k.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {k.icon}
               </div>
-              <div style={{ minWidth:0 }}>
+              <div style={{ minWidth:0, flex:1 }}>
                 <div style={{ fontSize: 12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{k.label}</div>
-                <div style={{ fontSize:17, fontWeight:800, color:k.valColor ?? "#08122B", lineHeight:1.08, whiteSpace:"nowrap" }}>{k.val}</div>
+                <div style={{ fontSize:17, fontWeight:800, color:k.valColor ?? "#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
               </div>
             </div>
           ))}
@@ -195,7 +195,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
         <div className="inicio-divider" style={{ height:1, background:"#E6EAF1", marginBottom:16 }} />
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
-        <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:9, marginBottom:18 }}>
+        <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>
           {[
             { bg:"#FFFFFF", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },

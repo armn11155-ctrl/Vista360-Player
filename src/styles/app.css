@@ -926,17 +926,17 @@
   .reports-screen-body {
     flex: 1;
     overflow-y: auto;
-    background: #050A12;
+    background: #F7F9FC;
     padding: 0 14px 18px;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
   .reports-panel-filter {
     min-height: 60px;
-    border: 1px solid rgba(148, 163, 184, 0.14);
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
-    background: rgba(8, 17, 31, 0.9);
-    color: rgba(255, 255, 255, 0.86);
+    background: #FFFFFF;
+    color: #0B1220;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -944,10 +944,10 @@
     margin: 0 2px 18px;
     font-size: 14px;
     font-weight: 750;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.03), 0 10px 28px rgba(0,0,0,.18);
+    box-shadow: 0 14px 30px rgba(15,23,42,0.05);
   }
   .reports-panel-filter svg {
-    color: rgba(255,255,255,.68);
+    color: #64748B;
     flex-shrink: 0;
   }
   .reports-list {
@@ -957,12 +957,12 @@
   }
   .report-card {
     position: relative;
-    background: #08111F;
-    border: 1px solid rgba(148, 163, 184, 0.14);
-    border-radius: 14px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
     padding: 22px;
     margin-bottom: 0;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.035), 0 18px 42px rgba(0,0,0,.22);
+    box-shadow: 0 18px 42px rgba(15,23,42,0.07);
   }
   .report-card-menu {
     position: absolute;
@@ -979,25 +979,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(148,163,184,0.1);
-    border: 1px solid rgba(148,163,184,0.16);
-    color: rgba(226,232,240,.72);
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    color: #64748B;
     cursor: pointer;
   }
   .report-card-menu-btn:hover {
-    background: rgba(148,163,184,0.18);
-    color: #fff;
+    background: #E2E8F0;
+    color: #0B1220;
   }
   .report-card-menu-dropdown {
     position: absolute;
     top: 38px;
     right: 0;
-    background: #0d1729;
-    border: 1px solid rgba(148,163,184,0.22);
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
     border-radius: 10px;
     padding: 6px;
     min-width: 168px;
-    box-shadow: 0 18px 42px rgba(0,0,0,.4);
+    box-shadow: 0 18px 42px rgba(15,23,42,.16);
   }
   .report-card-menu-item {
     display: block;
@@ -1048,27 +1048,28 @@
     font-weight: 650;
     letter-spacing: 0;
     position: relative;
+    color: #123778;
   }
   .report-card-copy {
     min-width: 0;
     padding-top: 4px;
   }
   .report-kicker {
-    color: rgba(226,232,240,.62);
+    color: #64748B;
     font-size: 15px;
     font-weight: 650;
     line-height: 1.25;
     margin-bottom: 5px;
   }
   .report-title {
-    color: #FFFFFF;
+    color: #0B1220;
     font-size: 24px;
     line-height: 1.05;
     font-weight: 820;
     margin-bottom: 10px;
   }
   .report-meta {
-    color: rgba(226,232,240,.66);
+    color: #64748B;
     font-size: 14px;
     line-height: 1.35;
     font-weight: 550;
@@ -1078,8 +1079,8 @@
     align-self: start;
     min-width: 62px;
     border-radius: 999px;
-    background: rgba(16, 185, 129, 0.16);
-    color: #4ADE80;
+    background: rgba(22, 163, 74, 0.12);
+    color: #16A34A;
     text-align: center;
     padding: 8px 12px;
     font-size: 14px;
@@ -1129,15 +1130,16 @@
     margin-top: 18px;
   }
   .report-admin-panel {
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    border-radius: 8px;
-    padding: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 16px;
     margin: 10px 0 14px;
+    box-shadow: 0 14px 30px rgba(15,23,42,0.05);
   }
   .report-admin-copy { margin-bottom: 10px; }
-  .report-admin-title { color: #fff; font-size: 13px; font-weight: 700; }
-  .report-admin-sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .report-admin-title { color: #0B1220; font-size: 14px; font-weight: 800; }
+  .report-admin-sub { color: #64748B; font-size: 11.5px; margin-top: 3px; line-height: 1.4; }
   .report-admin-controls { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
   .report-month-field {
     display: flex;
@@ -1147,20 +1149,20 @@
     flex: 0 1 220px;
   }
   .report-month-field span {
-    color: rgba(226,232,240,.72);
+    color: #64748B;
     font-size: 11px;
     font-weight: 700;
   }
   .report-month-input {
     width: 100%;
     min-height: 40px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid #E2E8F0;
     border-radius: 8px;
-    background: rgba(2, 6, 23, 0.55);
-    color: #fff;
+    background: #F8FAFC;
+    color: #0B1220;
     padding: 0 12px;
     font-size: 13px;
-    color-scheme: dark;
+    color-scheme: light;
   }
   .report-month-selects {
     display: flex;
@@ -1168,14 +1170,14 @@
   }
   .report-month-select {
     min-height: 40px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    border: 1px solid #E2E8F0;
     border-radius: 8px;
-    background: rgba(2, 6, 23, 0.55);
-    color: #fff;
+    background: #F8FAFC;
+    color: #0B1220;
     padding: 0 10px;
     font-size: 13px;
     font-weight: 650;
-    color-scheme: dark;
+    color-scheme: light;
     flex: 1 1 auto;
     min-width: 0;
     cursor: pointer;
@@ -1205,9 +1207,9 @@
   .report-photo-picker-btn {
     min-height: 40px;
     border-radius: 8px;
-    border: 1px dashed rgba(147,197,253,.42);
-    background: rgba(8,119,255,.12);
-    color: #BFDBFE;
+    border: 1px dashed rgba(8,119,255,.38);
+    background: rgba(8,119,255,.06);
+    color: #0877FF;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1224,9 +1226,9 @@
   }
   .report-auto-data span {
     border-radius: 999px;
-    background: rgba(15,23,42,.86);
-    border: 1px solid rgba(148,163,184,.16);
-    color: rgba(226,232,240,.76);
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    color: #475569;
     font-size: 11px;
     line-height: 1.35;
     padding: 6px 9px;
@@ -1242,8 +1244,8 @@
     aspect-ratio: 1 / 1;
     border-radius: 10px;
     overflow: hidden;
-    background: rgba(2,6,23,.72);
-    border: 1px solid rgba(148,163,184,.18);
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
   }
   .report-photo-thumb img {
     width: 100%;
@@ -1291,12 +1293,12 @@
     padding: 9px 10px;
   }
   .report-admin-status.ok {
-    color: #86EFAC;
-    background: rgba(34,197,94,.12);
+    color: #16A34A;
+    background: rgba(34,197,94,.10);
   }
   .report-admin-status.error {
-    color: #FCA5A5;
-    background: rgba(239,68,68,.12);
+    color: #DC2626;
+    background: rgba(239,68,68,.08);
   }
   .report-empty-state {
     margin-top: 16px;
@@ -2798,10 +2800,10 @@
     border: 1px solid transparent;
   }
   .report-action-outline {
-    color: #2690FF;
-    border-color: #096CEB;
-    background: rgba(2, 6, 23, 0.08);
-    box-shadow: inset 0 0 0 1px rgba(8,119,255,.08);
+    color: #0877FF;
+    border-color: rgba(8,119,255,.3);
+    background: rgba(8,119,255,.06);
+    box-shadow: none;
   }
   .report-action-primary {
     color: #FFFFFF;
@@ -2814,39 +2816,15 @@
     font-size: 16px;
   }
   .report-action-muted {
-    color: rgba(255,255,255,.82);
-    border-color: rgba(148, 163, 184, 0.16);
-    background: rgba(2, 9, 18, 0.52);
+    color: #334155;
+    border-color: #E2E8F0;
+    background: #F8FAFC;
   }
   .report-action-muted svg {
-    color: #5AA6FF;
+    color: #0877FF;
   }
   .report-action-whatsapp svg {
     color: #22E17D;
-  }
-  .app-shell:has(.reports-screen-body) .bottom-nav {
-    background: rgba(3, 10, 18, 0.98);
-    border-top-color: rgba(148, 163, 184, 0.12);
-  }
-  .app-shell:has(.reports-screen-body) .nav-item svg {
-    stroke: rgba(255,255,255,.62);
-  }
-  .app-shell:has(.reports-screen-body) .nav-item span {
-    color: rgba(255,255,255,.62);
-  }
-  .app-shell:has(.reports-screen-body) .nav-item.active svg,
-  .app-shell:has(.reports-screen-body) .nav-item.active svg path,
-  .app-shell:has(.reports-screen-body) .nav-item.active svg rect,
-  .app-shell:has(.reports-screen-body) .nav-item.active svg circle,
-  .app-shell:has(.reports-screen-body) .nav-item.active svg polyline,
-  .app-shell:has(.reports-screen-body) .nav-item.active svg line {
-    stroke: #1683FF;
-  }
-  .app-shell:has(.reports-screen-body) .nav-item.active span {
-    color: #1683FF;
-  }
-  .app-shell:has(.reports-screen-body) .nav-item.active::before {
-    background: #1683FF;
   }
 
   @media (max-width: 430px) {

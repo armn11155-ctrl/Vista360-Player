@@ -7,7 +7,8 @@ import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
-import { BrandThumb } from "../BrandThumb";
+import { ClientAvatar } from "../ClientAvatar";
+import { brandColor } from "../../utils/brandColor";
 import { ReportCard } from "../ReportCard";
 import { AvatarUploadModal } from "../AvatarUploadModal";
 
@@ -153,60 +154,65 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
           <div style={{ width: 22 }} />
         </div>
 
-        {/* Campaign card in header */}
-        <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
-            {isAdmin ? (
-              <button
-                type="button"
-                className="profile-avatar-hover-btn"
-                style={{ borderRadius: 14 }}
-                onClick={() => setModalPortadaAbierto(true)}
-                disabled={subiendoPortada}
-                aria-label="Cambiar foto de campaña"
-              >
-                {imagenPortada ? (
-                  <img
-                    src={resolverUrl(imagenPortada)}
-                    alt=""
-                    style={{ width: 72, height: 72, borderRadius: 14, objectFit: "cover", display: "block" }}
-                  />
-                ) : (
-                  <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
-                )}
-                <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: 14 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
-                    <circle cx="12" cy="13" r="3.4" />
-                  </svg>
-                </span>
-              </button>
-            ) : imagenPortada ? (
-              <img
-                src={resolverUrl(imagenPortada)}
-                alt=""
-                style={{ width: 72, height: 72, borderRadius: 14, objectFit: "cover", display: "block" }}
-              />
-            ) : (
-              <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
-            )}
+        {/* Nombre / estado / fechas — arriba, ancho completo */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 7 }}>
+            {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
           </div>
-          <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
-              {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
-            </div>
-            <Badge estado={estado} />
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 7, display: "flex", gap: 6, alignItems: "center" }}>
-              <HeaderIcon type="calendar" />
-              <span>{contrato.inicio} - {contrato.fin}</span>
-            </div>
-            {panel && (
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 3, display: "flex", gap: 6, alignItems: "center" }}>
-                <HeaderIcon type="pin" />
-                <span>{panel.nombre} · {panel.ciudad}</span>
-              </div>
-            )}
+          <Badge estado={estado} />
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 8, display: "flex", gap: 6, alignItems: "center" }}>
+            <HeaderIcon type="calendar" />
+            <span>{contrato.inicio} - {contrato.fin}</span>
           </div>
+          {panel && (
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 4, display: "flex", gap: 6, alignItems: "center" }}>
+              <HeaderIcon type="pin" />
+              <span>{panel.nombre} · {panel.ciudad}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Foto de campaña — banner ancho debajo del texto (antes era un
+            cuadrado 72x72 al costado; se veía chico y apretado). */}
+        <div style={{ position: "relative", width: "100%", height: 156 }}>
+          {isAdmin ? (
+            <button
+              type="button"
+              className="profile-avatar-hover-btn"
+              style={{ borderRadius: 18, width: "100%", height: "100%" }}
+              onClick={() => setModalPortadaAbierto(true)}
+              disabled={subiendoPortada}
+              aria-label="Cambiar foto de campaña"
+            >
+              {imagenPortada ? (
+                <img
+                  src={resolverUrl(imagenPortada)}
+                  alt=""
+                  style={{ width: "100%", height: "100%", borderRadius: 18, objectFit: "cover", display: "block" }}
+                />
+              ) : (
+                <div style={{ width: "100%", height: "100%", borderRadius: 18, background: brandColor(clienteNombre || panel?.nombre || "?").bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ClientAvatar name={clienteNombre || panel?.nombre || "?"} size={54} />
+                </div>
+              )}
+              <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: 18 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+                  <circle cx="12" cy="13" r="3.4" />
+                </svg>
+              </span>
+            </button>
+          ) : imagenPortada ? (
+            <img
+              src={resolverUrl(imagenPortada)}
+              alt=""
+              style={{ width: "100%", height: "100%", borderRadius: 18, objectFit: "cover", display: "block" }}
+            />
+          ) : (
+            <div style={{ width: "100%", height: "100%", borderRadius: 18, background: brandColor(clienteNombre || panel?.nombre || "?").bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ClientAvatar name={clienteNombre || panel?.nombre || "?"} size={54} />
+            </div>
+          )}
         </div>
       </div>
 
