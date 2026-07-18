@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import { cloudFunctions, logout } from "../../config/firebase";
+import { cloudFunctions, db, logout } from "../../config/firebase";
+import { subirAvatarR2 } from "../../config/r2";
+import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import BackChevron from "../BackChevron";
+import { BrandThumb } from "../BrandThumb";
+import { AvatarUploadModal } from "../AvatarUploadModal";
 
 interface Props {
+  uid: string;
   nombre: string;
   email: string;
   onBack: () => void;
@@ -15,14 +21,7 @@ function formatoEspacio(bytes: number) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-type EspacioEstado = {
-  status: "loading" | "ready" | "error";
-  bytes?: number;
-  objetos?: number;
-  bucket?: string;
-  paginas?: number;
-  muestra?: { key: string; size: number }[];
-};
+type EspacioEstado = { status: "loading" | "ready" | "error"; bytes?: number; objetos?: number };
 
 /** Espacio total usado en R2 (todos los clientes juntos), en vivo — no cacheado. */
 function useEspacioR2(): EspacioEstado {
@@ -34,22 +33,13 @@ function useEspacioR2(): EspacioEstado {
       return;
     }
     let cancelado = false;
-    const fn = httpsCallable<
-      Record<string, never>,
-      { totalBytes: number; totalObjetos: number; bucket: string; paginas: number; muestra: { key: string; size: number }[] }
-    >(cloudFunctions, "obtenerEspacioR2");
+    const fn = httpsCallable<Record<string, never>, { totalBytes: number; totalObjetos: number }>(
+      cloudFunctions,
+      "obtenerEspacioR2"
+    );
     fn()
       .then(({ data }) => {
-        if (!cancelado) {
-          setEstado({
-            status: "ready",
-            bytes: data.totalBytes,
-            objetos: data.totalObjetos,
-            bucket: data.bucket,
-            paginas: data.paginas,
-            muestra: data.muestra,
-          });
-        }
+        if (!cancelado) setEstado({ status: "ready", bytes: data.totalBytes, objetos: data.totalObjetos });
       })
       .catch(() => {
         if (!cancelado) setEstado({ status: "error" });
@@ -62,20 +52,41 @@ function useEspacioR2(): EspacioEstado {
   return estado;
 }
 
-function inicialesDe(nombre: string) {
-  const partes = nombre.trim().split(/\s+/).filter(Boolean);
-  if (partes.length === 0) return "A";
-  return partes.slice(0, 2).map((p) => p[0]!.toUpperCase()).join("");
+/** Foto de la cuenta admin — vive en su propio portalUsers/{uid}, en vivo. */
+function useAvatarPropio(uid: string) {
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (!uid || !db) return;
+    const unsub = onSnapshot(doc(db, "portalUsers", uid), (snap) => {
+      setAvatarUrl((snap.data()?.avatarUrl as string | undefined) ?? "");
+    });
+    return unsub;
+  }, [uid]);
+
+  return [avatarUrl, setAvatarUrl] as const;
 }
 
 /**
  * Perfil del administrador — separado del Perfil.tsx de los clientes.
- * Se abre desde el ícono en la esquina del selector de cuentas. Por
- * ahora solo muestra identidad + espacio usado en R2, pero queda listo
- * para sumar más métricas de cuenta más adelante.
+ * Se abre desde el ícono en la esquina del selector de cuentas.
+ * Muestra identidad (con foto propia editable) + espacio usado en R2.
  */
-export default function AdminPerfil({ nombre, email, onBack }: Props) {
+export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
   const espacio = useEspacioR2();
+  const [avatarUrl, setAvatarUrl] = useAvatarPropio(uid);
+  const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
+
+  async function subirNuevaFoto(file: File, posicion: PosicionRecorte) {
+    if (!cloudFunctions) {
+      throw new Error("Firebase Functions no está configurado.");
+    }
+    const webp = await comprimirAvatarWebp(file, posicion);
+    const { key: url } = await subirAvatarR2(webp);
+    setAvatarUrl(url);
+    const fn = httpsCallable<{ avatarUrl: string }, { avatarUrl: string }>(cloudFunctions, "actualizarAvatarPropio");
+    await fn({ avatarUrl: url });
+  }
 
   return (
     <div className="admin-tool-screen">
@@ -89,7 +100,23 @@ export default function AdminPerfil({ nombre, email, onBack }: Props) {
 
       <div className="content-area">
         <div className="admin-perfil-hero">
-          <div className="admin-perfil-avatar">{inicialesDe(nombre)}</div>
+          <div style={{ width: 76, height: 76, marginBottom: 14 }}>
+            <button
+              type="button"
+              className="profile-avatar-hover-btn"
+              style={{ borderRadius: "50%" }}
+              onClick={() => setModalAvatarAbierto(true)}
+              aria-label="Cambiar foto de perfil"
+            >
+              <BrandThumb name={nombre || "Administrador"} avatarUrl={avatarUrl} size={76} radius={38} iconScale={0.72} />
+              <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: "50%" }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+                  <circle cx="12" cy="13" r="3.4" />
+                </svg>
+              </span>
+            </button>
+          </div>
           <div className="admin-perfil-nombre">{nombre || "Administrador"}</div>
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
@@ -99,6 +126,15 @@ export default function AdminPerfil({ nombre, email, onBack }: Props) {
             <span>Cuenta administrador</span>
           </span>
         </div>
+
+        {modalAvatarAbierto && (
+          <AvatarUploadModal
+            titulo="Cambiar foto de perfil"
+            etiquetaMiniatura="Así se ve tu ícono"
+            onSubir={subirNuevaFoto}
+            onCerrar={() => setModalAvatarAbierto(false)}
+          />
+        )}
 
         <section className="profile-section" style={{ marginTop: 24 }}>
           <h2>Almacenamiento</h2>
@@ -131,23 +167,6 @@ export default function AdminPerfil({ nombre, email, onBack }: Props) {
             </div>
           </div>
         </section>
-
-        {espacio.status === "ready" && espacio.muestra && (
-          <section className="profile-section">
-            <h2>Diagnóstico (temporal)</h2>
-            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB", padding: 12, fontSize: 11.5 }}>
-              <div style={{ marginBottom: 8, color: "#64748B" }}>
-                Bucket: <strong style={{ color: "#0B1220" }}>{espacio.bucket}</strong> · Páginas leídas: {espacio.paginas} · Archivos encontrados: {espacio.objetos}
-              </div>
-              {espacio.muestra.map((item) => (
-                <div key={item.key} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid #F1F5F9", fontFamily: "monospace" }}>
-                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.key}</span>
-                  <span style={{ flexShrink: 0, color: "#64748B" }}>{(item.size / 1024).toFixed(1)} KB</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         <section className="profile-section">
           <h2>Cuenta</h2>

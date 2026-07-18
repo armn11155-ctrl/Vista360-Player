@@ -1,14 +1,15 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
-import { comprimirImagen } from "../../utils/comprimirImagen";
+import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { ReportCard } from "../ReportCard";
+import { AvatarUploadModal } from "../AvatarUploadModal";
 
 interface Props {
   contrato: Contrato;
@@ -86,9 +87,8 @@ function EmptyReportsIcon() {
 export default function DetalleCampana({ contrato, panel, clienteNombre, cliente, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
   const [subiendoPortada, setSubiendoPortada] = useState(false);
-  const [error, setError] = useState("");
   const [portadaUrl, setPortadaUrl] = useState(contrato.imagenCampaniaUrl ?? "");
-  const portadaRef = useRef<HTMLInputElement>(null);
+  const [modalPortadaAbierto, setModalPortadaAbierto] = useState(false);
 
   const estado = estadoCampana(contrato);
   const fotos = contrato.fotos_campania ?? [];
@@ -113,19 +113,14 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
     setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
   }, [contrato.id, contrato.imagenCampaniaUrl]);
 
-  async function cambiarPortada(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  async function subirNuevaPortada(file: File, posicion: PosicionRecorte) {
     if (!cloudFunctions) {
-      setError("Firebase Functions no está configurado.");
-      return;
+      throw new Error("Firebase Functions no está configurado.");
     }
-    setError("");
     setSubiendoPortada(true);
     try {
-      const archivoOptimizado = await comprimirImagen(file);
-      const { key: url } = await subirEvidenciaR2(archivoOptimizado);
+      const recortada = await comprimirAvatarWebp(file, posicion);
+      const { key: url } = await subirEvidenciaR2(recortada);
       setPortadaUrl(url);
       const actualizarImagenCampania = httpsCallable<
         { contratoId: string; imagenUrl: string },
@@ -134,7 +129,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
       await actualizarImagenCampania({ contratoId: contrato.id, imagenUrl: url });
     } catch (err) {
       setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
-      setError(err instanceof Error ? err.message : "No se pudo cambiar la foto de campaña.");
+      throw err;
     } finally {
       setSubiendoPortada(false);
     }
@@ -161,7 +156,32 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         {/* Campaign card in header */}
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
           <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
-            {imagenPortada ? (
+            {isAdmin ? (
+              <button
+                type="button"
+                className="profile-avatar-hover-btn"
+                style={{ borderRadius: 14 }}
+                onClick={() => setModalPortadaAbierto(true)}
+                disabled={subiendoPortada}
+                aria-label="Cambiar foto de campaña"
+              >
+                {imagenPortada ? (
+                  <img
+                    src={resolverUrl(imagenPortada)}
+                    alt=""
+                    style={{ width: 72, height: 72, borderRadius: 14, objectFit: "cover", display: "block" }}
+                  />
+                ) : (
+                  <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
+                )}
+                <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: 14 }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+                    <circle cx="12" cy="13" r="3.4" />
+                  </svg>
+                </span>
+              </button>
+            ) : imagenPortada ? (
               <img
                 src={resolverUrl(imagenPortada)}
                 alt=""
@@ -169,24 +189,6 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
               />
             ) : (
               <BrandThumb name={clienteNombre || panel?.nombre || "?"} size={72} radius={14} />
-            )}
-            {isAdmin && (
-              <>
-                <input ref={portadaRef} type="file" accept="image/*" style={{ display: "none" }} onChange={cambiarPortada} />
-                <button
-                  type="button"
-                  onClick={() => !subiendoPortada && portadaRef.current?.click()}
-                  disabled={subiendoPortada}
-                  style={{
-                    position: "absolute", left: "50%", bottom: -8, transform: "translateX(-50%)",
-                    minHeight: 22, border: "1px solid rgba(147,197,253,.35)", borderRadius: 999,
-                    background: "#fff", color: "#0877FF", padding: "0 9px", fontSize: 10.5,
-                    fontWeight: 900, boxShadow: "0 8px 18px rgba(2,6,23,.22)", cursor: subiendoPortada ? "default" : "pointer",
-                  }}
-                >
-                  {subiendoPortada ? "..." : "Cambiar"}
-                </button>
-              </>
             )}
           </div>
           <div>
@@ -207,6 +209,15 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
           </div>
         </div>
       </div>
+
+      {modalPortadaAbierto && (
+        <AvatarUploadModal
+          titulo="Cambiar foto de campaña"
+          etiquetaMiniatura="Así se ve en la portada"
+          onSubir={subirNuevaPortada}
+          onCerrar={() => setModalPortadaAbierto(false)}
+        />
+      )}
 
       <div style={{ height: 3, background: "#0877FF", flexShrink: 0 }} />
 
@@ -287,12 +298,6 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         {/* ── TAB REPORTES ── */}
         {tab === "reportes" && (
           <div>
-            {error && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
-                {error}
-              </div>
-            )}
-
             {informesState.status === "loading" && (
               <div style={{ fontSize: 13, color: "#6B7280", textAlign: "center", padding: "24px 0" }}>Cargando…</div>
             )}

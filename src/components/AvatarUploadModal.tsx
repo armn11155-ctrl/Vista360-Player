@@ -10,6 +10,8 @@ interface Posicion {
 interface Props {
   onSubir: (file: File, posicion: Posicion) => Promise<void>;
   onCerrar: () => void;
+  titulo?: string;
+  etiquetaMiniatura?: string;
 }
 
 const CENTRO: Posicion = { x: 50, y: 50, zoom: 1 };
@@ -38,7 +40,7 @@ function formatoPeso(bytes: number) {
  * terminar — antes es una animación suave que nunca pasa de 92% para
  * no mentir sobre el avance).
  */
-export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
+export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de perfil", etiquetaMiniatura = "Así se ve en la lista de clientes" }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const arrastreRef = useRef<{ startX: number; startY: number; inicio: { x: number; y: number }; slackX: number; slackY: number } | null>(null);
@@ -172,7 +174,7 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
   return (
     <div className="avatar-modal-backdrop" onClick={() => !subiendo && onCerrar()}>
       <div className="avatar-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="avatar-modal-title">Cambiar foto de perfil</div>
+        <div className="avatar-modal-title">{titulo}</div>
 
         <div className="avatar-modal-frames">
           <div
@@ -230,7 +232,7 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
                   style={{ position: "absolute", width: dispW || F, height: dispH || F, left, top, maxWidth: "none" }}
                 />
               </div>
-              <span>Así se ve en la lista de clientes</span>
+              <span>{etiquetaMiniatura}</span>
               <span className="avatar-modal-peso">
                 {calculandoPeso ? "calculando…" : peso !== null ? formatoPeso(peso) : "—"}
               </span>

@@ -193,7 +193,7 @@ export default function App() {
                 : view === "accesos"
                   ? <Accesos onBack={() => setView("inicio")} />
                   : view === "miPerfil"
-                    ? <AdminPerfil nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
+                    ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
                     : <AnaliticaClientes onBack={() => setView("inicio")} />}
             </Suspense>
           </div>
