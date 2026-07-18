@@ -7,6 +7,7 @@ import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
 import { BrandThumb } from "../BrandThumb";
+import { AvatarUploadModal } from "../AvatarUploadModal";
 
 interface Props {
   cliente: Cliente | null;
@@ -120,11 +121,10 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((factura) => factura.estado === "Pendiente" || factura.estado === "Vencida").length
     : 0;
-  const fileRef = useRef<HTMLInputElement>(null);
   const pendingAvatarRef = useRef("");
   const [avatarUrl, setAvatarUrl] = useState(cliente?.avatarUrl ?? "");
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
-  const [avatarError, setAvatarError] = useState("");
+  const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
   useEffect(() => {
     if (cliente?.avatarUrl) {
@@ -136,19 +136,16 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     if (!pendingAvatarRef.current) {
       setAvatarUrl("");
     }
-    setAvatarError("");
   }, [cliente?.id, cliente?.avatarUrl]);
 
-  async function cambiarFotoPerfil(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !cliente?.id || !db) return;
+  async function subirNuevaFoto(file: File) {
+    if (!cliente?.id || !db) {
+      throw new Error("No se pudo identificar al cliente.");
+    }
     if (!cloudFunctions) {
-      setAvatarError("Firebase Functions no está configurado.");
-      return;
+      throw new Error("Firebase Functions no está configurado.");
     }
 
-    setAvatarError("");
     setSubiendoAvatar(true);
     try {
       const webp = await comprimirAvatarWebp(file);
@@ -160,8 +157,6 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
         "actualizarAvatarCliente"
       );
       await fn({ clienteId: cliente.id, avatarUrl: url });
-    } catch (err) {
-      setAvatarError(err instanceof Error ? err.message : "No se pudo cambiar la foto.");
     } finally {
       setSubiendoAvatar(false);
     }
@@ -180,19 +175,24 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
 
         <section className="profile-hero-company">
           <div className="profile-avatar-wrap">
-            <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
-            {isAdmin && (
-              <>
-                <input ref={fileRef} type="file" accept="image/*" className="profile-avatar-input" onChange={cambiarFotoPerfil} />
-                <button
-                  type="button"
-                  className="profile-avatar-edit"
-                  onClick={() => !subiendoAvatar && fileRef.current?.click()}
-                  disabled={subiendoAvatar}
-                >
-                  {subiendoAvatar ? "..." : "Cambiar"}
-                </button>
-              </>
+            {isAdmin ? (
+              <button
+                type="button"
+                className="profile-avatar-hover-btn"
+                onClick={() => setModalAvatarAbierto(true)}
+                disabled={subiendoAvatar}
+                aria-label="Cambiar foto de perfil"
+              >
+                <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
+                <span className="profile-avatar-camera-overlay" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+                    <circle cx="12" cy="13" r="3.4" />
+                  </svg>
+                </span>
+              </button>
+            ) : (
+              <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
             )}
           </div>
           <div className="profile-company-copy">
@@ -204,10 +204,13 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
               </span>
               <span>Cuenta verificada</span>
             </span>
-            {isAdmin && avatarError && <div className="profile-avatar-error">{avatarError}</div>}
           </div>
         </section>
       </header>
+
+      {modalAvatarAbierto && (
+        <AvatarUploadModal onSubir={subirNuevaFoto} onCerrar={() => setModalAvatarAbierto(false)} />
+      )}
 
       <main className="profile-content">
         <ProfileSection title="Información de la empresa">

@@ -1528,28 +1528,42 @@
     height: 82px;
     flex-shrink: 0;
   }
-  .profile-avatar-input {
-    display: none;
-  }
-  .profile-avatar-edit {
-    position: absolute;
-    left: 50%;
-    bottom: -8px;
-    transform: translateX(-50%);
-    min-height: 22px;
-    border: 1px solid rgba(8,119,255,.24);
-    border-radius: 999px;
-    background: #FFFFFF;
-    color: #0877FF;
-    padding: 0 9px;
-    font-size: 10.5px;
-    font-weight: 900;
-    box-shadow: 0 8px 18px rgba(15,23,42,.14);
+  .profile-avatar-hover-btn {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    border-radius: 41px;
     cursor: pointer;
   }
-  .profile-avatar-edit:disabled {
+  .profile-avatar-hover-btn:disabled {
     cursor: default;
     opacity: .72;
+  }
+  .profile-avatar-camera-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,10,18,0.5);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .profile-avatar-hover-btn:hover .profile-avatar-camera-overlay,
+  .profile-avatar-hover-btn:focus-visible .profile-avatar-camera-overlay {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    /* En touch no hay hover — el ícono queda siempre sutilmente visible
+       para indicar que se puede tocar la foto, en vez de un botón de texto. */
+    .profile-avatar-camera-overlay {
+      opacity: 1;
+      background: rgba(5,10,18,0.32);
+    }
   }
   .profile-avatar-error {
     margin-top: 6px;
@@ -1557,6 +1571,115 @@
     font-size: 11px;
     line-height: 1.25;
     font-weight: 700;
+  }
+
+  /* ===== Modal de subir foto de perfil ===== */
+  .avatar-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    background: rgba(5,10,18,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+  }
+  .avatar-modal {
+    width: 100%;
+    max-width: 300px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+  }
+  .avatar-modal-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0B1220;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .avatar-modal-drop {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    border: 1.5px dashed rgba(8,119,255,.35);
+    background: #F7F9FC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .avatar-modal-drop.has-preview {
+    border-style: solid;
+    border-color: rgba(8,119,255,.18);
+  }
+  .avatar-modal-drop img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .avatar-modal-drop-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #0877FF;
+    font-size: 12.5px;
+    font-weight: 800;
+  }
+  .avatar-modal-progress-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,10,18,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar-modal-progress-ring {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 900;
+  }
+  .avatar-modal-input-hidden {
+    display: none;
+  }
+  .avatar-modal-error {
+    margin-top: 10px;
+    color: #EF4444;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .avatar-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .avatar-modal-btn {
+    flex: 1;
+    min-height: 42px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+  }
+  .avatar-modal-btn.secondary {
+    background: #F1F5F9;
+    color: #536079;
+  }
+  .avatar-modal-btn.primary {
+    background: #0877FF;
+    color: #fff;
+  }
+  .avatar-modal-btn:disabled {
+    opacity: .55;
+    cursor: default;
   }
   .profile-section {
     margin-top: 28px;
@@ -2273,15 +2396,12 @@
       width: 96px;
       height: 96px;
     }
-    .profile-avatar-wrap > div {
+    .profile-avatar-wrap div {
       width: 96px !important;
       height: 96px !important;
     }
-    .profile-avatar-edit {
-      bottom: -10px;
-      min-height: 26px;
-      padding: 0 12px;
-      font-size: 11px;
+    .profile-avatar-hover-btn {
+      border-radius: 48px;
     }
     .profile-company-copy h1 {
       font-size: 34px;
