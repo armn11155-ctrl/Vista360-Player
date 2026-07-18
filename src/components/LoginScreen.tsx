@@ -2,7 +2,7 @@ import { useState } from "react";
 import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 
-const LOGO = "/logo-player.png";
+const LOGO = "/login-logo-white.png";
 const SAVED_EMAIL_KEY = "v360_saved_email";
 const REMEMBER_KEY = "v360_remember";
 
