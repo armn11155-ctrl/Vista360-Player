@@ -88,15 +88,17 @@ export async function comprimirImagen(file: File): Promise<File> {
 }
 
 /**
- * Posición del recorte dentro de la foto — mismo formato que CSS
- * object-position: 0% es la esquina superior/izquierda de la imagen,
- * 100% la esquina opuesta, 50% (por defecto) el centro. Así el recorte
- * final coincide exactamente con lo que el usuario vio y movió en el
- * panel de "Cambiar foto de perfil".
+ * Posición + zoom del recorte dentro de la foto — x/y van de 0 a 100
+ * (0 = borde superior/izquierdo de la imagen, 100 = borde opuesto, 50 =
+ * centro), zoom es 1 o más (1 = el recorte cuadrado más grande posible
+ * sin dejar espacios vacíos, más alto = acercar). Así el recorte final
+ * coincide exactamente con lo que el usuario vio y movió en el panel
+ * de "Cambiar foto de perfil".
  */
 export interface PosicionRecorte {
   x: number;
   y: number;
+  zoom?: number;
 }
 
 export async function comprimirAvatarWebp(file: File, posicion: PosicionRecorte = { x: 50, y: 50 }): Promise<File> {
@@ -115,7 +117,8 @@ export async function comprimirAvatarWebp(file: File, posicion: PosicionRecorte 
       "No se pudo abrir esa foto. Si es un archivo HEIC (típico de iPhone), conviértela a JPG o PNG y vuelve a intentar."
     );
   }
-  const side = Math.min(bitmap.width, bitmap.height);
+  const zoom = Math.max(1, posicion.zoom ?? 1);
+  const side = Math.min(bitmap.width, bitmap.height) / zoom;
   const maxOffsetX = bitmap.width - side;
   const maxOffsetY = bitmap.height - side;
   const sx = Math.round((Math.min(100, Math.max(0, posicion.x)) / 100) * maxOffsetX);

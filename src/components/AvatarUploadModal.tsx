@@ -1,27 +1,38 @@
 import { useEffect, useRef, useState } from "react";
-
-interface Props {
-  onSubir: (file: File, posicion: { x: number; y: number }) => Promise<void>;
-  onCerrar: () => void;
-}
+import { comprimirAvatarWebp } from "../utils/comprimirImagen";
 
 interface Posicion {
   x: number;
   y: number;
+  zoom: number;
 }
 
-const CENTRO: Posicion = { x: 50, y: 50 };
+interface Props {
+  onSubir: (file: File, posicion: Posicion) => Promise<void>;
+  onCerrar: () => void;
+}
+
+const CENTRO: Posicion = { x: 50, y: 50, zoom: 1 };
+const ZOOM_MAX = 3;
+
+function formatoPeso(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  return `${(bytes / 1024).toFixed(bytes < 1024 * 100 ? 1 : 0)} KB`;
+}
 
 /**
  * Panel chico (no pantalla completa) para subir la foto de perfil de
  * un cliente. Se abre al tocar/pasar el mouse sobre el avatar en
  * Perfil.tsx.
  *
- * Una vez elegida la foto, se puede arrastrar dentro del marco para
- * elegir qué parte queda visible — el marco muestra en vivo cómo se
- * ve recortada en círculo (así aparece en Perfil) y, chiquito al
- * costado, cómo se ve en cuadrado redondeado (así aparece en el
- * selector de clientes) — mismo recorte, dos formas distintas.
+ * Una vez elegida la foto: se arrastra en cualquier dirección para
+ * acomodarla, y se puede acercar con el control de zoom (necesario
+ * para poder moverla verticalmente cuando la foto es más ancha que
+ * alta, o al revés). El marco muestra en vivo cómo se ve recortada en
+ * círculo (así aparece en Perfil) y, chiquito al costado, cómo se ve
+ * en cuadrado redondeado (así aparece en el selector de clientes) —
+ * mismo recorte, dos formas distintas — más el peso estimado ya
+ * comprimido.
  *
  * Mientras sube, aparece el porcentaje sobre la imagen (real solo al
  * terminar — antes es una animación suave que nunca pasa de 92% para
@@ -30,16 +41,19 @@ const CENTRO: Posicion = { x: 50, y: 50 };
 export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const arrastreRef = useRef<{ startX: number; startY: number; inicio: Posicion; slackX: number; slackY: number } | null>(null);
+  const arrastreRef = useRef<{ startX: number; startY: number; inicio: { x: number; y: number }; slackX: number; slackY: number } | null>(null);
+  const pesoTimeoutRef = useRef<number | null>(null);
 
   const [archivo, setArchivo] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [posicion, setPosicion] = useState<Posicion>(CENTRO);
   const [subiendo, setSubiendo] = useState(false);
   const [progreso, setProgreso] = useState(0);
   const [listo, setListo] = useState(false);
   const [error, setError] = useState("");
+  const [peso, setPeso] = useState<number | null>(null);
+  const [calculandoPeso, setCalculandoPeso] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -47,11 +61,34 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
     };
   }, [previewUrl]);
 
+  // Recalcula el peso comprimido cada vez que cambia la posición/zoom,
+  // con un pequeño retraso para no comprimir en cada pixel mientras se
+  // arrastra — solo cuando la persona se queda quieta un momento.
+  useEffect(() => {
+    if (!archivo) {
+      setPeso(null);
+      return;
+    }
+    if (pesoTimeoutRef.current) window.clearTimeout(pesoTimeoutRef.current);
+    setCalculandoPeso(true);
+    pesoTimeoutRef.current = window.setTimeout(() => {
+      comprimirAvatarWebp(archivo, posicion)
+        .then((f) => setPeso(f.size))
+        .catch(() => setPeso(null))
+        .finally(() => setCalculandoPeso(false));
+    }, 350);
+    return () => {
+      if (pesoTimeoutRef.current) window.clearTimeout(pesoTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [archivo, posicion.x, posicion.y, posicion.zoom]);
+
   function elegirArchivo(file: File) {
     if (subiendo) return;
     setArchivo(file);
     setError("");
     setListo(false);
+    setNatural(null);
     setPosicion(CENTRO);
     setPreviewUrl((anterior) => {
       if (anterior) URL.revokeObjectURL(anterior);
@@ -66,22 +103,26 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
     if (file) elegirArchivo(file);
   }
 
-  function calcularSlack() {
-    const frame = frameRef.current;
-    const img = imgRef.current;
-    if (!frame || !img || !img.naturalWidth || !img.naturalHeight) return { slackX: 0, slackY: 0 };
-    const F = frame.clientWidth;
-    const escala = Math.max(F / img.naturalWidth, F / img.naturalHeight);
-    const dispW = img.naturalWidth * escala;
-    const dispH = img.naturalHeight * escala;
-    return { slackX: Math.max(0, dispW - F), slackY: Math.max(0, dispH - F) };
+  /** Tamaño y posición en pantalla de la imagen dentro del marco, ya con el zoom aplicado. */
+  function medidas() {
+    const F = frameRef.current?.clientWidth ?? 240;
+    if (!natural) return { F, dispW: F, dispH: F, left: 0, top: 0, slackX: 0, slackY: 0 };
+    const base = Math.max(F / natural.w, F / natural.h);
+    const escala = base * posicion.zoom;
+    const dispW = natural.w * escala;
+    const dispH = natural.h * escala;
+    const slackX = Math.max(0, dispW - F);
+    const slackY = Math.max(0, dispH - F);
+    const left = -(posicion.x / 100) * slackX;
+    const top = -(posicion.y / 100) * slackY;
+    return { F, dispW, dispH, left, top, slackX, slackY };
   }
 
   function onPointerDown(e: React.PointerEvent) {
     if (!previewUrl || subiendo) return;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    const { slackX, slackY } = calcularSlack();
-    arrastreRef.current = { startX: e.clientX, startY: e.clientY, inicio: posicion, slackX, slackY };
+    const { slackX, slackY } = medidas();
+    arrastreRef.current = { startX: e.clientX, startY: e.clientY, inicio: { x: posicion.x, y: posicion.y }, slackX, slackY };
   }
 
   function onPointerMove(e: React.PointerEvent) {
@@ -91,10 +132,11 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
     const dy = e.clientY - arrastre.startY;
     const nuevoX = arrastre.slackX > 0 ? arrastre.inicio.x - (dx / arrastre.slackX) * 100 : 50;
     const nuevoY = arrastre.slackY > 0 ? arrastre.inicio.y - (dy / arrastre.slackY) * 100 : 50;
-    setPosicion({
+    setPosicion((p) => ({
+      ...p,
       x: Math.min(100, Math.max(0, nuevoX)),
       y: Math.min(100, Math.max(0, nuevoY)),
-    });
+    }));
   }
 
   function onPointerUp() {
@@ -125,7 +167,7 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
     }
   }
 
-  const objectPosition = `${posicion.x}% ${posicion.y}%`;
+  const { F, dispW, dispH, left, top } = medidas();
 
   return (
     <div className="avatar-modal-backdrop" onClick={() => !subiendo && onCerrar()}>
@@ -147,11 +189,18 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
             {previewUrl ? (
               <>
                 <img
-                  ref={imgRef}
                   src={previewUrl}
                   alt=""
                   draggable={false}
-                  style={{ objectPosition }}
+                  onLoad={(e) => setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })}
+                  style={{
+                    position: "absolute",
+                    width: dispW || F,
+                    height: dispH || F,
+                    left,
+                    top,
+                    maxWidth: "none",
+                  }}
                 />
                 <div className="avatar-modal-drop-mask" aria-hidden="true" />
               </>
@@ -174,12 +223,37 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
           {previewUrl && (
             <div className="avatar-modal-mini-preview">
               <div className="avatar-modal-mini-square">
-                <img src={previewUrl} alt="" draggable={false} style={{ objectPosition }} />
+                <img
+                  src={previewUrl}
+                  alt=""
+                  draggable={false}
+                  style={{ position: "absolute", width: dispW || F, height: dispH || F, left, top, maxWidth: "none" }}
+                />
               </div>
               <span>Así se ve en la lista de clientes</span>
+              <span className="avatar-modal-peso">
+                {calculandoPeso ? "calculando…" : peso !== null ? formatoPeso(peso) : "—"}
+              </span>
             </div>
           )}
         </div>
+
+        {previewUrl && (
+          <div className="avatar-modal-zoom-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.2" strokeLinecap="round"><circle cx="10" cy="10" r="6" /><path d="M21 21l-4.35-4.35" /></svg>
+            <input
+              type="range"
+              min={1}
+              max={ZOOM_MAX}
+              step={0.01}
+              value={posicion.zoom}
+              disabled={subiendo}
+              onChange={(e) => setPosicion((p) => ({ ...p, zoom: Number(e.target.value) }))}
+              className="avatar-modal-zoom-slider"
+            />
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.2" strokeLinecap="round"><circle cx="10" cy="10" r="7" /><path d="M21 21l-4.35-4.35" /><path d="M10 7v6M7 10h6" /></svg>
+          </div>
+        )}
 
         {previewUrl && !subiendo && (
           <button type="button" className="avatar-modal-elegir-otra" onClick={() => inputRef.current?.click()}>
@@ -187,7 +261,7 @@ export function AvatarUploadModal({ onSubir, onCerrar }: Props) {
           </button>
         )}
         {previewUrl && (
-          <div className="avatar-modal-hint">Arrastra la foto para acomodarla</div>
+          <div className="avatar-modal-hint">Arrastra la foto y usa el zoom para acomodarla</div>
         )}
 
         <input

@@ -1651,6 +1651,7 @@
     padding-top: 4px;
   }
   .avatar-modal-mini-square {
+    position: relative;
     width: 44px;
     height: 44px;
     border-radius: 12px;
@@ -1670,6 +1671,46 @@
     color: #94A3B8;
     text-align: center;
     line-height: 1.25;
+  }
+  .avatar-modal-peso {
+    color: #0877FF !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+  }
+  .avatar-modal-zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 2px;
+  }
+  .avatar-modal-zoom-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 4px;
+    background: #E2E8F0;
+    outline: none;
+  }
+  .avatar-modal-zoom-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #0877FF;
+    box-shadow: 0 2px 6px rgba(8,119,255,0.4);
+    cursor: pointer;
+  }
+  .avatar-modal-zoom-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background: #0877FF;
+    box-shadow: 0 2px 6px rgba(8,119,255,0.4);
+    cursor: pointer;
   }
   .avatar-modal-elegir-otra {
     display: block;
@@ -3083,8 +3124,8 @@
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.16),
       0 16px 34px -18px rgba(0,0,0,0.86);
-    border: 1px solid rgba(147,197,253,0.22);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
     overflow: hidden;
   }
   .admin-picker-tile-avatar svg {
@@ -3190,7 +3231,6 @@
   .admin-picker-tile-main:hover .admin-picker-tile-avatar,
   .admin-picker-tile-main:focus-visible .admin-picker-tile-avatar {
     transform: translateY(-3px) scale(1.04);
-    border-color: rgba(147,197,253,0.62);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.22),
       0 20px 42px -16px rgba(8,119,255,0.42);

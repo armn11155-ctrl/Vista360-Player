@@ -4,7 +4,7 @@ import type { Cliente, Contrato } from "../../types";
 import { estadoCampana } from "../../types";
 import { cloudFunctions, db, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
-import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
+import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
@@ -138,7 +138,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     }
   }, [cliente?.id, cliente?.avatarUrl]);
 
-  async function subirNuevaFoto(file: File, posicion: { x: number; y: number }) {
+  async function subirNuevaFoto(file: File, posicion: PosicionRecorte) {
     if (!cliente?.id || !db) {
       throw new Error("No se pudo identificar al cliente.");
     }
