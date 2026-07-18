@@ -41,7 +41,7 @@ function estadoTexto(contrato?: Contrato) {
 
 function estadoColor(label: string) {
   if (label === "Activo") return "#22C55E";
-  if (label === "Programado") return "#F59E0B";
+  if (label === "Programado") return "#0877FF"; // antes naranja -- se pidió que no haya naranjas, todo en la paleta azul de la marca
   if (label === "Finalizado") return "#94A3B8";
   return "#60A5FA";
 }
@@ -87,9 +87,11 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-          L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+          // OpenStreetMap estándar (el estilo "Carto Voyager" que estaba
+          // antes no gustó -- de vuelta al mapa original).
+          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
+            attribution: "&copy; OpenStreetMap contributors",
           }).addTo(mapRef.current);
         }
 
