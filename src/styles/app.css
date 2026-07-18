@@ -2277,6 +2277,12 @@
   .login-shell::after {
     content: none;
   }
+  .login-logo, .login-card, .login-foot {
+    width: 100%;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+  }
   .login-logo { text-align: center; margin-bottom: 34px; }
   .login-logo img {
     width: min(330px, 88%);
