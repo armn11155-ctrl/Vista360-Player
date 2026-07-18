@@ -6,6 +6,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
+import { comprimirImagen } from "../../utils/comprimirImagen";
 import MobileSidebarButton from "../MobileSidebarButton";
 
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
@@ -86,7 +87,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
     if (!file || !db || !modal?.solicitudId) return;
     setComprobante("subiendo");
     try {
-      const { key: url } = await subirEvidenciaR2(file);
+      const { key: url } = await subirEvidenciaR2(await comprimirImagen(file));
       await updateDoc(doc(db, "solicitudesCampana", modal.solicitudId), {
         comprobantePagoUrl: url,
         comprobantePagoFecha: new Date().toISOString(),

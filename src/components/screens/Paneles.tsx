@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { cloudFunctions } from "../../config/firebase";
+import { cargarLeaflet } from "../../utils/leaflet";
 import type { PanelEstado } from "../../types";
 
 interface Props {
@@ -20,6 +21,9 @@ const ESTADO_BADGE: Record<PanelEstado, { bg: string; color: string }> = {
   Mantenimiento: { bg: "rgba(245,158,11,0.12)", color: "#D97706" },
 };
 
+// Centro por defecto del mapa: Lima, Peru (donde opera el negocio).
+const CENTRO_DEFECTO: [number, number] = [-12.0464, -77.0428];
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   border: "1px solid var(--border)",
@@ -28,6 +32,19 @@ const inputStyle: React.CSSProperties = {
   boxSizing: "border-box",
   fontSize: 13.5,
 };
+
+/** Convierte lo que haya escrito el admin en un numero valido o
+ *  undefined -- nunca NaN. Acepta coma decimal (12,345) ademas de
+ *  punto, porque es como muchos escriben coordenadas en español. Antes
+ *  esto mandaba NaN directo al cloud function si el texto no era un
+ *  numero valido, y la app fallaba con "Data cannot be encoded in
+ *  JSON: NaN" (JSON no soporta NaN). */
+function numeroCoordenada(value: string): number | undefined {
+  const limpio = value.trim().replace(",", ".");
+  if (!limpio) return undefined;
+  const n = Number(limpio);
+  return Number.isFinite(n) ? n : undefined;
+}
 
 export default function Paneles({ onBack, onMenuClick }: Props) {
   const state = usePanelesDisponibles(true);
@@ -44,6 +61,86 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState("");
   const [mensajeOk, setMensajeOk] = useState("");
+  const [mapError, setMapError] = useState(false);
+
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const latRef = useRef(lat);
+  const lngRef = useRef(lng);
+  latRef.current = lat;
+  lngRef.current = lng;
+
+  // ── Mapa: click o arrastre del marcador fija lat/lng -- ya no hace
+  // falta escribir coordenadas a mano (esa era la otra parte del
+  // pedido: "quiero un mapa para seleccionar exactamente la ubicación,
+  // como en Vista360"). ──
+  useEffect(() => {
+    if (!mostrarForm || !mapEl.current) return;
+    let cancelado = false;
+
+    function colocarMarcador(L: any, latLng: { lat: number; lng: number }) {
+      if (!mapRef.current) return;
+      if (markerRef.current) {
+        markerRef.current.setLatLng(latLng);
+      } else {
+        markerRef.current = L.marker(latLng, { draggable: true }).addTo(mapRef.current);
+        markerRef.current.on("dragend", () => {
+          const pos = markerRef.current.getLatLng();
+          setLat(pos.lat.toFixed(6));
+          setLng(pos.lng.toFixed(6));
+        });
+      }
+      setLat(latLng.lat.toFixed(6));
+      setLng(latLng.lng.toFixed(6));
+    }
+
+    cargarLeaflet()
+      .then((L) => {
+        if (cancelado || !mapEl.current) return;
+        setMapError(false);
+
+        if (!mapRef.current) {
+          const inicial = numeroCoordenada(latRef.current) !== undefined && numeroCoordenada(lngRef.current) !== undefined
+            ? ([numeroCoordenada(latRef.current)!, numeroCoordenada(lngRef.current)!] as [number, number])
+            : CENTRO_DEFECTO;
+          mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false }).setView(inicial, 13);
+          L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
+          L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
+          L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap &copy; CARTO",
+          }).addTo(mapRef.current);
+          mapRef.current.on("click", (ev: any) => colocarMarcador(L, ev.latlng));
+
+          if (numeroCoordenada(latRef.current) !== undefined && numeroCoordenada(lngRef.current) !== undefined) {
+            colocarMarcador(L, { lat: numeroCoordenada(latRef.current)!, lng: numeroCoordenada(lngRef.current)! });
+          }
+        }
+
+        window.setTimeout(() => mapRef.current?.invalidateSize(), 80);
+      })
+      .catch(() => {
+        if (!cancelado) setMapError(true);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, [mostrarForm]);
+
+  useEffect(() => {
+    if (!mostrarForm && mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    }
+  }, [mostrarForm]);
+
+  useEffect(() => () => {
+    mapRef.current?.remove();
+    mapRef.current = null;
+  }, []);
 
   function limpiarForm() {
     setNombre("");
@@ -53,6 +150,10 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setLat("");
     setLng("");
     setEstado("Disponible");
+    if (markerRef.current && mapRef.current) {
+      mapRef.current.removeLayer(markerRef.current);
+      markerRef.current = null;
+    }
   }
 
   async function crearPanel() {
@@ -77,8 +178,8 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         tipo: tipo.trim(),
         ciudad: ciudad.trim(),
         direccion: direccion.trim(),
-        lat: lat.trim() ? Number(lat) : undefined,
-        lng: lng.trim() ? Number(lng) : undefined,
+        lat: numeroCoordenada(lat),
+        lng: numeroCoordenada(lng),
         estado,
       });
       setMensajeOk("Panel creado.");
@@ -129,9 +230,21 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                 <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Ciudad" style={inputStyle} />
               </div>
               <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Dirección (opcional)" style={inputStyle} />
+
+              <div>
+                <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>
+                  Ubicación — toca el mapa o arrastra el pin para marcarla
+                </div>
+                {mapError ? (
+                  <div style={{ fontSize: 12, color: "var(--red)" }}>No se pudo cargar el mapa. Escribe la latitud/longitud manualmente abajo.</div>
+                ) : (
+                  <div ref={mapEl} style={{ width: "100%", height: 220, borderRadius: 12, overflow: "hidden", border: "1px solid var(--border)" }} />
+                )}
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitud (opcional)" inputMode="decimal" style={inputStyle} />
-                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitud (opcional)" inputMode="decimal" style={inputStyle} />
+                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitud" inputMode="decimal" style={inputStyle} />
+                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitud" inputMode="decimal" style={inputStyle} />
               </div>
               <select value={estado} onChange={(e) => setEstado(e.target.value as PanelEstado)} style={{ ...inputStyle, background: "#fff", color: "var(--text)" }}>
                 {ESTADOS.map((e) => (

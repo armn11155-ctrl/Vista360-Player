@@ -1,4 +1,4 @@
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
 import { db } from "../../config/firebase";
@@ -18,6 +18,8 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const clientesState = useClientesAdmin();
   const [resolviendo, setResolviendo] = useState<string | null>(null);
   const [seleccionada, setSeleccionada] = useState<SolicitudCampana | null>(null);
+  const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
+  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
   const clientePorId = (clienteId: string) => clientes.find((c) => c.id === clienteId);
@@ -43,6 +45,21 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
       // el estado vuelve a Pendiente solo si falla, no hace falta más feedback aquí
     }
     setResolviendo(null);
+  }
+
+  async function eliminarSolicitud(id: string, nombre: string) {
+    if (!db || eliminandoId) return;
+    const confirmado = window.confirm(`¿Eliminar la solicitud "${nombre}"? No se puede deshacer.`);
+    if (!confirmado) return;
+    setMenuAbiertoId(null);
+    setEliminandoId(id);
+    try {
+      await deleteDoc(doc(db, "solicitudesCampana", id));
+      setSeleccionada((actual) => (actual?.id === id ? null : actual));
+    } catch {
+      // si falla, el item se queda visible y se puede reintentar
+    }
+    setEliminandoId(null);
   }
 
   async function confirmarPago(id: string, confirmado: boolean) {
@@ -187,28 +204,57 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
 
         {resueltas.length > 0 && (
           <>
-            <div className="section-title" style={{ marginTop: 20 }}>Ya gestionadas</div>
-            <div className="card">
+            <div className="section-title" style={{ marginTop: 20 }}>Historial</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {resueltas.map((s) => (
                 <div
                   key={s.id}
+                  className="card"
                   onClick={() => setSeleccionada(s)}
                   style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "10px 0", borderBottom: "1px solid var(--border)", cursor: "pointer",
+                    gap: 8, padding: "12px 14px", cursor: "pointer",
                   }}
                 >
-                  <div style={{ fontSize: 13, color: "var(--text)" }}>
+                  <div style={{ fontSize: 13, color: "var(--text)", minWidth: 0, flex: 1 }}>
                     {nombreCliente(s.cliente_id)} — {s.nombre}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-                      color: s.estado === "Rechazada" ? "var(--red)" : "var(--green)",
-                      background: s.estado === "Rechazada" ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.12)",
-                    }}
-                  >
-                    {s.estado}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <div
+                      style={{
+                        fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                        color: s.estado === "Rechazada" ? "var(--red)" : "var(--green)",
+                        background: s.estado === "Rechazada" ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.12)",
+                      }}
+                    >
+                      {s.estado}
+                    </div>
+                    <div style={{ position: "relative" }} onClick={(event) => event.stopPropagation()}>
+                      <button
+                        type="button"
+                        className="report-card-menu-btn"
+                        aria-label="Opciones de la solicitud"
+                        onClick={() => setMenuAbiertoId((actual) => (actual === s.id ? null : s.id))}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="12" cy="5" r="1.9" />
+                          <circle cx="12" cy="12" r="1.9" />
+                          <circle cx="12" cy="19" r="1.9" />
+                        </svg>
+                      </button>
+                      {menuAbiertoId === s.id && (
+                        <div className="report-card-menu-dropdown">
+                          <button
+                            type="button"
+                            className="report-card-menu-item"
+                            onClick={() => void eliminarSolicitud(s.id, s.nombre)}
+                            disabled={eliminandoId === s.id}
+                          >
+                            {eliminandoId === s.id ? "Eliminando..." : "Eliminar"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

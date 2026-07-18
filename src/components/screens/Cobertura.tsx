@@ -2,12 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
-
-declare global {
-  interface Window {
-    L?: any;
-  }
-}
+import { cargarLeaflet } from "../../utils/leaflet";
 
 interface Props {
   paneles: Record<string, Panel>;
@@ -49,38 +44,6 @@ function estadoColor(label: string) {
   if (label === "Programado") return "#F59E0B";
   if (label === "Finalizado") return "#94A3B8";
   return "#60A5FA";
-}
-
-function cargarLeaflet() {
-  if (window.L) return Promise.resolve(window.L);
-
-  const cssId = "leaflet-css";
-  if (!document.getElementById(cssId)) {
-    const link = document.createElement("link");
-    link.id = cssId;
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
-  }
-
-  const scriptId = "leaflet-js";
-  const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
-  if (existing) {
-    return new Promise<any>((resolve, reject) => {
-      existing.addEventListener("load", () => resolve(window.L));
-      existing.addEventListener("error", reject);
-    });
-  }
-
-  return new Promise<any>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.async = true;
-    script.onload = () => resolve(window.L);
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
 }
 
 export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: Props) {
