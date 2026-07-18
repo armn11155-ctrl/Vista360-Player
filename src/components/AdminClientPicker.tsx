@@ -184,35 +184,44 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 key={c.id}
                 className={`admin-picker-tile ${c.archived ? "archived" : ""}`}
               >
-                <button
-                  type="button"
-                  className="admin-picker-tile-main"
-                  onClick={() => !c.archived && onSelect(c.id)}
-                  disabled={!!c.archived || busy}
-                >
-                <span className="admin-picker-tile-avatar" style={{ background: bg }}>
-                  {avatarSrc(c) ? (
-                    <img
-                      src={avatarSrc(c)}
-                      alt=""
-                      onError={() => setAvataresFallidos((prev) => new Set(prev).add(c.id))}
-                    />
-                  ) : (
-                    <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
-                  )}
-                </span>
-                <span className="admin-picker-tile-name">{c.empresa}</span>
-                </button>
-                {tab === "activos" ? (
+                <div className="admin-picker-tile-avatar-wrap">
                   <button
                     type="button"
-                    className="admin-picker-tile-config"
-                    onClick={() => setMenuCliente(c)}
-                    disabled={busy}
+                    className="admin-picker-tile-main"
+                    onClick={() => !c.archived && onSelect(c.id)}
+                    disabled={!!c.archived || busy}
                   >
-                    Configuración
+                    <span className="admin-picker-tile-avatar" style={{ background: bg }}>
+                      {avatarSrc(c) ? (
+                        <img
+                          src={avatarSrc(c)}
+                          alt=""
+                          onError={() => setAvataresFallidos((prev) => new Set(prev).add(c.id))}
+                        />
+                      ) : (
+                        <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
+                      )}
+                      <span className="admin-picker-tile-shine" aria-hidden="true" />
+                    </span>
                   </button>
-                ) : (
+                  {tab === "activos" && (
+                    <button
+                      type="button"
+                      className="admin-picker-tile-gear"
+                      onClick={() => setMenuCliente(c)}
+                      disabled={busy}
+                      aria-label="Configuración"
+                      title="Configuración"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3.2" />
+                        <path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2.06 2.06 0 1 1-2.92 2.92l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V19.6a2.06 2.06 0 1 1-4.12 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2.06 2.06 0 1 1-2.92-2.92l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H4.4a2.06 2.06 0 1 1 0-4.12h.09a1.7 1.7 0 0 0 1.55-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06A2.06 2.06 0 1 1 8.56 4.05l.06.06a1.7 1.7 0 0 0 1.87.34H10.6a1.7 1.7 0 0 0 1-1.55V2.4a2.06 2.06 0 1 1 4.12 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2.06 2.06 0 1 1 2.92 2.92l-.06.06a1.7 1.7 0 0 0-.34 1.87V8.6a1.7 1.7 0 0 0 1.55 1h.09a2.06 2.06 0 1 1 0 4.12h-.09a1.7 1.7 0 0 0-1.55 1Z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                <span className="admin-picker-tile-name">{c.empresa}</span>
+                {tab !== "activos" && (
                   <div className="admin-picker-archive-actions">
                     <button type="button" onClick={() => restaurarCliente(c)} disabled={busy} title="Recuperar perfil">
                       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
