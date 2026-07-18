@@ -145,7 +145,10 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
-        <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer">
+        {/* R2 firma esta URL con Content-Disposition: attachment (ver
+            firmarLecturaR2 en el backend), asi que el navegador la
+            descarga directo en vez de solo abrirla para verla. */}
+        <a className="report-action report-action-primary" href={url} download target="_blank" rel="noreferrer">
           Ver / Descargar
         </a>
         {isAdmin && (

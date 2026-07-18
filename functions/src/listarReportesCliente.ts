@@ -111,7 +111,8 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
 
     const informes: InformeListado[] = await Promise.all(
       [...porFecha.entries()].map(async ([idKey, v]) => {
-        const url = await firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS);
+        const nombreArchivo = `Reporte ${nombreFechaCorta(v.mes, v.dia)}.pdf`.replace(/[\\/:*?"<>|]/g, "-");
+        const url = await firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS, nombreArchivo);
         const fecha = v.fecha ?? new Date();
         return {
           id: `${clienteId}_${idKey}`,

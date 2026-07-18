@@ -57,9 +57,18 @@ export async function firmarSubidaR2(key: string, contentType: string, expiresIn
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
 }
 
-/** Devuelve una URL firmada de lectura (GET) que expira — para mostrar imágenes/PDFs privados. */
-export async function firmarLecturaR2(key: string, expiresInSeconds = 21600) {
-  const command = new GetObjectCommand({ Bucket: r2Bucket(), Key: key });
+/** Devuelve una URL firmada de lectura (GET) que expira — para mostrar imágenes/PDFs privados.
+ *  Si se pasa `nombreDescarga`, el navegador la descarga directo (en vez
+ *  de abrirla para verla nomás) con ese nombre de archivo — R2 manda el
+ *  header Content-Disposition, así que funciona con un simple <a href>,
+ *  sin depender de CORS ni de que el navegador soporte el atributo
+ *  `download` para links de otro dominio. */
+export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nombreDescarga?: string) {
+  const command = new GetObjectCommand({
+    Bucket: r2Bucket(),
+    Key: key,
+    ...(nombreDescarga ? { ResponseContentDisposition: `attachment; filename="${nombreDescarga}"` } : {}),
+  });
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
 }
 
