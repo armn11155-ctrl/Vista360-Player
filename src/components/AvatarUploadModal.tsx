@@ -172,7 +172,7 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
   const { F, dispW, dispH, left, top } = medidas();
 
   return (
-    <div className="avatar-modal-backdrop" onClick={() => !subiendo && onCerrar()}>
+    <div className="avatar-modal-backdrop">
       <div className="avatar-modal" onClick={(e) => e.stopPropagation()}>
         <div className="avatar-modal-title">{titulo}</div>
 

@@ -25,10 +25,11 @@ const MAX_DIMENSION = 1280;
 const WEBP_QUALITY = 0.68;
 const JPEG_QUALITY = 0.66;
 // Los avatares se muestran como mucho a 96px en la app (con retina,
-// ~192px reales) — 320px/86% dejaba mucho margen de sobra. Bajado a
-// esto y probado a tamaño real de uso: sin diferencia visible.
-const AVATAR_SIZE = 240;
-const AVATAR_WEBP_QUALITY = 0.72;
+// ~192px reales) — probado varias veces contra ese tamaño real de uso,
+// incluso con texto de fondo (peor caso de nitidez): este es el punto
+// más comprimido que sigue viéndose limpio, no vale la pena bajar más.
+const AVATAR_SIZE = 180;
+const AVATAR_WEBP_QUALITY = 0.55;
 
 async function codificar(
   canvas: HTMLCanvasElement,
