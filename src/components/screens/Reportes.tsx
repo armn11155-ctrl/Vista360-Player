@@ -265,17 +265,22 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               <span>Ubicación: {ubicacionAuto}</span>
             </div>
             {fotosReporte.length > 0 && (
-              <div className="report-photo-grid">
-                {fotosReporte.map((foto, index) => (
-                  <div className="report-photo-thumb" key={foto.id}>
-                    <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
-                    <span className="report-photo-thumb-peso">{formatoBytes(pesoDataUrl(foto.dataUrl))}</span>
-                    <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <>
+                <div className="report-photo-total">
+                  {fotosReporte.length} {fotosReporte.length === 1 ? "foto" : "fotos"} · {formatoBytes(fotosReporte.reduce((suma, foto) => suma + pesoDataUrl(foto.dataUrl), 0))} en total
+                </div>
+                <div className="report-photo-grid">
+                  {fotosReporte.map((foto, index) => (
+                    <div className="report-photo-thumb" key={foto.id}>
+                      <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
+                      <div className="report-photo-thumb-caption">{formatoBytes(pesoDataUrl(foto.dataUrl))}</div>
+                      <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
             <div className="report-admin-hint">
               Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes. Puedes generar más de un reporte en el mismo mes mientras sea en días distintos — si generas otro el mismo día, reemplaza al anterior de ese día.
