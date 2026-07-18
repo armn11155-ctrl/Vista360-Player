@@ -1784,6 +1784,27 @@
     opacity: .55;
     cursor: default;
   }
+
+  /* ===== Modal de recorte para fotos de reporte (cola, una por una) =====
+     Reutiliza .avatar-modal-backdrop/.avatar-modal/.avatar-modal-btn,
+     etc. — solo cambia el marco (rectangular, sin máscara circular) y
+     el ancho del panel (más ancho que el de perfil porque el recuadro
+     del PDF es horizontal). */
+  .photo-crop-modal {
+    max-width: 420px;
+  }
+  .photo-crop-modal-contador {
+    text-align: center;
+    color: #0877FF;
+    font-size: 11.5px;
+    font-weight: 800;
+    margin: -6px 0 12px;
+  }
+  .photo-crop-modal-frame {
+    width: 100%;
+    aspect-ratio: 996 / 546;
+    border-radius: 14px;
+  }
   .profile-section {
     margin-top: 28px;
   }

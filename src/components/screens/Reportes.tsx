@@ -4,6 +4,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente, Contrato, Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
+import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
 
 interface Props {
@@ -48,37 +49,13 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
-async function fotoADataUrl(file: File): Promise<string> {
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("No se pudo leer la imagen."));
-    reader.onload = () => {
-      const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => reject(new Error("No se pudo procesar la imagen."));
-      image.src = String(reader.result);
-    };
-    reader.readAsDataURL(file);
-  });
-
-  const maxSide = 1600;
-  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(img.width * scale));
-  canvas.height = Math.max(1, Math.round(img.height * scale));
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("No se pudo preparar la imagen.");
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL("image/jpeg", 0.82);
-}
-
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(mesActual());
   const [generando, setGenerando] = useState(false);
-  const [procesandoFotos, setProcesandoFotos] = useState(false);
   const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
+  const [colaRecorte, setColaRecorte] = useState<File[] | null>(null);
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
   const panelPrincipal = contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined;
@@ -101,27 +78,28 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
     return raw.replace("FirebaseError: ", "") || "No se pudo generar el reporte.";
   }
 
-  async function agregarFotos(files: FileList | null) {
+  function agregarFotos(files: FileList | null) {
     if (!files?.length) return;
-    setProcesandoFotos(true);
-    setMensajeAdmin(null);
-    try {
-      const nuevas = await Promise.all(
-        Array.from(files)
-          .filter((file) => file.type.startsWith("image/"))
-          .map(async (file) => ({
-            id: `${file.name}-${file.size}-${file.lastModified}-${crypto.randomUUID()}`,
-            nombre: file.name,
-            dataUrl: await fotoADataUrl(file),
-          }))
-      );
-      setFotosReporte((actuales) => [...actuales, ...nuevas].slice(0, 12));
-    } catch (error) {
+    const imagenes = Array.from(files)
+      .filter((file) => file.type.startsWith("image/"))
+      .slice(0, Math.max(0, 12 - fotosReporte.length));
+    if (imagenes.length === 0) {
       setMensajeAdminTipo("error");
-      setMensajeAdmin(error instanceof Error ? error.message : "No se pudieron cargar las fotos.");
-    } finally {
-      setProcesandoFotos(false);
+      setMensajeAdmin("Selecciona archivos de imagen.");
+      return;
     }
+    setMensajeAdmin(null);
+    setColaRecorte(imagenes);
+  }
+
+  function alTerminarRecorte(resultados: { dataUrl: string; nombre: string }[]) {
+    const nuevas: FotoReporte[] = resultados.map((r) => ({
+      id: `${r.nombre}-${Date.now()}-${crypto.randomUUID()}`,
+      nombre: r.nombre,
+      dataUrl: r.dataUrl,
+    }));
+    setFotosReporte((actuales) => [...actuales, ...nuevas].slice(0, 12));
+    setColaRecorte(null);
   }
 
   function quitarFoto(id: string) {
@@ -129,7 +107,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   }
 
   async function generarReporte() {
-    if (!cloudFunctions || generando || procesandoFotos) return;
+    if (!cloudFunctions || generando) return;
     setGenerando(true);
     setMensajeAdmin(null);
     try {
@@ -221,19 +199,17 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                   accept="image/*"
                   multiple
                   onChange={(e) => {
-                    void agregarFotos(e.target.files);
+                    agregarFotos(e.target.files);
                     e.currentTarget.value = "";
                   }}
                 />
-                <div className="report-photo-picker-btn">
-                  {procesandoFotos ? "Preparando fotos..." : "Agregar fotos"}
-                </div>
+                <div className="report-photo-picker-btn">Agregar fotos</div>
               </label>
               <button
                 className="report-generate-btn"
                 type="button"
                 onClick={generarReporte}
-                disabled={!hayContratos || !mes || generando || procesandoFotos}
+                disabled={!hayContratos || !mes || generando}
               >
                 {generando ? "Generando..." : "Generar PDF"}
               </button>
@@ -255,7 +231,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               </div>
             )}
             <div className="report-admin-hint">
-              Sube las fotos del reporte; cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes.
+              Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes.
             </div>
             {mensajeAdmin && (
               <div className={`report-admin-status ${mensajeAdminTipo === "error" ? "error" : "ok"}`}>
@@ -317,6 +293,14 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
           </div>
         )}
       </div>
+
+      {colaRecorte && colaRecorte.length > 0 && (
+        <PhotoCropQueueModal
+          fotos={colaRecorte}
+          onCompletar={alTerminarRecorte}
+          onCancelar={() => setColaRecorte(null)}
+        />
+      )}
     </div>
   );
 }

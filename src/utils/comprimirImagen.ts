@@ -161,3 +161,81 @@ export async function comprimirAvatarWebp(file: File, posicion: PosicionRecorte 
   const nombre = file.name.replace(/\.[^.]+$/, "") || "avatar";
   return new File([blob], `${nombre}.${extension}`, { type: mime });
 }
+
+/**
+ * Relación de ancho/alto del recuadro de foto en el PDF del reporte
+ * (996x546 en el diseño de generarReporteCliente.ts) — se usa acá para
+ * que el recorte que la persona ve y ajusta en el panel sea EXACTAMENTE
+ * el mismo que va a terminar en el PDF, en vez de que el servidor haga
+ * su propio recorte centrado (que podía cortar justo lo que importaba).
+ */
+export const REPORTE_FOTO_ASPECTO = 996 / 546;
+
+const REPORTE_FOTO_MAX_ANCHO = 1600;
+const REPORTE_FOTO_CALIDAD = 0.85;
+
+/**
+ * Recorta una foto de reporte al rectángulo elegido por la persona
+ * (mismo mecanismo de x/y/zoom que comprimirAvatarWebp, pero con el
+ * aspecto del recuadro del PDF en vez de un cuadrado) y devuelve un
+ * data URL JPEG listo para enviar a generarReporteCliente — el
+ * servidor ya no necesita recortar nada, solo la vuelve a comprimir un
+ * poco más antes de insertarla en la página.
+ */
+export async function recortarFotoReporte(
+  file: File,
+  posicion: PosicionRecorte,
+  aspecto: number = REPORTE_FOTO_ASPECTO
+): Promise<string> {
+  if (!file.type.startsWith("image/") || file.type === "image/gif") {
+    throw new Error("La foto debe ser una imagen estática.");
+  }
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error(
+      "No se pudo abrir esa foto. Si es un archivo HEIC (típico de iPhone), conviértela a JPG o PNG y vuelve a intentar."
+    );
+  }
+
+  // Rectángulo más grande con el aspecto pedido que cabe en la foto
+  // original, luego acercado según el zoom — mismo criterio que el
+  // recorte cuadrado de avatares, pero con este aspecto.
+  let cropW: number;
+  let cropH: number;
+  if (bitmap.width / bitmap.height > aspecto) {
+    cropH = bitmap.height;
+    cropW = cropH * aspecto;
+  } else {
+    cropW = bitmap.width;
+    cropH = cropW / aspecto;
+  }
+  const zoom = Math.max(1, posicion.zoom ?? 1);
+  cropW /= zoom;
+  cropH /= zoom;
+
+  const maxOffsetX = bitmap.width - cropW;
+  const maxOffsetY = bitmap.height - cropH;
+  const sx = Math.round((Math.min(100, Math.max(0, posicion.x)) / 100) * maxOffsetX);
+  const sy = Math.round((Math.min(100, Math.max(0, posicion.y)) / 100) * maxOffsetY);
+
+  const outW = Math.min(REPORTE_FOTO_MAX_ANCHO, Math.round(cropW));
+  const outH = Math.round(outW / aspecto);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = outW;
+  canvas.height = outH;
+  const ctx = canvas.getContext("2d", { alpha: false });
+  if (!ctx) {
+    bitmap.close();
+    throw new Error("No se pudo preparar la imagen.");
+  }
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, sx, sy, cropW, cropH, 0, 0, outW, outH);
+  bitmap.close();
+
+  return canvas.toDataURL("image/jpeg", REPORTE_FOTO_CALIDAD);
+}
