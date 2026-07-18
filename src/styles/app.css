@@ -2264,22 +2264,18 @@
   .login-shell::before {
     content: "";
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 160px;
     z-index: -2;
-    background-image:
-      linear-gradient(180deg, #030711 0%, #030711 12%, rgba(3,7,17,.38) 29%, transparent 58%, rgba(3,7,17,.48) 100%),
-      url('/login-city-night.jpg');
+    background-image: url('/login-city-night.jpg');
     background-repeat: no-repeat;
-    background-size: auto 58%;
-    background-position: center 60%;
+    background-size: cover;
+    background-position: center center;
   }
   .login-shell::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background: radial-gradient(circle at 50% 56%, transparent 38%, rgba(1,4,12,.18) 100%);
+    content: none;
   }
   .login-logo { text-align: center; margin-bottom: 34px; }
   .login-logo img {
