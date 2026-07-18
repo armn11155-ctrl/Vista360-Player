@@ -15,7 +15,14 @@ function formatoEspacio(bytes: number) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
-type EspacioEstado = { status: "loading" | "ready" | "error"; bytes?: number; objetos?: number };
+type EspacioEstado = {
+  status: "loading" | "ready" | "error";
+  bytes?: number;
+  objetos?: number;
+  bucket?: string;
+  paginas?: number;
+  muestra?: { key: string; size: number }[];
+};
 
 /** Espacio total usado en R2 (todos los clientes juntos), en vivo — no cacheado. */
 function useEspacioR2(): EspacioEstado {
@@ -27,13 +34,22 @@ function useEspacioR2(): EspacioEstado {
       return;
     }
     let cancelado = false;
-    const fn = httpsCallable<Record<string, never>, { totalBytes: number; totalObjetos: number }>(
-      cloudFunctions,
-      "obtenerEspacioR2"
-    );
+    const fn = httpsCallable<
+      Record<string, never>,
+      { totalBytes: number; totalObjetos: number; bucket: string; paginas: number; muestra: { key: string; size: number }[] }
+    >(cloudFunctions, "obtenerEspacioR2");
     fn()
       .then(({ data }) => {
-        if (!cancelado) setEstado({ status: "ready", bytes: data.totalBytes, objetos: data.totalObjetos });
+        if (!cancelado) {
+          setEstado({
+            status: "ready",
+            bytes: data.totalBytes,
+            objetos: data.totalObjetos,
+            bucket: data.bucket,
+            paginas: data.paginas,
+            muestra: data.muestra,
+          });
+        }
       })
       .catch(() => {
         if (!cancelado) setEstado({ status: "error" });
@@ -115,6 +131,23 @@ export default function AdminPerfil({ nombre, email, onBack }: Props) {
             </div>
           </div>
         </section>
+
+        {espacio.status === "ready" && espacio.muestra && (
+          <section className="profile-section">
+            <h2>Diagnóstico (temporal)</h2>
+            <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB", padding: 12, fontSize: 11.5 }}>
+              <div style={{ marginBottom: 8, color: "#64748B" }}>
+                Bucket: <strong style={{ color: "#0B1220" }}>{espacio.bucket}</strong> · Páginas leídas: {espacio.paginas} · Archivos encontrados: {espacio.objetos}
+              </div>
+              {espacio.muestra.map((item) => (
+                <div key={item.key} style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "4px 0", borderBottom: "1px solid #F1F5F9", fontFamily: "monospace" }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.key}</span>
+                  <span style={{ flexShrink: 0, color: "#64748B" }}>{(item.size / 1024).toFixed(1)} KB</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="profile-section">
           <h2>Cuenta</h2>

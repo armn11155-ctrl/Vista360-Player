@@ -34,17 +34,26 @@ export const obtenerEspacioR2 = onCall({ secrets: R2_SECRETS }, async (request) 
   let totalBytes = 0;
   let totalObjetos = 0;
   let continuationToken: string | undefined;
+  let paginas = 0;
+  const muestra: { key: string; size: number }[] = [];
 
   do {
     const resultado = await client.send(
       new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: continuationToken })
     );
+    paginas += 1;
     for (const obj of resultado.Contents ?? []) {
       totalBytes += obj.Size ?? 0;
       totalObjetos += 1;
+      if (muestra.length < 30 && obj.Key) {
+        muestra.push({ key: obj.Key, size: obj.Size ?? 0 });
+      }
     }
     continuationToken = resultado.IsTruncated ? resultado.NextContinuationToken : undefined;
   } while (continuationToken);
 
-  return { totalBytes, totalObjetos };
+  // Temporal: devolvemos el bucket/detalle usado para poder comparar
+  // contra lo que se ve en el dashboard de Cloudflare y encontrar por
+  // qué no coincide.
+  return { totalBytes, totalObjetos, bucket, paginas, muestra };
 });
