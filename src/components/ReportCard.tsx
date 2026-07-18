@@ -68,6 +68,22 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const emailTo = cliente?.email ?? "";
   const tamano = formatoBytes(informe.digitalBytes);
 
+  /** El admin pidió que un solo botón haga las dos cosas: descargar el
+   *  PDF Y también llevarlo a la página donde se ve en el navegador.
+   *  Son dos URLs firmadas de la misma key -- una pensada para verse
+   *  (url) y otra que fuerza la descarga con Content-Disposition:
+   *  attachment (informe.urlDescarga, ver listarReportesCliente.ts). */
+  function verYDescargar() {
+    const enlaceDescarga = document.createElement("a");
+    enlaceDescarga.href = informe.urlDescarga || url;
+    enlaceDescarga.download = "";
+    enlaceDescarga.rel = "noreferrer";
+    document.body.appendChild(enlaceDescarga);
+    enlaceDescarga.click();
+    enlaceDescarga.remove();
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
   async function eliminarReporte() {
     if (!cloudFunctions || eliminando) return;
     const confirmado = window.confirm(
@@ -145,12 +161,9 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
-        {/* R2 firma esta URL con Content-Disposition: attachment (ver
-            firmarLecturaR2 en el backend), asi que el navegador la
-            descarga directo en vez de solo abrirla para verla. */}
-        <a className="report-action report-action-primary" href={url} download target="_blank" rel="noreferrer">
+        <button type="button" className="report-action report-action-primary" onClick={verYDescargar}>
           Ver / Descargar
-        </a>
+        </button>
         {isAdmin && (
           <>
             <a

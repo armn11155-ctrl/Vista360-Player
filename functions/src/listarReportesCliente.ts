@@ -15,6 +15,7 @@ interface InformeListado {
   mesLabel: string;
   url: string;
   urlDigital: string;
+  urlDescarga: string;
   digitalBytes: number;
   storage: "r2";
   r2Keys: { digital: string };
@@ -112,7 +113,14 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     const informes: InformeListado[] = await Promise.all(
       [...porFecha.entries()].map(async ([idKey, v]) => {
         const nombreArchivo = `Reporte ${nombreFechaCorta(v.mes, v.dia)}.pdf`.replace(/[\\/:*?"<>|]/g, "-");
-        const url = await firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS, nombreArchivo);
+        // Dos URLs firmadas de la misma key: una para verla en el
+        // navegador (sin Content-Disposition) y otra que fuerza la
+        // descarga (con Content-Disposition: attachment) -- el admin
+        // pidió que el botón haga las dos cosas a la vez.
+        const [url, urlDescarga] = await Promise.all([
+          firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS),
+          firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS, nombreArchivo),
+        ]);
         const fecha = v.fecha ?? new Date();
         return {
           id: `${clienteId}_${idKey}`,
@@ -121,6 +129,7 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
           mesLabel: nombreFechaCorta(v.mes, v.dia),
           url,
           urlDigital: url,
+          urlDescarga,
           digitalBytes: v.size,
           storage: "r2" as const,
           r2Keys: { digital: v.key },

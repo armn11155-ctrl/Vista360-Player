@@ -178,6 +178,9 @@ export interface InformeCliente {
   url: string;
   /** Compatibilidad con el nombre de campo anterior; mismo archivo que `url`. */
   urlDigital?: string;
+  /** Misma key que `url`, pero firmada para forzar la descarga
+   *  (Content-Disposition: attachment) en vez de solo mostrarla. */
+  urlDescarga?: string;
   digitalBytes?: number;
   storage?: "firebase" | "r2";
   /** Key real en R2 — se usa para re-firmar la URL cuando la
