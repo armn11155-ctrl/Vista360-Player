@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
+  IconPaneles,
 } from "./SidebarIcons";
 
 type SidebarView =
@@ -15,7 +16,8 @@ type SidebarView =
   | "contactanos"
   | "analitica"
   | "solicitudes"
-  | "accesos";
+  | "accesos"
+  | "paneles";
 
 interface Props {
   open: boolean;
@@ -45,6 +47,7 @@ const ITEMS: {
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades", mobileOnly: true },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
+  { id: "paneles",      icon: <IconPaneles />,       label: "Paneles", adminOnly: true },
 ];
 
 export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active }: Props) {

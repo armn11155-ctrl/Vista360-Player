@@ -6,6 +6,7 @@ import type { Cliente, Contrato, Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
+import { formatoBytes } from "../../utils/prepararFacturaPdf";
 
 interface Props {
   cliente: Cliente | null;
@@ -28,6 +29,15 @@ type GenerarReporteResponse = {
   url: string;
   bytes: number;
 };
+
+/** Peso real en bytes de una imagen en dataURL (base64) -- para
+ *  mostrar cuánto pesa cada foto antes de generar el reporte, igual
+ *  que en Perfil y en Campaña. */
+function pesoDataUrl(dataUrl: string): number {
+  const base64 = dataUrl.split(",")[1] ?? "";
+  const relleno = (base64.match(/=+$/)?.[0] ?? "").length;
+  return Math.max(0, Math.round((base64.length * 3) / 4) - relleno);
+}
 
 function mesActual() {
   return new Date().toISOString().slice(0, 7);
@@ -259,6 +269,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                 {fotosReporte.map((foto, index) => (
                   <div className="report-photo-thumb" key={foto.id}>
                     <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
+                    <span className="report-photo-thumb-peso">{formatoBytes(pesoDataUrl(foto.dataUrl))}</span>
                     <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
                       ×
                     </button>

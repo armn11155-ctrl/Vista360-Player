@@ -78,6 +78,89 @@ export default function Accesos({ onBack }: Props) {
   const [errorCrear, setErrorCrear] = useState("");
   const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
 
+  // ── Crear cliente nuevo (empresa desde cero, no un cliente ya
+  // existente) -- formulario aparte, mismo patron que el de arriba. ──
+  const [mostrarFormNuevo, setMostrarFormNuevo] = useState(false);
+  const [nuevaEmpresa, setNuevaEmpresa] = useState("");
+  const [nuevoRuc, setNuevoRuc] = useState("");
+  const [nuevoSector, setNuevoSector] = useState("");
+  const [nuevaCiudad, setNuevaCiudad] = useState("");
+  const [nuevoEmail, setNuevoEmail] = useState("");
+  const [nuevoPassword, setNuevoPassword] = useState("");
+  const [nuevoContacto, setNuevoContacto] = useState("");
+  const [nuevoCelular, setNuevoCelular] = useState("");
+  const [nuevoAvatarKey, setNuevoAvatarKey] = useState("tower");
+  const [nuevoAvatarUrl, setNuevoAvatarUrl] = useState("");
+  const [nuevoSubiendoAvatar, setNuevoSubiendoAvatar] = useState(false);
+  const [nuevoCreando, setNuevoCreando] = useState(false);
+  const [nuevoError, setNuevoError] = useState("");
+  const [nuevoResultado, setNuevoResultado] = useState<{ empresa: string; email: string; password: string } | null>(null);
+
+  async function subirAvatarNuevo(file: File) {
+    setNuevoSubiendoAvatar(true);
+    setNuevoError("");
+    try {
+      const webp = await comprimirAvatarWebp(file);
+      const { key: url } = await subirAvatarR2(webp);
+      setNuevoAvatarUrl(url);
+    } catch (err) {
+      setNuevoError(err instanceof Error ? err.message : "No se pudo preparar el avatar.");
+    } finally {
+      setNuevoSubiendoAvatar(false);
+    }
+  }
+
+  async function crearClienteNuevo() {
+    if (!cloudFunctions) {
+      setNuevoError("Firebase Functions no está configurado.");
+      return;
+    }
+    if (!nuevaEmpresa.trim() || !nuevoEmail.trim()) {
+      setNuevoError("Escribe el nombre de la empresa y el correo del usuario.");
+      return;
+    }
+    setNuevoCreando(true);
+    setNuevoError("");
+    setNuevoResultado(null);
+    try {
+      const fn = httpsCallable<
+        { empresa: string; ruc: string; sector: string; ciudad: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
+        { clienteId: string; empresa: string; email: string; password: string }
+      >(cloudFunctions, "crearClienteNuevo");
+      const res = await fn({
+        empresa: nuevaEmpresa.trim(),
+        ruc: nuevoRuc.trim(),
+        sector: nuevoSector.trim(),
+        ciudad: nuevaCiudad.trim(),
+        email: nuevoEmail.trim(),
+        password: nuevoPassword.trim(),
+        contacto: nuevoContacto.trim(),
+        celular: nuevoCelular.trim(),
+        avatarKey: nuevoAvatarKey,
+        avatarUrl: nuevoAvatarUrl,
+      });
+      setNuevoResultado(res.data);
+    } catch (err) {
+      setNuevoError(err instanceof Error ? err.message : "No se pudo crear el cliente.");
+    } finally {
+      setNuevoCreando(false);
+    }
+  }
+
+  const mensajeAccesoNuevo = nuevoResultado
+    ? [
+        `Hola ${nuevoContacto || nuevoResultado.empresa}, te mando tu acceso a Vista360 Player.`,
+        "",
+        "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
+        "",
+        `Portal: ${window.location.origin}`,
+        `Correo: ${nuevoResultado.email}`,
+        `Contraseña temporal: ${nuevoResultado.password}`,
+        "",
+        "Por seguridad, te recomendamos cambiar la contraseña después del primer ingreso.",
+      ].join("\n")
+    : "";
+
   async function copiar(id: string, link: string) {
     if (!link) return;
     try {
@@ -220,16 +303,86 @@ export default function Accesos({ onBack }: Props) {
           })}
         </div>
 
-        <button
-          onClick={() => setMostrarForm((v) => !v)}
-          style={{
-            width: "100%", margin: "12px 0", background: "#0877FF", color: "#fff",
-            border: "none", borderRadius: 12, padding: "13px", fontSize: 13,
-            fontWeight: 800, cursor: "pointer",
-          }}
-        >
-          {mostrarForm ? "Cerrar formulario" : "+ Agregar usuario"}
-        </button>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "12px 0" }}>
+          <button
+            onClick={() => setMostrarForm((v) => !v)}
+            style={{
+              background: "#0877FF", color: "#fff",
+              border: "none", borderRadius: 12, padding: "13px", fontSize: 12.5,
+              fontWeight: 800, cursor: "pointer",
+            }}
+          >
+            {mostrarForm ? "Cerrar formulario" : "+ Agregar usuario"}
+          </button>
+          <button
+            onClick={() => setMostrarFormNuevo((v) => !v)}
+            style={{
+              background: mostrarFormNuevo ? "#0B1220" : "#fff", color: mostrarFormNuevo ? "#fff" : "#0B1220",
+              border: "1.5px solid #0B1220", borderRadius: 12, padding: "13px", fontSize: 12.5,
+              fontWeight: 800, cursor: "pointer",
+            }}
+          >
+            {mostrarFormNuevo ? "Cerrar formulario" : "+ Crear cliente nuevo"}
+          </button>
+        </div>
+
+        {mostrarFormNuevo && (
+          <div className="card">
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>
+              Cliente nuevo
+            </div>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
+              Crea la empresa y su acceso al portal en un solo paso.
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <input value={nuevoRuc} onChange={(e) => setNuevoRuc(e.target.value)} placeholder="RUC (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+                <input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              </div>
+              <input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <div style={{ height: 1, background: "var(--border)", margin: "2px 0" }} />
+              <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <div>
+                <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
+                <ClientAvatarPicker
+                  name={nuevaEmpresa || nuevoContacto || nuevoEmail || "Cliente"}
+                  value={nuevoAvatarKey}
+                  onChange={(value) => {
+                    setNuevoAvatarKey(value);
+                    setNuevoAvatarUrl("");
+                  }}
+                  avatarUrl={nuevoAvatarUrl}
+                  onAvatarFile={(file) => void subirAvatarNuevo(file)}
+                  uploading={nuevoSubiendoAvatar}
+                />
+              </div>
+            </div>
+            {nuevoError && (
+              <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{nuevoError}</div>
+            )}
+            <button
+              onClick={crearClienteNuevo}
+              disabled={nuevoCreando || nuevoSubiendoAvatar}
+              style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar ? "not-allowed" : "pointer" }}
+            >
+              {nuevoCreando ? "Creando..." : nuevoSubiendoAvatar ? "Preparando avatar..." : "Crear cliente y acceso"}
+            </button>
+            {nuevoResultado && (
+              <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Cliente creado</div>
+                <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAccesoNuevo}</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <a href={`https://wa.me/${nuevoCelular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAccesoNuevo)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
+                  <a href={`mailto:${nuevoResultado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoNuevo)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {mostrarForm && (
           <div className="card">

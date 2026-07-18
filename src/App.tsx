@@ -45,6 +45,7 @@ const Accesos = lazy(() => import("./components/screens/Accesos"));
 const Facturas = lazy(() => import("./components/screens/Facturas"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
+const Paneles = lazy(() => import("./components/screens/Paneles"));
 
 type View =
   | Tab
@@ -61,7 +62,8 @@ type View =
   | "facturas"
   | "notificaciones"
   | "nuevoCliente"
-  | "miPerfil";
+  | "miPerfil"
+  | "paneles";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -86,6 +88,7 @@ const VIEW_COLORS: Record<View, string> = {
   notificaciones: "#0B1220",
   nuevoCliente: "#0B1220",
   miPerfil: "#0B1220",
+  paneles: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -102,6 +105,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "facturas",
   "notificaciones",
   "nuevoCliente",
+  "paneles",
 ]);
 
 export default function App() {
@@ -173,7 +177,7 @@ export default function App() {
   // auth.status === "in"
   if (auth.role === "admin") {
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil") {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles") {
         return (
           <div className="app-shell">
             <OfflineBanner online={online} />
@@ -194,7 +198,9 @@ export default function App() {
                   ? <Accesos onBack={() => setView("inicio")} />
                   : view === "miPerfil"
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
-                    : <AnaliticaClientes onBack={() => setView("inicio")} />}
+                    : view === "paneles"
+                      ? <Paneles onBack={() => setView("inicio")} />
+                      : <AnaliticaClientes onBack={() => setView("inicio")} />}
             </Suspense>
           </div>
         );
@@ -208,6 +214,7 @@ export default function App() {
             onOpenSolicitudes={() => setView("solicitudes")}
             onOpenAnalitica={() => setView("analitica")}
             onOpenPerfil={() => setView("miPerfil")}
+            onOpenPaneles={() => setView("paneles")}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}
           />
@@ -433,8 +440,11 @@ function AuthenticatedApp({
       case "accesos":
         content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
         break;
+      case "paneles":
+        content = isAdmin ? <Paneles onBack={() => setView("inicio")} /> : null;
+        break;
       case "facturas":
-        content = <Facturas ruc={cliente?.ruc} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
+        content = <Facturas ruc={cliente?.ruc} clienteId={clienteId} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;

@@ -1,0 +1,200 @@
+import { useState } from "react";
+import { httpsCallable } from "firebase/functions";
+import BackChevron from "../BackChevron";
+import MobileSidebarButton from "../MobileSidebarButton";
+import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
+import { cloudFunctions } from "../../config/firebase";
+import type { PanelEstado } from "../../types";
+
+interface Props {
+  onBack: () => void;
+  onMenuClick?: () => void;
+}
+
+const ESTADOS: PanelEstado[] = ["Disponible", "Ocupado", "Mantenimiento", "Libre"];
+
+const ESTADO_BADGE: Record<PanelEstado, { bg: string; color: string }> = {
+  Disponible: { bg: "rgba(34,197,94,0.12)", color: "#16A34A" },
+  Libre: { bg: "rgba(34,197,94,0.12)", color: "#16A34A" },
+  Ocupado: { bg: "rgba(8,119,255,0.12)", color: "#0877FF" },
+  Mantenimiento: { bg: "rgba(245,158,11,0.12)", color: "#D97706" },
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  border: "1px solid var(--border)",
+  borderRadius: 10,
+  padding: "11px",
+  boxSizing: "border-box",
+  fontSize: 13.5,
+};
+
+export default function Paneles({ onBack, onMenuClick }: Props) {
+  const state = usePanelesDisponibles(true);
+  const paneles = state.status === "ready" ? state.paneles : [];
+
+  const [mostrarForm, setMostrarForm] = useState(false);
+  const [nombre, setNombre] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [ciudad, setCiudad] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [estado, setEstado] = useState<PanelEstado>("Disponible");
+  const [creando, setCreando] = useState(false);
+  const [error, setError] = useState("");
+  const [mensajeOk, setMensajeOk] = useState("");
+
+  function limpiarForm() {
+    setNombre("");
+    setTipo("");
+    setCiudad("");
+    setDireccion("");
+    setLat("");
+    setLng("");
+    setEstado("Disponible");
+  }
+
+  async function crearPanel() {
+    if (!cloudFunctions) {
+      setError("Firebase Functions no está configurado.");
+      return;
+    }
+    if (!nombre.trim() || !ciudad.trim()) {
+      setError("Escribe al menos el nombre y la ciudad del panel.");
+      return;
+    }
+    setError("");
+    setMensajeOk("");
+    setCreando(true);
+    try {
+      const fn = httpsCallable<
+        { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
+        { id: string }
+      >(cloudFunctions, "crearPanel");
+      await fn({
+        nombre: nombre.trim(),
+        tipo: tipo.trim(),
+        ciudad: ciudad.trim(),
+        direccion: direccion.trim(),
+        lat: lat.trim() ? Number(lat) : undefined,
+        lng: lng.trim() ? Number(lng) : undefined,
+        estado,
+      });
+      setMensajeOk("Panel creado.");
+      limpiarForm();
+      setMostrarForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo crear el panel.");
+    } finally {
+      setCreando(false);
+    }
+  }
+
+  return (
+    <div className="admin-tool-screen paneles-screen">
+      <div className="detail-header">
+        <MobileSidebarButton onClick={onMenuClick} />
+        <div className="back-btn" onClick={onBack}>
+          <BackChevron />
+        </div>
+        <div className="simple-title">Paneles</div>
+        <div style={{ width: 32 }} />
+      </div>
+
+      <div className="content-area">
+        <button
+          onClick={() => {
+            setMostrarForm((v) => !v);
+            setMensajeOk("");
+          }}
+          style={{
+            width: "100%", margin: "4px 0 12px", background: "#0877FF", color: "#fff",
+            border: "none", borderRadius: 12, padding: "13px", fontSize: 13,
+            fontWeight: 800, cursor: "pointer",
+          }}
+        >
+          {mostrarForm ? "Cerrar formulario" : "+ Crear panel"}
+        </button>
+
+        {mostrarForm && (
+          <div className="card">
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
+              Panel nuevo
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del panel" style={inputStyle} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <input value={tipo} onChange={(e) => setTipo(e.target.value)} placeholder="Tipo (ej. Valla, LED)" style={inputStyle} />
+                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Ciudad" style={inputStyle} />
+              </div>
+              <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Dirección (opcional)" style={inputStyle} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitud (opcional)" inputMode="decimal" style={inputStyle} />
+                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitud (opcional)" inputMode="decimal" style={inputStyle} />
+              </div>
+              <select value={estado} onChange={(e) => setEstado(e.target.value as PanelEstado)} style={{ ...inputStyle, background: "#fff", color: "var(--text)" }}>
+                {ESTADOS.map((e) => (
+                  <option key={e} value={e}>{e}</option>
+                ))}
+              </select>
+            </div>
+            {error && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{error}</div>}
+            <button
+              onClick={crearPanel}
+              disabled={creando}
+              style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
+            >
+              {creando ? "Creando..." : "Crear panel"}
+            </button>
+          </div>
+        )}
+
+        {mensajeOk && (
+          <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", color: "#16A34A", borderRadius: 10, padding: "10px 12px", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>
+            {mensajeOk}
+          </div>
+        )}
+
+        {state.status === "loading" && (
+          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
+        )}
+        {state.status === "error" && (
+          <div className="state-sub" style={{ marginTop: 24, textAlign: "center", color: "var(--red)" }}>
+            {state.message}
+          </div>
+        )}
+        {state.status === "ready" && paneles.length === 0 && (
+          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
+            Aún no hay paneles registrados.
+          </div>
+        )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {paneles.map((p) => {
+            const badge = ESTADO_BADGE[p.estado] ?? ESTADO_BADGE.Disponible;
+            return (
+              <div className="card" key={p.id} style={{ padding: 14 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{p.nombre}</div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{p.tipo} · {p.ciudad}</div>
+                    {p.direccion && (
+                      <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{p.direccion}</div>
+                    )}
+                  </div>
+                  <span style={{
+                    flexShrink: 0, fontSize: 11, fontWeight: 700,
+                    padding: "3px 9px", borderRadius: 20, background: badge.bg, color: badge.color,
+                  }}>
+                    {p.estado}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

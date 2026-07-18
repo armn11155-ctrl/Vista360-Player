@@ -16,6 +16,7 @@ interface Props {
   onOpenSolicitudes?: () => void;
   onOpenAnalitica?: () => void;
   onOpenPerfil?: () => void;
+  onOpenPaneles?: () => void;
   adminIniciales?: string;
   /** Para mostrar la foto real (no solo iniciales) en el ícono "Mi perfil". */
   uid?: string;
@@ -27,7 +28,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, adminIniciales, uid }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid }: Props) {
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
@@ -175,6 +176,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </button>
           <button type="button" onClick={onOpenAnalitica} className="admin-picker-action">
             Analítica de accesos
+          </button>
+          <button type="button" onClick={onOpenPaneles} className="admin-picker-action">
+            Paneles
           </button>
         </div>
 

@@ -90,6 +90,9 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
   const [subiendoPortada, setSubiendoPortada] = useState(false);
   const [portadaUrl, setPortadaUrl] = useState(contrato.imagenCampaniaUrl ?? "");
   const [modalPortadaAbierto, setModalPortadaAbierto] = useState(false);
+  // Desactivado temporalmente (a pedido del cliente) -- no borra la
+  // funcionalidad, solo la oculta hasta que se pida reactivarla.
+  const permitirCambiarPortada = false;
 
   const estado = estadoCampana(contrato);
   const fotos = contrato.fotos_campania ?? [];
@@ -174,8 +177,11 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
 
         {/* Foto de campaña — banner ancho debajo del texto (antes era un
             cuadrado 72x72 al costado; se veía chico y apretado). */}
+        {/* Cambiar la foto desde acá esta desactivado por el momento (a
+            pedido del cliente) -- se deja el modal/logica intactos para
+            poder reactivarlo despues, solo cambia esta bandera. */}
         <div style={{ position: "relative", width: "100%", height: 156 }}>
-          {isAdmin ? (
+          {isAdmin && permitirCambiarPortada ? (
             <button
               type="button"
               className="profile-avatar-hover-btn"

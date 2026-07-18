@@ -139,3 +139,15 @@ export function IconCobertura({ size = 20 }: Props) {
     </svg>
   );
 }
+
+export function IconPaneles({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M12 2C8 2 4.8 5.1 4.8 9c0 5.2 6.2 11.6 6.9 12.3.2.2.4.3.3.3s.1 0 .3-.3C13 20.6 19.2 14.2 19.2 9 19.2 5.1 16 2 12 2z"
+        stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"
+      />
+      <circle cx="12" cy="9.2" r="2.9" fill="currentColor" />
+    </svg>
+  );
+}

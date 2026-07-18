@@ -156,6 +156,11 @@ export interface Factura {
   fecha_emision?: string;
   fecha_vencimiento?: string;
   cliente_doc?: string;
+  /** Solo presente en facturas subidas desde Vista360 Player para un
+   *  cliente sin RUC registrado en facturacion-web (el sistema externo
+   *  identifica todo por RUC via cliente_doc, este campo es el puente
+   *  para poder subir/ver facturas sin depender de tener RUC). */
+  cliente_id?: string;
   total?: number;
   moneda?: string;
   pagado?: boolean;
