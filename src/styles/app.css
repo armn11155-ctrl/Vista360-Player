@@ -2420,22 +2420,19 @@
       flex-direction: column;
     }
 
-    /* En escritorio el acceso queda amplio y alineado a la derecha para
-       liberar la vista principal de Nueva York y dar una composición más
-       elegante, sin perder el centrado cómodo de la versión móvil. */
+    /* En escritorio el acceso conserva el ancho compacto de mobile, pero
+       se alinea a la izquierda para liberar la panorámica hacia la derecha. */
     .login-shell::before {
-      transform: scale(1.06);
-      transform-origin: center center;
+      background-position: 62% center;
+      transform: scale(1.14);
+      transform-origin: 62% center;
     }
     .login-logo, .login-card, .login-foot {
       width: 100%;
-      max-width: 440px;
-      margin-left: auto;
-      margin-right: clamp(56px, 8vw, 150px);
+      max-width: 400px;
+      margin-left: clamp(56px, 8vw, 150px);
+      margin-right: auto;
     }
-    .login-logo { margin-bottom: 38px; }
-    .login-logo img { width: min(370px, 90%); }
-    .login-card { padding: 34px 30px; }
 
     .sidebar-brand {
       display: block;
