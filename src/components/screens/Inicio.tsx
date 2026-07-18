@@ -1,11 +1,11 @@
-import type { Cliente, Contrato, FotoCampania, Panel } from "../../types";
+import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
-import { keyDeMiniatura } from "../../utils/r2Media";
-import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useFacturas } from "../../hooks/useFacturas";
+import { useInformes } from "../../hooks/useInformes";
 
 interface Props {
   cliente: Cliente | null;
+  clienteId: string;
   contratos: Contrato[];
   paneles: Record<string, Panel>;
   onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente" | "perfil") => void;
@@ -17,12 +17,16 @@ interface Props {
   adminNombre?: string | null;
 }
 
-function ultimaFoto(contratos: Contrato[]): { foto: FotoCampania; panel?: string } | null {
-  let best: { foto: FotoCampania; panel?: string } | null = null;
-  for (const c of contratos)
-    for (const f of c.fotos_campania ?? [])
-      if (!best || f.fecha > best.foto.fecha) best = { foto: f, panel: c.panel_id };
-  return best;
+function fechaGeneradoInforme(createdAt: unknown): string {
+  if (createdAt && typeof createdAt === "object" && "toDate" in createdAt) {
+    const toDate = (createdAt as { toDate?: () => Date }).toDate;
+    if (typeof toDate === "function") return fechaCorta(toDate().toISOString().slice(0, 10));
+  }
+  if (typeof createdAt === "string") {
+    const parsed = new Date(createdAt);
+    if (!Number.isNaN(parsed.getTime())) return fechaCorta(parsed.toISOString().slice(0, 10));
+  }
+  return "—";
 }
 
 function proximoVencimiento(contratos: Contrato[]): Contrato | null {
@@ -40,14 +44,11 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.map(c => c.panel_id)).size;
-  const ultima = ultimaFoto(contratos);
-  const ultimaKey = ultima ? keyDeMiniatura(ultima.foto.url, ultima.foto.thumbKey) : undefined;
-  const esUrlViejaUltima = Boolean(ultimaKey) && ultimaKey!.startsWith("http");
-  const urlsFirmadas = useSignedUrls(esUrlViejaUltima ? [] : [ultimaKey]);
-  const srcUltima = esUrlViejaUltima ? ultimaKey : (ultimaKey ? urlsFirmadas[ultimaKey] : undefined);
+  const informesState = useInformes(clienteId);
+  const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
   const proxVenc = proximoVencimiento(contratos);
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
@@ -165,7 +166,7 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
             { bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"#F1F5F9", label:"Último reporte", val:ultima ? ultima.foto.fecha : "—",
+            { bg:"#F1F5F9", label:"Último reporte", val:ultimoInforme ? ultimoInforme.mesLabel : "—", onClick: () => onGoTo("reportes"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
             { bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
@@ -217,24 +218,23 @@ export default function Inicio({ cliente, contratos, paneles, onGoTo, onMenuClic
         {/* ÚLTIMO REPORTE — sí es una card (igual al mockup) */}
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
           <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
-          {ultima ? (
-            <div style={{ display:"flex", gap:20, alignItems:"flex-start" }}>
-              <div style={{ width:168, height:118, borderRadius:12, overflow:"hidden", flexShrink:0, background:"#F3F4F6" }}>
-                <img
-                  src={srcUltima}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  style={{ width:"100%", height:"100%", objectFit:"cover" }}
-                />
+          {informesState.status === "loading" ? (
+            <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Cargando…</div>
+          ) : ultimoInforme ? (
+            <div style={{ display:"flex", gap:16, alignItems:"center" }}>
+              <div style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
+                  <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
+                </svg>
               </div>
               <div style={{ flex:1, paddingTop:2 }}>
-                <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:18, lineHeight:1.28 }}>
-                  Pantalla: {paneles[ultima.panel ?? ""]?.nombre ?? ultima.panel}
+                <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
+                  {ultimoInforme.mesLabel}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, color:"#52627A", fontSize: 14, marginBottom:28 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, color:"#52627A", fontSize: 14, marginBottom:16 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52627A" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {ultima.foto.fecha}
+                  Generado el {fechaGeneradoInforme(ultimoInforme.createdAt)}
                 </div>
                 <div onClick={() => onGoTo("reportes")} style={{ display:"inline-flex", alignItems:"center", gap:4, color:"#0877FF", fontSize:16, fontWeight:800, cursor:"pointer" }}>
                   Ver reportes <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>

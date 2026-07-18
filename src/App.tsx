@@ -321,6 +321,7 @@ function AuthenticatedApp({
         content = (
           <Inicio
             cliente={cliente}
+            clienteId={clienteId}
             contratos={contratos}
             paneles={paneles}
             onGoTo={(tab) => setView(tab)}
