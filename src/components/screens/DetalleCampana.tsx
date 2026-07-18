@@ -39,7 +39,7 @@ function Badge({ estado }: { estado: string }) {
 
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+    <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12 }}>
       <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1220" }}>{value}</div>
     </div>
@@ -248,7 +248,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         {tab === "resumen" && (
           <>
             {/* Estado general */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Estado general</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
@@ -271,7 +271,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
 
             {/* Info del panel */}
             {panel && (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Ubicación de pantalla</div>
                 {panel.lat && panel.lng ? (
                   <div style={{ borderRadius: 12, overflow: "hidden", height: 140, background: "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -290,7 +290,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
             )}
 
             {/* Próxima reproducción placeholder */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
               <div style={{ fontSize: 13, color: "#6B7280", display: "flex", flexDirection: "column", gap: 6 }}>
                 <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara ?? "—"}</strong></div>
@@ -315,7 +315,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
             )}
 
             {informesState.status === "ready" && informes.length === 0 && (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)", textAlign: "center" }}>
+              <div style={{ background: "#fff", borderRadius: 14, padding: 16, textAlign: "center" }}>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
                   <EmptyReportsIcon />
                 </div>
