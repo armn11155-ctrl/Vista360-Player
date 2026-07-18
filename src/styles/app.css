@@ -926,7 +926,7 @@
   .reports-screen-body {
     flex: 1;
     overflow-y: auto;
-    background: #F7F9FC;
+    background: #F8F9FB;
     padding: 0 14px 18px;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
