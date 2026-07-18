@@ -1,6 +1,5 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
 import { getApps, initializeApp } from "firebase-admin/app";
@@ -64,7 +63,6 @@ const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png"
 const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
-const CIERRE_BG = join(ASSETS_DIR, "backgrounds/ciudad-noche.jpg");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -407,15 +405,10 @@ function drawPhoneIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number,
 }
 
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
-  if (existsSync(CIERRE_BG)) {
-    drawImageCover(doc, CIERRE_BG, 0, 0, PAGE.width, PAGE.height, 0);
-    const overlay = doc.linearGradient(0, PAGE.height * 0.3, 0, PAGE.height);
-    overlay.stop(0, "#000000", 0).stop(1, "#000000", 0.72);
-    doc.rect(0, 0, PAGE.width, PAGE.height).fill(overlay as never);
-  } else {
-    doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-    drawRingAsset(doc, 1001, 0, 599);
-  }
+  // Cierre: fondo oscuro solido + anillo de marca (diseño original --
+  // se probo un fondo con foto de ciudad y no se queria, se revirtio).
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  drawRingAsset(doc, 1001, 0, 599);
 
   // Todo el bloque alineado a la izquierda: logo, frase, raya
   // divisoria y contacto, uno debajo del otro. Todo mas grande que

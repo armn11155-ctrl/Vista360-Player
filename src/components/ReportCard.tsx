@@ -23,17 +23,11 @@ function fechaCorta(date: Date) {
   return `${String(date.getDate()).padStart(2, "0")} ${meses[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-function fechaGenerada(createdAt: unknown, mes: string) {
-  if (createdAt && typeof createdAt === "object" && "toDate" in createdAt) {
-    const toDate = (createdAt as { toDate?: () => Date }).toDate;
-    if (typeof toDate === "function") return fechaCorta(toDate());
-  }
-  if (typeof createdAt === "string") {
-    const parsed = new Date(createdAt);
-    if (!Number.isNaN(parsed.getTime())) return fechaCorta(parsed);
-  }
-  const fallback = new Date(`${mes || new Date().toISOString().slice(0, 7)}-01T12:00:00`);
-  return fechaCorta(Number.isNaN(fallback.getTime()) ? new Date() : fallback);
+function fechaGenerada(mes: string, dia?: string) {
+  const diaValido = /^\d{1,2}$/.test(dia ?? "") ? String(dia).padStart(2, "0") : "01";
+  const base = mes || new Date().toISOString().slice(0, 7);
+  const fecha = new Date(`${base}-${diaValido}T12:00:00`);
+  return fechaCorta(Number.isNaN(fecha.getTime()) ? new Date() : fecha);
 }
 
 function formatoBytes(bytes?: number) {
@@ -140,7 +134,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         <div className="report-card-copy">
           <div className="report-kicker">Reporte mensual</div>
           <div className="report-title">{informe.mesLabel}</div>
-          <div className="report-meta">Generado el {fechaGenerada(informe.createdAt, informe.mes)}</div>
+          <div className="report-meta">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
         <div className="report-ready-badge">Listo</div>
