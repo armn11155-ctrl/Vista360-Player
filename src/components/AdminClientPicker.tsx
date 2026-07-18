@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { collection, doc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch, type Query } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
-import { db, logout } from "../config/firebase";
+import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
@@ -55,20 +55,24 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     return url;
   }
 
-  async function archivarCliente(cliente: Cliente) {
-    if (!db) {
-      setErrorAccion("Firebase no está configurado.");
-      return;
+  async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo") {
+    if (!cloudFunctions) {
+      throw new Error("Firebase Functions no está configurado.");
     }
+    const fn = httpsCallable<{ clienteId: string; accion: string }, { ok: boolean }>(
+      cloudFunctions,
+      "administrarClienteAdmin"
+    );
+    await fn({ clienteId, accion });
+  }
+
+  async function archivarCliente(cliente: Cliente) {
     const seguro = window.confirm(`¿Seguro que quieres eliminar el perfil de ${cliente.empresa}? Primero se moverá a Archivados y podrás recuperarlo.`);
     if (!seguro) return;
     setAccionandoId(cliente.id);
     setErrorAccion("");
     try {
-      await updateDoc(doc(db, "clientes", cliente.id), {
-        archived: true,
-        archivedAt: serverTimestamp(),
-      });
+      await llamarAdministrarCliente(cliente.id, "archivar");
       setMenuCliente(null);
       setTab("archivados");
     } catch (err) {
@@ -79,17 +83,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }
 
   async function restaurarCliente(cliente: Cliente) {
-    if (!db) {
-      setErrorAccion("Firebase no está configurado.");
-      return;
-    }
     setAccionandoId(cliente.id);
     setErrorAccion("");
     try {
-      await updateDoc(doc(db, "clientes", cliente.id), {
-        archived: false,
-        archivedAt: null,
-      });
+      await llamarAdministrarCliente(cliente.id, "restaurar");
       setMenuCliente(null);
       setTab("activos");
     } catch (err) {
@@ -99,45 +96,13 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     }
   }
 
-  async function borrarQuery(q: Query) {
-    if (!db) return;
-    const snap = await getDocs(q);
-    let batch = writeBatch(db);
-    let count = 0;
-    for (const d of snap.docs) {
-      batch.delete(d.ref);
-      count += 1;
-      if (count === 450) {
-        await batch.commit();
-        batch = writeBatch(db);
-        count = 0;
-      }
-    }
-    if (count > 0) await batch.commit();
-  }
-
   async function eliminarDefinitivo(cliente: Cliente) {
-    if (!db) {
-      setErrorAccion("Firebase no está configurado.");
-      return;
-    }
     const seguro = window.confirm(`¿Eliminar definitivamente ${cliente.empresa}? Esto borrará el perfil y sus accesos de la base de datos. No se puede deshacer.`);
     if (!seguro) return;
     setAccionandoId(cliente.id);
     setErrorAccion("");
     try {
-      await borrarQuery(query(collection(db, "contratos"), where("cliente_id", "==", cliente.id)));
-      await borrarQuery(query(collection(db, "informesCliente"), where("cliente_id", "==", cliente.id)));
-      await borrarQuery(query(collection(db, "solicitudesCampana"), where("cliente_id", "==", cliente.id)));
-      await borrarQuery(query(collection(db, "portalUsers"), where("clienteId", "==", cliente.id)));
-      await borrarQuery(query(collection(db, "invitacionesPortal"), where("clienteId", "==", cliente.id)));
-      const clienteDoc = cliente.ruc || cliente.documento || cliente.documentoIdentidad || cliente.numDoc || cliente.numeroDocumento || cliente.cliente_doc;
-      if (clienteDoc) {
-        await borrarQuery(query(collection(db, "facturas"), where("cliente_doc", "==", clienteDoc)));
-      }
-      const batch = writeBatch(db);
-      batch.delete(doc(db, "clientes", cliente.id));
-      await batch.commit();
+      await llamarAdministrarCliente(cliente.id, "eliminarDefinitivo");
       setMenuCliente(null);
     } catch (err) {
       setErrorAccion(err instanceof Error ? err.message : "No se pudo eliminar definitivamente.");

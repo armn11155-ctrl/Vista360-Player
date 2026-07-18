@@ -1,4 +1,5 @@
 export { crearSubidaR2 } from "./crearSubidaR2.js";
+export { administrarClienteAdmin } from "./administrarClienteAdmin.js";
 export { subirAvatarServidor } from "./subirAvatarServidor.js";
 export { obtenerEspacioR2 } from "./obtenerEspacioR2.js";
 export { firmarUrlsR2 } from "./firmarUrlsR2.js";
