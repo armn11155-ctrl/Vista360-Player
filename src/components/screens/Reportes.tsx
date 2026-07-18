@@ -6,7 +6,6 @@ import type { Cliente, Contrato, Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
-import { formatoBytes } from "../../utils/prepararFacturaPdf";
 
 interface Props {
   cliente: Cliente | null;
@@ -29,15 +28,6 @@ type GenerarReporteResponse = {
   url: string;
   bytes: number;
 };
-
-/** Peso real en bytes de una imagen en dataURL (base64) -- para
- *  mostrar cuánto pesa cada foto antes de generar el reporte, igual
- *  que en Perfil y en Campaña. */
-function pesoDataUrl(dataUrl: string): number {
-  const base64 = dataUrl.split(",")[1] ?? "";
-  const relleno = (base64.match(/=+$/)?.[0] ?? "").length;
-  return Math.max(0, Math.round((base64.length * 3) / 4) - relleno);
-}
 
 function mesActual() {
   return new Date().toISOString().slice(0, 7);
@@ -265,22 +255,16 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               <span>Ubicación: {ubicacionAuto}</span>
             </div>
             {fotosReporte.length > 0 && (
-              <>
-                <div className="report-photo-total">
-                  {fotosReporte.length} {fotosReporte.length === 1 ? "foto" : "fotos"} · {formatoBytes(fotosReporte.reduce((suma, foto) => suma + pesoDataUrl(foto.dataUrl), 0))} en total
-                </div>
-                <div className="report-photo-grid">
-                  {fotosReporte.map((foto, index) => (
-                    <div className="report-photo-thumb" key={foto.id}>
-                      <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
-                      <div className="report-photo-thumb-caption">{formatoBytes(pesoDataUrl(foto.dataUrl))}</div>
-                      <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
+              <div className="report-photo-grid">
+                {fotosReporte.map((foto, index) => (
+                  <div className="report-photo-thumb" key={foto.id}>
+                    <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
+                    <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
             <div className="report-admin-hint">
               Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes. Puedes generar más de un reporte en el mismo mes mientras sea en días distintos — si generas otro el mismo día, reemplaza al anterior de ese día.
