@@ -10,10 +10,48 @@ import { app } from "../config/firebase";
  * de más.
  */
 
-const CACHE = new Map<string, { url: string; expiraEn: number }>();
 const MARGEN_MS = 30 * 60 * 1000; // renovar 30 min antes de expirar
 const DURACION_MS = 6 * 60 * 60 * 1000;
 const MAX_POR_LOTE = 60;
+const STORAGE_KEY = "v360_signed_urls_v1";
+
+// Cachear en memoria evita re-firmar dentro de la misma sesión de la
+// pestaña, pero al entrar recién (o recargar la página) esa caché
+// arranca vacía y las fotos tardan en aparecer (primero el ícono por
+// defecto, después la foto real, ya con el viaje al servidor hecho).
+// Guardar también en sessionStorage hace que, una vez firmada una key
+// en la pestaña, las fotos aparezcan al toque las próximas veces que
+// se visite esa pantalla — sin pedir nada de nuevo — hasta que la URL
+// esté por vencer. Se limpia sola al cerrar la pestaña (sessionStorage,
+// no localStorage), así no quedan URLs firmadas dando vueltas para
+// siempre.
+function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
+  const mapa = new Map<string, { url: string; expiraEn: number }>();
+  try {
+    const crudo = sessionStorage.getItem(STORAGE_KEY);
+    if (!crudo) return mapa;
+    const datos = JSON.parse(crudo) as Record<string, { url: string; expiraEn: number }>;
+    const ahora = Date.now();
+    Object.entries(datos).forEach(([key, valor]) => {
+      if (valor && valor.expiraEn > ahora) mapa.set(key, valor);
+    });
+  } catch {
+    // sessionStorage no disponible (modo privado, etc.) o datos corruptos — no pasa nada, se firma de nuevo.
+  }
+  return mapa;
+}
+
+const CACHE = cargarCacheInicial();
+
+function guardarCache() {
+  try {
+    const datos: Record<string, { url: string; expiraEn: number }> = {};
+    CACHE.forEach((valor, key) => { datos[key] = valor; });
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
+  } catch {
+    // Si falla (cuota llena, modo privado), simplemente no persiste — la caché en memoria sigue funcionando igual.
+  }
+}
 
 async function firmar(keys: string[]): Promise<Record<string, string>> {
   const functions = getFunctions(app ?? undefined);
@@ -30,6 +68,7 @@ async function firmar(keys: string[]): Promise<Record<string, string>> {
       CACHE.set(key, { url, expiraEn: Date.now() + DURACION_MS });
     });
   }
+  guardarCache();
   return resultado;
 }
 

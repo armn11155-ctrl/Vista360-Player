@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import { cloudFunctions, db, logout } from "../../config/firebase";
+import { cloudFunctions, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
+import { useAvatarPropio } from "../../hooks/useAvatarPropio";
 import BackChevron from "../BackChevron";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
@@ -52,21 +52,6 @@ function useEspacioR2(): EspacioEstado {
   return estado;
 }
 
-/** Foto de la cuenta admin — vive en su propio portalUsers/{uid}, en vivo. */
-function useAvatarPropio(uid: string) {
-  const [avatarUrl, setAvatarUrl] = useState("");
-
-  useEffect(() => {
-    if (!uid || !db) return;
-    const unsub = onSnapshot(doc(db, "portalUsers", uid), (snap) => {
-      setAvatarUrl((snap.data()?.avatarUrl as string | undefined) ?? "");
-    });
-    return unsub;
-  }, [uid]);
-
-  return [avatarUrl, setAvatarUrl] as const;
-}
-
 /**
  * Perfil del administrador — separado del Perfil.tsx de los clientes.
  * Se abre desde el ícono en la esquina del selector de cuentas.
@@ -74,7 +59,7 @@ function useAvatarPropio(uid: string) {
  */
 export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
   const espacio = useEspacioR2();
-  const [avatarUrl, setAvatarUrl] = useAvatarPropio(uid);
+  const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
   async function subirNuevaFoto(file: File, posicion: PosicionRecorte) {
@@ -83,7 +68,10 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
     }
     const webp = await comprimirAvatarWebp(file, posicion);
     const { key: url } = await subirAvatarR2(webp);
-    setAvatarUrl(url);
+    // No hace falta setear el estado local: useAvatarPropio escucha el
+    // mismo documento en vivo y se actualiza solo apenas se confirma
+    // el guardado (también refleja el cambio en el ícono "Mi perfil"
+    // del selector de cuentas, que usa el mismo hook).
     const fn = httpsCallable<{ avatarUrl: string }, { avatarUrl: string }>(cloudFunctions, "actualizarAvatarPropio");
     await fn({ avatarUrl: url });
   }

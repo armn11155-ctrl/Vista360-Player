@@ -2989,10 +2989,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     cursor: pointer;
     box-shadow: 0 6px 16px rgba(8,119,255,0.35);
+    padding: 0;
   }
   .admin-picker-perfil-btn:active { transform: scale(0.96); }
+  .admin-picker-perfil-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
   .admin-perfil-hero {
     display: flex;

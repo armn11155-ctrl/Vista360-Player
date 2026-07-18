@@ -209,6 +209,7 @@ export default function App() {
             onOpenAnalitica={() => setView("analitica")}
             onOpenPerfil={() => setView("miPerfil")}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
+            uid={uid}
           />
         </div>
       );

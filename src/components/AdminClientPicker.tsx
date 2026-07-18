@@ -2,6 +2,7 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
+import { useAvatarPropio } from "../hooks/useAvatarPropio";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
@@ -15,6 +16,8 @@ interface Props {
   onOpenAnalitica?: () => void;
   onOpenPerfil?: () => void;
   adminIniciales?: string;
+  /** Para mostrar la foto real (no solo iniciales) en el ícono "Mi perfil". */
+  uid?: string;
 }
 
 /**
@@ -23,7 +26,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, adminIniciales }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, adminIniciales, uid }: Props) {
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
@@ -31,6 +34,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [accionandoId, setAccionandoId] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState("");
   const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
+  const [miAvatarFallo, setMiAvatarFallo] = useState(false);
 
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
   const activos = clientes.filter((c) => !c.archived);
@@ -43,9 +47,14 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // antes de poder usarla en un <img>, igual que hace BrandThumb en el
   // resto de la app. Antes esta pantalla la usaba tal cual y por eso
   // salía como imagen rota.
+  const miAvatarUrl = useAvatarPropio(uid);
+  const miAvatarEsKeyR2 = Boolean(miAvatarUrl) && !miAvatarUrl.startsWith("http");
+  // Se firma todo junto (fotos de clientes + la propia del admin) en
+  // una sola tanda para no hacer dos viajes al servidor por separado.
   const keysR2 = clientes
     .map((c) => c.avatarUrl)
-    .filter((url): url is string => Boolean(url) && !url!.startsWith("http"));
+    .filter((url): url is string => Boolean(url) && !url!.startsWith("http"))
+    .concat(miAvatarEsKeyR2 ? [miAvatarUrl] : []);
   const avataresFirmados = useSignedUrls(keysR2);
 
   function avatarSrc(c: Cliente) {
@@ -54,6 +63,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     if (!url || avataresFallidos.has(c.id)) return undefined;
     return url;
   }
+
+  const miAvatarSrc = miAvatarUrl
+    ? miAvatarUrl.startsWith("http")
+      ? miAvatarUrl
+      : avataresFirmados[miAvatarUrl]
+    : undefined;
 
   async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo") {
     if (!cloudFunctions) {
@@ -115,7 +130,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     <div className="admin-picker-shell">
       {onOpenPerfil && (
         <button type="button" className="admin-picker-perfil-btn" onClick={onOpenPerfil} title="Mi perfil" aria-label="Mi perfil">
-          {adminIniciales || "A"}
+          {miAvatarSrc && !miAvatarFallo ? (
+            <img src={miAvatarSrc} alt="" onError={() => setMiAvatarFallo(true)} />
+          ) : (
+            <span>{adminIniciales || "A"}</span>
+          )}
         </button>
       )}
       <div className="admin-picker-header">
