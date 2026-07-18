@@ -1557,14 +1557,10 @@
   .profile-avatar-hover-btn:focus-visible .profile-avatar-camera-overlay {
     opacity: 1;
   }
-  @media (hover: none) {
-    /* En touch no hay hover — el ícono queda siempre sutilmente visible
-       para indicar que se puede tocar la foto, en vez de un botón de texto. */
-    .profile-avatar-camera-overlay {
-      opacity: 1;
-      background: rgba(5,10,18,0.32);
-    }
-  }
+  /* En touch no hay :hover, así que el ícono de cámara no se muestra
+     nunca solo (antes se forzaba siempre visible en touch — molestaba
+     porque tapaba la foto sin que nadie la tocara). Tocar la foto igual
+     abre el panel de cambiar foto, con o sin el ícono visible. */
   .profile-avatar-error {
     margin-top: 6px;
     color: #EF4444;
