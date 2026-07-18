@@ -11,6 +11,7 @@ if (getApps().length === 0) {
 interface InformeListado {
   id: string;
   mes: string;
+  dia?: string;
   mesLabel: string;
   url: string;
   urlDigital: string;
@@ -30,14 +31,28 @@ function nombreMes(mes: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+/** Etiqueta corta CON dia ("17 Jul 2026") -- para reportes nuevos (uno
+ *  por dia). Los reportes viejos (de antes de este cambio) no tienen
+ *  dia -- para esos se mantiene el nombre de mes solo. */
+function nombreFechaCorta(mes: string, dia?: string) {
+  if (!dia) return nombreMes(mes);
+  const [year, month] = mes.split("-").map(Number);
+  const diaNum = Number(dia);
+  if (!year || !month || !diaNum) return nombreMes(mes);
+  return `${String(diaNum).padStart(2, "0")} ${MESES_CORTOS[month - 1]} ${year}`;
+}
+
 /**
  * Lista los reportes de un cliente directamente desde R2 (en vez de
  * depender de una consulta a Firestore con índice compuesto). Los PDFs
- * ya viven en R2 con una key predecible
- * (clientes/{clienteId}/reportes/{mes}/reporte-{digital|hd}.pdf), así
- * que un ListObjectsV2 con ese prefijo alcanza para reconstruir la
- * lista completa: mes, tamaño y fecha salen directo de la respuesta
- * del listado, sin tocar Firestore ni gastar sus lecturas.
+ * viven en R2 con una key predecible:
+ *   - reportes nuevos (uno por dia): clientes/{clienteId}/reportes/{mes}/{dia}/reporte-digital.pdf
+ *   - reportes viejos (uno por mes, de antes de este cambio): clientes/{clienteId}/reportes/{mes}/reporte-{digital|hd}.pdf
+ * Un ListObjectsV2 con el prefijo del cliente alcanza para reconstruir
+ * la lista completa (soportando los dos formatos a la vez), sin tocar
+ * Firestore ni gastar sus lecturas.
  */
 export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
@@ -64,33 +79,45 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       new ListObjectsV2Command({ Bucket: r2Bucket(), Prefix: prefix })
     );
 
-    // Cada mes tiene un unico PDF (reporte-digital.pdf). Reportes
-    // viejos pueden tener ademas un reporte-hd.pdf de cuando existia
-    // esa version aparte; si por alguna razon falta el digital pero
-    // quedo el hd viejo, lo usamos como respaldo para no perder el
-    // reporte de la lista.
-    const porMes = new Map<string, { key: string; size: number; fecha?: Date }>();
+    // Un reporte por dia (nuevo) o uno por mes (viejo, de antes de
+    // este cambio) -- se agrupan por una key unica que distingue ambos
+    // casos ("{mes}-{dia}" o solo "{mes}" si no hay dia), asi varios
+    // reportes del mismo mes en dias distintos no se pisan entre si.
+    // Reportes viejos pueden tener ademas un reporte-hd.pdf de cuando
+    // existia esa version aparte; si por alguna razon falta el digital
+    // pero quedo el hd viejo, lo usamos como respaldo.
+    const porFecha = new Map<string, { key: string; size: number; fecha?: Date; mes: string; dia?: string }>();
     for (const obj of listado.Contents ?? []) {
       if (!obj.Key) continue;
-      const resto = obj.Key.slice(prefix.length); // "{mes}/reporte-digital.pdf"
-      const [mes, archivo] = resto.split("/");
+      const resto = obj.Key.slice(prefix.length); // "{mes}/{dia}/reporte-digital.pdf" o "{mes}/reporte-digital.pdf"
+      const partes = resto.split("/");
+      let mes: string | undefined;
+      let dia: string | undefined;
+      let archivo: string | undefined;
+      if (partes.length === 3) {
+        [mes, dia, archivo] = partes;
+      } else if (partes.length === 2) {
+        [mes, archivo] = partes;
+      }
       if (!mes || !archivo) continue;
-      const info = { key: obj.Key, size: obj.Size ?? 0, fecha: obj.LastModified };
+      const idKey = dia ? `${mes}-${dia}` : mes;
+      const info = { key: obj.Key, size: obj.Size ?? 0, fecha: obj.LastModified, mes, dia };
       if (archivo === "reporte-digital.pdf") {
-        porMes.set(mes, info);
-      } else if (archivo === "reporte-hd.pdf" && !porMes.has(mes)) {
-        porMes.set(mes, info);
+        porFecha.set(idKey, info);
+      } else if (archivo === "reporte-hd.pdf" && !porFecha.has(idKey)) {
+        porFecha.set(idKey, info);
       }
     }
 
     const informes: InformeListado[] = await Promise.all(
-      [...porMes.entries()].map(async ([mes, v]) => {
+      [...porFecha.entries()].map(async ([idKey, v]) => {
         const url = await firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS);
         const fecha = v.fecha ?? new Date();
         return {
-          id: `${clienteId}_${mes}`,
-          mes,
-          mesLabel: nombreMes(mes),
+          id: `${clienteId}_${idKey}`,
+          mes: v.mes,
+          dia: v.dia,
+          mesLabel: nombreFechaCorta(v.mes, v.dia),
           url,
           urlDigital: url,
           digitalBytes: v.size,
@@ -101,7 +128,11 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       })
     );
 
-    informes.sort((a, b) => (a.mes < b.mes ? 1 : -1));
+    informes.sort((a, b) => {
+      const fa = a.dia ? `${a.mes}-${a.dia}` : a.mes;
+      const fb = b.dia ? `${b.mes}-${b.dia}` : b.mes;
+      return fa < fb ? 1 : fa > fb ? -1 : 0;
+    });
 
     return { ok: true, informes };
   } catch (error) {

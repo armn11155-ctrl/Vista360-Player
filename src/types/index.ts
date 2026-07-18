@@ -167,7 +167,8 @@ export interface InformeCliente {
   id: string;
   cliente_id: string;
   mes: string; // "2026-06"
-  mesLabel: string; // "Junio 2026"
+  dia?: string; // "17" -- opcional (reportes viejos no lo tienen); permite mas de un reporte por mes
+  mesLabel: string; // "17 Jun 2026" (o "Junio 2026" si es un reporte viejo sin dia)
   /** Un solo PDF por reporte (ya no hay version HD aparte). */
   url: string;
   /** Compatibilidad con el nombre de campo anterior; mismo archivo que `url`. */

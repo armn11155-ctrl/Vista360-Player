@@ -45,6 +45,15 @@ function aniosDisponibles() {
   return anios;
 }
 
+/** Solo para el selector de dia (referencia visual) -- el reporte
+ *  generado sigue siendo del mes completo, el dia no cambia que fotos
+ *  entran. */
+function diasDelMes(mes: string) {
+  const [year, month] = mes.split("-").map(Number);
+  if (!year || !month) return 31;
+  return new Date(year, month, 0).getDate();
+}
+
 function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
@@ -53,6 +62,10 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(mesActual());
+  // Solo de referencia visual (no se envia al generar el reporte, que
+  // sigue siendo por mes completo) -- el admin pidio poder ver/elegir
+  // un dia junto al mes y año.
+  const [dia, setDia] = useState(() => String(new Date().getDate()).padStart(2, "0"));
   const [generando, setGenerando] = useState(false);
   const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
   const [colaRecorte, setColaRecorte] = useState<File[] | null>(null);
@@ -111,13 +124,14 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
     setGenerando(true);
     setMensajeAdmin(null);
     try {
-      const generarReporteCliente = httpsCallable<{ clienteId: string; mes: string; fotos?: { url: string; fecha: string }[] }, GenerarReporteResponse>(
+      const generarReporteCliente = httpsCallable<{ clienteId: string; mes: string; dia: string; fotos?: { url: string; fecha: string }[] }, GenerarReporteResponse>(
         cloudFunctions,
         "generarReporteCliente"
       );
       await generarReporteCliente({
         clienteId,
         mes,
+        dia,
         fotos: fotosReporte.map((foto) => ({
           url: foto.dataUrl,
           fecha: new Date().toISOString().slice(0, 10),
@@ -166,6 +180,18 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               <div className="report-month-field">
                 <span>Mes del reporte</span>
                 <div className="report-month-selects">
+                  <select
+                    className="report-month-select report-month-select-dia"
+                    value={dia}
+                    onChange={(e) => setDia(e.target.value)}
+                    aria-label="Día"
+                  >
+                    {Array.from({ length: diasDelMes(mes) }, (_, i) => String(i + 1).padStart(2, "0")).map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
                   <select
                     className="report-month-select"
                     value={mes.slice(5, 7)}
@@ -231,7 +257,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               </div>
             )}
             <div className="report-admin-hint">
-              Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes.
+              Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes. Puedes generar más de un reporte en el mismo mes mientras sea en días distintos — si generas otro el mismo día, reemplaza al anterior de ese día.
             </div>
             {mensajeAdmin && (
               <div className={`report-admin-status ${mensajeAdminTipo === "error" ? "error" : "ok"}`}>

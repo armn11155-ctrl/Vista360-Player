@@ -86,6 +86,17 @@ function nombreMes(mes: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+/** Etiqueta corta CON dia ("17 Jul 2026") -- se puede generar mas de un
+ *  reporte por mes (uno por dia distinto), asi que el mes solo ("Julio
+ *  2026") ya no alcanza para diferenciarlos en la lista. */
+function nombreFechaCorta(fecha: string) {
+  const [year, month, day] = fecha.split("-").map(Number);
+  if (!year || !month || !day) return fecha;
+  return `${String(day).padStart(2, "0")} ${MESES_CORTOS[month - 1]} ${year}`;
+}
+
 function monthRange(mes: string) {
   const [year, month] = mes.split("-").map(Number);
   const start = `${year}-${String(month).padStart(2, "0")}-01`;
@@ -586,6 +597,17 @@ export const generarReporteCliente = onCall(
         throw new HttpsError("invalid-argument", "Envía clienteId y mes en formato YYYY-MM.");
       }
 
+      // Se puede generar mas de un reporte en el mismo mes, siempre que
+      // sea en dias distintos (cada dia es un reporte propio) -- si se
+      // genera dos veces el MISMO dia, se sobreescribe el de ese dia
+      // (mismo id/key), no se acumulan copias.
+      const diaInput = String(request.data?.dia ?? "").padStart(2, "0");
+      const diaValido = /^\d{2}$/.test(diaInput) ? diaInput : String(new Date().getDate()).padStart(2, "0");
+      const fecha = `${mes}-${diaValido}`;
+      if (Number.isNaN(new Date(`${fecha}T00:00:00`).getTime())) {
+        throw new HttpsError("invalid-argument", "El día enviado no es válido para ese mes.");
+      }
+
       const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
       if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
       const clienteData = clienteSnap.data() ?? {};
@@ -615,15 +637,17 @@ export const generarReporteCliente = onCall(
       const reporte = await generarReporte(cliente, elementos);
       const digital = reporte.buffer;
 
-      const baseKey = `clientes/${clienteId}/reportes/${mes}`;
+      const baseKey = `clientes/${clienteId}/reportes/${mes}/${diaValido}`;
       const keyDigital = `${baseKey}/reporte-digital.pdf`;
       const urlDigital = await subirReporteR2(keyDigital, digital);
 
-      await db.collection("informesCliente").doc(`${clienteId}_${mes}`).set(
+      await db.collection("informesCliente").doc(`${clienteId}_${fecha}`).set(
         {
           cliente_id: clienteId,
           mes,
-          mesLabel: cliente.periodo,
+          dia: diaValido,
+          fecha,
+          mesLabel: nombreFechaCorta(fecha),
           url: urlDigital,
           urlDigital,
           storage: "r2",
