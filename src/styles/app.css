@@ -1606,7 +1606,7 @@
     flex: 1;
     aspect-ratio: 1 / 1;
     border-radius: 16px;
-    border: 1.5px dashed rgba(8,119,255,.35);
+    border: none;
     background: #F7F9FC;
     display: flex;
     align-items: center;
@@ -1615,8 +1615,6 @@
     cursor: pointer;
   }
   .avatar-modal-drop.has-preview {
-    border-style: solid;
-    border-color: rgba(8,119,255,.18);
     cursor: grab;
     touch-action: none;
   }
@@ -1652,7 +1650,7 @@
     height: 44px;
     border-radius: 12px;
     overflow: hidden;
-    border: 1.5px solid rgba(8,119,255,.18);
+    border: none;
     box-shadow: 0 6px 14px rgba(15,23,42,.14);
   }
   .avatar-modal-mini-square img {
