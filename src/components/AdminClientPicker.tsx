@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { collection, doc, getDocs, query, serverTimestamp, updateDoc, where, writeBatch, type Query } from "firebase/firestore";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
+import { useSignedUrls } from "../hooks/useSignedUrls";
 import { db, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
@@ -29,12 +30,30 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
   const [accionandoId, setAccionandoId] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState("");
+  const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
 
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
   const activos = clientes.filter((c) => !c.archived);
   const archivados = clientes.filter((c) => !!c.archived);
   const visibles = tab === "activos" ? activos : archivados;
   const filtrados = filtrarClientes(visibles, busqueda);
+
+  // avatarUrl en realidad es una KEY de R2 (no una URL directa) para
+  // los clientes migrados desde Cloudinary a R2 — hay que firmarla
+  // antes de poder usarla en un <img>, igual que hace BrandThumb en el
+  // resto de la app. Antes esta pantalla la usaba tal cual y por eso
+  // salía como imagen rota.
+  const keysR2 = clientes
+    .map((c) => c.avatarUrl)
+    .filter((url): url is string => Boolean(url) && !url!.startsWith("http"));
+  const avataresFirmados = useSignedUrls(keysR2);
+
+  function avatarSrc(c: Cliente) {
+    if (!c.avatarUrl) return undefined;
+    const url = c.avatarUrl.startsWith("http") ? c.avatarUrl : avataresFirmados[c.avatarUrl];
+    if (!url || avataresFallidos.has(c.id)) return undefined;
+    return url;
+  }
 
   async function archivarCliente(cliente: Cliente) {
     if (!db) {
@@ -207,8 +226,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   disabled={!!c.archived || busy}
                 >
                 <span className="admin-picker-tile-avatar" style={{ background: bg }}>
-                  {c.avatarUrl ? (
-                    <img src={c.avatarUrl} alt="" />
+                  {avatarSrc(c) ? (
+                    <img
+                      src={avatarSrc(c)}
+                      alt=""
+                      onError={() => setAvataresFallidos((prev) => new Set(prev).add(c.id))}
+                    />
                   ) : (
                     <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
                   )}
