@@ -282,6 +282,7 @@
       overscroll-behavior: none;
     }
     .app-shell.no-bottom-nav,
+    .app-shell.has-bottom-nav,
     .app-shell:has(.login-shell),
     .app-shell:has(.state-screen),
     .app-shell:has(.admin-picker-shell) {
@@ -296,6 +297,15 @@
     .app-shell.has-bottom-nav .main-area {
       background: #FFFFFF;
       padding-bottom: 0;
+      /* El shell ahora "sangra" hacia abajo (bottom negativo, mas alto
+       * que la pantalla real) para que, si Safari en iOS reduce su
+       * barra y deja ver un poco mas de alto de golpe, no se note un
+       * espacio en blanco vacio -- pero main-area tiene que quedarse
+       * con el alto real de la pantalla (no crecer con el shell) para
+       * que el bottom-nav no termine empujado fuera de vista; el resto
+       * del sangrado lo cubre el relleno de abajo (::after del shell). */
+      flex: 0 0 auto;
+      height: var(--app-height);
     }
     .app-shell.has-bottom-nav .bottom-nav {
       position: relative !important;
@@ -304,6 +314,15 @@
       background: #FFFFFF !important;
       z-index: 160;
       box-shadow: 0 -10px 30px rgba(15,23,42,.08);
+    }
+    /* Relleno del sangrado: ocupa el espacio extra que le agregamos al
+     * shell, con el mismo blanco del bottom-nav, para que nunca se vea
+     * un espacio vacio/de otro color debajo de la pantalla real. */
+    .app-shell.has-bottom-nav::after {
+      content: "";
+      display: block;
+      flex: 1;
+      background: #FFFFFF;
     }
     .app-shell,
     .main-area,

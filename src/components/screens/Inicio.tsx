@@ -52,7 +52,12 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const proxVenc = proximoVencimiento(contratos);
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
-  const hora = new Date().getHours();
+  // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
+  // de la hora local del dispositivo, para que el saludo sea correcto sin
+  // importar en que zona horaria este configurado el celular del cliente.
+  const hora = Number(
+    new Intl.DateTimeFormat("es-PE", { hour: "numeric", hourCycle: "h23", timeZone: "America/Lima" }).format(new Date())
+  );
   const saludo = hora < 12 ? "Buenos días," : hora < 19 ? "Buenas tardes," : "Buenas noches,";
   const facturasState = useFacturas(isAdmin ? undefined : cliente?.ruc);
   const facturasPendientes = facturasState.status === "ready"
