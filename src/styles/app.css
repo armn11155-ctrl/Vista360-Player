@@ -2269,7 +2269,7 @@
     right: 0;
     bottom: 160px;
     z-index: -2;
-    background-image: url('/login-city-night.jpg');
+    background-image: url('/login-new-york-wide.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
@@ -2423,9 +2423,8 @@
     /* En escritorio el acceso conserva el ancho compacto de mobile, pero
        se alinea a la izquierda para liberar la panorámica hacia la derecha. */
     .login-shell::before {
-      background-position: 62% center;
-      transform: scale(1.14);
-      transform-origin: 62% center;
+      background-position: center center;
+      transform: none;
     }
     .login-logo, .login-card, .login-foot {
       width: 100%;
