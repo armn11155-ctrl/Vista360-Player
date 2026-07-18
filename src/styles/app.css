@@ -1048,7 +1048,7 @@
     font-weight: 650;
     letter-spacing: 0;
     position: relative;
-    color: #123778;
+    color: #EAF3FF;
   }
   .report-card-copy {
     min-width: 0;
@@ -1193,7 +1193,7 @@
     flex: 0 1 210px;
   }
   .report-photo-picker span {
-    color: rgba(226,232,240,.72);
+    color: #64748B;
     font-size: 11px;
     font-weight: 700;
   }
@@ -1280,7 +1280,7 @@
   }
   .report-generate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
   .report-admin-hint {
-    color: rgba(226,232,240,.58);
+    color: #64748B;
     font-size: 11px;
     line-height: 1.4;
     margin-top: 9px;
@@ -1302,11 +1302,12 @@
   }
   .report-empty-state {
     margin-top: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    background: rgba(15, 23, 42, 0.72);
-    border-radius: 8px;
-    padding: 22px 18px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 26px 18px;
     text-align: center;
+    box-shadow: 0 14px 30px rgba(15,23,42,0.05);
   }
   .report-empty-icon {
     width: 48px;
@@ -1319,12 +1320,12 @@
     justify-content: center;
   }
   .report-empty-title {
-    color: #fff;
+    color: #0B1220;
     font-size: 14px;
     font-weight: 800;
   }
   .report-empty-sub {
-    color: rgba(226,232,240,.62);
+    color: #64748B;
     font-size: 12px;
     line-height: 1.45;
     margin: 6px auto 0;

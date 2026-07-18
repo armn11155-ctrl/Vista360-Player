@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -8,6 +8,7 @@ import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
+import BrandLoader from "./BrandLoader";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -35,6 +36,18 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [errorAccion, setErrorAccion] = useState("");
   const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
+  // Antes se mostraba la grilla al toque con íconos de color por
+  // defecto y las fotos reales "aparecían" un instante después (viaje
+  // al servidor para firmar las URLs de R2) — se veía como que la
+  // pantalla cambiaba sola. Ahora se espera a tener clientes + fotos
+  // firmadas ANTES de mostrar nada, con un tope de 4s para no dejar a
+  // nadie trabado si la firma tarda o falla (en ese caso se muestra
+  // igual, con íconos de respaldo donde falte foto).
+  const [esperaMaxima, setEsperaMaxima] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setEsperaMaxima(true), 4000);
+    return () => window.clearTimeout(t);
+  }, []);
 
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
   const activos = clientes.filter((c) => !c.archived);
@@ -69,6 +82,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       ? miAvatarUrl
       : avataresFirmados[miAvatarUrl]
     : undefined;
+
+  const avataresPendientes = keysR2.some((k) => !(k in avataresFirmados));
+  const todoListo = state.status !== "loading" && !avataresPendientes;
 
   async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo") {
     if (!cloudFunctions) {
@@ -124,6 +140,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     } finally {
       setAccionandoId(null);
     }
+  }
+
+  if (!todoListo && !esperaMaxima) {
+    return <BrandLoader />;
   }
 
   return (

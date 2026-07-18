@@ -15,20 +15,18 @@ const DURACION_MS = 6 * 60 * 60 * 1000;
 const MAX_POR_LOTE = 60;
 const STORAGE_KEY = "v360_signed_urls_v1";
 
-// Cachear en memoria evita re-firmar dentro de la misma sesión de la
-// pestaña, pero al entrar recién (o recargar la página) esa caché
-// arranca vacía y las fotos tardan en aparecer (primero el ícono por
-// defecto, después la foto real, ya con el viaje al servidor hecho).
-// Guardar también en sessionStorage hace que, una vez firmada una key
-// en la pestaña, las fotos aparezcan al toque las próximas veces que
-// se visite esa pantalla — sin pedir nada de nuevo — hasta que la URL
-// esté por vencer. Se limpia sola al cerrar la pestaña (sessionStorage,
-// no localStorage), así no quedan URLs firmadas dando vueltas para
-// siempre.
+// Guardar en localStorage (no sessionStorage) es lo que realmente
+// hace la diferencia en velocidad: una key firmada sigue sirviendo
+// aunque se cierre la pestaña o se reinicie la app — mientras no haya
+// pasado su vencimiento (6h) no hay que volver a pedirle nada al
+// servidor, la foto aparece al toque desde el primer render. Es
+// seguro guardarlas así porque cada URL ya trae su propio vencimiento
+// (revisado abajo al cargar) y solo sirve para ese objeto puntual del
+// bucket privado, igual que si viviera 6h en memoria.
 function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
   const mapa = new Map<string, { url: string; expiraEn: number }>();
   try {
-    const crudo = sessionStorage.getItem(STORAGE_KEY);
+    const crudo = localStorage.getItem(STORAGE_KEY);
     if (!crudo) return mapa;
     const datos = JSON.parse(crudo) as Record<string, { url: string; expiraEn: number }>;
     const ahora = Date.now();
@@ -36,7 +34,7 @@ function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
       if (valor && valor.expiraEn > ahora) mapa.set(key, valor);
     });
   } catch {
-    // sessionStorage no disponible (modo privado, etc.) o datos corruptos — no pasa nada, se firma de nuevo.
+    // localStorage no disponible (modo privado, etc.) o datos corruptos — no pasa nada, se firma de nuevo.
   }
   return mapa;
 }
@@ -47,7 +45,7 @@ function guardarCache() {
   try {
     const datos: Record<string, { url: string; expiraEn: number }> = {};
     CACHE.forEach((valor, key) => { datos[key] = valor; });
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
   } catch {
     // Si falla (cuota llena, modo privado), simplemente no persiste — la caché en memoria sigue funcionando igual.
   }
