@@ -1600,9 +1600,14 @@
     margin-bottom: 12px;
     text-align: center;
   }
+  .avatar-modal-frames {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
   .avatar-modal-drop {
     position: relative;
-    width: 100%;
+    flex: 1;
     aspect-ratio: 1 / 1;
     border-radius: 16px;
     border: 1.5px dashed rgba(8,119,255,.35);
@@ -1616,12 +1621,73 @@
   .avatar-modal-drop.has-preview {
     border-style: solid;
     border-color: rgba(8,119,255,.18);
+    cursor: grab;
+    touch-action: none;
+  }
+  .avatar-modal-drop.has-preview:active {
+    cursor: grabbing;
   }
   .avatar-modal-drop img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    pointer-events: none;
+    user-select: none;
+  }
+  .avatar-modal-drop-mask {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle closest-side at 50% 50%, transparent 98%, rgba(247,249,252,0.94) 100%);
+  }
+  .avatar-modal-mini-preview {
+    width: 68px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-top: 4px;
+  }
+  .avatar-modal-mini-square {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid rgba(8,119,255,.18);
+    box-shadow: 0 6px 14px rgba(15,23,42,.14);
+  }
+  .avatar-modal-mini-square img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .avatar-modal-mini-preview span {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-align: center;
+    line-height: 1.25;
+  }
+  .avatar-modal-elegir-otra {
+    display: block;
+    width: fit-content;
+    margin: 10px auto 0;
+    border: none;
+    background: transparent;
+    color: #0877FF;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .avatar-modal-hint {
+    text-align: center;
+    color: #94A3B8;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
   }
   .avatar-modal-drop-empty {
     display: flex;

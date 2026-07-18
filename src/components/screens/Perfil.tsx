@@ -138,7 +138,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     }
   }, [cliente?.id, cliente?.avatarUrl]);
 
-  async function subirNuevaFoto(file: File) {
+  async function subirNuevaFoto(file: File, posicion: { x: number; y: number }) {
     if (!cliente?.id || !db) {
       throw new Error("No se pudo identificar al cliente.");
     }
@@ -148,7 +148,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
 
     setSubiendoAvatar(true);
     try {
-      const webp = await comprimirAvatarWebp(file);
+      const webp = await comprimirAvatarWebp(file, posicion);
       const { key: url } = await subirAvatarR2(webp);
       pendingAvatarRef.current = url;
       setAvatarUrl(url);

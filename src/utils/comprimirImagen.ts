@@ -87,7 +87,19 @@ export async function comprimirImagen(file: File): Promise<File> {
   }
 }
 
-export async function comprimirAvatarWebp(file: File): Promise<File> {
+/**
+ * Posición del recorte dentro de la foto — mismo formato que CSS
+ * object-position: 0% es la esquina superior/izquierda de la imagen,
+ * 100% la esquina opuesta, 50% (por defecto) el centro. Así el recorte
+ * final coincide exactamente con lo que el usuario vio y movió en el
+ * panel de "Cambiar foto de perfil".
+ */
+export interface PosicionRecorte {
+  x: number;
+  y: number;
+}
+
+export async function comprimirAvatarWebp(file: File, posicion: PosicionRecorte = { x: 50, y: 50 }): Promise<File> {
   if (!file.type.startsWith("image/") || file.type === "image/gif") {
     throw new Error("El avatar debe ser una imagen estática.");
   }
@@ -104,8 +116,10 @@ export async function comprimirAvatarWebp(file: File): Promise<File> {
     );
   }
   const side = Math.min(bitmap.width, bitmap.height);
-  const sx = Math.round((bitmap.width - side) / 2);
-  const sy = Math.round((bitmap.height - side) / 2);
+  const maxOffsetX = bitmap.width - side;
+  const maxOffsetY = bitmap.height - side;
+  const sx = Math.round((Math.min(100, Math.max(0, posicion.x)) / 100) * maxOffsetX);
+  const sy = Math.round((Math.min(100, Math.max(0, posicion.y)) / 100) * maxOffsetY);
 
   const canvas = document.createElement("canvas");
   canvas.width = AVATAR_SIZE;
