@@ -55,8 +55,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         <img src={LOGO} alt="Vista360 Player" draggable={false} />
       </div>
       <div className="login-card">
-        <div className="login-title">Bienvenido</div>
-        <div className="login-sub">Ingresa con tu acceso privado de Vista360 Player.</div>
+        <div className="login-title">Iniciar sesión</div>
+        <div className="login-sub">Accede a tu portal privado de Vista360 Player.</div>
         {error && <div className="login-error">{error}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
@@ -92,7 +92,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             <span className="login-remember-label">Mantener sesión iniciada</span>
           </div>
           <button className="login-btn" disabled={busy} type="submit">
-            {busy ? "Ingresando…" : "Ingresar"}
+            {busy ? "Ingresando…" : "Iniciar sesión"}
           </button>
         </form>
       </div>

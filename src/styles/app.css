@@ -2270,24 +2270,54 @@
     min-height: calc(100dvh + 160px);
     padding: calc(32px + env(safe-area-inset-top)) 28px calc(190px + env(safe-area-inset-bottom));
     overflow-y: auto;
-    background-color: var(--app-bg);
-    background-image: none;
+    background-color: #030711;
     isolation: isolate;
   }
-  .login-logo { text-align: center; margin-bottom: 42px; }
+  .login-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background-image:
+      linear-gradient(180deg, #030711 0%, #030711 14%, rgba(3,7,17,.88) 27%, rgba(3,7,17,.18) 55%, rgba(3,7,17,.82) 100%),
+      url('/login-city-night.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center bottom;
+  }
+  .login-shell::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 54%, transparent 12%, rgba(1,4,12,.42) 100%);
+  }
+  .login-logo { text-align: center; margin-bottom: 34px; }
   .login-logo img {
     height: clamp(58px, 9vw, 82px);
     max-width: 86%;
     filter: drop-shadow(0 16px 36px rgba(0,0,0,.36));
   }
   .login-card {
-    background: #08111F;
-    backdrop-filter: blur(22px) saturate(155%);
-    -webkit-backdrop-filter: blur(22px) saturate(155%);
-    border: 1px solid rgba(148,163,184,0.20);
+    position: relative;
+    overflow: hidden;
+    background: rgba(4,12,25,.84);
+    backdrop-filter: blur(24px) saturate(145%);
+    -webkit-backdrop-filter: blur(24px) saturate(145%);
+    border: 1px solid rgba(148,190,255,.24);
     border-radius: 22px;
     padding: 30px 24px;
-    box-shadow: 0 30px 80px -24px rgba(0,0,0,0.76), inset 0 1px 0 rgba(255,255,255,.08);
+    box-shadow: 0 30px 90px -24px rgba(0,0,0,.88), 0 0 45px rgba(8,119,255,.08), inset 0 1px 0 rgba(255,255,255,.09);
+  }
+  .login-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 22px;
+    right: 22px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0877FF, transparent);
   }
   .login-title {
     font-size: 24px;
@@ -2345,8 +2375,11 @@
     font-weight: 900;
     cursor: pointer;
     margin-top: 8px;
-    box-shadow: none;
+    box-shadow: 0 14px 32px rgba(8,119,255,.30), inset 0 1px 0 rgba(255,255,255,.22);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
   }
+  .login-btn:hover:not(:disabled) { background: #2388FF; box-shadow: 0 16px 38px rgba(8,119,255,.40); transform: translateY(-1px); }
+  .login-btn:active:not(:disabled) { transform: translateY(0); }
   .login-btn:disabled { opacity: 0.6; cursor: default; }
   .login-foot { text-align: center; font-size: 12px; color: rgba(226,232,240,0.64); margin-top: 24px; text-shadow: 0 1px 4px rgba(0,0,0,0.7); font-weight: 700; }
 
