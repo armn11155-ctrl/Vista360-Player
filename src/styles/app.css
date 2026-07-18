@@ -2420,15 +2420,22 @@
       flex-direction: column;
     }
 
-    /* El formulario de login no se estira a todo lo ancho de la pantalla:
-       el fondo de Nueva York (ya está en .login-shell) sí cubre todo, pero
-       la tarjeta blanca se queda compacta y centrada sobre ese fondo. */
+    /* En escritorio el acceso queda amplio y alineado a la derecha para
+       liberar la vista principal de Nueva York y dar una composición más
+       elegante, sin perder el centrado cómodo de la versión móvil. */
+    .login-shell::before {
+      transform: scale(1.06);
+      transform-origin: center center;
+    }
     .login-logo, .login-card, .login-foot {
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       margin-left: auto;
-      margin-right: auto;
+      margin-right: clamp(56px, 8vw, 150px);
     }
+    .login-logo { margin-bottom: 38px; }
+    .login-logo img { width: min(370px, 90%); }
+    .login-card { padding: 34px 30px; }
 
     .sidebar-brand {
       display: block;
