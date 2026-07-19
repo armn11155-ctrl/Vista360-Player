@@ -133,9 +133,21 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
             <MobileSidebarButton onClick={onMenuClick} />
             <div style={{ fontSize: 17, fontWeight: 900, color: "#fff" }}>Mis campañas</div>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-          </svg>
+          <button
+            type="button"
+            onClick={onNueva}
+            aria-label="Nueva campaña"
+            style={{
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              background: "#0877FF", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -155,7 +167,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px 0", background: "#F8F9FB" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
         {isAdmin && (
           <div style={{
             background: informeDelMes ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
