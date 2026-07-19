@@ -187,9 +187,9 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
       </div>
 
       {/* List */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
+      <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
         {isAdmin && (
-          <div style={{
+          <div className="mis-campanas-month-status" style={{
             background: informeDelMes ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
             border: `1px solid ${informeDelMes ? "#BBF7D0" : "#FDE68A"}`,
             borderRadius: 12, padding: "10px 12px", marginBottom: 14, fontSize: 12,
@@ -200,7 +200,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
         )}
 
         {filtradas.length === 0 && (
-          <div style={{ textAlign: "center", color: "#6B7280", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>
+          <div className="mis-campanas-empty" style={{ textAlign: "center", color: "#6B7280", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>
         )}
 
         {filtradas.map((c) => {

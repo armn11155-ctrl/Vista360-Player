@@ -4556,4 +4556,30 @@
     .report-action-download {
       grid-column: auto;
     }
+
+    /* Campañas publicitarias compactas en escritorio: dos tarjetas por
+       fila con ancho controlado, en lugar de franjas largas. */
+    .mis-campanas-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 520px));
+      justify-content: center;
+      align-content: start;
+      gap: 16px;
+      padding: 26px 40px 48px !important;
+    }
+    .mis-campanas-list .premium-campaign-card {
+      width: 100%;
+      min-height: 178px;
+      margin-bottom: 0;
+    }
+    .mis-campanas-month-status,
+    .mis-campanas-empty {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 900px) and (max-width: 980px) {
+    .mis-campanas-list {
+      grid-template-columns: minmax(320px, 620px);
+    }
   }
