@@ -19,8 +19,8 @@ function nombreCliente(cliente: Cliente | null) {
 }
 
 function fechaCorta(date: Date) {
-  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  return `${String(date.getDate()).padStart(2, "0")} ${meses[date.getMonth()]} ${date.getFullYear()}`;
+  const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  return `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
 }
 
 function fechaGenerada(mes: string, dia?: string) {
@@ -146,7 +146,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         <div className="report-card-copy">
           <div className="report-kicker">Reporte mensual</div>
           <div className="report-title">{informe.mesLabel}</div>
-          <div className="report-meta">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
+          <div className="report-meta report-meta-generated">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
         <div className="report-ready-badge">Listo</div>
