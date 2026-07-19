@@ -277,19 +277,27 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                 )}
                 {!isAdmin && estado === "Activa" && diasParaVencer(c) <= 14 && diasParaVencer(c) >= 0 && (
                   renovadas.has(c.id) ? (
-                    <div style={{ marginTop: 8, fontSize: 11.5, color: "#16A34A", fontWeight: 600 }}>
-                      ✓ Solicitud de renovación enviada
+                    <div className="campaign-renewal-sent">
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="m8 12 2.6 2.6L16.5 9" />
+                      </svg>
+                      <span>Solicitud de renovación enviada</span>
                     </div>
                   ) : (
                     <button
+                      type="button"
+                      className="campaign-renewal-button"
                       onClick={(e) => abrirConfirmacion(c, panelNombre, e)}
-                      style={{
-                        marginTop: 8, background: "rgba(245,158,11,0.1)", border: "1px solid #FDE68A",
-                        borderRadius: 8, padding: "6px 10px", color: "#B45309", fontSize: 11.5,
-                        fontWeight: 700, cursor: "pointer",
-                      }}
                     >
-                      {`⏰ Vence en ${diasParaVencer(c)} día(s) — Solicitar renovación`}
+                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M20 11a8 8 0 1 0-2.34 5.66" />
+                        <path d="M20 4v7h-7" />
+                      </svg>
+                      <span>
+                        <small>Vence en {diasParaVencer(c)} día(s)</small>
+                        <strong>Solicitar renovación</strong>
+                      </span>
                     </button>
                   )
                 )}
