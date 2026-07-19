@@ -3172,7 +3172,9 @@
     flex-direction: column;
     overflow: hidden;
     background-color: #050A12;
-    background-image: url('/admin-picker-stars-mobile.png');
+    background-image:
+      linear-gradient(180deg, rgba(2,6,15,.18) 0%, rgba(2,6,15,.36) 58%, rgba(1,4,10,.52) 100%),
+      url('/admin-picker-stars-mobile.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
