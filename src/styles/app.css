@@ -3166,8 +3166,8 @@
   }
   .admin-picker-action {
     min-height: 64px;
-    border: 1px solid rgba(148,180,230,.16);
-    background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+    border: 1px solid rgba(0,0,0,.92);
+    background: linear-gradient(145deg, rgba(3,5,9,.96), rgba(8,11,17,.92));
     backdrop-filter: blur(16px);
     color: #E8F0FF;
     border-radius: 16px;
@@ -3179,7 +3179,7 @@
     text-align: left;
     transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
   }
-  .admin-picker-action:hover { transform: translateY(-2px); background: rgba(8,119,255,.14); border-color: rgba(96,165,250,.42); box-shadow: 0 16px 34px -22px rgba(8,119,255,.8); }
+  .admin-picker-action:hover { transform: translateY(-2px); background: linear-gradient(145deg, #090D14, #020305); border-color: #000; box-shadow: 0 18px 36px -20px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.08); }
   .admin-picker-action-icon { width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; display: grid; place-items: center; color: #75B4FF; background: rgba(8,119,255,.14); border: 1px solid rgba(96,165,250,.18); }
   .admin-picker-action-icon svg { width: 19px; height: 19px; }
   .admin-picker-action > span:last-child { display: grid; min-width: 0; gap: 2px; }
@@ -3287,13 +3287,13 @@
   }
   .admin-picker-tile:not(.archived) {
     background:
-      radial-gradient(circle at 50% -18%, rgba(72, 158, 255, .3), transparent 58%),
-      linear-gradient(155deg, rgba(8, 119, 255, .24), rgba(3, 12, 27, .68));
+      radial-gradient(circle at 50% -18%, rgba(255, 255, 255, .075), transparent 58%),
+      linear-gradient(155deg, rgba(5, 7, 11, .97), rgba(0, 0, 0, .94));
     border-color: rgba(0, 0, 0, .82);
     box-shadow:
-      0 0 0 1px rgba(8, 119, 255, .08),
-      0 24px 52px -30px rgba(8, 119, 255, .78),
-      inset 0 1px 0 rgba(255, 255, 255, .12);
+      0 0 0 1px rgba(255, 255, 255, .055),
+      0 24px 52px -28px rgba(0, 0, 0, .96),
+      inset 0 1px 0 rgba(255, 255, 255, .1);
     backdrop-filter: blur(18px) saturate(145%);
   }
   .admin-picker-tile:not(.archived)::before {
@@ -3323,11 +3323,11 @@
     transform: translateY(-4px);
     border-color: #000000;
     background:
-      radial-gradient(circle at 50% -18%, rgba(96, 165, 250, .42), transparent 58%),
-      linear-gradient(155deg, rgba(8, 119, 255, .34), rgba(3, 12, 27, .72));
+      radial-gradient(circle at 50% -18%, rgba(255, 255, 255, .12), transparent 58%),
+      linear-gradient(155deg, #0B0F16, #010203);
     box-shadow:
-      0 0 0 1px rgba(96, 165, 250, .16),
-      0 30px 62px -28px rgba(8, 119, 255, .92),
+      0 0 0 1px rgba(255, 255, 255, .08),
+      0 30px 62px -26px rgba(0, 0, 0, 1),
       inset 0 1px 0 rgba(255, 255, 255, .15);
   }
   .admin-picker-tile-main {
@@ -4445,4 +4445,14 @@
     font-size: 12px;
     color: #64748B;
     margin-top: 2px;
+  }
+
+  /* Esta regla debe permanecer después del estilo móvil base: garantiza
+     que Cambiar cliente use siempre la panorámica ancha en escritorio. */
+  @media (min-width: 900px) {
+    .admin-picker-shell {
+      background-image: url('/login-ny-desktop-tailored.jpg');
+      background-position: center center;
+      background-size: cover;
+    }
   }
