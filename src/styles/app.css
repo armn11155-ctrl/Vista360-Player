@@ -680,10 +680,11 @@
   .premium-campaign-card::before {
     content: "";
     position: absolute;
-    left: 0;
-    right: 0;
+    left: 12px;
+    right: 12px;
     top: 0;
     height: 4px;
+    border-radius: 0 0 999px 999px;
     background: linear-gradient(90deg,#0877FF,#61B0FF);
     box-shadow: 0 8px 18px rgba(5,10,18,.24);
   }
@@ -3026,7 +3027,7 @@
     }
     .report-card-main {
       grid-template-columns: 90px minmax(0, 1fr) auto;
-      gap: 18px;
+      gap: 26px;
     }
     .report-pdf-icon,
     .report-pdf-icon svg {
@@ -4553,6 +4554,11 @@
       min-width: 0;
       padding: 20px;
     }
+    .reports-list > .report-card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      width: calc((100% - 26px) / 2);
+      justify-self: center;
+    }
     .reports-list .report-card-main {
       grid-template-columns: 72px minmax(0, 1fr) auto;
       gap: 16px;
@@ -4605,6 +4611,11 @@
       width: 100%;
       min-height: 178px;
       margin-bottom: 0;
+    }
+    .mis-campanas-list .premium-campaign-card-last-single {
+      grid-column: 1 / -1;
+      width: min(520px, calc((100% - 16px) / 2));
+      justify-self: center;
     }
     .mis-campanas-month-status,
     .mis-campanas-empty {

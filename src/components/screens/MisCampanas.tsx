@@ -203,13 +203,17 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           <div className="mis-campanas-empty" style={{ textAlign: "center", color: "#6B7280", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>
         )}
 
-        {filtradas.map((c) => {
+        {filtradas.map((c, index) => {
           const estado = estadoCampana(c);
           const badge = BADGE[estado] ?? BADGE.Finalizada;
           const pct = progreso(c);
           const panelNombre = paneles[c.panel_id]?.nombre ?? c.panel_id;
           return (
-            <div key={c.id} className="premium-campaign-card" onClick={() => onAbrir(c)}>
+            <div
+              key={c.id}
+              className={`premium-campaign-card${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
+              onClick={() => onAbrir(c)}
+            >
               <BrandThumb name={clienteNombre || panelNombre} size={72} radius={12} />
 
               <div style={{ flex: 1, minWidth: 0 }}>
