@@ -2,7 +2,6 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
-  IconPaneles,
 } from "./SidebarIcons";
 
 type SidebarView =
@@ -47,7 +46,8 @@ const ITEMS: {
   { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades", mobileOnly: true },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
-  { id: "paneles",      icon: <IconPaneles />,       label: "Paneles", adminOnly: true },
+  // Paneles NO va en este menú -- solo se abre desde el selector de
+  // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
 export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active }: Props) {

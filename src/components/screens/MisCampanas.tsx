@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
+import { cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import MobileSidebarButton from "../MobileSidebarButton";
@@ -51,11 +53,29 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
   const [calificando, setCalificando] = useState<string | null>(null);
   const [hoverEstrella, setHoverEstrella] = useState<{ id: string; n: number } | null>(null);
+  const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
+  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
   const comprobanteRef = useRef<HTMLInputElement>(null);
   const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
   const informeDelMes = informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
+
+  async function eliminarCampana(c: Contrato, panelNombre: string) {
+    if (!cloudFunctions || eliminandoId) return;
+    const confirmado = window.confirm(`¿Eliminar la campaña de "${panelNombre}"? Se borra el contrato y no se puede deshacer.`);
+    if (!confirmado) return;
+    setMenuAbiertoId(null);
+    setEliminandoId(c.id);
+    try {
+      const fn = httpsCallable<{ contratoId: string }, { ok: boolean }>(cloudFunctions, "eliminarContrato");
+      await fn({ contratoId: c.id });
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : "No se pudo eliminar la campaña.");
+    } finally {
+      setEliminandoId(null);
+    }
+  }
 
   function abrirConfirmacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
     e.stopPropagation();
@@ -270,9 +290,39 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                   )
                 )}
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" style={{ marginTop: 4, flexShrink: 0 }}>
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                {isAdmin && (
+                  <div style={{ position: "relative" }} onClick={(event) => event.stopPropagation()}>
+                    <button
+                      type="button"
+                      className="report-card-menu-btn"
+                      aria-label="Opciones de la campaña"
+                      onClick={() => setMenuAbiertoId((actual) => (actual === c.id ? null : c.id))}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="1.9" />
+                        <circle cx="12" cy="12" r="1.9" />
+                        <circle cx="12" cy="19" r="1.9" />
+                      </svg>
+                    </button>
+                    {menuAbiertoId === c.id && (
+                      <div className="report-card-menu-dropdown">
+                        <button
+                          type="button"
+                          className="report-card-menu-item"
+                          onClick={() => void eliminarCampana(c, panelNombre)}
+                          disabled={eliminandoId === c.id}
+                        >
+                          {eliminandoId === c.id ? "Eliminando..." : "Eliminar campaña"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" style={{ marginTop: isAdmin ? 0 : 4 }}>
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
             </div>
           );
         })}
