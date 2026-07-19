@@ -26,10 +26,10 @@
     <link rel="icon" type="image/png" href="/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/apple-touch-icon.png" />
 
-    <!-- Adelanta la conexión del mapa para que Liberty empiece a cargar
-         antes de que el cliente abra la sección Cobertura. -->
-    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
-    <link rel="dns-prefetch" href="https://tiles.openfreemap.org" />
+    <!-- El mapa usa Leaflet y teselas OSM; anticipar ambas conexiones
+         reduce la espera al abrir Cobertura por primera vez. -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
 
     <title>Vista360 Player</title>
   </head>
