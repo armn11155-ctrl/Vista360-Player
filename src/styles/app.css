@@ -2430,6 +2430,7 @@
        se alinea a la izquierda para liberar la panorámica hacia la derecha. */
     .login-shell::before {
       background-position: center center;
+      background-size: 100% 100%;
       transform: none;
     }
     .login-logo, .login-card, .login-foot {
