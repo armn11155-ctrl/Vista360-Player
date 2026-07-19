@@ -20,6 +20,8 @@ type PanelConCoordenadas = PanelConUso & {
   lng: number;
 };
 
+const CENTRO_MAPA_INICIAL: [number, number] = [-12.0464, -77.0428];
+
 function numeroCoordenada(value: unknown) {
   const n = typeof value === "number" ? value : typeof value === "string" ? Number(value.trim()) : NaN;
   return Number.isFinite(n) ? n : undefined;
@@ -71,7 +73,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
 
   useEffect(() => {
     let cancelado = false;
-    if (!mapEl.current || conCoordenadas.length === 0) return;
+    if (!mapEl.current) return;
 
     cargarLeaflet()
       .then((L) => {
@@ -116,7 +118,9 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
-        if (seleccionadoId && seleccionadoConCoords) {
+        if (conCoordenadas.length === 0) {
+          mapRef.current.setView(CENTRO_MAPA_INICIAL, 11);
+        } else if (seleccionadoId && seleccionadoConCoords) {
           mapRef.current.setView([seleccionadoConCoords.lat, seleccionadoConCoords.lng], 15, { animate: true });
         } else if (conCoordenadas.length === 1) {
           mapRef.current.setView([conCoordenadas[0].lat, conCoordenadas[0].lng], 15);
@@ -174,23 +178,27 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         </div>
 
         <div className="coverage-map-real coverage-map-osm">
-          {conCoordenadas.length > 0 ? (
-            <>
-              <div ref={mapEl} className="coverage-leaflet-map" />
-              {!mapReady && !mapError && (
-                <div className="coverage-map-loading">Cargando mapa...</div>
-              )}
-              {mapError && (
-                <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>
-              )}
-            </>
-          ) : (
+          <div ref={mapEl} className="coverage-leaflet-map" />
+          {!mapReady && !mapError && (
+            <div className="coverage-map-loading">Cargando mapa...</div>
+          )}
+          {mapError && (
+            <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>
+          )}
+          {mapReady && conCoordenadas.length === 0 && (
             <div className="coverage-no-coords">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="1.8">
-                <path d="M9 18l-6 3V6l6-3 6 3 6-3v15l-6 3-6-3z" />
-                <path d="M9 3v15M15 6v15" />
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
+                <circle cx="12" cy="10" r="2.2" />
               </svg>
-              <div>Aún no hay coordenadas registradas para estos paneles.</div>
+              <div>
+                <strong>{lista.length === 0 ? "Tu mapa está listo" : "Ubicaciones por registrar"}</strong>
+                <span>
+                  {lista.length === 0
+                    ? "Cuando tengas un panel, su ubicación aparecerá aquí."
+                    : "Tus paneles aparecerán aquí cuando tengan una ubicación registrada."}
+                </span>
+              </div>
             </div>
           )}
         </div>
