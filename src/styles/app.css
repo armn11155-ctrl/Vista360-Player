@@ -1343,12 +1343,6 @@
   }
   .report-generate-btn:active { transform: translateY(1px); }
   .report-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-  .report-admin-hint {
-    color: #64748B;
-    font-size: 11px;
-    line-height: 1.4;
-    margin-top: 9px;
-  }
   .report-admin-status {
     font-size: 11.5px;
     line-height: 1.45;

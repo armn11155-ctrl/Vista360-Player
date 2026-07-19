@@ -266,9 +266,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                 ))}
               </div>
             )}
-            <div className="report-admin-hint">
-              Al subir cada foto podrás ubicarla como se va a ver en el PDF. Cliente, período y ubicación se completan automáticamente. Si no subes fotos, se usarán las fotos guardadas del mes. Puedes generar más de un reporte en el mismo mes mientras sea en días distintos — si generas otro el mismo día, reemplaza al anterior de ese día.
-            </div>
             {mensajeAdmin && (
               <div className={`report-admin-status ${mensajeAdminTipo === "error" ? "error" : "ok"}`}>
                 {mensajeAdmin}
