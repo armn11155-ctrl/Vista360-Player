@@ -13,6 +13,8 @@ export { eliminarReporteCliente } from "./eliminarReporteCliente.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
 export { crearClienteNuevo } from "./crearClienteNuevo.js";
 export { crearPanel } from "./crearPanel.js";
+export { actualizarPanel } from "./actualizarPanel.js";
+export { actualizarClienteInfo } from "./actualizarClienteInfo.js";
 export { eliminarContrato } from "./eliminarContrato.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
 export { firmarDescargaFactura } from "./firmarDescargaFactura.js";

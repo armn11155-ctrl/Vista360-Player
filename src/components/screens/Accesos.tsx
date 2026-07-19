@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
+import { doc, getDoc } from "firebase/firestore";
 import BackChevron from "../BackChevron";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { BrandThumb } from "../BrandThumb";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
-import { cloudFunctions } from "../../config/firebase";
+import { cloudFunctions, db } from "../../config/firebase";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
+import type { Cliente } from "../../types";
 
 interface Props {
   onBack: () => void;
@@ -83,6 +85,14 @@ export default function Accesos({ onBack }: Props) {
   const [nuevoError, setNuevoError] = useState("");
   const [nuevoResultado, setNuevoResultado] = useState<{ empresa: string; email: string; password: string } | null>(null);
 
+  // ── Editar cliente ya existente -- mismo formulario de arriba
+  // (reusa sus estados nuevoX), pero sin correo/contraseña (esas
+  // solo aplican al crear el acceso la primera vez) y guardando con
+  // actualizarClienteInfo en vez de crearClienteNuevo. ──
+  const [clienteEditandoId, setClienteEditandoId] = useState<string | null>(null);
+  const [cargandoEdicion, setCargandoEdicion] = useState(false);
+  const [mensajeOkEdicion, setMensajeOkEdicion] = useState("");
+
   async function subirAvatarNuevo(file: File) {
     setNuevoSubiendoAvatar(true);
     setNuevoError("");
@@ -97,42 +107,128 @@ export default function Accesos({ onBack }: Props) {
     }
   }
 
-  async function crearClienteNuevo() {
+  function limpiarFormNuevo() {
+    setClienteEditandoId(null);
+    setNuevaEmpresa("");
+    setNuevoRuc("");
+    setNuevoSector("");
+    setNuevaCiudad("");
+    setNuevoEmail("");
+    setNuevoPassword("");
+    setNuevoContacto("");
+    setNuevoCelular("");
+    setNuevoAvatarKey("tower");
+    setNuevoAvatarUrl("");
+    setNuevoError("");
+    setNuevoResultado(null);
+    setMensajeOkEdicion("");
+  }
+
+  function toggleFormNuevo() {
+    if (mostrarFormNuevo) {
+      setMostrarFormNuevo(false);
+      limpiarFormNuevo();
+    } else {
+      limpiarFormNuevo();
+      setMostrarFormNuevo(true);
+    }
+  }
+
+  async function abrirEdicionUsuario(inv: InvitacionPortal) {
+    if (!inv.clienteId) {
+      setErrorCrear("Este usuario no tiene un cliente asociado para editar.");
+      return;
+    }
+    setMenuAbierto(null);
+    setErrorCrear("");
+    limpiarFormNuevo();
+    setClienteEditandoId(inv.clienteId);
+    setMostrarFormNuevo(true);
+    setCargandoEdicion(true);
+    try {
+      if (db) {
+        const snap = await getDoc(doc(db, "clientes", inv.clienteId));
+        const data = snap.data() as Partial<Cliente> | undefined;
+        setNuevaEmpresa(data?.empresa ?? inv.clienteNombre ?? "");
+        setNuevoRuc(data?.ruc ?? "");
+        setNuevoSector(data?.sector ?? "");
+        setNuevaCiudad(data?.ciudad ?? "");
+        setNuevoContacto(data?.contacto ?? "");
+        setNuevoCelular(data?.celular ?? "");
+        setNuevoAvatarKey(data?.avatarKey || inv.avatarKey || "tower");
+        setNuevoAvatarUrl(data?.avatarUrl || inv.avatarUrl || "");
+      }
+    } catch (err) {
+      setNuevoError(err instanceof Error ? err.message : "No se pudo cargar la información del cliente.");
+    } finally {
+      setCargandoEdicion(false);
+    }
+  }
+
+  async function guardarClienteNuevo() {
     if (!cloudFunctions) {
       setNuevoError("Firebase Functions no está configurado.");
       return;
     }
-    if (!nuevaEmpresa.trim() || !nuevoEmail.trim()) {
-      setNuevoError("Escribe el nombre de la empresa y el correo del usuario.");
+    if (!nuevaEmpresa.trim()) {
+      setNuevoError("Escribe el nombre de la empresa.");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoEmail.trim())) {
-      setNuevoError("El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
-      return;
+    if (!clienteEditandoId) {
+      if (!nuevoEmail.trim()) {
+        setNuevoError("Escribe el correo del usuario.");
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoEmail.trim())) {
+        setNuevoError("El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
+        return;
+      }
     }
     setNuevoCreando(true);
     setNuevoError("");
     setNuevoResultado(null);
+    setMensajeOkEdicion("");
     try {
-      const fn = httpsCallable<
-        { empresa: string; ruc: string; sector: string; ciudad: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
-        { clienteId: string; empresa: string; email: string; password: string }
-      >(cloudFunctions, "crearClienteNuevo");
-      const res = await fn({
-        empresa: nuevaEmpresa.trim(),
-        ruc: nuevoRuc.trim(),
-        sector: nuevoSector.trim(),
-        ciudad: nuevaCiudad.trim(),
-        email: nuevoEmail.trim(),
-        password: nuevoPassword.trim(),
-        contacto: nuevoContacto.trim(),
-        celular: nuevoCelular.trim(),
-        avatarKey: nuevoAvatarKey,
-        avatarUrl: nuevoAvatarUrl,
-      });
-      setNuevoResultado(res.data);
+      if (clienteEditandoId) {
+        const fn = httpsCallable<
+          { clienteId: string; empresa: string; ruc: string; sector: string; ciudad: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
+          { ok: boolean }
+        >(cloudFunctions, "actualizarClienteInfo");
+        await fn({
+          clienteId: clienteEditandoId,
+          empresa: nuevaEmpresa.trim(),
+          ruc: nuevoRuc.trim(),
+          sector: nuevoSector.trim(),
+          ciudad: nuevaCiudad.trim(),
+          contacto: nuevoContacto.trim(),
+          celular: nuevoCelular.trim(),
+          avatarKey: nuevoAvatarKey,
+          avatarUrl: nuevoAvatarUrl,
+        });
+        setMensajeOkEdicion("Cliente actualizado.");
+        setMostrarFormNuevo(false);
+        limpiarFormNuevo();
+      } else {
+        const fn = httpsCallable<
+          { empresa: string; ruc: string; sector: string; ciudad: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
+          { clienteId: string; empresa: string; email: string; password: string }
+        >(cloudFunctions, "crearClienteNuevo");
+        const res = await fn({
+          empresa: nuevaEmpresa.trim(),
+          ruc: nuevoRuc.trim(),
+          sector: nuevoSector.trim(),
+          ciudad: nuevaCiudad.trim(),
+          email: nuevoEmail.trim(),
+          password: nuevoPassword.trim(),
+          contacto: nuevoContacto.trim(),
+          celular: nuevoCelular.trim(),
+          avatarKey: nuevoAvatarKey,
+          avatarUrl: nuevoAvatarUrl,
+        });
+        setNuevoResultado(res.data);
+      }
     } catch (err) {
-      setNuevoError(err instanceof Error ? err.message : "No se pudo crear el cliente.");
+      setNuevoError(err instanceof Error ? err.message : (clienteEditandoId ? "No se pudo guardar los cambios del cliente." : "No se pudo crear el cliente."));
     } finally {
       setNuevoCreando(false);
     }
@@ -241,7 +337,7 @@ export default function Accesos({ onBack }: Props) {
 
         <div style={{ margin: "12px 0" }}>
           <button
-            onClick={() => setMostrarFormNuevo((v) => !v)}
+            onClick={toggleFormNuevo}
             style={{
               width: "100%",
               background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
@@ -255,15 +351,21 @@ export default function Accesos({ onBack }: Props) {
         {errorCrear && (
           <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 10 }}>{errorCrear}</div>
         )}
+        {mensajeOkEdicion && !mostrarFormNuevo && (
+          <div style={{ color: "#16A34A", fontSize: 12, fontWeight: 800, marginBottom: 10 }}>{mensajeOkEdicion}</div>
+        )}
 
         {mostrarFormNuevo && (
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>
-              Cliente nuevo
+              {clienteEditandoId ? "Editar cliente" : "Cliente nuevo"}
             </div>
             <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
-              Crea la empresa y su acceso al portal en un solo paso.
+              {clienteEditandoId ? "Actualiza la información de la empresa." : "Crea la empresa y su acceso al portal en un solo paso."}
             </div>
+            {cargandoEdicion && (
+              <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>Cargando datos del cliente...</div>
+            )}
             <div style={{ display: "grid", gap: 10 }}>
               <input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -271,9 +373,13 @@ export default function Accesos({ onBack }: Props) {
                 <input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               </div>
               <input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <div style={{ height: 1, background: "var(--border)", margin: "2px 0" }} />
-              <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              {!clienteEditandoId && (
+                <>
+                  <div style={{ height: 1, background: "var(--border)", margin: "2px 0" }} />
+                  <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+                  <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+                </>
+              )}
               <input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
               <div>
@@ -295,13 +401,21 @@ export default function Accesos({ onBack }: Props) {
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{nuevoError}</div>
             )}
             <button
-              onClick={crearClienteNuevo}
-              disabled={nuevoCreando || nuevoSubiendoAvatar}
-              style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar ? "not-allowed" : "pointer" }}
+              onClick={guardarClienteNuevo}
+              disabled={nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion}
+              style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "not-allowed" : "pointer" }}
             >
-              {nuevoCreando ? "Creando..." : nuevoSubiendoAvatar ? "Preparando avatar..." : "Crear cliente y acceso"}
+              {nuevoCreando
+                ? (clienteEditandoId ? "Guardando..." : "Creando...")
+                : nuevoSubiendoAvatar
+                  ? "Preparando avatar..."
+                  : cargandoEdicion
+                    ? "Cargando..."
+                    : clienteEditandoId
+                      ? "Guardar cambios"
+                      : "Crear cliente y acceso"}
             </button>
-            {nuevoResultado && (
+            {!clienteEditandoId && nuevoResultado && (
               <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
                 <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Cliente creado</div>
                 <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAccesoNuevo}</div>
@@ -335,7 +449,12 @@ export default function Accesos({ onBack }: Props) {
               `Hola, aquí tienes tu acceso a Vista360 Player. Crea tu contraseña con este link: ${inv.link}`
             )}`;
             return (
-              <div className="card" key={inv.id} style={{ padding: 12, position: "relative" }}>
+              <div
+                className="card"
+                key={inv.id}
+                onClick={() => void abrirEdicionUsuario(inv)}
+                style={{ padding: 12, position: "relative", cursor: inv.clienteId ? "pointer" : "default" }}
+              >
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                   <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={42} radius={12} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -350,9 +469,14 @@ export default function Accesos({ onBack }: Props) {
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 1 }}>{inv.email}</div>
                     <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>{fmtFecha(inv)}</div>
                   </div>
+                  {inv.clienteId && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setMenuAbierto((id) => id === inv.id ? null : inv.id)}
+                    onClick={(e) => { e.stopPropagation(); setMenuAbierto((id) => id === inv.id ? null : inv.id); }}
                     style={{
                       width: 34, height: 34, borderRadius: 17, border: "1px solid #E5E7EB",
                       background: "#fff", color: "#64748B", fontSize: 18, fontWeight: 900,
@@ -376,6 +500,7 @@ export default function Accesos({ onBack }: Props) {
                 )}
                 {menuAbierto === inv.id && (
                   <div
+                    onClick={(e) => e.stopPropagation()}
                     style={{
                       position: "absolute", top: 52, right: 12, zIndex: 20, minWidth: 178,
                       background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12,

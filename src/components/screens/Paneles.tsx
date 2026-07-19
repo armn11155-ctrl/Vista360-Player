@@ -5,7 +5,7 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { cloudFunctions } from "../../config/firebase";
 import { cargarLeaflet } from "../../utils/leaflet";
-import type { PanelEstado } from "../../types";
+import type { Panel, PanelEstado } from "../../types";
 
 interface Props {
   onBack: () => void;
@@ -51,6 +51,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   const paneles = state.status === "ready" ? state.paneles : [];
 
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("");
   const [ciudad, setCiudad] = useState("");
@@ -143,6 +144,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   }, []);
 
   function limpiarForm() {
+    setPanelEditando(null);
     setNombre("");
     setTipo("");
     setCiudad("");
@@ -156,7 +158,37 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     }
   }
 
-  async function crearPanel() {
+  function abrirEdicion(p: Panel) {
+    setError("");
+    setMensajeOk("");
+    setPanelEditando(p);
+    setNombre(p.nombre ?? "");
+    setTipo(p.tipo ?? "");
+    setCiudad(p.ciudad ?? "");
+    setDireccion(p.direccion ?? "");
+    setLat(p.lat !== undefined ? String(p.lat) : "");
+    setLng(p.lng !== undefined ? String(p.lng) : "");
+    setEstado(p.estado ?? "Disponible");
+    setMostrarForm(true);
+
+    // Si el mapa ya estaba abierto (se toco otro panel sin cerrar el
+    // formulario), el efecto que lo crea no se vuelve a disparar --
+    // hay que mover el pin a mano para que no se quede con la
+    // ubicacion del panel anterior.
+    if (mapRef.current) {
+      if (p.lat !== undefined && p.lng !== undefined) {
+        mapRef.current.setView([p.lat, p.lng], 13);
+        if (markerRef.current) {
+          markerRef.current.setLatLng([p.lat, p.lng]);
+        }
+      } else if (markerRef.current) {
+        mapRef.current.removeLayer(markerRef.current);
+        markerRef.current = null;
+      }
+    }
+  }
+
+  async function guardarPanel() {
     if (!cloudFunctions) {
       setError("Firebase Functions no está configurado.");
       return;
@@ -169,24 +201,42 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setMensajeOk("");
     setCreando(true);
     try {
-      const fn = httpsCallable<
-        { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
-        { id: string }
-      >(cloudFunctions, "crearPanel");
-      await fn({
-        nombre: nombre.trim(),
-        tipo: tipo.trim(),
-        ciudad: ciudad.trim(),
-        direccion: direccion.trim(),
-        lat: numeroCoordenada(lat),
-        lng: numeroCoordenada(lng),
-        estado,
-      });
-      setMensajeOk("Panel creado.");
+      if (panelEditando) {
+        const fn = httpsCallable<
+          { panelId: string; nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
+          { ok: boolean }
+        >(cloudFunctions, "actualizarPanel");
+        await fn({
+          panelId: panelEditando.id,
+          nombre: nombre.trim(),
+          tipo: tipo.trim(),
+          ciudad: ciudad.trim(),
+          direccion: direccion.trim(),
+          lat: numeroCoordenada(lat),
+          lng: numeroCoordenada(lng),
+          estado,
+        });
+        setMensajeOk("Panel actualizado.");
+      } else {
+        const fn = httpsCallable<
+          { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
+          { id: string }
+        >(cloudFunctions, "crearPanel");
+        await fn({
+          nombre: nombre.trim(),
+          tipo: tipo.trim(),
+          ciudad: ciudad.trim(),
+          direccion: direccion.trim(),
+          lat: numeroCoordenada(lat),
+          lng: numeroCoordenada(lng),
+          estado,
+        });
+        setMensajeOk("Panel creado.");
+      }
       limpiarForm();
       setMostrarForm(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo crear el panel.");
+      setError(err instanceof Error ? err.message : "No se pudo guardar el panel.");
     } finally {
       setCreando(false);
     }
@@ -206,7 +256,13 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
       <div className="content-area">
         <button
           onClick={() => {
-            setMostrarForm((v) => !v);
+            if (mostrarForm) {
+              limpiarForm();
+              setMostrarForm(false);
+            } else {
+              limpiarForm();
+              setMostrarForm(true);
+            }
             setMensajeOk("");
           }}
           style={{
@@ -221,7 +277,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         {mostrarForm && (
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
-              Panel nuevo
+              {panelEditando ? `Editar panel — ${panelEditando.nombre}` : "Panel nuevo"}
             </div>
             <div style={{ display: "grid", gap: 10 }}>
               <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del panel" style={inputStyle} />
@@ -254,11 +310,13 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
             </div>
             {error && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{error}</div>}
             <button
-              onClick={crearPanel}
+              onClick={guardarPanel}
               disabled={creando}
               style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
             >
-              {creando ? "Creando..." : "Crear panel"}
+              {creando
+                ? (panelEditando ? "Guardando..." : "Creando...")
+                : (panelEditando ? "Guardar cambios" : "Crear panel")}
             </button>
           </div>
         )}
@@ -287,7 +345,12 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           {paneles.map((p) => {
             const badge = ESTADO_BADGE[p.estado] ?? ESTADO_BADGE.Disponible;
             return (
-              <div className="card" key={p.id} style={{ padding: 14 }}>
+              <div
+                className="card"
+                key={p.id}
+                onClick={() => abrirEdicion(p)}
+                style={{ padding: 14, cursor: "pointer" }}
+              >
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{p.nombre}</div>
@@ -296,12 +359,17 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                       <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{p.direccion}</div>
                     )}
                   </div>
-                  <span style={{
-                    flexShrink: 0, fontSize: 11, fontWeight: 700,
-                    padding: "3px 9px", borderRadius: 20, background: badge.bg, color: badge.color,
-                  }}>
-                    {p.estado}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700,
+                      padding: "3px 9px", borderRadius: 20, background: badge.bg, color: badge.color,
+                    }}>
+                      {p.estado}
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             );
