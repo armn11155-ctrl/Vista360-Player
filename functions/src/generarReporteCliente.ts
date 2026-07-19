@@ -435,8 +435,8 @@ async function paginaEvidenciaOscura(
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
  *  TODO: mover esto a config/Firestore si se necesita cambiar sin
  *  tocar codigo. Por ahora son valores de prueba. */
-const CONTACTO_EMAIL = "contacto@vista360.pe";
-const CONTACTO_TELEFONO = "+51 987 654 321";
+const CONTACTO_EMAIL = "ochomillas.101@hotmail.com";
+const CONTACTO_TELEFONO = "+51 947 957 971";
 
 /** Icono simple de sobre/correo, dibujado con lineas (sin depender de
  *  fuentes con glifos de icono). */
