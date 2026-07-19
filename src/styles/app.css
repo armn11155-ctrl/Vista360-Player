@@ -4319,6 +4319,26 @@
     color: var(--accent);
     background: #fff;
   }
+
+  .campaign-detail-hero {
+    background-color: #050A12;
+    background-image:
+      linear-gradient(180deg, rgba(2,6,15,.97) 0%, rgba(2,6,15,.84) 30%, rgba(2,6,15,.58) 68%, rgba(2,6,15,.42) 100%),
+      url('/campaign-detail-ny-mobile.jpg');
+    background-size: cover;
+    background-position: center 58%;
+    background-repeat: no-repeat;
+    text-shadow: 0 2px 12px rgba(0,0,0,.78);
+  }
+
+  @media (min-width: 900px) {
+    .campaign-detail-hero {
+      background-image:
+        linear-gradient(180deg, rgba(2,6,15,.96) 0%, rgba(2,6,15,.78) 28%, rgba(2,6,15,.52) 65%, rgba(2,6,15,.38) 100%),
+        url('/campaign-detail-ny-desktop.jpg');
+      background-position: center 52%;
+    }
+  }
   .solicitud-detail-image img {
     width: 100%;
     height: 180px;

@@ -148,7 +148,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
-      <div style={{ background: "#050A12", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
+      <div className="campaign-detail-hero" style={{ padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
