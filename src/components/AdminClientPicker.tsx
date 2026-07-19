@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
+import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
@@ -37,6 +38,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [errorAccion, setErrorAccion] = useState("");
   const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
+  const [gestionAbierta, setGestionAbierta] = useState(false);
+  const solicitudesState = useSolicitudesCampana(true);
+  const solicitudesPendientes = solicitudesState.status === "ready"
+    ? solicitudesState.solicitudes.filter((solicitud) => solicitud.estado === "Pendiente").length
+    : 0;
   // Antes se mostraba la grilla al toque con íconos de color por
   // defecto y las fotos reales "aparecían" un instante después (viaje
   // al servidor para firmar las URLs de R2) — se veía como que la
@@ -149,6 +155,19 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   return (
     <div className="admin-picker-shell">
+      <button
+        type="button"
+        className="admin-picker-management-btn"
+        onClick={() => setGestionAbierta(true)}
+        aria-label="Abrir centro de gestión"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="16" rx="3" />
+          <path d="M8 9h8M8 13h5" />
+        </svg>
+        <span>Gestión</span>
+        {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
+      </button>
       {onOpenPerfil && (
         <button type="button" className="admin-picker-perfil-btn" onClick={onOpenPerfil} title="Mi perfil" aria-label="Mi perfil">
           {miAvatarSrc && !miAvatarFallo ? (
@@ -317,6 +336,43 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             </button>
             <button type="button" className="admin-picker-modal-action secondary" onClick={() => setMenuCliente(null)}>
               Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {gestionAbierta && (
+        <div className="admin-picker-management-screen">
+          <div className="admin-picker-management-head">
+            <button type="button" onClick={() => setGestionAbierta(false)} aria-label="Volver a clientes">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <div>
+              <strong>Centro de gestión</strong>
+              <span>Administra tu operación desde un solo lugar.</span>
+            </div>
+          </div>
+          <div className="admin-picker-management-grid">
+            <button type="button" onClick={onOpenUsuarios} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+              <span><strong>Usuarios</strong><small>Gestionar accesos</small></span>
+              <i>›</i>
+            </button>
+            <button type="button" onClick={onOpenSolicitudes} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
+              <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
+              {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
+              <i>›</i>
+            </button>
+            <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+              <span><strong>Analítica</strong><small>Actividad y accesos</small></span>
+              <i>›</i>
+            </button>
+            <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
+              <span><strong>Paneles</strong><small>Inventario digital</small></span>
+              <i>›</i>
             </button>
           </div>
         </div>

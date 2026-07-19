@@ -3142,6 +3142,40 @@
     text-align: center;
     text-shadow: 0 2px 16px rgba(0,0,0,.55);
   }
+  .admin-picker-management-btn {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top));
+    left: 16px;
+    z-index: 7;
+    height: 38px;
+    padding: 0 11px;
+    border-radius: 19px;
+    border: 1px solid rgba(255,255,255,.2);
+    background: #050A12;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .admin-picker-management-btn svg { width: 17px; height: 17px; }
+  .admin-picker-management-btn b,
+  .admin-picker-management-card b {
+    min-width: 19px;
+    height: 19px;
+    border-radius: 10px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #EF4444;
+    color: #fff;
+    font-size: 10px;
+    font-style: normal;
+  }
   .admin-picker-logo { height: 22px; display: block; margin: 0 auto 22px; }
   .admin-picker-badge {
     display: inline-flex;
@@ -3234,12 +3268,64 @@
   }
   .admin-picker-sub { color: rgba(255,255,255,0.56); font-size: 13px; margin-bottom: 22px; }
   .admin-picker-actions {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
     width: min(620px, 100%);
     margin: 0 auto 20px;
   }
+  .admin-picker-logo,
+  .admin-picker-badge { display: none; }
+  .admin-picker-header { padding-top: calc(72px + env(safe-area-inset-top)); }
+
+  .admin-picker-management-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    padding: calc(22px + env(safe-area-inset-top)) 18px calc(22px + env(safe-area-inset-bottom));
+    background: linear-gradient(160deg, #050A12 0%, #09111E 100%);
+    overflow-y: auto;
+  }
+  .admin-picker-management-head {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 28px;
+  }
+  .admin-picker-management-head > button {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.07);
+    color: #fff;
+    display: grid;
+    place-items: center;
+  }
+  .admin-picker-management-head svg { width: 20px; height: 20px; }
+  .admin-picker-management-head > div { display: grid; gap: 3px; text-align: left; }
+  .admin-picker-management-head strong { color: #fff; font-size: 19px; }
+  .admin-picker-management-head span { color: rgba(255,255,255,.58); font-size: 11.5px; }
+  .admin-picker-management-grid { display: grid; gap: 12px; }
+  .admin-picker-management-card {
+    width: 100%;
+    min-height: 76px;
+    padding: 13px 15px;
+    border-radius: 17px;
+    border: 1px solid rgba(255,255,255,.11);
+    background: #02050A;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    font: inherit;
+  }
+  .admin-picker-management-card > span:nth-child(2) { flex: 1; display: grid; gap: 4px; }
+  .admin-picker-management-card strong { font-size: 14px; color: #fff; }
+  .admin-picker-management-card small { font-size: 11.5px; color: rgba(255,255,255,.52); }
+  .admin-picker-management-card i { color: rgba(255,255,255,.45); font-size: 22px; font-style: normal; }
   .admin-picker-action {
     min-height: 64px;
     border: 1px solid rgba(0,0,0,.92);
@@ -4548,6 +4634,12 @@
   /* Esta regla debe permanecer después del estilo móvil base: garantiza
      que Cambiar cliente use siempre la panorámica ancha en escritorio. */
   @media (min-width: 900px) {
+    .admin-picker-management-btn,
+    .admin-picker-management-screen { display: none; }
+    .admin-picker-logo { display: block; }
+    .admin-picker-badge { display: inline-flex; }
+    .admin-picker-actions { display: grid; }
+    .admin-picker-header { padding-top: 56px; }
     .admin-picker-shell {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
