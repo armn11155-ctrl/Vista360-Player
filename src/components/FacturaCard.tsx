@@ -10,12 +10,10 @@ interface Props {
   isAdmin?: boolean;
 }
 
-const FACTURACION_WEB_URL = "https://facturacion-web-abi.pages.dev";
-
 const BADGE: Record<FacturaEstado, { bg: string; color: string }> = {
   Pagada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
   Aceptada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
-  Emitida: { bg: "rgba(245,158,11,0.15)", color: "#B45309" },
+  Emitida: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
   Pendiente: { bg: "rgba(245,158,11,0.15)", color: "#D97706" },
   Vencida: { bg: "rgba(239,68,68,0.15)", color: "#DC2626" },
   Rechazada: { bg: "rgba(239,68,68,0.15)", color: "#DC2626" },
@@ -27,24 +25,20 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
-function fmtMonto(f: Factura): string {
-  const monto = (f.total ?? 0).toLocaleString("es-PE", { minimumFractionDigits: 2 });
-  return `${f.moneda === "USD" ? "US$" : "S/"} ${monto}`;
-}
-
 function formatoBytes(bytes?: number) {
   if (!bytes || bytes <= 0) return null;
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/** No se menciona el monto en el mensaje -- todavia no se registra un
+ *  monto real por factura subida desde aca, y decir "$ 0.00" se veia
+ *  mal tanto en la tarjeta como en el mensaje. */
 function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   const numero = f.numero_fmt || f.serie || "tu factura";
   return [
     `Hola ${nombre}, te comparto la factura ${numero} de Vista360.`,
-    "",
-    `Monto: ${fmtMonto(f)}`,
     "",
     `Puedes verla aquí: ${url}`,
   ].join("\n");
@@ -53,9 +47,10 @@ function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
 /**
  * Tarjeta de una factura -- mismo diseño (layout, tamaños, tipografía)
  * que ReportCard, para que se sienta parte de la misma app, pero con
- * su propio color (ámbar en vez de azul) e ícono de recibo en vez de
- * PDF de reporte, para que a simple vista se note que es otra cosa.
- * Igual que los reportes, deja enviar por WhatsApp y Correo.
+ * su propio color (rojo vino, premium/elegante, no naranja) e ícono
+ * de documento con "FACTURA" dibujado dentro (no como texto aparte
+ * debajo), para que a simple vista se note que es otra cosa. Igual
+ * que los reportes, deja enviar por WhatsApp y Correo.
  */
 export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const esKeyR2 = Boolean(f.pdfUrl) && !f.pdfUrl!.startsWith("http");
@@ -94,22 +89,33 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     <div className="report-card factura-card">
       <div className="report-card-main">
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
-          <svg width="46" height="58" viewBox="0 0 46 58" fill="none">
+          <svg width="56" height="70" viewBox="0 0 56 70" fill="none">
             <path
-              d="M6 1.5h34v49.5l-4.5-3.5-4.5 3.5-4.5-3.5-4.5 3.5-4.5-3.5-4.5 3.5-4.5-3.5-2.5 1.9V1.5Z"
-              fill="#5A3600"
-              stroke="#F5A524"
+              d="M8 1.5h28L50 15v49A4.5 4.5 0 0 1 45.5 68.5H8A4.5 4.5 0 0 1 3.5 64V6A4.5 4.5 0 0 1 8 1.5Z"
+              fill="#5C1620"
+              stroke="#C2495C"
             />
-            <path d="M12 14h22M12 21h22M12 28h16" stroke="#FBD98A" strokeWidth="1.8" strokeLinecap="round" />
-            <circle cx="30" cy="37" r="6.5" fill="#3A2400" stroke="#FBD98A" strokeWidth="1.4" />
-            <path d="M27.5 37h5M30 34.5v5" stroke="#FBD98A" strokeWidth="1.4" strokeLinecap="round" />
+            <path d="M36 1.5V12A4.5 4.5 0 0 0 40.5 16.5H50" fill="#D68A96" fillOpacity=".35" />
+            <path d="M13 22h22M13 29h22M13 36h14" stroke="#EBC3CA" strokeWidth="1.8" strokeLinecap="round" />
+            <rect x="3.5" y="49" width="49" height="15" rx="2.5" fill="#7A1F2B" />
+            <text
+              x="28"
+              y="59.2"
+              textAnchor="middle"
+              fontFamily="Helvetica, Arial, sans-serif"
+              fontSize="8"
+              fontWeight="700"
+              fill="#FFFFFF"
+              letterSpacing="0.3"
+            >
+              FACTURA
+            </text>
           </svg>
-          <span>FACTURA</span>
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>
           <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
-          <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"} · {fmtMonto(f)}</div>
+          <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
         <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
@@ -117,33 +123,20 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
       </div>
 
-      {(urlVer || true) && (
+      {urlVer && (
         <div className="report-actions">
-          {urlVer && (
-            <a className="report-action factura-action-primary" href={urlVer} target="_blank" rel="noreferrer">
-              Ver
-            </a>
-          )}
-          {urlVer && (
-            <a
-              className="report-action report-action-download"
-              href={urlDescarga || urlVer}
-              download
-              rel="noreferrer"
-            >
-              Descargar
-            </a>
-          )}
-          <a
-            className="report-action report-action-outline factura-action-outline"
-            href={`${FACTURACION_WEB_URL}/ver/${f.id}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{ gridColumn: "1 / -1" }}
-          >
-            Ver en Facturación
+          <a className="report-action factura-action-primary" href={urlVer} target="_blank" rel="noreferrer">
+            Ver
           </a>
-          {isAdmin && urlVer && (
+          <a
+            className="report-action report-action-download"
+            href={urlDescarga || urlVer}
+            download
+            rel="noreferrer"
+          >
+            Descargar
+          </a>
+          {isAdmin && (
             <>
               <a
                 className="report-action report-action-muted report-action-whatsapp"

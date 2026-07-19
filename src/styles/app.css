@@ -3017,25 +3017,27 @@
   .report-action-whatsapp svg {
     color: #22E17D;
   }
-  /* Factura: mismo layout que report-action, pero en ambar en vez de
-     azul, para que se note a simple vista que es otro tipo de tarjeta. */
+  /* Factura: mismo layout que report-action, pero en un rojo vino
+     elegante (no naranja, no rojo de alerta) para que se note a
+     simple vista que es otro tipo de tarjeta. */
   .factura-action-primary {
     color: #FFFFFF;
-    background: #B45309;
-    box-shadow: 0 10px 22px rgba(180, 83, 9, 0.28);
+    background: #7A1F2B;
+    box-shadow: 0 10px 22px rgba(122, 31, 43, 0.28);
     grid-column: 1 / -1;
     min-height: 60px;
     font-size: 16px;
   }
-  .factura-action-outline {
-    color: #B45309;
-    border-color: rgba(180,83,9,.3);
-    background: rgba(180,83,9,.06);
-    box-shadow: none;
+  /* Especificidad extra (.factura-card ancestro) para que gane
+     siempre sobre los media-queries de .report-pdf-icon en mobile
+     (que si no, la volvian a achicar en pantallas chicas). */
+  .factura-card .factura-pdf-icon {
+    width: 92px;
+    height: 130px;
   }
-  .factura-pdf-icon span {
-    font-size: 11px;
-    letter-spacing: 0.5px;
+  .factura-card .factura-pdf-icon svg {
+    width: 92px;
+    height: 115px;
   }
   .factura-card .report-ready-badge {
     font-weight: 750;
@@ -3061,6 +3063,14 @@
     .report-pdf-icon svg {
       width: 80px;
     }
+    .factura-card .report-card-main {
+      grid-template-columns: 88px minmax(0, 1fr) auto;
+    }
+    .factura-card .factura-pdf-icon,
+    .factura-card .factura-pdf-icon svg {
+      width: 88px;
+      height: auto;
+    }
     .report-title {
       font-size: 24px;
     }
@@ -3085,6 +3095,14 @@
     .report-pdf-icon,
     .report-pdf-icon svg {
       width: 66px;
+    }
+    .factura-card .report-card-main {
+      grid-template-columns: 72px minmax(0, 1fr);
+    }
+    .factura-card .factura-pdf-icon,
+    .factura-card .factura-pdf-icon svg {
+      width: 72px;
+      height: auto;
     }
     .report-ready-badge {
       grid-column: 2;
