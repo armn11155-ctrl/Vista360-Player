@@ -2426,8 +2426,8 @@
       flex-direction: column;
     }
 
-    /* En escritorio replica las proporciones amplias de la referencia,
-       alineadas a la izquierda; mobile conserva su formato compacto. */
+    /* En escritorio el acceso conserva el ancho compacto de mobile, pero
+       se alinea a la izquierda para liberar la panorámica hacia la derecha. */
     .login-shell::before {
       background-position: center center;
       background-size: 100% 100%;
@@ -2435,13 +2435,10 @@
     }
     .login-logo, .login-card, .login-foot {
       width: 100%;
-      max-width: 440px;
+      max-width: 400px;
       margin-left: clamp(56px, 8vw, 150px);
       margin-right: auto;
     }
-    .login-logo { margin-bottom: 38px; }
-    .login-logo img { width: min(370px, 90%); }
-    .login-card { padding: 34px 30px; }
 
     .sidebar-brand {
       display: block;
