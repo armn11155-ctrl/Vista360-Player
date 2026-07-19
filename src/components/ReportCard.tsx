@@ -73,22 +73,12 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  Son dos URLs firmadas de la misma key -- una pensada para verse
    *  (url) y otra que fuerza la descarga con Content-Disposition:
    *  attachment (informe.urlDescarga, ver listarReportesCliente.ts). */
-  // window.open() programado lo bloquean casi todos los navegadores de
-  // celular (Safari/Chrome en iOS y Android tratan cualquier
-  // window.open() que no sea la ÚNICA acción del clic como un popup no
-  // deseado). La forma que sí funciona en todos: dejar que el propio
-  // <a href target="_blank"> haga la apertura de pestaña -- eso SIEMPRE
-  // se permite porque es la acción nativa del link, no un script -- y
-  // disparar la descarga aparte, como efecto secundario del mismo clic.
-  function dispararDescargaExtra() {
-    const enlaceDescarga = document.createElement("a");
-    enlaceDescarga.href = informe.urlDescarga || url;
-    enlaceDescarga.download = "";
-    enlaceDescarga.rel = "noreferrer";
-    document.body.appendChild(enlaceDescarga);
-    enlaceDescarga.click();
-    enlaceDescarga.remove();
-  }
+  // Intentar disparar dos acciones (ver + descargar) desde un solo
+  // clic con JavaScript lo terminan bloqueando los navegadores de
+  // celular de una forma u otra (window.open programado, o un segundo
+  // <a> clickeado a mano) -- por más que se reordene, algún navegador
+  // se queda solo con una. La solución que SIEMPRE funciona: dos
+  // botones de verdad, cada uno un <a> normal sin trucos.
 
   async function eliminarReporte() {
     if (!cloudFunctions || eliminando) return;
@@ -167,14 +157,17 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
+        <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer">
+          Ver
+        </a>
         <a
-          className="report-action report-action-primary"
-          href={url}
-          target="_blank"
+          className="report-action report-action-outline"
+          href={informe.urlDescarga || url}
+          download
           rel="noreferrer"
-          onClick={dispararDescargaExtra}
+          style={{ gridColumn: "1 / -1" }}
         >
-          Ver / Descargar
+          Descargar
         </a>
         {isAdmin && (
           <>
