@@ -312,11 +312,15 @@
     }
     .app-shell.has-bottom-nav .bottom-nav {
       position: relative !important;
-      min-height: calc(72px + env(safe-area-inset-bottom));
+      min-height: calc(62px + env(safe-area-inset-bottom));
+      padding-top: 2px !important;
       padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 1px) !important;
       background: #FFFFFF !important;
       z-index: 160;
       box-shadow: 0 -10px 30px rgba(15,23,42,.08);
+    }
+    .app-shell.has-bottom-nav .bottom-nav .nav-item {
+      padding: 6px 4px 4px !important;
     }
     /* Relleno del sangrado: ocupa el espacio extra que le agregamos al
      * shell, con el mismo blanco del bottom-nav, para que nunca se vea
