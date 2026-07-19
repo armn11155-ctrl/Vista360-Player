@@ -2271,8 +2271,8 @@
     z-index: -2;
     background-image: url('/login-new-york-wide.jpg');
     background-repeat: no-repeat;
-    background-size: 135% auto;
-    background-position: center 62%;
+    background-size: cover;
+    background-position: center center;
   }
   .login-shell::after {
     content: none;
