@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import type { Contrato, Panel } from "../../types";
+import type { CampanaEstado, Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
@@ -55,8 +55,20 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
   const [hoverEstrella, setHoverEstrella] = useState<{ id: string; n: number } | null>(null);
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  // Desactivado temporalmente (a pedido del cliente) -- no borra la
+  // funcionalidad, solo la oculta hasta que se pida reactivarla.
+  const mostrarCalificacion = false;
   const comprobanteRef = useRef<HTMLInputElement>(null);
-  const filtradas = contratos.filter((c) => filtro === "Todas" || estadoCampana(c) === filtro);
+  // Siempre en el mismo orden sin importar como vengan del origen:
+  // primero las Activas (lo mas urgente/relevante ahora), despues las
+  // Programadas (lo que viene), y al final las Finalizadas (ya no
+  // requieren accion). Dentro de cada grupo se respeta el orden
+  // original (sort estable).
+  const ORDEN_ESTADO: Record<CampanaEstado, number> = { Activa: 0, Programada: 1, Finalizada: 2 };
+  const filtradas = contratos
+    .filter((c) => filtro === "Todas" || estadoCampana(c) === filtro)
+    .slice()
+    .sort((a, b) => ORDEN_ESTADO[estadoCampana(a)] - ORDEN_ESTADO[estadoCampana(b)]);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
   const informeDelMes = informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
@@ -251,7 +263,11 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     <div className="premium-campaign-progress-label">{pct}% completado</div>
                   </div>
                 )}
-                {!isAdmin && estado === "Finalizada" && (
+                {/* Desactivado (a pedido del cliente) -- al terminar una
+                    campaña no debe aparecer ningun mensaje pidiendo
+                    calificarla. No se borra la funcionalidad, solo se
+                    oculta hasta que se pida reactivarla. */}
+                {!isAdmin && estado === "Finalizada" && mostrarCalificacion && (
                   c.calificacion ? (
                     <div style={{ fontSize: 13, marginTop: 4 }}>
                       {"★".repeat(c.calificacion)}{"☆".repeat(5 - c.calificacion)}
