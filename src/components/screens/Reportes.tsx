@@ -345,7 +345,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         )}
 
         {informes.length > 0 && (
-          <div className="reports-list">
+          <div className={`reports-list${isAdmin ? "" : " reports-list-client"}`}>
             {informes.map((informe) => (
               <ReportCard
                 key={informe.id}

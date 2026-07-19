@@ -1028,6 +1028,9 @@
     gap: 18px;
     padding-bottom: 4px;
   }
+  .reports-list-client {
+    margin-top: 12px;
+  }
   .report-card {
     position: relative;
     background: #FFFFFF;
