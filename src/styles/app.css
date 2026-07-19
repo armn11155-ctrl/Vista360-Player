@@ -1478,10 +1478,9 @@
     background: #F8FAFC;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: hidden;
     overflow-x: hidden;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: none;
   }
   .profile-top {
     min-height: 255px;
@@ -1540,9 +1539,12 @@
     box-shadow: none;
   }
   .profile-content {
-    flex: 0 0 auto;
-    min-height: auto;
-    overflow: visible;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
     padding: 25px 20px 18px;
     margin-top: 0;
   }
@@ -2600,9 +2602,10 @@
     }
 
     .profile-screen {
-      height: auto;
-      min-height: 100%;
-      overflow-y: auto;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      overscroll-behavior: none;
       overflow-x: hidden;
       background: #F7F9FC;
     }
@@ -2617,6 +2620,12 @@
       width: min(1180px, 100%);
       margin-left: auto;
       margin-right: auto;
+    }
+    .profile-content {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: none;
     }
     .profile-top-bar {
       margin-bottom: 34px;
@@ -2852,12 +2861,22 @@
     /* Selector de cliente del admin: versión espaciosa tipo "perfiles",
        tiles más grandes y grid centrado con más aire alrededor. */
     .admin-picker-header { padding: 56px 40px 36px; }
+    .admin-picker-shell {
+      top: 0;
+      bottom: 0;
+      height: 100vh;
+      height: 100dvh;
+      min-height: 0;
+      max-height: 100dvh;
+      overscroll-behavior: none;
+    }
+    .admin-picker-shell::after { display: none; }
     .admin-picker-logo { height: 26px; margin-bottom: 26px; }
     .admin-picker-title { font-size: 30px; }
     .admin-picker-sub { font-size: 14.5px; margin-bottom: 26px; }
     .admin-picker-search-wrap { max-width: 420px; }
     .admin-picker-search { padding: 13px 16px 13px 40px; font-size: 14px; }
-    .admin-picker-body { padding: 8px 40px 40px; }
+    .admin-picker-body { padding: 8px 40px 40px; overscroll-behavior: none; }
     .admin-picker-grid {
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 28px 24px;
