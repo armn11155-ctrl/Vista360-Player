@@ -19,8 +19,15 @@ export interface FacturaPdfPreparada {
 }
 
 export function formatoBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  // Base decimal (1000), no binaria (1024): asi coincide con lo que
+  // muestran Finder, Android/iOS y la mayoria de administradores de
+  // archivos al ver el PDF ya descargado -- antes, al calcular en
+  // base 1024 pero mostrar la etiqueta "KB"/"MB" (que en realidad es
+  // decimal), el numero de aca salia mas chico que el tamano real que
+  // veia el usuario en su telefono o compu, aunque el archivo fuera
+  // exactamente el mismo.
+  if (bytes < 1_000_000) return `${Math.max(1, Math.round(bytes / 1000))} KB`;
+  return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
 function fileToBase64(file: File): Promise<string> {

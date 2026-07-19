@@ -27,8 +27,11 @@ function nombreCliente(cliente: Cliente | null) {
 
 function formatoBytes(bytes?: number) {
   if (!bytes || bytes <= 0) return null;
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  // Base decimal (1000), no binaria (1024) -- ver nota en
+  // prepararFacturaPdf.ts: asi el numero coincide con el tamano que
+  // muestra el telefono/compu del archivo ya descargado.
+  if (bytes < 1_000_000) return `${Math.max(1, Math.round(bytes / 1000))} KB`;
+  return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
 /** No se menciona el monto en el mensaje -- todavia no se registra un
