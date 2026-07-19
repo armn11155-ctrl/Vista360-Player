@@ -2869,6 +2869,9 @@
       min-height: 0;
       max-height: 100dvh;
       overscroll-behavior: none;
+      background-image: url('/login-ny-desktop-tailored.jpg');
+      background-position: center center;
+      background-size: cover;
     }
     .admin-picker-shell::after { display: none; }
     .admin-picker-logo { height: 26px; margin-bottom: 26px; }
@@ -2885,6 +2888,7 @@
     .admin-picker-tile-avatar { border-radius: 20px; font-size: 30px; }
     .admin-picker-tile-name { font-size: 14px; }
     .admin-picker-footer { padding: 24px 40px 40px; }
+    .admin-picker-modal-backdrop { align-items: center; }
   }
 
 
@@ -3050,10 +3054,11 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background:
-      radial-gradient(900px 520px at 12% -12%, rgba(8,119,255,.24), transparent 62%),
-      radial-gradient(720px 460px at 96% 4%, rgba(37,99,235,.14), transparent 64%),
-      linear-gradient(180deg, #07101D 0%, #050A12 44%, #03070D 100%);
+    background-color: #050A12;
+    background-image: url('/login-ny-mobile-tailored.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
   }
   .admin-picker-shell::after {
     content: "";
@@ -3069,6 +3074,7 @@
     flex-shrink: 0;
     padding: calc(26px + env(safe-area-inset-top)) 20px 20px;
     text-align: center;
+    text-shadow: 0 2px 16px rgba(0,0,0,.55);
   }
   .admin-picker-logo { height: 22px; display: block; margin: 0 auto 22px; }
   .admin-picker-badge {
@@ -3337,30 +3343,31 @@
   }
   .admin-picker-tile-gear {
     position: absolute;
-    top: 6px;
-    right: 6px;
+    top: 8px;
+    right: 8px;
     z-index: 3;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1px solid rgba(255,255,255,0.22);
-    background: rgba(5,10,18,0.72);
-    backdrop-filter: blur(6px);
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+    border: 1px solid rgba(255,255,255,.28);
+    background: rgba(5,10,18,.66);
+    backdrop-filter: blur(12px) saturate(140%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0;
-    transform: scale(0.85);
-    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+    opacity: .68;
+    transform: scale(.92);
+    box-shadow: 0 8px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
+    transition: opacity .18s ease, transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
   }
   .admin-picker-tile-avatar-wrap:hover .admin-picker-tile-gear,
   .admin-picker-tile-gear:focus-visible {
     opacity: 1;
     transform: scale(1);
   }
-  .admin-picker-tile-gear:hover { background: rgba(8,119,255,0.85); }
+  .admin-picker-tile-gear:hover { background: #0877FF; border-color: rgba(255,255,255,.5); transform: scale(1.08) rotate(18deg); box-shadow: 0 10px 28px rgba(8,119,255,.48); }
   .admin-picker-tile-gear:disabled { opacity: 0.4; cursor: default; }
   @media (hover: none) {
     .admin-picker-tile-gear { opacity: 1; transform: scale(1); }
@@ -3511,7 +3518,8 @@
     position: fixed;
     inset: 0;
     z-index: 260;
-    background: rgba(2,6,23,.72);
+    background: rgba(2,6,23,.66);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -3519,11 +3527,11 @@
   }
   .admin-picker-modal {
     width: min(420px, 100%);
-    background: #FFFFFF;
-    border-radius: 14px;
-    padding: 20px;
-    border: 1px solid rgba(226,232,240,.96);
-    box-shadow: 0 26px 70px rgba(0,0,0,.36);
+    background: linear-gradient(155deg, rgba(15,29,50,.96), rgba(5,10,18,.97));
+    border-radius: 22px;
+    padding: 24px;
+    border: 1px solid rgba(147,197,253,.20);
+    box-shadow: 0 34px 90px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.08);
   }
   .admin-picker-modal-kicker {
     color: #0877FF;
@@ -3534,14 +3542,14 @@
     margin-bottom: 7px;
   }
   .admin-picker-modal-title {
-    color: #050A12;
+    color: #FFFFFF;
     font-size: 20px;
     line-height: 1.1;
     font-weight: 900;
     margin-bottom: 9px;
   }
   .admin-picker-modal-copy {
-    color: #64748B;
+    color: rgba(203,213,225,.68);
     font-size: 13px;
     line-height: 1.42;
     font-weight: 650;
@@ -3551,7 +3559,7 @@
     width: 100%;
     min-height: 46px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 13px;
     font: inherit;
     font-size: 14px;
     font-weight: 900;
@@ -3563,8 +3571,9 @@
     color: #FFFFFF;
   }
   .admin-picker-modal-action.secondary {
-    background: #F1F5F9;
-    color: #0B1220;
+    background: rgba(255,255,255,.08);
+    color: #E2E8F0;
+    border: 1px solid rgba(255,255,255,.10);
   }
   .admin-picker-modal-action:disabled {
     opacity: .62;
