@@ -297,7 +297,8 @@
       background: var(--bg);
     }
     .app-shell.has-bottom-nav .main-area {
-      background: #FFFFFF;
+      position: relative;
+      background: var(--bg);
       padding-bottom: 0;
       /* El shell ahora "sangra" hacia abajo (bottom negativo, mas alto
        * que la pantalla real) para que, si Safari en iOS reduce su
@@ -310,8 +311,14 @@
       height: 100vh;
       height: 100dvh;
     }
+    .app-shell.has-bottom-nav .screens {
+      padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    }
     .app-shell.has-bottom-nav .bottom-nav {
-      position: relative !important;
+      position: absolute !important;
+      left: 0;
+      right: 0;
+      bottom: 0;
       min-height: calc(56px + env(safe-area-inset-bottom));
       padding-top: 0 !important;
       padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 1px) !important;
@@ -322,14 +329,14 @@
     .app-shell.has-bottom-nav .bottom-nav .nav-item {
       padding: 4px 4px 2px !important;
     }
-    /* Relleno del sangrado: ocupa el espacio extra que le agregamos al
-     * shell, con el mismo blanco del bottom-nav, para que nunca se vea
-     * un espacio vacio/de otro color debajo de la pantalla real. */
+    /* El fondo de la app continúa detrás del área segura, igual que en
+     * Iniciar sesión. El Nav se superpone, pero .screens reserva arriba
+     * exactamente su altura para no ocultar contenido interactivo. */
     .app-shell.has-bottom-nav::after {
       content: "";
       display: block;
       flex: 1;
-      background: #FFFFFF;
+      background: var(--bg);
     }
     .app-shell,
     .main-area,
