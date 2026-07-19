@@ -4538,6 +4538,15 @@
       background-position: center center;
       background-size: cover;
     }
+    .admin-picker-grid {
+      width: 100%;
+      max-width: 1080px;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 168px));
+      justify-content: center;
+      gap: 28px 24px;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
     /* Acciones compactas en reportes de escritorio: dos por fila, sin
        botones que se estiren innecesariamente por toda la tarjeta. */
