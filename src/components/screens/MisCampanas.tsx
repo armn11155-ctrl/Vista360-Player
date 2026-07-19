@@ -319,9 +319,6 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     )}
                   </div>
                 )}
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="2" style={{ marginTop: isAdmin ? 0 : 4 }}>
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
               </div>
             </div>
           );
