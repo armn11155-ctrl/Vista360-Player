@@ -148,7 +148,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
-      <div style={{ background: "#050A12", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0 }}>
+      <div style={{ background: "#050A12", padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
@@ -158,7 +158,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         </div>
 
         {/* Nombre / estado / fechas — arriba, ancho completo */}
-        <div style={{ marginBottom: 14 }}>
+        <div style={{ marginBottom: 14, order: 2 }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 7 }}>
             {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
           </div>
@@ -175,12 +175,11 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
           )}
         </div>
 
-        {/* Foto de campaña — banner ancho debajo del texto (antes era un
-            cuadrado 72x72 al costado; se veía chico y apretado). */}
+        {/* Foto de campaña — banner ancho arriba de los datos principales. */}
         {/* Cambiar la foto desde acá esta desactivado por el momento (a
             pedido del cliente) -- se deja el modal/logica intactos para
             poder reactivarlo despues, solo cambia esta bandera. */}
-        <div style={{ position: "relative", width: "100%", height: 156 }}>
+        <div style={{ position: "relative", width: "100%", height: 156, order: 1, marginBottom: 14 }}>
           {isAdmin && permitirCambiarPortada ? (
             <button
               type="button"
