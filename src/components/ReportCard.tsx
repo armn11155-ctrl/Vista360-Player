@@ -90,11 +90,11 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     setEliminando(true);
     setError("");
     try {
-      const eliminarReporteCliente = httpsCallable<{ clienteId: string; mes: string }, { ok: boolean }>(
+      const eliminarReporteCliente = httpsCallable<{ clienteId: string; mes: string; dia?: string }, { ok: boolean }>(
         cloudFunctions,
         "eliminarReporteCliente"
       );
-      await eliminarReporteCliente({ clienteId, mes: informe.mes });
+      await eliminarReporteCliente({ clienteId, mes: informe.mes, dia: informe.dia });
       onEliminado?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo eliminar el reporte.");

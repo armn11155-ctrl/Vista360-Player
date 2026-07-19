@@ -29,27 +29,50 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
 
     const clienteId = String(request.data?.clienteId ?? "");
     const mes = String(request.data?.mes ?? "");
+    const diaRaw = String(request.data?.dia ?? "").padStart(2, "0");
+    const dia = /^\d{2}$/.test(diaRaw) ? diaRaw : "";
     if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {
       throw new HttpsError("invalid-argument", "Envia clienteId y mes en formato YYYY-MM.");
     }
 
-    const prefix = `clientes/${clienteId}/reportes/${mes}`;
-    const keys = [`${prefix}/reporte-digital.pdf`, `${prefix}/reporte-hd.pdf`];
+    // Desde que existe un reporte por dia (no solo por mes), la key en
+    // R2 y el id del documento en Firestore incluyen el dia --
+    // borrar solo con clienteId+mes (como antes) apuntaba a una key y
+    // un documento que ya no existian, asi que no fallaba pero
+    // tampoco borraba nada de verdad. Si no llega "dia" (reportes
+    // viejos, de antes de esa funcionalidad), se usa el esquema
+    // antiguo como respaldo.
     const bucket = r2Bucket();
     const client = r2Client();
-    await Promise.all(
-      keys.map((key) =>
-        client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })).catch((error) => {
-          console.warn(`No se pudo borrar ${key} (puede que ya no exista).`, error);
-        })
-      )
-    );
 
-    await db
-      .collection("informesCliente")
-      .doc(`${clienteId}_${mes}`)
-      .delete()
-      .catch(() => undefined);
+    if (dia) {
+      const prefix = `clientes/${clienteId}/reportes/${mes}/${dia}`;
+      await client
+        .send(new DeleteObjectCommand({ Bucket: bucket, Key: `${prefix}/reporte-digital.pdf` }))
+        .catch((error) => {
+          console.warn(`No se pudo borrar ${prefix}/reporte-digital.pdf (puede que ya no exista).`, error);
+        });
+      await db
+        .collection("informesCliente")
+        .doc(`${clienteId}_${mes}-${dia}`)
+        .delete()
+        .catch(() => undefined);
+    } else {
+      const prefix = `clientes/${clienteId}/reportes/${mes}`;
+      const keys = [`${prefix}/reporte-digital.pdf`, `${prefix}/reporte-hd.pdf`];
+      await Promise.all(
+        keys.map((key) =>
+          client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })).catch((error) => {
+            console.warn(`No se pudo borrar ${key} (puede que ya no exista).`, error);
+          })
+        )
+      );
+      await db
+        .collection("informesCliente")
+        .doc(`${clienteId}_${mes}`)
+        .delete()
+        .catch(() => undefined);
+    }
 
     return { ok: true };
   } catch (error) {

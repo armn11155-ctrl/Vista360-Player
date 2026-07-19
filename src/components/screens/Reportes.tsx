@@ -147,9 +147,13 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         mes,
         dia,
         panelId: panelId || undefined,
+        // Antes se mandaba la fecha real de HOY para cada foto, sin
+        // importar que dia/mes eligio el admin arriba -- por eso las
+        // paginas de evidencia mostraban la fecha de hoy en vez de la
+        // fecha del reporte. Ahora usan la misma fecha seleccionada.
         fotos: fotosReporte.map((foto) => ({
           url: foto.dataUrl,
-          fecha: new Date().toISOString().slice(0, 10),
+          fecha: `${mes}-${dia}`,
         })),
       });
       setMensajeAdminTipo("ok");
