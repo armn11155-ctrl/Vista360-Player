@@ -73,7 +73,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
   const [panelId, setPanelId] = useState("");
-  const [panelMenuAbierto, setPanelMenuAbierto] = useState(false);
 
   // Todos los paneles del sistema (no solo los que ya tienen un
   // contrato con este cliente) -- asi el admin puede elegir cualquier
@@ -81,7 +80,11 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   // que los vincule.
   const panelesDisponiblesState = usePanelesDisponibles(!!isAdmin);
   const panelesCliente: Panel[] = panelesDisponiblesState.status === "ready" ? panelesDisponiblesState.paneles : [];
-  const panelSeleccionado = panelId ? paneles[panelId] : undefined;
+  // OJO: buscar en panelesCliente (TODOS los paneles), no en el prop
+  // "paneles" -- ese solo trae los paneles que ya tienen contrato con
+  // este cliente, y si se elegia uno que no estaba ahi, no pasaba
+  // nada visible al tocarlo (bug real, ya corregido).
+  const panelSeleccionado = panelId ? panelesCliente.find((p) => p.id === panelId) : undefined;
   const panelPrincipal = panelSeleccionado ?? (contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined);
   const ubicacionAuto = [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
     .filter(Boolean)
@@ -175,47 +178,22 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       <div className="reports-screen-body">
         {isAdmin && panelesCliente.length > 0 && (
           <div className="reports-panel-filter-wrap">
-            <button
-              type="button"
-              className="reports-panel-filter"
-              onClick={() => setPanelMenuAbierto((v) => !v)}
-              aria-label="Filtrar por panel"
+            <select
+              className="reports-panel-filter reports-panel-select"
+              value={panelId}
+              onChange={(e) => setPanelId(e.target.value)}
+              aria-label="Elegir panel para el reporte"
             >
-              <span>{panelSeleccionado ? panelSeleccionado.nombre : "Todos los paneles"}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-            {panelMenuAbierto && (
-              <div className="reports-panel-dropdown">
-                <button
-                  type="button"
-                  className={`reports-panel-dropdown-item${!panelId ? " active" : ""}`}
-                  onClick={() => {
-                    setPanelId("");
-                    setPanelMenuAbierto(false);
-                  }}
-                >
-                  <div className="reports-panel-dropdown-item-name">Todos los paneles</div>
-                </button>
-                {panelesCliente.map((p) => (
-                  <button
-                    type="button"
-                    key={p.id}
-                    className={`reports-panel-dropdown-item${panelId === p.id ? " active" : ""}`}
-                    onClick={() => {
-                      setPanelId(p.id);
-                      setPanelMenuAbierto(false);
-                    }}
-                  >
-                    <div className="reports-panel-dropdown-item-name">{p.nombre}</div>
-                    <div className="reports-panel-dropdown-item-sub">
-                      {[p.direccion, p.ciudad].filter(Boolean).join(" · ") || "Sin dirección"}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+              <option value="">Todos los paneles</option>
+              {panelesCliente.map((p) => {
+                const direccion = [p.direccion, p.ciudad].filter(Boolean).join(", ");
+                return (
+                  <option key={p.id} value={p.id}>
+                    {p.nombre}{direccion ? ` — ${direccion}` : ""}
+                  </option>
+                );
+              })}
+            </select>
           </div>
         )}
 
