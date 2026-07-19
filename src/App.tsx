@@ -144,6 +144,7 @@ export default function App() {
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
   const [adminClienteId, setAdminClienteId] = useState<string | null>(null);
+  const [adminVistaCliente, setAdminVistaCliente] = useState(false);
 
   // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
   // el estado (login, cargando, selector de cliente, o ya adentro) — debe
@@ -242,6 +243,8 @@ export default function App() {
             onOpenPaneles={() => setView("paneles")}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}
+            vistaClienteActiva={adminVistaCliente}
+            onToggleVistaCliente={() => setAdminVistaCliente((activa) => !activa)}
           />
         </div>
       );
@@ -254,15 +257,16 @@ export default function App() {
         setView={setView}
         contratoAbierto={contratoAbierto}
         setContratoAbierto={setContratoAbierto}
-        isAdmin
-        adminNombre={auth.nombre}
+        isAdmin={!adminVistaCliente}
+        adminNombre={adminVistaCliente ? undefined : auth.nombre}
         online={online}
-        onSeleccionarCliente={(id) => {
+        onSeleccionarCliente={adminVistaCliente ? undefined : (id) => {
           setAdminClienteId(id);
           setView("nueva");
         }}
         onCambiarCliente={() => {
           setAdminClienteId(null);
+          setAdminVistaCliente(false);
           setView("inicio");
         }}
       />

@@ -3290,6 +3290,31 @@
     cursor: pointer;
   }
   .admin-picker-management-btn svg { width: 17px; height: 17px; }
+  .admin-picker-client-view-btn {
+    position: absolute;
+    top: calc(16px + env(safe-area-inset-top));
+    left: 116px;
+    z-index: 7;
+    height: 38px;
+    padding: 0 11px;
+    border-radius: 19px;
+    border: 1px solid rgba(255,255,255,.2);
+    background: #050A12;
+    color: rgba(255,255,255,.82);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .admin-picker-client-view-btn svg { width: 17px; height: 17px; }
+  .admin-picker-client-view-btn.active {
+    color: #FFFFFF;
+    border-color: rgba(96,165,250,.72);
+    background: #0B2E6B;
+  }
   .admin-picker-management-btn b,
   .admin-picker-management-card b {
     min-width: 19px;
@@ -4802,6 +4827,11 @@
       display: inline-flex;
       top: 24px;
       left: 28px;
+    }
+    .admin-picker-client-view-btn {
+      top: 24px;
+      left: 136px;
+      font-size: 12px;
     }
     .admin-picker-logo { display: block; }
     .admin-picker-badge { display: inline-flex; }

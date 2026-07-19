@@ -21,6 +21,8 @@ interface Props {
   adminIniciales?: string;
   /** Para mostrar la foto real (no solo iniciales) en el ícono "Mi perfil". */
   uid?: string;
+  vistaClienteActiva?: boolean;
+  onToggleVistaCliente?: () => void;
 }
 
 /**
@@ -29,7 +31,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente }: Props) {
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
@@ -168,6 +170,20 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         <span>Gestión</span>
         {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
       </button>
+      {onToggleVistaCliente && (
+        <button
+          type="button"
+          className={`admin-picker-client-view-btn${vistaClienteActiva ? " active" : ""}`}
+          onClick={onToggleVistaCliente}
+          aria-pressed={vistaClienteActiva}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+            <circle cx="12" cy="12" r="2.7" />
+          </svg>
+          <span>Vista cliente</span>
+        </button>
+      )}
       {onOpenPerfil && (
         <button type="button" className="admin-picker-perfil-btn" onClick={onOpenPerfil} title="Mi perfil" aria-label="Mi perfil">
           {miAvatarSrc && !miAvatarFallo ? (
@@ -184,7 +200,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           Modo Administrador
         </div>
         <div className="admin-picker-title">¿Qué cuenta gestionas?</div>
-        <div className="admin-picker-sub">Selecciona un perfil de cliente para continuar.</div>
+        <div className="admin-picker-sub">
+          {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
+        </div>
 
         <div className="admin-picker-actions">
           <button type="button" onClick={onOpenUsuarios} className="admin-picker-action">

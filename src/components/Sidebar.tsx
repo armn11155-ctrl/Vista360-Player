@@ -136,7 +136,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             </div>
           ))}
           <div className="sidebar-bottom">
-            {isAdmin && onCambiarCliente && (
+            {onCambiarCliente && (
               <div className="sidebar-bottom-section sidebar-bottom-section-switch">
                 <div
                   className="sidebar-item sidebar-item-switch"
