@@ -228,6 +228,29 @@ function drawFooterBar(doc: PDFKit.PDFDocument, num: string) {
     .text(num, PAGE.width - PAGE.margin - 40, barY + (barH - 11) / 2, { width: 40, align: "right" });
 }
 
+/** Baja el tamano de fuente (en pasos de 0.5pt) hasta que el texto entre
+ *  en una sola linea dentro de maxWidth, sin pasar de minSize. Si ni al
+ *  minimo entra en una linea, se queda en minSize y el texto ya se deja
+ *  hacer wrap a 2 lineas (el llamador debe medir la altura resultante). */
+function tamanoQueEntra(
+  doc: PDFKit.PDFDocument,
+  texto: string,
+  maxWidth: number,
+  fontName: string,
+  startSize: number,
+  minSize: number
+) {
+  doc.font(fontName);
+  let size = startSize;
+  while (size > minSize) {
+    doc.fontSize(size);
+    if (doc.widthOfString(texto) <= maxWidth) return size;
+    size -= 0.5;
+  }
+  doc.fontSize(minSize);
+  return minSize;
+}
+
 function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   // El anillo se sale del borde superior-derecho de la pagina (bleed),
@@ -260,20 +283,47 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
 
   // Tarjeta oscura: Ubicacion — mas clara que el fondo (antes se
   // perdia contra el negro) y con una linea de acento arriba, igual
-  // que la tarjeta flotante de las paginas de evidencia.
+  // que la tarjeta flotante de las paginas de evidencia. La altura y
+  // el tamano de letra se ajustan solos cuando la direccion es larga
+  // (primero se achica el texto, y si aun asi no entra en una linea,
+  // recien ahi el cuadro crece un poco) -- con textos cortos queda
+  // exactamente igual que antes.
   const cardX2 = 1012;
   const cardW2 = 418;
+  const innerW2 = cardW2 - 60;
+  const [lugarRaw, ...restoParts] = sinTildes(cliente.ubicacion).split(" - ");
+  const lugar = lugarRaw || sinTildes(cliente.ubicacion);
+  const resto = restoParts.join(", ");
+
+  const lugarSize = tamanoQueEntra(doc, lugar, innerW2, "Helvetica-Bold", 18, 13);
+  doc.font("Helvetica-Bold").fontSize(lugarSize);
+  const lugarHeight = doc.heightOfString(lugar, { width: innerW2 });
+
+  let restoSize = 13;
+  let restoHeight = 0;
+  if (resto) {
+    restoSize = tamanoQueEntra(doc, resto, innerW2, "Helvetica", 13, 9.5);
+    doc.font("Helvetica").fontSize(restoSize);
+    restoHeight = doc.heightOfString(resto, { width: innerW2 });
+  }
+
+  const lugarY = 46;
+  const restoY = lugarY + lugarHeight + 10;
+  const contenidoAbajo = resto ? restoY + restoHeight : lugarY + lugarHeight;
+  // No crece mas alla del pie de pagina (deja un margen de seguridad).
+  const maxCardH2 = PAGE.height - 44 - cardY - 12;
+  const cardH2 = Math.min(maxCardH2, Math.max(cardH, contenidoAbajo + 20));
+
   doc.save();
-  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).clip();
-  doc.rect(cardX2, cardY, cardW2, cardH).fill("#182a46");
+  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).clip();
+  doc.rect(cardX2, cardY, cardW2, cardH2).fill("#182a46");
   doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
   doc.restore();
-  doc.roundedRect(cardX2, cardY, cardW2, cardH, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
+  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
-  const [lugar, ...resto] = sinTildes(cliente.ubicacion).split(" - ");
-  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.white).text(lugar || sinTildes(cliente.ubicacion), cardX2 + 30, cardY + 46, { width: cardW2 - 60 });
-  if (resto.length > 0) {
-    doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted).text(resto.join(", "), cardX2 + 30, cardY + 72, { width: cardW2 - 60 });
+  doc.font("Helvetica-Bold").fontSize(lugarSize).fillColor(COLORS.white).text(lugar, cardX2 + 30, cardY + lugarY, { width: innerW2 });
+  if (resto) {
+    doc.font("Helvetica").fontSize(restoSize).fillColor(COLORS.muted).text(resto, cardX2 + 30, cardY + restoY, { width: innerW2 });
   }
 
   drawFooterLine(doc, "01", true);
