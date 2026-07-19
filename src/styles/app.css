@@ -3722,14 +3722,14 @@
   .admin-picker-logout {
     padding: 11px 24px;
     border-radius: 10px;
-    border: 1px solid rgba(239,68,68,0.35);
-    background: rgba(239,68,68,0.10);
-    color: #FCA5A5;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #050A12;
+    color: #EF4444;
     font-weight: 600;
     font-size: 13px;
     cursor: pointer;
   }
-  .admin-picker-logout:hover { background: rgba(239,68,68,0.16); }
+  .admin-picker-logout:hover { background: #090F19; }
 
   /* ===== Solicitudes de campaña ===== */
   .admin-tool-screen {
@@ -4028,6 +4028,15 @@
   .sidebar-bottom .sidebar-item-danger {
     margin-top: 0;
     border-top: 0;
+    background: #050A12;
+    color: #EF4444;
+  }
+  .sidebar-bottom .sidebar-item-danger:hover {
+    background: #090F19;
+  }
+  .sidebar-bottom .sidebar-item-danger .sidebar-item-icon,
+  .sidebar-bottom .sidebar-item-danger .sidebar-item-label {
+    color: #EF4444 !important;
   }
 
   @media (min-width: 900px) {
