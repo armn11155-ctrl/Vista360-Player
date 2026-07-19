@@ -133,23 +133,6 @@ export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onM
           </div>
         )}
 
-        {!ruc && !clienteId && (
-          <div className="card" style={{ background: "rgba(245,158,11,0.1)" }}>
-            <div style={{ fontSize: 12.5, color: "#B45309", lineHeight: 1.5 }}>
-              No encontramos un RUC registrado para tu cuenta — contáctanos para vincularlo y
-              poder mostrarte tus facturas aquí.
-            </div>
-          </div>
-        )}
-        {!ruc && clienteId && (
-          <div className="card" style={{ background: "rgba(8,119,255,0.08)" }}>
-            <div style={{ fontSize: 12.5, color: "#0B3F8A", lineHeight: 1.5 }}>
-              Aún no tienes RUC registrado — igual puedes ver aquí las facturas en PDF que te
-              subamos directamente.
-            </div>
-          </div>
-        )}
-
         {state.status === "loading" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
         )}
