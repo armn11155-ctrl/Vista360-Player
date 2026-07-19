@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { envMissing } from "./config/env";
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
@@ -46,6 +46,31 @@ const Facturas = lazy(() => import("./components/screens/Facturas"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
 const Paneles = lazy(() => import("./components/screens/Paneles"));
+
+/** Precarga en segundo plano (cuando el navegador está libre, sin
+ *  competir con nada urgente) el código de TODAS las pantallas que
+ *  se abren desde el menú lateral o al tocar una campaña. Sin esto,
+ *  la PRIMERA vez que se entra a cada una hay que esperar a que el
+ *  navegador la descargue -- eso es el "corte"/destello que se ve al
+ *  cambiar de sección. Pedirla de antemano hace que, para cuando el
+ *  admin realmente toca "Paneles" (o Cobertura, Facturas, etc), el
+ *  código ya esté en caché y la pantalla aparezca al toque. */
+function precargarPantallas() {
+  void import("./components/screens/DetalleCampana");
+  void import("./components/screens/NuevaCampana");
+  void import("./components/screens/Portafolio");
+  void import("./components/screens/Cobertura");
+  void import("./components/screens/MisPantallas");
+  void import("./components/screens/Impacto");
+  void import("./components/screens/Contactanos");
+  void import("./components/screens/AnaliticaClientes");
+  void import("./components/screens/SolicitudesCampana");
+  void import("./components/screens/Accesos");
+  void import("./components/screens/Facturas");
+  void import("./components/screens/Notificaciones");
+  void import("./components/screens/CrearCliente");
+  void import("./components/screens/Paneles");
+}
 
 type View =
   | Tab
@@ -295,6 +320,14 @@ function AuthenticatedApp({
     ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
     : 0;
   const paneles = usePaneles(contratos.map((c) => c.panel_id));
+
+  useEffect(() => {
+    const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
+    const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
+    const id = idle(precargarPantallas);
+    return () => cancelar(id);
+  }, []);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding());
 
