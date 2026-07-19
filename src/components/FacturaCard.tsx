@@ -92,14 +92,14 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           <svg width="56" height="70" viewBox="0 0 56 70" fill="none">
             <path
               d="M8 1.5h28L50 15v49A4.5 4.5 0 0 1 45.5 68.5H8A4.5 4.5 0 0 1 3.5 64V6A4.5 4.5 0 0 1 8 1.5Z"
-              fill="#5C1620"
-              stroke="#C2495C"
+              fill="#0A2447"
+              stroke="#3F6FB0"
             />
-            <path d="M36 1.5V12A4.5 4.5 0 0 0 40.5 16.5H50" fill="#D68A96" fillOpacity=".35" />
-            <path d="M13 22h22M13 29h22M13 36h14" stroke="#EBC3CA" strokeWidth="1.8" strokeLinecap="round" />
-            <rect x="3.5" y="49" width="49" height="15" rx="2.5" fill="#7A1F2B" />
+            <path d="M36 1.5V12A4.5 4.5 0 0 0 40.5 16.5H50" fill="#7FA8E0" fillOpacity=".35" />
+            <path d="M13 22h22M13 29h22M13 36h14" stroke="#C7D6EE" strokeWidth="1.8" strokeLinecap="round" />
+            <rect x="5" y="49" width="45" height="15" rx="2.5" fill="#0B2E6B" />
             <text
-              x="28"
+              x="27.5"
               y="59.2"
               textAnchor="middle"
               fontFamily="Helvetica, Arial, sans-serif"

@@ -3017,13 +3017,13 @@
   .report-action-whatsapp svg {
     color: #22E17D;
   }
-  /* Factura: mismo layout que report-action, pero en un rojo vino
-     elegante (no naranja, no rojo de alerta) para que se note a
-     simple vista que es otro tipo de tarjeta. */
+  /* Factura: mismo layout que report-action, pero en azul oscuro
+     (mas oscuro que el azul de reportes), no rojo ni naranja, para
+     que se note a simple vista que es otro tipo de tarjeta. */
   .factura-action-primary {
     color: #FFFFFF;
-    background: #7A1F2B;
-    box-shadow: 0 10px 22px rgba(122, 31, 43, 0.28);
+    background: #0B2E6B;
+    box-shadow: 0 10px 22px rgba(11, 46, 107, 0.28);
     grid-column: 1 / -1;
     min-height: 60px;
     font-size: 16px;
@@ -3039,8 +3039,25 @@
     width: 92px;
     height: 115px;
   }
+  /* El nombre de la factura viene del nombre del PDF que se sube --
+     puede ser mucho mas largo que "Julio 2026", asi que achica un
+     poco la letra y deja que pase a una segunda linea en vez de
+     salirse de la tarjeta. */
+  .factura-card .report-title {
+    font-size: 19px;
+    line-height: 1.15;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Sin menu de 3 puntitos en esta tarjeta -- no hace falta dejarle
+     espacio de sobra a la derecha, y se mantiene siempre en la
+     columna de la esquina superior derecha (ni en pantallas chicas). */
   .factura-card .report-ready-badge {
     font-weight: 750;
+    margin-right: 0;
+    grid-column: 3 !important;
+    justify-self: end !important;
+    margin-top: 0 !important;
   }
 
   @media (max-width: 430px) {
@@ -3097,7 +3114,7 @@
       width: 66px;
     }
     .factura-card .report-card-main {
-      grid-template-columns: 72px minmax(0, 1fr);
+      grid-template-columns: 72px minmax(0, 1fr) auto;
     }
     .factura-card .factura-pdf-icon,
     .factura-card .factura-pdf-icon svg {
