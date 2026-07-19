@@ -1,8 +1,4 @@
-import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { promisify } from "node:util";
+import { PDFDocument } from "pdf-lib";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -11,7 +7,6 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
-const execFileAsync = promisify(execFile);
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
 
 interface ComprimirFacturaPdfData {
@@ -23,35 +18,37 @@ function limpiar(value?: string) {
   return value?.trim() ?? "";
 }
 
-async function comprimirConGhostscript(input: Buffer, dpi: 96 | 120) {
-  const dir = await mkdtemp(join(tmpdir(), "vista360-factura-"));
-  const source = join(dir, "source.pdf");
-  const output = join(dir, `compressed-${dpi}.pdf`);
-  await writeFile(source, input);
-  try {
-    await execFileAsync(process.env.GS_BINARY ?? "gs", [
-      "-sDEVICE=pdfwrite",
-      "-dCompatibilityLevel=1.4",
-      "-dPDFSETTINGS=/ebook",
-      "-dNOPAUSE",
-      "-dQUIET",
-      "-dBATCH",
-      "-dDetectDuplicateImages=true",
-      "-dCompressFonts=true",
-      "-dSubsetFonts=true",
-      "-dDownsampleColorImages=true",
-      "-dDownsampleGrayImages=true",
-      "-dDownsampleMonoImages=true",
-      `-dColorImageResolution=${dpi}`,
-      `-dGrayImageResolution=${dpi}`,
-      `-dMonoImageResolution=${dpi}`,
-      "-sOutputFile=" + output,
-      source,
-    ]);
-    return await readFile(output);
-  } finally {
-    await rm(dir, { recursive: true, force: true });
-  }
+/**
+ * Comprime el PDF de una factura con pdf-lib (JS puro).
+ *
+ * Antes esto pasaba por Ghostscript (binario "gs" en el sistema), que
+ * NO viene instalado en el runtime de Cloud Functions (nodejs20, sin
+ * Dockerfile propio) -- el try/catch lo cubría en silencio y la
+ * factura se subía SIEMPRE sin comprimir de verdad. Como las facturas
+ * son casi puro texto (sin fotos), lo que más pesa no son imágenes
+ * sino: metadata sin usar, objetos duplicados/sueltos y una tabla de
+ * referencias cruzadas sin comprimir. pdf-lib arregla eso:
+ *  - useObjectStreams agrupa y comprime los objetos del PDF.
+ *  - se limpia toda la metadata (título, autor, etc. del programa que
+ *    generó el PDF original), que a veces pesa más de lo que parece.
+ * No hay binario externo de por medio, así que esto sí funciona en
+ * cualquier entorno de Cloud Functions.
+ */
+async function comprimirConPdfLib(input: Buffer): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.load(input, {
+    updateMetadata: false,
+    ignoreEncryption: true,
+  });
+
+  pdfDoc.setTitle("");
+  pdfDoc.setAuthor("");
+  pdfDoc.setSubject("");
+  pdfDoc.setKeywords([]);
+  pdfDoc.setProducer("Vista360 Player");
+  pdfDoc.setCreator("Vista360 Player");
+
+  const bytes = await pdfDoc.save({ useObjectStreams: true, addDefaultPage: false });
+  return Buffer.from(bytes);
 }
 
 export const comprimirFacturaPdf = onCall<ComprimirFacturaPdfData>({
@@ -82,23 +79,18 @@ export const comprimirFacturaPdf = onCall<ComprimirFacturaPdfData>({
     throw new HttpsError("invalid-argument", "El PDF es demasiado pesado. Usa un archivo menor a 12 MB.");
   }
 
-  // Ghostscript no esta garantizado en el runtime de Cloud Functions
-  // (buildpack de Google, sin gs instalado por defecto). Si no esta
-  // disponible, no debe tumbar la subida de la factura — se sube el
-  // PDF original sin comprimir en vez de fallar por completo.
-  let finalPdf = original;
+  let finalPdf: Buffer = original;
   let compressed = false;
   try {
-    const comprimido120 = await comprimirConGhostscript(original, 120);
-    const comprimido96 = comprimido120.byteLength > 4 * 1024 * 1024
-      ? await comprimirConGhostscript(original, 96)
-      : comprimido120;
-    if (comprimido96.byteLength < original.byteLength) {
-      finalPdf = comprimido96;
+    const comprimido = await comprimirConPdfLib(original);
+    if (comprimido.byteLength < original.byteLength) {
+      finalPdf = Buffer.from(comprimido);
       compressed = true;
     }
   } catch (error) {
-    console.warn("No se pudo comprimir la factura (Ghostscript no disponible); se sube el PDF original.", error);
+    // Si el PDF viene raro (protegido, corrupto, generado de forma
+    // no estandar) no debe tumbar la subida -- se sube el original.
+    console.warn("No se pudo comprimir la factura; se sube el PDF original.", error);
   }
 
   return {

@@ -126,7 +126,7 @@ export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onM
                 disabled={subiendo || preparando}
                 className="factura-upload-btn factura-upload-send"
               >
-                {subiendo ? "Enviando..." : "Enviar"}
+                {subiendo ? "Agregando..." : "Agregar"}
               </button>
             )}
             {mensaje && <div className="factura-upload-msg">{mensaje}</div>}
