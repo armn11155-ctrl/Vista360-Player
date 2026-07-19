@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import { useFacturas } from "../../hooks/useFacturas";
-import { db } from "../../config/firebase";
+import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
@@ -74,26 +74,31 @@ export default function Facturas({ ruc, clienteId, onBack, isAdmin, onMenuClick 
   }
 
   async function enviarPdf() {
-    if (!pdfListo || !db || (!ruc && !clienteId)) return;
+    if (!pdfListo || (!ruc && !clienteId)) return;
+    if (!cloudFunctions) {
+      setMensaje("Firebase Functions no está configurado.");
+      return;
+    }
     setMensaje("");
     setSubiendo(true);
     try {
       const { key: pdfUrl } = await subirFacturaR2(pdfListo);
-      const hoy = new Date().toISOString().slice(0, 10);
-      await addDoc(collection(db, "facturas"), {
-        ...(ruc ? { cliente_doc: ruc } : {}),
-        ...(clienteId ? { cliente_id: clienteId } : {}),
-        tipo_doc: "Factura",
-        numero_fmt: pdfListo.name.replace(/\.pdf$/i, ""),
-        estado: "Emitida",
-        fecha_emision: hoy,
-        moneda: "PEN",
-        total: 0,
-        pagado: false,
+      // El registro se guarda con el SDK de administrador (Cloud
+      // Function), no con un addDoc directo del cliente -- la
+      // coleccion "facturas" es de facturacion-web (otro sistema) y
+      // sus reglas de Firestore no dejan escribir desde acá, solo
+      // leer. Escribir directo daba "permiso denegado".
+      const crearFacturaAdmin = httpsCallable<
+        { ruc?: string; clienteId?: string; numeroFmt?: string; pdfUrl: string; pdfPesoBytes: number; pdfPesoOriginalBytes: number },
+        { ok: boolean; id: string }
+      >(cloudFunctions, "crearFacturaAdmin");
+      await crearFacturaAdmin({
+        ruc: ruc || undefined,
+        clienteId: clienteId || undefined,
+        numeroFmt: pdfListo.name.replace(/\.pdf$/i, ""),
         pdfUrl,
         pdfPesoBytes: pdfListo.size,
         pdfPesoOriginalBytes: pesoOriginal || pdfListo.size,
-        createdAt: serverTimestamp(),
       });
       setMensaje(`Factura subida (${formatoBytes(pdfListo.size)}). El cliente ya puede verla.`);
       setPdfListo(null);
