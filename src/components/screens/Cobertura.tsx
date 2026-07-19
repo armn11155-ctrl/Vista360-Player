@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
-import { cargarLeaflet } from "../../utils/leaflet";
 
 interface Props {
   paneles: Record<string, Panel>;
@@ -50,8 +51,8 @@ function estadoColor(label: string) {
 
 export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any>(null);
-  const markersRef = useRef<any>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
 
@@ -72,80 +73,79 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
 
   useEffect(() => {
-    let cancelado = false;
     if (!mapEl.current) return;
 
-    cargarLeaflet()
-      .then((L) => {
-        if (cancelado || !mapEl.current) return;
+    if (!mapRef.current) {
+      const map = new maplibregl.Map({
+        container: mapEl.current,
+        style: "https://tiles.openfreemap.org/styles/liberty",
+        center: [CENTRO_MAPA_INICIAL[1], CENTRO_MAPA_INICIAL[0]],
+        zoom: 11,
+        attributionControl: false,
+      });
+      map.scrollZoom.disable();
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+      map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
+      map.once("load", () => {
         setMapReady(true);
         setMapError(false);
-
-        if (!mapRef.current) {
-          mapRef.current = L.map(mapEl.current, {
-            zoomControl: false,
-            attributionControl: false,
-            scrollWheelZoom: false,
-          });
-          L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
-          L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-          // OpenStreetMap estándar (el estilo "Carto Voyager" que estaba
-          // antes no gustó -- de vuelta al mapa original).
-          L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors",
-          }).addTo(mapRef.current);
-        }
-
-        if (markersRef.current) {
-          markersRef.current.remove();
-        }
-        markersRef.current = L.layerGroup().addTo(mapRef.current);
-
-        conCoordenadas.forEach((panel) => {
-          const active = panel.id === seleccionado?.id;
-          const marker = L.marker([panel.lat, panel.lng], {
-            icon: L.divIcon({
-              className: `coverage-leaflet-marker ${active ? "active" : ""}`,
-              html: `<span><img src="/vista360-map-marker.png" alt="" /></span>`,
-              iconSize: active ? [48, 74] : [38, 58],
-              iconAnchor: active ? [24, 72] : [19, 56],
-            }),
-          })
-            .addTo(markersRef.current)
-            .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(`<strong>${panel.nombre}</strong><br>${panel.direccion || panel.ciudad || ""}`);
-        });
-
-        const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
-        if (conCoordenadas.length === 0) {
-          mapRef.current.setView(CENTRO_MAPA_INICIAL, 11);
-        } else if (seleccionadoId && seleccionadoConCoords) {
-          mapRef.current.setView([seleccionadoConCoords.lat, seleccionadoConCoords.lng], 15, { animate: true });
-        } else if (conCoordenadas.length === 1) {
-          mapRef.current.setView([conCoordenadas[0].lat, conCoordenadas[0].lng], 15);
-        } else {
-          mapRef.current.fitBounds(
-            L.latLngBounds(conCoordenadas.map((panel) => [panel.lat, panel.lng])),
-            { padding: [28, 28] }
-          );
-        }
-
-        window.setTimeout(() => mapRef.current?.invalidateSize(), 80);
-      })
-      .catch(() => {
-        if (!cancelado) {
+      });
+      map.once("error", () => {
+        if (!map.loaded()) {
           setMapError(true);
           setMapReady(false);
         }
       });
+      mapRef.current = map;
+    }
 
-    return () => {
-      cancelado = true;
-    };
+    const map = mapRef.current;
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = conCoordenadas.map((panel) => {
+      const active = panel.id === seleccionado?.id;
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `coverage-maplibre-marker${active ? " active" : ""}`;
+      element.setAttribute("aria-label", `Ver ${panel.nombre}`);
+
+      const image = document.createElement("img");
+      image.src = "/vista360-map-marker.png";
+      image.alt = "";
+      element.appendChild(image);
+      element.addEventListener("click", () => setSeleccionadoId(panel.id));
+
+      const popupContent = document.createElement("div");
+      const popupTitle = document.createElement("strong");
+      popupTitle.textContent = panel.nombre;
+      const popupAddress = document.createElement("span");
+      popupAddress.textContent = panel.direccion || panel.ciudad || "";
+      popupContent.append(popupTitle, popupAddress);
+
+      return new maplibregl.Marker({ element, anchor: "bottom" })
+        .setLngLat([panel.lng, panel.lat])
+        .setPopup(new maplibregl.Popup({ offset: 24, closeButton: false }).setDOMContent(popupContent))
+        .addTo(map);
+    });
+
+    const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
+    if (conCoordenadas.length === 0) {
+      map.jumpTo({ center: [CENTRO_MAPA_INICIAL[1], CENTRO_MAPA_INICIAL[0]], zoom: 11 });
+    } else if (seleccionadoId && seleccionadoConCoords) {
+      map.flyTo({ center: [seleccionadoConCoords.lng, seleccionadoConCoords.lat], zoom: 15, essential: true });
+    } else if (conCoordenadas.length === 1) {
+      map.jumpTo({ center: [conCoordenadas[0].lng, conCoordenadas[0].lat], zoom: 15 });
+    } else {
+      const bounds = new maplibregl.LngLatBounds();
+      conCoordenadas.forEach((panel) => bounds.extend([panel.lng, panel.lat]));
+      map.fitBounds(bounds, { padding: 36, maxZoom: 15 });
+    }
+
+    window.setTimeout(() => map.resize(), 80);
   }, [conCoordenadas, seleccionado, seleccionadoId]);
 
   useEffect(() => () => {
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current = [];
     mapRef.current?.remove();
     mapRef.current = null;
   }, []);
@@ -178,7 +178,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         </div>
 
         <div className="coverage-map-real coverage-map-osm">
-          <div ref={mapEl} className="coverage-leaflet-map" />
+          <div ref={mapEl} className="coverage-maplibre-map" />
           {!mapReady && !mapError && (
             <div className="coverage-map-loading">Cargando mapa...</div>
           )}
