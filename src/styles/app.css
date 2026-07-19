@@ -2725,6 +2725,15 @@
       background: #EEF2F7;
       overflow: hidden;
     }
+    /* Usuarios, Solicitudes, Analítica y Paneles también pueden abrirse
+       directamente desde Selección de clientes, sin sidebar ni main-area.
+       En ese caso deben ocupar todo el viewport de escritorio y no quedarse
+       con el ancho intrínseco de una pantalla móvil pegada a la izquierda. */
+    .app-shell > .admin-tool-screen {
+      flex: 1 1 100%;
+      width: 100%;
+      min-width: 0;
+    }
     .admin-tool-screen .detail-header {
       flex-shrink: 0;
       padding-left: 48px;
