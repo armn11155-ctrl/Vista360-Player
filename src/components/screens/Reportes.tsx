@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
+import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente, Contrato, Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
@@ -74,16 +75,12 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const [panelId, setPanelId] = useState("");
   const [panelMenuAbierto, setPanelMenuAbierto] = useState(false);
 
-  // Paneles unicos de este cliente (segun sus contratos) -- para poder
-  // elegir de cual generar el reporte, en vez de siempre mezclar todos.
-  const panelesCliente = Array.from(
-    new Map(
-      contratos
-        .map((c) => paneles[c.panel_id])
-        .filter((p): p is Panel => Boolean(p))
-        .map((p) => [p.id, p])
-    ).values()
-  );
+  // Todos los paneles del sistema (no solo los que ya tienen un
+  // contrato con este cliente) -- asi el admin puede elegir cualquier
+  // panel para el reporte aunque todavia no exista una campaña formal
+  // que los vincule.
+  const panelesDisponiblesState = usePanelesDisponibles(!!isAdmin);
+  const panelesCliente: Panel[] = panelesDisponiblesState.status === "ready" ? panelesDisponiblesState.paneles : [];
   const panelSeleccionado = panelId ? paneles[panelId] : undefined;
   const panelPrincipal = panelSeleccionado ?? (contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined);
   const ubicacionAuto = [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
