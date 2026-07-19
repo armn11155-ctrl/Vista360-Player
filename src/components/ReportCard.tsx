@@ -176,10 +176,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
               target="_blank"
               rel="noreferrer"
             >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M20.5 11.7a8.4 8.4 0 0 1-12.4 7.4L4 20l.9-4a8.4 8.4 0 1 1 15.6-4.3Z" />
-                <path d="M9.2 8.7c.2-.5.4-.5.7-.5h.6c.2 0 .5.1.6.4.2.5.7 1.7.8 1.8.1.2.1.4 0 .6l-.4.5c-.1.2-.3.3-.1.6.2.3.8 1.3 1.8 2 .9.7 1.7.9 2 .9.2.1.4 0 .6-.2l.7-.9c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.3.4.4 0 .5-.3 1.4-.8 1.7-.4.3-1.2.5-2.1.2-1-.3-2.2-.8-3.6-2-1.6-1.4-2.6-3-3-4-.4-1-.4-1.8-.1-2.4Z" />
-              </svg>
+              <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
               WhatsApp
             </a>
             <a

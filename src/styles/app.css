@@ -3017,6 +3017,12 @@
   .report-action-whatsapp svg {
     color: #22E17D;
   }
+  .report-whatsapp-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+    flex-shrink: 0;
+  }
   /* Factura: mismo layout que report-action, pero en azul oscuro
      (mas oscuro que el azul de reportes), no rojo ni naranja, para
      que se note a simple vista que es otro tipo de tarjeta. */
