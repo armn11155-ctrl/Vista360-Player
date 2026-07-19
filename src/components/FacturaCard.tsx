@@ -139,15 +139,6 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           {isAdmin && (
             <>
               <a
-                className="report-action report-action-muted report-action-whatsapp"
-                href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-                WhatsApp
-              </a>
-              <a
                 className="report-action report-action-muted"
                 href={`mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensaje)}`}
               >
@@ -156,6 +147,15 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
                   <path d="m4 7 8 6 8-6" />
                 </svg>
                 Correo
+              </a>
+              <a
+                className="report-action report-action-muted report-action-whatsapp"
+                href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
+                WhatsApp
               </a>
             </>
           )}

@@ -4822,7 +4822,8 @@
       font-size: 14px;
     }
     .report-action-primary,
-    .report-action-download {
+    .report-action-download,
+    .factura-action-primary {
       grid-column: auto;
     }
 
