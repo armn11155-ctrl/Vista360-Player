@@ -169,16 +169,20 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
         <div className="admin-picker-actions">
           <button type="button" onClick={onOpenUsuarios} className="admin-picker-action">
-            Usuarios
+            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+            <span><strong>Usuarios</strong><small>Gestionar accesos</small></span>
           </button>
           <button type="button" onClick={onOpenSolicitudes} className="admin-picker-action">
-            Solicitudes de campaña
+            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
+            <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
           </button>
           <button type="button" onClick={onOpenAnalitica} className="admin-picker-action">
-            Analítica de accesos
+            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+            <span><strong>Analítica</strong><small>Actividad y accesos</small></span>
           </button>
           <button type="button" onClick={onOpenPaneles} className="admin-picker-action">
-            Paneles
+            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
+            <span><strong>Paneles</strong><small>Inventario digital</small></span>
           </button>
         </div>
 
@@ -205,6 +209,13 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       </div>
 
       <div className="admin-picker-body">
+        <div className="admin-picker-list-head">
+          <div>
+            <span>Directorio de cuentas</span>
+            <strong>{tab === "activos" ? "Clientes disponibles" : "Perfiles archivados"}</strong>
+          </div>
+          <span className="admin-picker-list-count">{filtrados.length} {filtrados.length === 1 ? "perfil" : "perfiles"}</span>
+        </div>
         {state.status === "loading" && (
           <div className="admin-picker-empty">Cargando clientes…</div>
         )}
@@ -264,6 +275,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   )}
                 </div>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
+                {tab === "activos" && <span className="admin-picker-tile-hint">Entrar a la cuenta <span>→</span></span>}
                 {tab !== "activos" && (
                   <div className="admin-picker-archive-actions">
                     <button type="button" onClick={() => restaurarCliente(c)} disabled={busy} title="Recuperar perfil">
