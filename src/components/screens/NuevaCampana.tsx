@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { db } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
@@ -13,6 +13,12 @@ interface Props {
 }
 
 const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Huánuco", "Otra"];
+
+function siguienteDia(fechaStr: string): string {
+  const d = new Date(`${fechaStr}T12:00:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -98,6 +104,26 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
+      // Un panel no puede tener dos campañas activas al mismo tiempo
+      // -- antes de crear el contrato, se revisa si ya hay otro (de
+      // cualquier cliente) en este mismo panel cuyas fechas se crucen
+      // con las que se está por crear. Si se cruzan, se bloquea y se
+      // sugiere la fecha en que el panel queda libre (lo que sí se
+      // puede hacer es programar la siguiente campaña para después de
+      // esa fecha, sin traslape).
+      const contratosPanelSnap = await getDocs(query(collection(db, "contratos"), where("panel_id", "==", panelId)));
+      const cruces = contratosPanelSnap.docs
+        .map((d) => d.data() as { inicio?: string; fin?: string; deleted?: boolean })
+        .filter((c) => !c.deleted && c.inicio && c.fin && c.inicio <= fin && inicio <= c.fin);
+      if (cruces.length > 0) {
+        const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+        setErrorAdmin(
+          `Ese panel ya tiene una campaña programada hasta el ${finMasLejano}. No puede haber dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+        );
+        setCreando(false);
+        return;
+      }
+
       const subidaAdmin = imagenAdmin
         ? await subirEvidenciaR2(await comprimirImagen(imagenAdmin))
         : null;
