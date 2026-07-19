@@ -142,8 +142,15 @@ export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onM
           </div>
         )}
         {state.status === "ready" && (ruc || clienteId) && facturas.length === 0 && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            Aún no tienes facturas registradas.
+          <div className="report-empty-state">
+            <div className="report-empty-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2">
+                <path d="M6 3h9l3 3v15H6z" />
+                <path d="M9 9h6M9 13h6M9 17h3" />
+              </svg>
+            </div>
+            <div className="report-empty-title">Aún no hay facturas registradas</div>
+            <div className="report-empty-sub">La primera factura aparecerá aquí después de que el admin la suba.</div>
           </div>
         )}
 
