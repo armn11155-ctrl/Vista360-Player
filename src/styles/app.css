@@ -5,7 +5,7 @@
   :root {
     --app-height: 100dvh;
     --visual-height: 100dvh;
-    --app-bleed-bottom: 140px;
+    --app-bleed-bottom: 160px;
     --app-bg: #050A12;
     --bg: #F6F8FB;
     --dark: #0B1220;
@@ -282,23 +282,15 @@
       top: 0;
       left: 0;
       right: 0;
-      bottom: 0;
+      bottom: -160px;
       width: 100%;
-      height: var(--app-height);
+      height: calc(100vh + 160px);
+      height: calc(100dvh + 160px);
       min-height: 0;
-      max-height: var(--app-height);
+      max-height: none;
       margin: 0;
       background: var(--app-bg);
       overscroll-behavior: none;
-    }
-    .app-shell.no-bottom-nav,
-    .app-shell.has-bottom-nav,
-    .app-shell:has(.login-shell),
-    .app-shell:has(.state-screen),
-    .app-shell:has(.admin-picker-shell) {
-      bottom: calc(-1 * var(--app-bleed-bottom));
-      height: calc(var(--app-height) + var(--app-bleed-bottom));
-      max-height: none;
     }
     .main-area,
     .screens {
@@ -315,7 +307,8 @@
        * que el bottom-nav no termine empujado fuera de vista; el resto
        * del sangrado lo cubre el relleno de abajo (::after del shell). */
       flex: 0 0 auto;
-      height: var(--app-height);
+      height: 100vh;
+      height: 100dvh;
     }
     .app-shell.has-bottom-nav .bottom-nav {
       position: relative !important;
@@ -3048,8 +3041,9 @@
      grid que se adapta solo de móvil a escritorio. */
   .admin-picker-shell {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: calc(-1 * var(--app-bleed-bottom));
-    min-height: calc(var(--app-height) + var(--app-bleed-bottom));
+    top: 0; left: 0; right: 0; bottom: -160px;
+    min-height: calc(100vh + 160px);
+    min-height: calc(100dvh + 160px);
     z-index: 5;
     display: flex;
     flex-direction: column;
@@ -3061,14 +3055,7 @@
     background-position: center center;
   }
   .admin-picker-shell::after {
-    content: "";
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(-1 * var(--app-bleed-bottom));
-    height: calc(var(--app-bleed-bottom) + env(safe-area-inset-bottom));
-    background: #050A12;
-    pointer-events: none;
+    content: none;
   }
   .admin-picker-header {
     flex-shrink: 0;
