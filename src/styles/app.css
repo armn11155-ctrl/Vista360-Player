@@ -3357,6 +3357,7 @@
     transition: transform .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
   }
   .admin-picker-tile:not(.archived) {
+    cursor: pointer;
     background:
       radial-gradient(circle at 50% -18%, rgba(255, 255, 255, .075), transparent 58%),
       linear-gradient(155deg, rgba(5, 7, 11, .97), rgba(0, 0, 0, .94));
@@ -3366,6 +3367,11 @@
       0 24px 52px -28px rgba(0, 0, 0, .96),
       inset 0 1px 0 rgba(255, 255, 255, .1);
     backdrop-filter: blur(18px) saturate(145%);
+  }
+
+  .admin-picker-tile:not(.archived):focus-visible {
+    outline: 2px solid rgba(255,255,255,.78);
+    outline-offset: 3px;
   }
   .admin-picker-tile:not(.archived)::before {
     content: '';

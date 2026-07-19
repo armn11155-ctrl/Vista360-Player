@@ -230,13 +230,23 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <div
                 key={c.id}
                 className={`admin-picker-tile ${c.archived ? "archived" : ""}`}
+                onClick={() => !c.archived && !busy && onSelect(c.id)}
+                onKeyDown={(event) => {
+                  if ((event.key === "Enter" || event.key === " ") && !c.archived && !busy) {
+                    event.preventDefault();
+                    onSelect(c.id);
+                  }
+                }}
+                role={!c.archived ? "button" : undefined}
+                tabIndex={!c.archived && !busy ? 0 : undefined}
+                aria-label={!c.archived ? `Entrar a la cuenta de ${c.empresa}` : undefined}
               >
                 <div className="admin-picker-tile-avatar-wrap">
                   <button
                     type="button"
                     className="admin-picker-tile-main"
-                    onClick={() => !c.archived && onSelect(c.id)}
                     disabled={!!c.archived || busy}
+                    tabIndex={-1}
                   >
                     <span className="admin-picker-tile-avatar" style={{ background: bg }}>
                       {avatarSrc(c) ? (
@@ -255,7 +265,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                     <button
                       type="button"
                       className="admin-picker-tile-gear"
-                      onClick={() => setMenuCliente(c)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setMenuCliente(c);
+                      }}
                       disabled={busy}
                       aria-label="Configuración"
                       title="Configuración"
