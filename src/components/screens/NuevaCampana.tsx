@@ -104,21 +104,25 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
-      // Un panel no puede tener dos campañas activas al mismo tiempo
-      // -- antes de crear el contrato, se revisa si ya hay otro (de
-      // cualquier cliente) en este mismo panel cuyas fechas se crucen
-      // con las que se está por crear. Si se cruzan, se bloquea y se
-      // sugiere la fecha en que el panel queda libre (lo que sí se
-      // puede hacer es programar la siguiente campaña para después de
-      // esa fecha, sin traslape).
-      const contratosPanelSnap = await getDocs(query(collection(db, "contratos"), where("panel_id", "==", panelId)));
+      // Un mismo cliente no puede tener dos campañas activas a la vez
+      // en el mismo panel -- antes de crear el contrato, se revisa si
+      // ESTE cliente ya tiene otro contrato en este mismo panel cuyas
+      // fechas se crucen con las que se está por crear. Si se cruzan,
+      // se bloquea y se sugiere la fecha en que queda libre (lo que sí
+      // se puede hacer es programar la siguiente campaña para después
+      // de esa fecha, sin traslape). Otro cliente distinto SÍ puede
+      // tener una campaña activa en este mismo panel al mismo tiempo
+      // -- el bloqueo es por cliente+panel, no por panel solo.
+      const contratosPanelSnap = await getDocs(
+        query(collection(db, "contratos"), where("panel_id", "==", panelId), where("cliente_id", "==", clienteId))
+      );
       const cruces = contratosPanelSnap.docs
         .map((d) => d.data() as { inicio?: string; fin?: string; deleted?: boolean })
         .filter((c) => !c.deleted && c.inicio && c.fin && c.inicio <= fin && inicio <= c.fin);
       if (cruces.length > 0) {
         const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
         setErrorAdmin(
-          `Ese panel ya tiene una campaña programada hasta el ${finMasLejano}. No puede haber dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+          `Este cliente ya tiene una campaña programada en ese panel hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
         );
         setCreando(false);
         return;
