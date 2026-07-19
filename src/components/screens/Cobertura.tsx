@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import maplibregl, { type StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
@@ -22,6 +22,18 @@ type PanelConCoordenadas = PanelConUso & {
 };
 
 const CENTRO_MAPA_INICIAL: [number, number] = [-12.0464, -77.0428];
+const ESTILO_MAPA_RESPALDO: StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors",
+    },
+  },
+  layers: [{ id: "osm", type: "raster", source: "osm" }],
+};
 
 function numeroCoordenada(value: unknown) {
   const n = typeof value === "number" ? value : typeof value === "string" ? Number(value.trim()) : NaN;
@@ -86,16 +98,23 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
       map.scrollZoom.disable();
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
       map.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
-      map.once("load", () => {
+      let estiloListo = false;
+      const mostrarMapa = () => {
+        estiloListo = true;
         setMapReady(true);
         setMapError(false);
-      });
-      map.once("error", () => {
-        if (!map.loaded()) {
-          setMapError(true);
-          setMapReady(false);
+      };
+      map.once("style.load", mostrarMapa);
+
+      // La instancia pública de Liberty puede tardar según la red. Si el
+      // estilo vectorial no responde pronto, mantenemos el mapa operativo
+      // con teselas OSM y evitamos dejar al cliente frente a un fondo vacío.
+      window.setTimeout(() => {
+        if (!estiloListo && mapRef.current === map) {
+          map.setStyle(ESTILO_MAPA_RESPALDO);
+          mostrarMapa();
         }
-      });
+      }, 3500);
       mapRef.current = map;
     }
 
@@ -180,10 +199,13 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-maplibre-map" />
           {!mapReady && !mapError && (
-            <div className="coverage-map-loading">Cargando mapa...</div>
+            <div className="coverage-map-loading">
+              <span aria-hidden="true" />
+              Preparando mapa
+            </div>
           )}
           {mapError && (
-            <div className="coverage-map-loading">No se pudo cargar el mapa. Revisa tu conexión.</div>
+            <div className="coverage-map-loading is-error">No se pudo cargar el mapa. Revisa tu conexión.</div>
           )}
           {mapReady && conCoordenadas.length === 0 && (
             <div className="coverage-no-coords">

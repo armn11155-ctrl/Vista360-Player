@@ -26,6 +26,11 @@
     <link rel="icon" type="image/png" href="/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/apple-touch-icon.png" />
 
+    <!-- Adelanta la conexión del mapa para que Liberty empiece a cargar
+         antes de que el cliente abra la sección Cobertura. -->
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <link rel="dns-prefetch" href="https://tiles.openfreemap.org" />
+
     <title>Vista360 Player</title>
   </head>
   <body style="background:#050A12;margin:0;overflow:hidden">
