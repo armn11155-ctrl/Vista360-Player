@@ -2269,7 +2269,7 @@
     right: 0;
     bottom: 160px;
     z-index: -2;
-    background-image: url('/login-new-york-wide.jpg');
+    background-image: url('/login-ny-mobile-tailored.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center center;
@@ -2436,8 +2436,9 @@
     /* En escritorio el acceso conserva un ancho compacto y se centra
        horizontalmente sobre la panorámica. */
     .login-shell::before {
+      background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
-      background-size: 100% 100%;
+      background-size: cover;
       transform: none;
     }
     .login-logo, .login-card, .login-foot {
