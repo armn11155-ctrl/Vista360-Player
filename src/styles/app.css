@@ -3397,23 +3397,24 @@
   }
   .admin-picker-tile-gear {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 3;
-    width: 32px;
-    height: 32px;
-    border-radius: 11px;
-    border: 1px solid rgba(255,255,255,.28);
-    background: rgba(5,10,18,.66);
-    backdrop-filter: blur(12px) saturate(140%);
+    top: -6px;
+    right: -6px;
+    z-index: 5;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(3,6,11,.94);
+    backdrop-filter: blur(14px) saturate(115%);
+    -webkit-backdrop-filter: blur(14px) saturate(115%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: .68;
-    transform: scale(.92);
-    box-shadow: 0 8px 20px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
+    opacity: .9;
+    transform: scale(.96);
+    box-shadow: 0 8px 18px rgba(0,0,0,.46), inset 0 1px 0 rgba(255,255,255,.09);
     transition: opacity .18s ease, transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
   }
   .admin-picker-tile-avatar-wrap:hover .admin-picker-tile-gear,
@@ -3421,7 +3422,13 @@
     opacity: 1;
     transform: scale(1);
   }
-  .admin-picker-tile-gear:hover { background: #0877FF; border-color: rgba(255,255,255,.5); transform: scale(1.08) rotate(18deg); box-shadow: 0 10px 28px rgba(0,0,0,.48); }
+  .admin-picker-tile-gear:hover {
+    background: #111827;
+    border-color: rgba(255,255,255,.42);
+    transform: scale(1.05);
+    box-shadow: 0 10px 24px rgba(0,0,0,.54), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .admin-picker-tile-gear:focus-visible { outline: 2px solid rgba(255,255,255,.72); outline-offset: 2px; }
   .admin-picker-tile-gear:disabled { opacity: 0.4; cursor: default; }
   @media (hover: none) {
     .admin-picker-tile-gear { opacity: 1; transform: scale(1); }
