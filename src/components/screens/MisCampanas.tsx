@@ -189,13 +189,24 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
       {/* List */}
       <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
         {isAdmin && (
-          <div className="mis-campanas-month-status" style={{
-            background: informeDelMes ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)",
-            border: `1px solid ${informeDelMes ? "#BBF7D0" : "#FDE68A"}`,
-            borderRadius: 12, padding: "10px 12px", marginBottom: 14, fontSize: 12,
-            color: informeDelMes ? "#16A34A" : "#B45309",
-          }}>
-            {informeDelMes ? `✅ Informe de ${informeDelMes.mesLabel} ya enviado` : "⏳ El informe de este mes todavía no se ha generado"}
+          <div className={`mis-campanas-month-status ${informeDelMes ? "is-sent" : "is-pending"}`}>
+            {informeDelMes ? (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m8 12 2.6 2.6L16.5 9" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v6" />
+                <path d="M12 17h.01" />
+              </svg>
+            )}
+            <span>
+              {informeDelMes
+                ? `Informe de ${informeDelMes.mesLabel} enviado correctamente`
+                : "Falta generar y enviar el informe de este mes"}
+            </span>
           </div>
         )}
 
