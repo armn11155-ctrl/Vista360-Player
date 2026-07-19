@@ -3,7 +3,6 @@ import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
-import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
@@ -60,23 +59,11 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
 
 export default function Accesos({ onBack }: Props) {
   const state = useInvitaciones(true);
-  const clientesState = useClientesAdmin();
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
   const [accionandoId, setAccionandoId] = useState<string | null>(null);
-  const [mostrarForm, setMostrarForm] = useState(false);
-  const [clienteId, setClienteId] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [contacto, setContacto] = useState("");
-  const [celular, setCelular] = useState("");
-  const [avatarKey, setAvatarKey] = useState("tower");
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [subiendoAvatar, setSubiendoAvatar] = useState(false);
-  const [creando, setCreando] = useState(false);
   const [errorCrear, setErrorCrear] = useState("");
-  const [accesoCreado, setAccesoCreado] = useState<{ empresa: string; email: string; password: string } | null>(null);
 
   // ── Crear cliente nuevo (empresa desde cero, no un cliente ya
   // existente) -- formulario aparte, mismo patron que el de arriba. ──
@@ -176,22 +163,7 @@ export default function Accesos({ onBack }: Props) {
   const usuariosActivos = invitaciones.filter((inv) => !inv.archived);
   const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
   const usuariosVisibles = tab === "activos" ? usuariosActivos : usuariosArchivados;
-  const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
-  const clienteSeleccionado = clientes.find((c) => c.id === clienteId);
 
-  async function subirAvatar(file: File) {
-    setSubiendoAvatar(true);
-    setErrorCrear("");
-    try {
-      const webp = await comprimirAvatarWebp(file);
-      const { key: url } = await subirAvatarR2(webp);
-      setAvatarUrl(url);
-    } catch (err) {
-      setErrorCrear(err instanceof Error ? err.message : "No se pudo preparar el avatar.");
-    } finally {
-      setSubiendoAvatar(false);
-    }
-  }
 
   async function administrarUsuario(inv: InvitacionPortal, accion: "archivar" | "restaurar" | "eliminar") {
     if (!cloudFunctions) {
@@ -223,46 +195,6 @@ export default function Accesos({ onBack }: Props) {
       setAccionandoId(null);
     }
   }
-
-  async function crearUsuario() {
-    if (!cloudFunctions) {
-      setErrorCrear("Firebase Functions no está configurado.");
-      return;
-    }
-    if (!clienteId || !email.trim()) {
-      setErrorCrear("Selecciona un cliente y escribe el correo.");
-      return;
-    }
-    setCreando(true);
-    setErrorCrear("");
-    setAccesoCreado(null);
-    try {
-      const fn = httpsCallable<
-        { clienteId: string; email: string; password: string; contacto: string; celular: string; avatarKey: string; avatarUrl: string },
-        { clienteId: string; empresa: string; email: string; password: string }
-      >(cloudFunctions, "crearClienteAcceso");
-      const res = await fn({ clienteId, email: email.trim(), password: password.trim(), contacto: contacto.trim(), celular: celular.trim(), avatarKey, avatarUrl });
-      setAccesoCreado(res.data);
-    } catch (err) {
-      setErrorCrear(err instanceof Error ? err.message : "No se pudo crear el usuario.");
-    } finally {
-      setCreando(false);
-    }
-  }
-
-  const mensajeAcceso = accesoCreado
-    ? [
-        `Hola ${contacto || accesoCreado.empresa}, te mando tu acceso a Vista360 Player.`,
-        "",
-        "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
-        "",
-        `Portal: ${window.location.origin}`,
-        `Correo: ${accesoCreado.email}`,
-        `Contraseña temporal: ${accesoCreado.password}`,
-        "",
-        "Por seguridad, te recomendamos cambiar la contraseña después del primer ingreso.",
-      ].join("\n")
-    : "";
 
   return (
     <div className="admin-tool-screen accesos-screen">
@@ -303,28 +235,22 @@ export default function Accesos({ onBack }: Props) {
           })}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "12px 0" }}>
+        <div style={{ margin: "12px 0" }}>
           <button
-            onClick={() => setMostrarForm((v) => !v)}
+            onClick={() => setMostrarFormNuevo((v) => !v)}
             style={{
-              background: "#0877FF", color: "#fff",
+              width: "100%",
+              background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
               border: "none", borderRadius: 12, padding: "13px", fontSize: 12.5,
               fontWeight: 800, cursor: "pointer",
             }}
           >
-            {mostrarForm ? "Cerrar formulario" : "+ Agregar usuario"}
-          </button>
-          <button
-            onClick={() => setMostrarFormNuevo((v) => !v)}
-            style={{
-              background: mostrarFormNuevo ? "#0B1220" : "#fff", color: mostrarFormNuevo ? "#fff" : "#0B1220",
-              border: "1.5px solid #0B1220", borderRadius: 12, padding: "13px", fontSize: 12.5,
-              fontWeight: 800, cursor: "pointer",
-            }}
-          >
-            {mostrarFormNuevo ? "Cerrar formulario" : "+ Crear cliente nuevo"}
+            {mostrarFormNuevo ? "Cerrar formulario" : "+ Crear cliente"}
           </button>
         </div>
+        {errorCrear && (
+          <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 10 }}>{errorCrear}</div>
+        )}
 
         {mostrarFormNuevo && (
           <div className="card">
@@ -378,70 +304,6 @@ export default function Accesos({ onBack }: Props) {
                 <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
                   <a href={`https://wa.me/${nuevoCelular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAccesoNuevo)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
                   <a href={`mailto:${nuevoResultado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoNuevo)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {mostrarForm && (
-          <div className="card">
-            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
-              Nuevo usuario
-            </div>
-            <div style={{ display: "grid", gap: 10 }}>
-              <select
-                value={clienteId}
-                onChange={(e) => {
-                  const nextId = e.target.value;
-                  setClienteId(nextId);
-                  const nextCliente = clientes.find((c) => c.id === nextId);
-                  if (nextCliente?.avatarKey) setAvatarKey(nextCliente.avatarKey);
-                  setAvatarUrl(nextCliente?.avatarUrl ?? "");
-                }}
-                style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", color: "var(--text)", background: "#fff" }}
-              >
-                <option value="">Seleccionar cliente</option>
-                {clientes.map((c) => (
-                  <option key={c.id} value={c.id}>{c.empresa}</option>
-                ))}
-              </select>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <input value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <input value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <div>
-                <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
-                <ClientAvatarPicker
-                  name={clienteSeleccionado?.empresa || contacto || email || "Cliente"}
-                  value={avatarKey}
-                  onChange={(value) => {
-                    setAvatarKey(value);
-                    setAvatarUrl("");
-                  }}
-                  avatarUrl={avatarUrl}
-                  onAvatarFile={(file) => void subirAvatar(file)}
-                  uploading={subiendoAvatar}
-                />
-              </div>
-            </div>
-            {errorCrear && (
-              <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorCrear}</div>
-            )}
-            <button
-              onClick={crearUsuario}
-              disabled={creando || subiendoAvatar}
-              style={{ width: "100%", marginTop: 12, background: creando || subiendoAvatar ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando || subiendoAvatar ? "not-allowed" : "pointer" }}
-            >
-              {creando ? "Creando..." : subiendoAvatar ? "Preparando avatar..." : "Crear usuario y contraseña"}
-            </button>
-            {accesoCreado && (
-              <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
-                <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Usuario creado</div>
-                <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAcceso}</div>
-                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                  <a href={`https://wa.me/${celular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAcceso)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
-                  <a href={`mailto:${accesoCreado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAcceso)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
                 </div>
               </div>
             )}
