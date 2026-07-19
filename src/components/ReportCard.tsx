@@ -161,7 +161,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           Ver
         </a>
         <a
-          className="report-action report-action-outline"
+          className="report-action report-action-download"
           href={informe.urlDescarga || url}
           download
           rel="noreferrer"

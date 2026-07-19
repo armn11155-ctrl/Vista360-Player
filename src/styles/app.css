@@ -2904,6 +2904,12 @@
     background: rgba(8,119,255,.06);
     box-shadow: none;
   }
+  .report-action-download {
+    color: #FFFFFF;
+    background: #0B1220;
+    border-color: #0B1220;
+    box-shadow: none;
+  }
   .report-action-primary {
     color: #FFFFFF;
     background: #0877FF;
