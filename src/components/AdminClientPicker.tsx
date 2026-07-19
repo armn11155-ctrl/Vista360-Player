@@ -209,13 +209,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       </div>
 
       <div className="admin-picker-body">
-        <div className="admin-picker-list-head">
-          <div>
-            <span>Directorio de cuentas</span>
-            <strong>{tab === "activos" ? "Clientes disponibles" : "Perfiles archivados"}</strong>
-          </div>
-          <span className="admin-picker-list-count">{filtrados.length} {filtrados.length === 1 ? "perfil" : "perfiles"}</span>
-        </div>
         {state.status === "loading" && (
           <div className="admin-picker-empty">Cargando clientes…</div>
         )}

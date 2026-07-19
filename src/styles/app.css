@@ -3170,8 +3170,8 @@
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    border: 1.5px solid rgba(255,255,255,0.22);
-    background: linear-gradient(145deg, #0877FF, #0B3F8A);
+    border: 1.5px solid rgba(255,255,255,0.26);
+    background: #050A12;
     color: #fff;
     font-size: 13px;
     font-weight: 800;
@@ -3203,7 +3203,8 @@
     width: 76px;
     height: 76px;
     border-radius: 50%;
-    background: linear-gradient(145deg, #0877FF, #0B3F8A);
+    background: #050A12;
+    border: 1px solid rgba(15,23,42,.22);
     color: #fff;
     font-size: 26px;
     font-weight: 800;
@@ -3266,17 +3267,17 @@
     gap: 4px;
     padding: 4px;
     border-radius: 12px;
-    background: rgba(255,255,255,0.05);
+    background: rgba(0,0,0,.9);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(147,197,253,0.16);
+    border: 1px solid rgba(255,255,255,.16);
     margin: -4px auto 18px;
   }
   .admin-picker-tabs button {
     min-height: 34px;
     border: 0;
     border-radius: 9px;
-    background: transparent;
-    color: rgba(226,232,240,.64);
+    background: #050505;
+    color: rgba(255,255,255,.82);
     padding: 0 13px;
     font: inherit;
     font-size: 12px;
@@ -3285,9 +3286,9 @@
     transition: background 0.15s ease, color 0.15s ease;
   }
   .admin-picker-tabs button.active {
-    background: linear-gradient(135deg, #0877FF, #2D5FE0);
+    background: #151515;
     color: #FFFFFF;
-    box-shadow: 0 6px 16px -6px rgba(0,0,0,.72);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
   }
   .admin-picker-tabs span {
     margin-left: 5px;
@@ -3299,10 +3300,10 @@
   .admin-picker-search {
     display: block;
     width: 100%;
-    background: rgba(255,255,255,0.08);
+    background: rgba(0,0,0,.9);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 13px;
     padding: 13px 14px 13px 38px;
     font-size: 13.5px;
@@ -3314,7 +3315,7 @@
   }
   .admin-picker-search::placeholder { color: rgba(255,255,255,0.42); }
   .admin-picker-search:focus {
-    border-color: rgba(8,119,255,0.55);
+    border-color: rgba(255,255,255,.42);
     box-shadow: 0 0 0 3px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,0.06);
   }
 
@@ -3327,11 +3328,6 @@
     scroll-padding-bottom: calc(32px + env(safe-area-inset-bottom));
     -webkit-overflow-scrolling: touch;
   }
-  .admin-picker-list-head { max-width: 1080px; margin: 0 auto 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-  .admin-picker-list-head > div { display: grid; gap: 3px; }
-  .admin-picker-list-head > div > span { color: #60A5FA; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.2px; }
-  .admin-picker-list-head strong { color: #F8FAFC; font-size: 16px; line-height: 1.15; }
-  .admin-picker-list-count { color: rgba(203,213,225,.64); font-size: 11px; font-weight: 800; background: rgba(255,255,255,.055); border: 1px solid rgba(255,255,255,.09); padding: 6px 10px; border-radius: 999px; white-space: nowrap; }
   .admin-picker-empty { text-align: center; color: rgba(255,255,255,0.55); font-size: 14px; margin-top: 32px; }
   .admin-picker-empty-error { color: #FCA5A5; }
 
@@ -3342,7 +3338,7 @@
     grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
     gap: 20px 16px;
     max-width: 760px;
-    margin: 12px auto 0;
+    margin: 0 auto;
   }
   .admin-picker-tile {
     display: flex;
