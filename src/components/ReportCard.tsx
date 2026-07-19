@@ -73,12 +73,14 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  Son dos URLs firmadas de la misma key -- una pensada para verse
    *  (url) y otra que fuerza la descarga con Content-Disposition:
    *  attachment (informe.urlDescarga, ver listarReportesCliente.ts). */
-  function verYDescargar() {
-    // El orden importa: los navegadores solo confían en la PRIMERA
-    // acción de navegación disparada por el clic y bloquean como
-    // "popup" cualquier otra después -- por eso window.open() va
-    // primero (era lo que fallaba antes) y la descarga después.
-    window.open(url, "_blank", "noopener,noreferrer");
+  // window.open() programado lo bloquean casi todos los navegadores de
+  // celular (Safari/Chrome en iOS y Android tratan cualquier
+  // window.open() que no sea la ÚNICA acción del clic como un popup no
+  // deseado). La forma que sí funciona en todos: dejar que el propio
+  // <a href target="_blank"> haga la apertura de pestaña -- eso SIEMPRE
+  // se permite porque es la acción nativa del link, no un script -- y
+  // disparar la descarga aparte, como efecto secundario del mismo clic.
+  function dispararDescargaExtra() {
     const enlaceDescarga = document.createElement("a");
     enlaceDescarga.href = informe.urlDescarga || url;
     enlaceDescarga.download = "";
@@ -165,9 +167,15 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
-        <button type="button" className="report-action report-action-primary" onClick={verYDescargar}>
+        <a
+          className="report-action report-action-primary"
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          onClick={dispararDescargaExtra}
+        >
           Ver / Descargar
-        </button>
+        </a>
         {isAdmin && (
           <>
             <a
