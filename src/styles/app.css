@@ -3014,6 +3014,7 @@
     background: #0B1220;
     border-color: #0B1220;
     box-shadow: none;
+    grid-column: 1 / -1;
   }
   .report-action-primary {
     color: #FFFFFF;
@@ -4536,5 +4537,23 @@
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
       background-size: cover;
+    }
+
+    /* Acciones compactas en reportes de escritorio: dos por fila, sin
+       botones que se estiren innecesariamente por toda la tarjeta. */
+    .report-actions {
+      grid-template-columns: repeat(2, minmax(140px, 190px));
+      justify-content: start;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .report-action,
+    .report-action-primary {
+      min-height: 46px;
+      font-size: 14px;
+    }
+    .report-action-primary,
+    .report-action-download {
+      grid-column: auto;
     }
   }

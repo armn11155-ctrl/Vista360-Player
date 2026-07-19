@@ -58,7 +58,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const hora = Number(
     new Intl.DateTimeFormat("es-PE", { hour: "numeric", hourCycle: "h23", timeZone: "America/Lima" }).format(new Date())
   );
-  const saludo = hora < 12 ? "Buenos días," : hora < 19 ? "Buenas tardes," : "Buenas noches,";
+  const saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
   const facturasState = useFacturas(isAdmin ? undefined : cliente?.ruc);
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
@@ -136,9 +136,11 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         </div>
         {/* Saludo */}
-        <div style={{ fontSize:14, color:"rgba(255,255,255,0.86)", marginBottom:4 }}>{saludo}</div>
-        <div style={{ fontSize:27, fontWeight:800, color:"#fff", marginBottom:16, letterSpacing:0, lineHeight:1.05 }}>
-          {isAdmin ? "Hola Admin" : nombre}
+        <div className="inicio-greeting-title" style={{ fontSize:27, fontWeight:800, color:"#fff", marginBottom:7, letterSpacing:0, lineHeight:1.05 }}>
+          {saludo}, {isAdmin ? "Admin" : nombre}
+        </div>
+        <div className="inicio-greeting-sub" style={{ fontSize:14, color:"rgba(255,255,255,0.72)", marginBottom:16, lineHeight:1.35 }}>
+          {isAdmin ? "Gestiona tus clientes y campañas desde aquí." : "Tu presencia publicitaria, clara y bajo control."}
         </div>
         {/* Pill */}
         <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"7px 13px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>

@@ -165,7 +165,6 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           href={informe.urlDescarga || url}
           download
           rel="noreferrer"
-          style={{ gridColumn: "1 / -1" }}
         >
           Descargar
         </a>
