@@ -74,6 +74,9 @@ export const crearClienteNuevo = onCall<CrearClienteNuevoData>(async (request) =
   if (!email) {
     throw new HttpsError("invalid-argument", "El correo del usuario es obligatorio.");
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new HttpsError("invalid-argument", "El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
+  }
   if (passwordSolicitada && !validarPassword(passwordSolicitada)) {
     throw new HttpsError("invalid-argument", "La contraseña debe tener mínimo 8 caracteres, letras y números.");
   }
@@ -98,10 +101,18 @@ export const crearClienteNuevo = onCall<CrearClienteNuevoData>(async (request) =
     });
   } catch (error) {
     const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+    console.error("crearClienteNuevo: fallo auth.createUser", { code, error });
     if (code.includes("email-already-exists")) {
       throw new HttpsError("already-exists", "Ese correo ya tiene una cuenta creada.");
     }
-    throw new HttpsError("internal", "No se pudo crear la cuenta de acceso.");
+    if (code.includes("invalid-email")) {
+      throw new HttpsError("invalid-argument", "El correo no es válido.");
+    }
+    if (code.includes("invalid-password") || code.includes("weak-password")) {
+      throw new HttpsError("invalid-argument", "La contraseña no es válida (mínimo 6 caracteres).");
+    }
+    const detalle = error instanceof Error ? error.message : String(error);
+    throw new HttpsError("internal", `No se pudo crear la cuenta de acceso: ${detalle}`);
   }
 
   const clienteRef = db.collection("clientes").doc();
@@ -152,8 +163,10 @@ export const crearClienteNuevo = onCall<CrearClienteNuevoData>(async (request) =
       password,
     };
   } catch (error) {
+    console.error("crearClienteNuevo: fallo al guardar cliente/acceso", error);
     await auth.deleteUser(userRecord.uid).catch(() => undefined);
     await clienteRef.delete().catch(() => undefined);
-    throw new HttpsError("internal", "No se pudo guardar el cliente nuevo.");
+    const detalle = error instanceof Error ? error.message : String(error);
+    throw new HttpsError("internal", `No se pudo guardar el cliente nuevo: ${detalle}`);
   }
 });

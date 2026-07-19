@@ -106,6 +106,10 @@ export default function Accesos({ onBack }: Props) {
       setNuevoError("Escribe el nombre de la empresa y el correo del usuario.");
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoEmail.trim())) {
+      setNuevoError("El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
+      return;
+    }
     setNuevoCreando(true);
     setNuevoError("");
     setNuevoResultado(null);
