@@ -3014,6 +3014,29 @@
   .report-action-whatsapp svg {
     color: #22E17D;
   }
+  /* Factura: mismo layout que report-action, pero en ambar en vez de
+     azul, para que se note a simple vista que es otro tipo de tarjeta. */
+  .factura-action-primary {
+    color: #FFFFFF;
+    background: #B45309;
+    box-shadow: 0 10px 22px rgba(180, 83, 9, 0.28);
+    grid-column: 1 / -1;
+    min-height: 60px;
+    font-size: 16px;
+  }
+  .factura-action-outline {
+    color: #B45309;
+    border-color: rgba(180,83,9,.3);
+    background: rgba(180,83,9,.06);
+    box-shadow: none;
+  }
+  .factura-pdf-icon span {
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .factura-card .report-ready-badge {
+    font-weight: 750;
+  }
 
   @media (max-width: 430px) {
     .reports-screen-body {

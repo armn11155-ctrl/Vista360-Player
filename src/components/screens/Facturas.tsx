@@ -4,43 +4,23 @@ import BackChevron from "../BackChevron";
 import { useFacturas } from "../../hooks/useFacturas";
 import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
-import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
-import type { Factura, FacturaEstado } from "../../types";
+import type { Cliente } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
+import { FacturaCard } from "../FacturaCard";
 
 interface Props {
   ruc: string | undefined;
   clienteId?: string;
+  cliente?: Cliente | null;
   onBack: () => void;
   isAdmin?: boolean;
   onMenuClick?: () => void;
 }
 
-const FACTURACION_WEB_URL = "https://facturacion-web-abi.pages.dev";
-
-const BADGE: Record<FacturaEstado, { bg: string; color: string }> = {
-  Pagada:    { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
-  Aceptada:  { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
-  Emitida:   { bg: "rgba(8,119,255,0.15)", color: "#0877FF" },
-  Pendiente: { bg: "rgba(245,158,11,0.15)", color: "#D97706" },
-  Vencida:   { bg: "rgba(239,68,68,0.15)",  color: "#DC2626" },
-  Rechazada: { bg: "rgba(239,68,68,0.15)",  color: "#DC2626" },
-  Anulada:   { bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
-  Borrador:  { bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
-};
-
-function fmtMonto(f: Factura): string {
-  const monto = (f.total ?? 0).toLocaleString("es-PE", { minimumFractionDigits: 2 });
-  return `${f.moneda === "USD" ? "US$" : "S/"} ${monto}`;
-}
-
-export default function Facturas({ ruc, clienteId, onBack, isAdmin, onMenuClick }: Props) {
+export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onMenuClick }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
-  const keysAFirmar = facturas.map((f) => f.pdfUrl).filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
-  const urlsFirmadas = useSignedUrls(keysAFirmar);
-  const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
   const fileRef = useRef<HTMLInputElement>(null);
   const [pdfListo, setPdfListo] = useState<File | null>(null);
   const [pesoOriginal, setPesoOriginal] = useState(0);
@@ -184,50 +164,10 @@ export default function Facturas({ ruc, clienteId, onBack, isAdmin, onMenuClick 
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-          {facturas.map((f) => {
-            const badge = BADGE[f.estado] ?? BADGE.Borrador;
-            return (
-              <div
-                key={f.id}
-                className="card"
-                style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-                    {f.tipo_doc ?? "Factura"} {f.numero_fmt ?? f.serie}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                    {f.fecha_emision ?? "—"} · {fmtMonto(f)}
-                  </div>
-                  <span style={{
-                    display: "inline-block", marginTop: 6, fontSize: 12, fontWeight: 700,
-                    padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color,
-                  }}>
-                    {f.estado}
-                  </span>
-                  {f.pdfPesoBytes != null && (
-                    <span style={{
-                      display: "inline-block", marginTop: 6, marginLeft: 6, fontSize: 12, fontWeight: 700,
-                      padding: "2px 8px", borderRadius: 20, background: "rgba(8,119,255,0.10)", color: "#0877FF",
-                    }}>
-                      {formatoBytes(f.pdfPesoBytes)}
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  {f.pdfUrl && (
-                    <a href={resolverUrl(f.pdfUrl)} target="_blank" rel="noreferrer" className="factura-link">
-                      PDF
-                    </a>
-                  )}
-                  <a href={`${FACTURACION_WEB_URL}/ver/${f.id}`} target="_blank" rel="noreferrer" className="factura-link secondary">
-                    Ver
-                  </a>
-                </div>
-              </div>
-            );
-          })}
+        <div className="reports-list" style={{ marginTop: 12 }}>
+          {facturas.map((f) => (
+            <FacturaCard key={f.id} factura={f} cliente={cliente ?? null} isAdmin={isAdmin} />
+          ))}
         </div>
       </div>
     </div>

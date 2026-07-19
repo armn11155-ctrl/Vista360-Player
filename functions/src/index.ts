@@ -15,6 +15,7 @@ export { crearClienteNuevo } from "./crearClienteNuevo.js";
 export { crearPanel } from "./crearPanel.js";
 export { eliminarContrato } from "./eliminarContrato.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
+export { firmarDescargaFactura } from "./firmarDescargaFactura.js";
 export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { actualizarImagenCampania } from "./actualizarImagenCampania.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
