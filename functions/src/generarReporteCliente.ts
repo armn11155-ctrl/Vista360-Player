@@ -501,13 +501,16 @@ async function subirReporteR2(key: string, buffer: Buffer) {
   return firmarLecturaR2(key, 6 * 60 * 60);
 }
 
-async function cargarElementos(clienteId: string, mes: string) {
+async function cargarElementos(clienteId: string, mes: string, panelId?: string) {
   const db = getFirestore();
   const { start, end } = monthRange(mes);
-  const contratosSnap = await db
+  let contratosQuery = db
     .collection("contratos")
-    .where("cliente_id", "==", clienteId)
-    .get();
+    .where("cliente_id", "==", clienteId) as FirebaseFirestore.Query;
+  if (panelId) {
+    contratosQuery = contratosQuery.where("panel_id", "==", panelId);
+  }
+  const contratosSnap = await contratosQuery.get();
 
   const panelIds = new Set<string>();
   contratosSnap.docs.forEach((doc) => {
@@ -543,16 +546,19 @@ async function cargarElementos(clienteId: string, mes: string) {
   });
 }
 
-async function cargarUbicacionCliente(clienteId: string) {
+async function cargarUbicacionCliente(clienteId: string, panelId?: string) {
   const db = getFirestore();
-  const contratosSnap = await db
-    .collection("contratos")
-    .where("cliente_id", "==", clienteId)
-    .limit(1)
-    .get();
-  const panelId = contratosSnap.docs[0]?.data().panel_id;
-  if (!panelId) return "";
-  const panelSnap = await db.doc(`paneles/${panelId}`).get();
+  let panelIdUsado = panelId;
+  if (!panelIdUsado) {
+    const contratosSnap = await db
+      .collection("contratos")
+      .where("cliente_id", "==", clienteId)
+      .limit(1)
+      .get();
+    panelIdUsado = contratosSnap.docs[0]?.data().panel_id;
+  }
+  if (!panelIdUsado) return "";
+  const panelSnap = await db.doc(`paneles/${panelIdUsado}`).get();
   const panel = panelSnap.data() ?? {};
   return [panel.nombre, panel.direccion, panel.ciudad].filter(Boolean).join(" - ");
 }
@@ -601,18 +607,23 @@ export const generarReporteCliente = onCall(
         throw new HttpsError("invalid-argument", "El día enviado no es válido para ese mes.");
       }
 
+      const panelId = String(request.data?.panelId ?? "").trim();
+
       const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
       if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
       const clienteData = clienteSnap.data() ?? {};
       const ubicacionDb = String(clienteData.ciudad ?? "");
-      const ubicacionPanel = await cargarUbicacionCliente(clienteId);
+      const ubicacionPanel = await cargarUbicacionCliente(clienteId, panelId || undefined);
       const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
       const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
       const elementos = elementosSubidos.length > 0 && elementosSubidos[0].fotos.length > 0
         ? elementosSubidos
-        : await cargarElementos(clienteId, mes);
+        : await cargarElementos(clienteId, mes, panelId || undefined);
       if (elementos.length === 0) {
-        throw new HttpsError("failed-precondition", "Agrega fotos para generar el reporte.");
+        throw new HttpsError(
+          "failed-precondition",
+          panelId ? "Ese panel no tiene fotos de campaña para este mes." : "Agrega fotos para generar el reporte."
+        );
       }
 
       const cliente: ClienteReporte = {
@@ -650,6 +661,7 @@ export const generarReporteCliente = onCall(
           digitalBytes: digital.length,
           numCampanas: reporte.numElementos,
           numEvidencias: reporte.numEvidencias,
+          ...(panelId ? { panel_id: panelId } : { panel_id: FieldValue.delete() }),
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }
