@@ -670,7 +670,7 @@
     top: 0;
     height: 4px;
     background: linear-gradient(90deg,#0877FF,#61B0FF);
-    box-shadow: 0 0 16px rgba(8,119,255,.42);
+    box-shadow: 0 8px 18px rgba(5,10,18,.24);
   }
   .premium-campaign-card:active { transform: scale(.988); }
   .premium-campaign-kicker {
@@ -713,7 +713,7 @@
     .premium-campaign-card:hover {
       transform: translateY(-2px);
       border-color: rgba(96,165,250,.38);
-      box-shadow: 0 26px 48px -24px rgba(2,6,23,.95), 0 0 0 1px rgba(8,119,255,.08);
+      box-shadow: 0 26px 48px -24px rgba(2,6,23,.95), 0 0 0 1px rgba(15,23,42,.08);
     }
   }
   .campaign-thumb {
@@ -855,7 +855,7 @@
     background: var(--accent);
     border-radius: 50%;
     border: 2px solid var(--card);
-    box-shadow: 0 0 12px rgba(8,119,255,0.6);
+    box-shadow: 0 6px 14px rgba(5,10,18,.28);
   }
 
   /* ===== SCREEN 4: EVIDENCIAS ===== */
@@ -1185,7 +1185,7 @@
     justify-content: center;
     color: #fff;
     background: linear-gradient(135deg, #0877FF, #2F6FED);
-    box-shadow: 0 10px 18px rgba(8,119,255,.28);
+    box-shadow: 0 10px 18px rgba(5,10,18,.16);
   }
   .report-admin-copy { margin-bottom: 0; padding-top: 1px; }
   .report-admin-title { color: #0B1220; font-size: 14.5px; font-weight: 800; }
@@ -1242,7 +1242,7 @@
   .report-month-select:focus {
     outline: none;
     border-color: #0877FF;
-    box-shadow: 0 0 0 3px rgba(8,119,255,.14);
+    box-shadow: 0 0 0 3px rgba(15,23,42,.12);
   }
   .report-month-select-dia {
     flex: 0 0 64px;
@@ -1345,7 +1345,7 @@
     letter-spacing: .1px;
     padding: 0 22px;
     cursor: pointer;
-    box-shadow: 0 12px 22px rgba(8,119,255,.28);
+    box-shadow: 0 12px 22px rgba(5,10,18,.18);
     transition: box-shadow .15s ease, transform .15s ease;
   }
   .report-generate-btn:active { transform: translateY(1px); }
@@ -1772,7 +1772,7 @@
     height: 16px;
     border-radius: 50%;
     background: #0877FF;
-    box-shadow: 0 2px 6px rgba(8,119,255,0.4);
+    box-shadow: 0 2px 6px rgba(5,10,18,.22);
     cursor: pointer;
   }
   .avatar-modal-zoom-slider::-moz-range-thumb {
@@ -1781,7 +1781,7 @@
     border: none;
     border-radius: 50%;
     background: #0877FF;
-    box-shadow: 0 2px 6px rgba(8,119,255,0.4);
+    box-shadow: 0 2px 6px rgba(5,10,18,.22);
     cursor: pointer;
   }
   .avatar-modal-elegir-otra {
@@ -3092,7 +3092,7 @@
     padding: 6px 13px;
     border-radius: 20px;
     margin-bottom: 18px;
-    box-shadow: 0 8px 20px -10px rgba(8,119,255,0.5);
+    box-shadow: 0 8px 20px -10px rgba(0,0,0,.72);
   }
   .admin-picker-badge-dot {
     width: 6px; height: 6px; border-radius: 50%; background: #4FD1C5;
@@ -3117,7 +3117,7 @@
     justify-content: center;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 6px 16px rgba(8,119,255,0.35);
+    box-shadow: 0 6px 16px rgba(0,0,0,.34);
     padding: 0;
   }
   .admin-picker-perfil-btn:active { transform: scale(0.96); }
@@ -3146,7 +3146,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 26px rgba(8,119,255,0.28);
+    box-shadow: 0 12px 26px rgba(5,10,18,.2);
     margin-bottom: 14px;
   }
   .admin-perfil-nombre { font-size: 19px; font-weight: 800; color: #0B1220; margin-bottom: 3px; }
@@ -3223,7 +3223,7 @@
   .admin-picker-tabs button.active {
     background: linear-gradient(135deg, #0877FF, #2D5FE0);
     color: #FFFFFF;
-    box-shadow: 0 6px 16px -6px rgba(8,119,255,0.7);
+    box-shadow: 0 6px 16px -6px rgba(0,0,0,.72);
   }
   .admin-picker-tabs span {
     margin-left: 5px;
@@ -3251,7 +3251,7 @@
   .admin-picker-search::placeholder { color: rgba(255,255,255,0.42); }
   .admin-picker-search:focus {
     border-color: rgba(8,119,255,0.55);
-    box-shadow: 0 0 0 3px rgba(8,119,255,0.16), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 3px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,0.06);
   }
 
   .admin-picker-body {
@@ -3322,8 +3322,8 @@
     border-color: rgba(0, 0, 0, .84);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, .2),
-      0 18px 38px -18px rgba(8, 119, 255, .9),
-      0 0 0 1px rgba(8, 119, 255, .1);
+      0 18px 38px -18px rgba(0, 0, 0, .92),
+      0 0 0 1px rgba(255, 255, 255, .06);
   }
   .admin-picker-tile.archived {
     background: linear-gradient(155deg, rgba(255,255,255,.055), rgba(3,10,20,.48));
@@ -3420,7 +3420,7 @@
     opacity: 1;
     transform: scale(1);
   }
-  .admin-picker-tile-gear:hover { background: #0877FF; border-color: rgba(255,255,255,.5); transform: scale(1.08) rotate(18deg); box-shadow: 0 10px 28px rgba(8,119,255,.48); }
+  .admin-picker-tile-gear:hover { background: #0877FF; border-color: rgba(255,255,255,.5); transform: scale(1.08) rotate(18deg); box-shadow: 0 10px 28px rgba(0,0,0,.48); }
   .admin-picker-tile-gear:disabled { opacity: 0.4; cursor: default; }
   @media (hover: none) {
     .admin-picker-tile-gear { opacity: 1; transform: scale(1); }
@@ -3458,7 +3458,7 @@
     border-color: #0877FF;
     background: rgba(8,119,255,.08);
     color: #0877FF;
-    box-shadow: 0 0 0 2px rgba(8,119,255,.12);
+    box-shadow: 0 0 0 2px rgba(15,23,42,.1);
   }
   .client-avatar-upload {
     border: 1px dashed rgba(8,119,255,.34);
@@ -3520,7 +3520,7 @@
     transform: translateY(-3px) scale(1.04);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.22),
-      0 20px 42px -16px rgba(8,119,255,0.42);
+      0 20px 42px -16px rgba(0,0,0,.62);
   }
   .admin-picker-tile-name {
     font-size: 13px;
@@ -4145,7 +4145,7 @@
     display: block;
   }
   .coverage-leaflet-marker.active {
-    filter: drop-shadow(0 14px 18px rgba(2,6,23,.42)) drop-shadow(0 0 8px rgba(8,119,255,.32));
+    filter: drop-shadow(0 14px 18px rgba(2,6,23,.42));
   }
   .coverage-map-loading {
     position: absolute;
@@ -4176,7 +4176,7 @@
     border: 0;
     border-radius: 50% 50% 50% 8px;
     background: #0877FF;
-    box-shadow: 0 10px 24px rgba(8,119,255,.38);
+    box-shadow: 0 10px 24px rgba(5,10,18,.24);
     rotate: -45deg;
     cursor: pointer;
   }
@@ -4295,7 +4295,7 @@
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
-    box-shadow: 0 0 0 5px rgba(8,119,255,.10);
+    box-shadow: 0 0 0 5px rgba(15,23,42,.08);
   }
   .coverage-panel-info { flex: 1; min-width: 0; }
   .coverage-panel-name { color: #050A12; font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
