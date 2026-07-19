@@ -3206,51 +3206,78 @@
     background: #F8FAFC;
     color: #0F172A;
   }
-  .factura-title-edit {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 2px;
-  }
-  .factura-title-input {
-    flex: 1;
-    min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 7px 9px;
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--text);
-    box-sizing: border-box;
-  }
-  .factura-title-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex-shrink: 0;
-    color: #fff;
-    padding: 0;
-  }
-  .factura-title-btn-ok {
-    background: #16A34A;
-  }
-  .factura-title-btn-cancel {
-    background: #94A3B8;
-  }
-  .factura-title-btn:disabled {
-    opacity: .6;
-    cursor: not-allowed;
-  }
   .factura-title-error {
     color: #DC2626;
     font-size: 11.5px;
     font-weight: 700;
-    margin-top: 4px;
+    margin-top: 8px;
+  }
+  /* Panel de edicion del nombre -- a todo el ancho de la tarjeta,
+     debajo de todo (icono + copy + badge), en vez de meterlo en la
+     columna angosta del titulo: ahi era muy chico para ver bien lo que
+     se estaba escribiendo, sobre todo en celular. */
+  .factura-edit-panel {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .factura-edit-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 800;
+    color: #64748B;
+    margin-bottom: 8px;
+  }
+  .factura-edit-input {
+    width: 100%;
+    min-height: 52px;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 0 14px;
+    font-size: 16px;
+    font-weight: 700;
+    /* Fondo y color-scheme explicitos -- sin esto, en modo oscuro del
+       sistema el navegador le pone fondo negro nativo al input pero el
+       texto se queda oscuro (pensado para fondo claro), y queda
+       invisible: un "cuadro negro" sin letras visibles. Mismo motivo
+       por el que .report-month-input y select.reports-panel-select ya
+       lo tienen. */
+    background: #fff;
+    color: #0B1220;
+    color-scheme: light;
+    box-sizing: border-box;
+  }
+  .factura-edit-input:focus {
+    outline: none;
+    border-color: #0B2E6B;
+  }
+  .factura-edit-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .factura-edit-cancelar,
+  .factura-edit-guardar {
+    min-height: 46px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .factura-edit-cancelar {
+    background: #F1F5F9;
+    color: #475569;
+  }
+  .factura-edit-guardar {
+    background: #0B2E6B;
+    color: #fff;
+  }
+  .factura-edit-cancelar:disabled,
+  .factura-edit-guardar:disabled {
+    opacity: .6;
+    cursor: not-allowed;
   }
 
   @media (max-width: 430px) {

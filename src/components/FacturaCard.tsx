@@ -164,46 +164,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>
-          {editandoNombre ? (
-            <div className="factura-title-edit">
-              <input
-                autoFocus
-                value={nombreEdit}
-                onChange={(e) => setNombreEdit(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void guardarNombre();
-                  if (e.key === "Escape") cancelarEdicionNombre();
-                }}
-                className="factura-title-input"
-                aria-label="Nombre de la factura"
-              />
-              <button
-                type="button"
-                className="factura-title-btn factura-title-btn-ok"
-                onClick={() => void guardarNombre()}
-                disabled={guardandoNombre}
-                aria-label="Guardar nombre"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                className="factura-title-btn factura-title-btn-cancel"
-                onClick={cancelarEdicionNombre}
-                disabled={guardandoNombre}
-                aria-label="Cancelar edición"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ) : (
-            <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
-          )}
-          {errorNombre && <div className="factura-title-error">{errorNombre}</div>}
+          <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
           <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
@@ -226,6 +187,50 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           </div>
         </div>
       </div>
+
+      {editandoNombre && (
+        // El editor va DEBAJO de toda la tarjeta (a todo el ancho), no
+        // metido en la columna angosta del título -- ahí no entraba
+        // bien, sobre todo en celular. El input tambien fuerza fondo
+        // claro y color-scheme:light (igual que los demas inputs de la
+        // app) para que no salga con fondo negro nativo del sistema
+        // cuando el celular/compu esta en modo oscuro.
+        <div className="factura-edit-panel">
+          <label className="factura-edit-label" htmlFor={`factura-nombre-${f.id}`}>
+            Nombre de la factura
+          </label>
+          <input
+            id={`factura-nombre-${f.id}`}
+            autoFocus
+            value={nombreEdit}
+            onChange={(e) => setNombreEdit(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void guardarNombre();
+              if (e.key === "Escape") cancelarEdicionNombre();
+            }}
+            className="factura-edit-input"
+          />
+          {errorNombre && <div className="factura-title-error">{errorNombre}</div>}
+          <div className="factura-edit-actions">
+            <button
+              type="button"
+              className="factura-edit-cancelar"
+              onClick={cancelarEdicionNombre}
+              disabled={guardandoNombre}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className="factura-edit-guardar"
+              onClick={() => void guardarNombre()}
+              disabled={guardandoNombre}
+            >
+              {guardandoNombre ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {urlVer && (
         <div className="report-actions">
