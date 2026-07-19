@@ -3060,14 +3060,92 @@
     word-break: break-word;
   }
   /* Sin menu de 3 puntitos en esta tarjeta -- no hace falta dejarle
-     espacio de sobra a la derecha, y se mantiene siempre en la
-     columna de la esquina superior derecha (ni en pantallas chicas). */
+     espacio de sobra a la derecha. El lapicito de editar el nombre
+     vive al costado del badge, dentro de la misma fila -- por eso el
+     badge ya no necesita estar posicionado como celda de grid el
+     mismo (eso ahora lo hace .factura-badge-row, la fila que los
+     contiene a los dos), asi el badge se queda igual que en
+     ReportCard pero adentro de esa fila. */
   .factura-card .report-ready-badge {
     font-weight: 750;
     margin-right: 0;
-    grid-column: 3 !important;
-    justify-self: end !important;
-    margin-top: 0 !important;
+    margin-top: 0;
+  }
+  /* Contenedor del badge + lapicito -- este SI es la celda de grid de
+     la esquina superior derecha (columna 3), siempre, en cualquier
+     ancho de pantalla, porque es una clase propia de FacturaCard que
+     ninguna regla generica de ReportCard toca. */
+  .factura-badge-row {
+    grid-column: 3;
+    justify-self: end;
+    align-self: start;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .factura-edit-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    color: #64748B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .factura-edit-btn:hover {
+    background: #F8FAFC;
+    color: #0F172A;
+  }
+  .factura-title-edit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .factura-title-input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 9px;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+    box-sizing: border-box;
+  }
+  .factura-title-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    color: #fff;
+    padding: 0;
+  }
+  .factura-title-btn-ok {
+    background: #16A34A;
+  }
+  .factura-title-btn-cancel {
+    background: #94A3B8;
+  }
+  .factura-title-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+  .factura-title-error {
+    color: #DC2626;
+    font-size: 11.5px;
+    font-weight: 700;
+    margin-top: 4px;
   }
 
   @media (max-width: 430px) {

@@ -63,6 +63,53 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   const [urlDescarga, setUrlDescarga] = useState("");
 
+  // ── Editar el nombre (numero_fmt) que se muestra -- el lapicito al
+  // costado del badge de estado abre este editor inline. Pasa por
+  // actualizarNombreFactura (Admin SDK) por el mismo motivo que
+  // crearFacturaAdmin: "facturas" es de facturacion-web, un sistema
+  // aparte, y sus reglas no dejan escribir desde acá directo. ──
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [nombreEdit, setNombreEdit] = useState("");
+  const [guardandoNombre, setGuardandoNombre] = useState(false);
+  const [errorNombre, setErrorNombre] = useState("");
+
+  function abrirEdicionNombre() {
+    setNombreEdit(f.numero_fmt ?? f.serie ?? "");
+    setErrorNombre("");
+    setEditandoNombre(true);
+  }
+
+  function cancelarEdicionNombre() {
+    setEditandoNombre(false);
+    setErrorNombre("");
+  }
+
+  async function guardarNombre() {
+    if (!cloudFunctions) {
+      setErrorNombre("Firebase Functions no está configurado.");
+      return;
+    }
+    const valor = nombreEdit.trim();
+    if (!valor) {
+      setErrorNombre("El nombre no puede quedar vacío.");
+      return;
+    }
+    setGuardandoNombre(true);
+    setErrorNombre("");
+    try {
+      const fn = httpsCallable<{ facturaId: string; numeroFmt: string }, { ok: boolean }>(
+        cloudFunctions,
+        "actualizarNombreFactura"
+      );
+      await fn({ facturaId: f.id, numeroFmt: valor });
+      setEditandoNombre(false);
+    } catch (err) {
+      setErrorNombre(err instanceof Error ? err.message : "No se pudo guardar el nombre.");
+    } finally {
+      setGuardandoNombre(false);
+    }
+  }
+
   useEffect(() => {
     if (!esKeyR2 || !f.pdfUrl || !cloudFunctions) return;
     let cancelado = false;
@@ -117,12 +164,66 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>
-          <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
+          {editandoNombre ? (
+            <div className="factura-title-edit">
+              <input
+                autoFocus
+                value={nombreEdit}
+                onChange={(e) => setNombreEdit(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void guardarNombre();
+                  if (e.key === "Escape") cancelarEdicionNombre();
+                }}
+                className="factura-title-input"
+                aria-label="Nombre de la factura"
+              />
+              <button
+                type="button"
+                className="factura-title-btn factura-title-btn-ok"
+                onClick={() => void guardarNombre()}
+                disabled={guardandoNombre}
+                aria-label="Guardar nombre"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="factura-title-btn factura-title-btn-cancel"
+                onClick={cancelarEdicionNombre}
+                disabled={guardandoNombre}
+                aria-label="Cancelar edición"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
+          )}
+          {errorNombre && <div className="factura-title-error">{errorNombre}</div>}
           <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
-        <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
-          {f.estado}
+        <div className="factura-badge-row">
+          {isAdmin && !editandoNombre && (
+            <button
+              type="button"
+              className="factura-edit-btn"
+              onClick={abrirEdicionNombre}
+              aria-label="Editar nombre de la factura"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+            </button>
+          )}
+          <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
+            {f.estado}
+          </div>
         </div>
       </div>
 
