@@ -58,7 +58,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const hora = Number(
     new Intl.DateTimeFormat("es-PE", { hour: "numeric", hourCycle: "h23", timeZone: "America/Lima" }).format(new Date())
   );
-  const saludo = hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
+  // Entre medianoche y las 04:59 sigue siendo noche. Antes se tomaba
+  // cualquier hora menor a 12 como mañana y por eso a la 1 a. m. aparecía
+  // "Buenos días".
+  const saludo = hora < 5 ? "Buenas noches" : hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
   const facturasState = useFacturas(isAdmin ? undefined : cliente?.ruc);
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
