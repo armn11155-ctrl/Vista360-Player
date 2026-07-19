@@ -176,27 +176,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       </div>
 
       <div className="reports-screen-body">
-        {isAdmin && panelesCliente.length > 0 && (
-          <div className="reports-panel-filter-wrap">
-            <select
-              className="reports-panel-filter reports-panel-select"
-              value={panelId}
-              onChange={(e) => setPanelId(e.target.value)}
-              aria-label="Elegir panel para el reporte"
-            >
-              <option value="">Todos los paneles</option>
-              {panelesCliente.map((p) => {
-                const direccion = [p.direccion, p.ciudad].filter(Boolean).join(", ");
-                return (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre}{direccion ? ` — ${direccion}` : ""}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        )}
-
         {isAdmin && (
           <div className="report-admin-panel">
             <div className="report-admin-header">
@@ -270,6 +249,27 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                 />
                 <div className="report-photo-picker-btn">Agregar fotos</div>
               </label>
+              {panelesCliente.length > 0 && (
+                <div className="report-panel-field">
+                  <span>Panel del reporte — de cual panel es este reporte</span>
+                  <select
+                    className="reports-panel-select"
+                    value={panelId}
+                    onChange={(e) => setPanelId(e.target.value)}
+                    aria-label="Elegir panel para el reporte"
+                  >
+                    <option value="">Todos los paneles</option>
+                    {panelesCliente.map((p) => {
+                      const direccion = [p.direccion, p.ciudad].filter(Boolean).join(", ");
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.nombre}{direccion ? ` — ${direccion}` : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
               <button
                 className="report-generate-btn"
                 type="button"
