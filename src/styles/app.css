@@ -171,11 +171,8 @@
   .retry-btn:active { opacity: 0.7; }
 
   /* position:fixed a toda la pantalla (en vez de solo llenar su
-     contenedor con flex) — así el fondo oscuro siempre cubre TODO,
-     sin importar que el contenedor donde se use (.main-area en
-     cuentas de cliente) tenga fondo blanco forzado por su cuenta. Antes
-     se veía un fondo blanco alrededor/detrás de la animación en vez del
-     negro que tiene el propio gráfico. */
+     contenedor con flex) para que todas las cargas cubran el viewport
+     completo con el mismo fondo blanco, sin importar dónde se usen. */
   .brand-loader {
     position: fixed;
     inset: 0;
@@ -186,10 +183,10 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: #F6F8FB;
+    background: #FFFFFF;
   }
   .brand-loader.brand-loader-dark {
-    background: #050A12;
+    background: #FFFFFF;
   }
   .brand-loader-mark {
     width: min(230px, 58vw);
@@ -205,12 +202,12 @@
     position: absolute;
     inset: 8%;
     border-radius: 50%;
-    background: rgba(8,119,255,.10);
+    background: rgba(15,23,42,.055);
     filter: blur(18px);
     animation: brandLoaderGlow 2.8s ease-in-out infinite;
   }
   .brand-loader-dark .brand-loader-mark::before {
-    background: rgba(255,255,255,.07);
+    background: rgba(15,23,42,.055);
   }
   .brand-loader-logo {
     width: 100%;
@@ -226,8 +223,8 @@
     opacity: .3;
   }
   .brand-loader-dark .brand-loader-logo-base {
-    filter: grayscale(1) brightness(.34);
-    opacity: .82;
+    filter: grayscale(1) brightness(1.75);
+    opacity: .3;
   }
   .brand-loader-liquid {
     position: absolute;

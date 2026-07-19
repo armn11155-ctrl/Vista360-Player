@@ -1,11 +1,7 @@
 interface Props {
   label?: string;
-  /** Las pantallas de admin sin cliente elegido (selector, login) usan
-   *  fondo oscuro -- todo lo demás (Cobertura, Facturas, Usuarios,
-   *  Paneles, campañas, etc.) ya es tema claro, así que por defecto
-   *  el loader también es claro. Antes era siempre oscuro y se veía
-   *  como un destello de "pantalla negra" al cambiar a esas pantallas
-   *  claras mientras cargaba su código. */
+  /** Se conserva por compatibilidad con las llamadas existentes. Todas
+   *  las variantes usan ahora el mismo fondo blanco. */
   dark?: boolean;
 }
 
