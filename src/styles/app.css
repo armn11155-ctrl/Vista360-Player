@@ -3400,11 +3400,11 @@
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.22);
-    background: rgba(3,6,11,.94);
+    border: 1px solid rgba(15,23,42,.16);
+    background: rgba(255,255,255,.94);
     backdrop-filter: blur(14px) saturate(115%);
     -webkit-backdrop-filter: blur(14px) saturate(115%);
-    color: #fff;
+    color: #292D32;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3419,9 +3419,14 @@
     opacity: 1;
     transform: scale(1);
   }
+  .admin-picker-tile-gear img {
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
   .admin-picker-tile-gear:hover {
-    background: #111827;
-    border-color: rgba(255,255,255,.42);
+    background: #FFFFFF;
+    border-color: rgba(15,23,42,.3);
     transform: scale(1.05);
     box-shadow: 0 10px 24px rgba(0,0,0,.54), inset 0 1px 0 rgba(255,255,255,.12);
   }
