@@ -15,6 +15,37 @@ export type NotifState =
   | { status: "loading" }
   | { status: "ready"; notifs: Notificacion[]; total: number };
 
+const EVENTO_NOTIFICACIONES = "vista360:notificaciones-estado";
+
+function claveEstado(clienteId: string, tipo: "leidas" | "eliminadas") {
+  return `vista360:notificaciones:${clienteId}:${tipo}`;
+}
+
+function leerIds(clienteId: string, tipo: "leidas" | "eliminadas") {
+  try {
+    return new Set<string>(JSON.parse(localStorage.getItem(claveEstado(clienteId, tipo)) ?? "[]"));
+  } catch {
+    return new Set<string>();
+  }
+}
+
+function guardarIds(clienteId: string, tipo: "leidas" | "eliminadas", ids: Set<string>) {
+  localStorage.setItem(claveEstado(clienteId, tipo), JSON.stringify(Array.from(ids)));
+  window.dispatchEvent(new CustomEvent(EVENTO_NOTIFICACIONES, { detail: { clienteId } }));
+}
+
+export function marcarNotificacionesLeidas(clienteId: string, ids: string[]) {
+  const leidas = leerIds(clienteId, "leidas");
+  ids.forEach((id) => leidas.add(id));
+  guardarIds(clienteId, "leidas", leidas);
+}
+
+export function eliminarNotificacion(clienteId: string, id: string) {
+  const eliminadas = leerIds(clienteId, "eliminadas");
+  eliminadas.add(id);
+  guardarIds(clienteId, "eliminadas", eliminadas);
+}
+
 /**
  * Trae las notificaciones relevantes para el cliente:
  * - Solicitudes de campaña en estado "Pendiente" (el cliente las mandó y
@@ -35,11 +66,19 @@ export function useNotificaciones(clienteId: string): NotifState {
 
     function emitir() {
       if (!solicitudesDone || !contratosDone) return;
-      const lista = Array.from(notifs.values()).sort((a, b) =>
+      const eliminadas = leerIds(clienteId, "eliminadas");
+      const leidas = leerIds(clienteId, "leidas");
+      const lista = Array.from(notifs.values()).filter((n) => !eliminadas.has(n.id)).sort((a, b) =>
         b.fecha.localeCompare(a.fecha)
       );
-      setState({ status: "ready", notifs: lista, total: lista.length });
+      setState({ status: "ready", notifs: lista, total: lista.filter((n) => !leidas.has(n.id)).length });
     }
+
+    const alCambiarEstado = (event: Event) => {
+      const detalle = (event as CustomEvent<{ clienteId?: string }>).detail;
+      if (!detalle?.clienteId || detalle.clienteId === clienteId) emitir();
+    };
+    window.addEventListener(EVENTO_NOTIFICACIONES, alCambiarEstado);
 
     // ── Solicitudes: pendientes (aún esperando respuesta) + resueltas
     //    recientemente (el cliente merece saber qué pasó, no que la
@@ -139,6 +178,7 @@ export function useNotificaciones(clienteId: string): NotifState {
     return () => {
       unsubSol();
       unsubCon();
+      window.removeEventListener(EVENTO_NOTIFICACIONES, alCambiarEstado);
     };
   }, [clienteId]);
 

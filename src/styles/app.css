@@ -3342,6 +3342,7 @@
     gap: 13px;
     margin-bottom: 28px;
   }
+  .admin-picker-management-logo { display: none; }
   .admin-picker-management-head > button {
     width: 38px;
     height: 38px;
@@ -3376,6 +3377,20 @@
   .admin-picker-management-card strong { font-size: 14px; color: #fff; }
   .admin-picker-management-card small { font-size: 11.5px; color: rgba(255,255,255,.52); }
   .admin-picker-management-card i { color: rgba(255,255,255,.45); font-size: 22px; font-style: normal; }
+  .notification-delete-btn {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border: 0;
+    border-radius: 9px;
+    background: #F8FAFC;
+    color: #94A3B8;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .notification-delete-btn:hover { background: #FEE2E2; color: #DC2626; }
+  .notification-delete-btn svg { width: 17px; height: 17px; }
   .admin-picker-action {
     min-height: 64px;
     border: 1px solid rgba(0,0,0,.92);
@@ -4705,12 +4720,38 @@
       margin-bottom: 10px !important;
     }
     .inicio-greeting-admin-break { display: none; }
-    .admin-picker-management-btn,
-    .admin-picker-management-screen { display: none; }
+    .admin-picker-management-btn {
+      display: inline-flex;
+      top: 24px;
+      left: 28px;
+    }
     .admin-picker-logo { display: block; }
     .admin-picker-badge { display: inline-flex; }
-    .admin-picker-actions { display: grid; }
+    .admin-picker-actions { display: none; }
     .admin-picker-header { padding-top: 56px; }
+    .admin-picker-management-screen {
+      background:
+        linear-gradient(90deg, rgba(2,6,15,.72), rgba(2,6,15,.46)),
+        url('/login-ny-desktop-tailored.jpg') center / cover no-repeat;
+      padding: 34px 48px 48px;
+    }
+    .admin-picker-management-logo {
+      display: block;
+      width: 190px;
+      height: auto;
+      margin: 0 auto 34px;
+    }
+    .admin-picker-management-head,
+    .admin-picker-management-grid {
+      width: min(680px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .admin-picker-management-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .admin-picker-management-card { min-height: 92px; }
     .admin-picker-shell {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;

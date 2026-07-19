@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import BackChevron from "../BackChevron";
-import { useNotificaciones } from "../../hooks/useNotificaciones";
+import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
 
 interface Props {
   clienteId: string;
@@ -43,6 +44,13 @@ function tiempoRelativo(isoFecha: string): string {
 
 export default function Notificaciones({ clienteId, onBack }: Props) {
   const state = useNotificaciones(clienteId);
+  const idsVisibles = state.status === "ready" ? state.notifs.map((n) => n.id).join("|") : "";
+
+  useEffect(() => {
+    if (idsVisibles) {
+      marcarNotificacionesLeidas(clienteId, idsVisibles.split("|"));
+    }
+  }, [clienteId, idsVisibles]);
 
   return (
     <div>
@@ -87,6 +95,15 @@ export default function Notificaciones({ clienteId, onBack }: Props) {
               <div style={{ fontSize: 12, color: "#6B7A99", marginTop: 3, lineHeight: 1.4 }}>{n.detalle}</div>
               <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
             </div>
+            <button
+              type="button"
+              className="notification-delete-btn"
+              onClick={() => eliminarNotificacion(clienteId, n.id)}
+              aria-label={`Eliminar notificación: ${n.titulo}`}
+              title="Eliminar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>
+            </button>
           </div>
         ))}
       </div>
