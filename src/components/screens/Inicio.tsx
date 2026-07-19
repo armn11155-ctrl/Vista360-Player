@@ -136,17 +136,19 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         </div>
         {/* Saludo */}
-        <div className="inicio-greeting-title" style={{ fontSize:isAdmin ? 23 : 27, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 5 : 7, letterSpacing:0, lineHeight:1.08 }}>
+        <div className="inicio-greeting-title" style={{ fontSize:isAdmin ? 19 : 27, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 4 : 7, letterSpacing:0, lineHeight:1.1 }}>
           {saludo}, {isAdmin ? "Admin" : nombre}
         </div>
-        <div className="inicio-greeting-sub" style={{ fontSize:isAdmin ? 13 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 13 : 16, lineHeight:1.35 }}>
-          {isAdmin ? "Gestiona tus clientes y campañas desde aquí." : "Tu presencia publicitaria, clara y bajo control."}
+        <div className="inicio-greeting-sub" style={{ fontSize:isAdmin ? 12.5 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 5 : 16, lineHeight:1.35 }}>
+          {isAdmin ? <>Gestiona tus clientes y campañas<br />desde aquí.</> : "Tu presencia publicitaria, clara y bajo control."}
         </div>
         {/* Pill */}
-        <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"7px 13px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
-          <div style={{ width:9, height:9, borderRadius:"50%", background:"#22C55E" }} />
-          <span style={{ fontSize:13, color:"#fff", fontWeight:650 }}>{todoOk ? "Todo funcionando" : "Revisa tus campañas"}</span>
-        </div>
+        {!isAdmin && (
+          <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"7px 13px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
+            <div style={{ width:9, height:9, borderRadius:"50%", background:"#22C55E" }} />
+            <span style={{ fontSize:13, color:"#fff", fontWeight:650 }}>{todoOk ? "Todo funcionando" : "Revisa tus campañas"}</span>
+          </div>
+        )}
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
