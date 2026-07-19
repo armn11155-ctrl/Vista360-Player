@@ -54,7 +54,7 @@ export default function BottomNav({ active, onChange }: Props) {
       {TABS.map(tab => {
         const a = active === tab.id;
         return (
-          <button key={tab.id} onClick={() => onChange(tab.id)} style={{
+          <button type="button" key={tab.id} className={`nav-item${a ? " active" : ""}`} onClick={() => onChange(tab.id)} style={{
             flex:1, display:"flex", flexDirection:"column", alignItems:"center",
             justifyContent:"center", gap:3, padding:"9px 4px 8px",
             background:"none", border:"none", cursor:"pointer",
