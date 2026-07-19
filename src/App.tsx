@@ -148,7 +148,7 @@ export default function App() {
     return (
       <div className="app-shell">
         <OfflineBanner online={online} />
-        <BrandLoader />
+        <BrandLoader dark />
       </div>
     );
   }

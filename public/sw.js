@@ -1,4 +1,4 @@
-const CACHE = "v360player-shell-v4";
+const CACHE = "v360player-shell-v5";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

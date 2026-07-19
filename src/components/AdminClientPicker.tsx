@@ -144,7 +144,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }
 
   if (!todoListo && !esperaMaxima) {
-    return <BrandLoader />;
+    return <BrandLoader dark />;
   }
 
   return (

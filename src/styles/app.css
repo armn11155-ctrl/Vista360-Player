@@ -186,6 +186,9 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background: #F6F8FB;
+  }
+  .brand-loader.brand-loader-dark {
     background: #050A12;
   }
   .brand-loader-mark {
@@ -202,9 +205,12 @@
     position: absolute;
     inset: 8%;
     border-radius: 50%;
-    background: rgba(255,255,255,.07);
+    background: rgba(8,119,255,.10);
     filter: blur(18px);
     animation: brandLoaderGlow 2.8s ease-in-out infinite;
+  }
+  .brand-loader-dark .brand-loader-mark::before {
+    background: rgba(255,255,255,.07);
   }
   .brand-loader-logo {
     width: 100%;
@@ -216,6 +222,10 @@
   .brand-loader-logo-base {
     position: relative;
     z-index: 1;
+    filter: grayscale(1) brightness(1.75);
+    opacity: .3;
+  }
+  .brand-loader-dark .brand-loader-logo-base {
     filter: grayscale(1) brightness(.34);
     opacity: .82;
   }
