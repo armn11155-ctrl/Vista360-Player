@@ -136,10 +136,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         </div>
         {/* Saludo */}
-        <div className="inicio-greeting-title" style={{ fontSize:27, fontWeight:800, color:"#fff", marginBottom:7, letterSpacing:0, lineHeight:1.05 }}>
+        <div className="inicio-greeting-title" style={{ fontSize:isAdmin ? 23 : 27, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 5 : 7, letterSpacing:0, lineHeight:1.08 }}>
           {saludo}, {isAdmin ? "Admin" : nombre}
         </div>
-        <div className="inicio-greeting-sub" style={{ fontSize:14, color:"rgba(255,255,255,0.72)", marginBottom:16, lineHeight:1.35 }}>
+        <div className="inicio-greeting-sub" style={{ fontSize:isAdmin ? 13 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 13 : 16, lineHeight:1.35 }}>
           {isAdmin ? "Gestiona tus clientes y campañas desde aquí." : "Tu presencia publicitaria, clara y bajo control."}
         </div>
         {/* Pill */}
