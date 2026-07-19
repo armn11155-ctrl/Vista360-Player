@@ -74,6 +74,11 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  (url) y otra que fuerza la descarga con Content-Disposition:
    *  attachment (informe.urlDescarga, ver listarReportesCliente.ts). */
   function verYDescargar() {
+    // El orden importa: los navegadores solo confían en la PRIMERA
+    // acción de navegación disparada por el clic y bloquean como
+    // "popup" cualquier otra después -- por eso window.open() va
+    // primero (era lo que fallaba antes) y la descarga después.
+    window.open(url, "_blank", "noopener,noreferrer");
     const enlaceDescarga = document.createElement("a");
     enlaceDescarga.href = informe.urlDescarga || url;
     enlaceDescarga.download = "";
@@ -81,7 +86,6 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     document.body.appendChild(enlaceDescarga);
     enlaceDescarga.click();
     enlaceDescarga.remove();
-    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   async function eliminarReporte() {
