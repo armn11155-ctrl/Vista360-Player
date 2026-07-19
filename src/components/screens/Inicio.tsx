@@ -136,11 +136,11 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         </div>
         {/* Saludo */}
-        <div className="inicio-greeting-title" style={{ fontSize:isAdmin ? 19 : 27, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 4 : 7, letterSpacing:0, lineHeight:1.1 }}>
+        <div className={`inicio-greeting-title${isAdmin ? " inicio-greeting-title-admin" : ""}`} style={{ fontSize:isAdmin ? 19 : 27, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 4 : 7, letterSpacing:0, lineHeight:1.1 }}>
           {saludo}, {isAdmin ? "Admin" : nombre}
         </div>
-        <div className="inicio-greeting-sub" style={{ fontSize:isAdmin ? 12.5 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 5 : 16, lineHeight:1.35 }}>
-          {isAdmin ? <>Gestiona tus clientes y campañas<br />desde aquí.</> : "Tu presencia publicitaria, clara y bajo control."}
+        <div className={`inicio-greeting-sub${isAdmin ? " inicio-greeting-sub-admin" : ""}`} style={{ fontSize:isAdmin ? 12.5 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 5 : 16, lineHeight:1.35 }}>
+          {isAdmin ? <>Gestiona tus clientes y campañas<br className="inicio-greeting-admin-break" />desde aquí.</> : "Tu presencia publicitaria, clara y bajo control."}
         </div>
         {/* Pill */}
         {!isAdmin && (

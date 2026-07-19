@@ -4647,6 +4647,17 @@
   /* Esta regla debe permanecer después del estilo móvil base: garantiza
      que Cambiar cliente use siempre la panorámica ancha en escritorio. */
   @media (min-width: 900px) {
+    .inicio-greeting-title-admin {
+      font-size: 28px !important;
+      line-height: 1.08 !important;
+      margin-bottom: 7px !important;
+    }
+    .inicio-greeting-sub-admin {
+      font-size: 15px !important;
+      line-height: 1.4 !important;
+      margin-bottom: 10px !important;
+    }
+    .inicio-greeting-admin-break { display: none; }
     .admin-picker-management-btn,
     .admin-picker-management-screen { display: none; }
     .admin-picker-logo { display: block; }
