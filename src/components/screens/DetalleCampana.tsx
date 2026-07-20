@@ -195,7 +195,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
                       style={{ border: "none" }}
                       loading="lazy"
                       referrerPolicy="strict-origin-when-cross-origin"
-                      src={`https://maps.google.com/maps?q=${panel.lat},${panel.lng}&z=17&output=embed`}
+                      src={`https://maps.google.com/maps?q=${panel.lat},${panel.lng}&z=18&output=embed`}
                     />
                   </div>
                 ) : (
