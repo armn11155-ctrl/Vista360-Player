@@ -41,91 +41,109 @@ function siguienteDia(fechaStr: string): string {
  * fechas corre para CADA panel elegido.
  */
 export const crearContrato = onCall<CrearContratoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
-  const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear campañas.");
-  }
-
-  const clienteId = limpiar(request.data.clienteId);
-  const panelIds = Array.from(
-    new Set((Array.isArray(request.data.panelIds) ? request.data.panelIds : []).map((id) => limpiar(id)).filter(Boolean))
-  );
-  const nombre = limpiar(request.data.nombre);
-  const inicio = limpiar(request.data.inicio);
-  const fin = limpiar(request.data.fin);
-  const monto = Number(request.data.monto);
-
-  if (!clienteId) {
-    throw new HttpsError("invalid-argument", "Falta el cliente.");
-  }
-  if (panelIds.length === 0) {
-    throw new HttpsError("invalid-argument", "Elige al menos un panel.");
-  }
-  if (!inicio || !fin) {
-    throw new HttpsError("invalid-argument", "Pon fecha de inicio y de fin.");
-  }
-  if (fin < inicio) {
-    throw new HttpsError("invalid-argument", "La fecha de fin no puede ser antes que la de inicio.");
-  }
-  if (!Number.isFinite(monto) || monto < 0) {
-    throw new HttpsError("invalid-argument", "Pon un monto válido.");
-  }
-
-  // Un mismo cliente no puede tener dos campañas activas a la vez en
-  // el mismo panel -- se revisa para CADA panel elegido si este
-  // cliente ya tiene otro contrato en ese panel (como panel principal
-  // o como parte de una campaña multi-panel) cuyas fechas se crucen
-  // con las que se está por crear. Otro cliente distinto SÍ puede
-  // tener una campaña activa en el mismo panel al mismo tiempo -- el
-  // bloqueo es por cliente+panel, no por panel solo.
-  const contratosClienteSnap = await db.collection("contratos").where("cliente_id", "==", clienteId).get();
-  const contratosCliente = contratosClienteSnap.docs.map(
-    (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
-  );
-
-  for (const panelId of panelIds) {
-    const cruces = contratosCliente.filter((c) => {
-      if (c.deleted || !c.inicio || !c.fin) return false;
-      if (!(c.inicio <= fin && inicio <= c.fin)) return false;
-      const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
-      return idsDeC.includes(panelId);
-    });
-    if (cruces.length > 0) {
-      const panelSnap = await db.doc(`paneles/${panelId}`).get();
-      const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
-      const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
-      throw new HttpsError(
-        "failed-precondition",
-        `Este cliente ya tiene una campaña programada en ${nombrePanel} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
-      );
+  try {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
     }
+
+    const db = getFirestore();
+    const propio = await db.doc(`portalUsers/${uid}`).get();
+    if (!propio.exists || propio.data()?.role !== "admin") {
+      throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear campañas.");
+    }
+
+    const clienteId = limpiar(request.data.clienteId);
+    const panelIds = Array.from(
+      new Set((Array.isArray(request.data.panelIds) ? request.data.panelIds : []).map((id) => limpiar(id)).filter(Boolean))
+    );
+    const nombre = limpiar(request.data.nombre);
+    const inicio = limpiar(request.data.inicio);
+    const fin = limpiar(request.data.fin);
+    const monto = Number(request.data.monto);
+
+    if (!clienteId) {
+      throw new HttpsError("invalid-argument", "Falta el cliente.");
+    }
+    if (panelIds.length === 0) {
+      throw new HttpsError("invalid-argument", "Elige al menos un panel.");
+    }
+    if (!inicio || !fin) {
+      throw new HttpsError("invalid-argument", "Pon fecha de inicio y de fin.");
+    }
+    if (fin < inicio) {
+      throw new HttpsError("invalid-argument", "La fecha de fin no puede ser antes que la de inicio.");
+    }
+    if (!Number.isFinite(monto) || monto < 0) {
+      throw new HttpsError("invalid-argument", "Pon un monto válido.");
+    }
+
+    // Un mismo cliente no puede tener dos campañas activas a la vez en
+    // el mismo panel -- se revisa para CADA panel elegido si este
+    // cliente ya tiene otro contrato en ese panel (como panel principal
+    // o como parte de una campaña multi-panel) cuyas fechas se crucen
+    // con las que se está por crear. Otro cliente distinto SÍ puede
+    // tener una campaña activa en el mismo panel al mismo tiempo -- el
+    // bloqueo es por cliente+panel, no por panel solo.
+    const contratosClienteSnap = await db.collection("contratos").where("cliente_id", "==", clienteId).get();
+    const contratosCliente = contratosClienteSnap.docs.map(
+      (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
+    );
+
+    for (const panelId of panelIds) {
+      const cruces = contratosCliente.filter((c) => {
+        if (c.deleted || !c.inicio || !c.fin) return false;
+        if (!(c.inicio <= fin && inicio <= c.fin)) return false;
+        const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
+        return idsDeC.includes(panelId);
+      });
+      if (cruces.length > 0) {
+        const panelSnap = await db.doc(`paneles/${panelId}`).get();
+        const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
+        const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+        throw new HttpsError(
+          "failed-precondition",
+          `Este cliente ya tiene una campaña programada en ${nombrePanel} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+        );
+      }
+    }
+
+    const contratoRef = db.collection("contratos").doc();
+    await contratoRef.set({
+      panel_id: panelIds[0],
+      panel_ids: panelIds,
+      cliente_id: clienteId,
+      ...(nombre ? { nombre } : {}),
+      inicio,
+      fin,
+      monto,
+      pagado: false,
+      fotos_campania: [],
+      createdAt: FieldValue.serverTimestamp(),
+    });
+
+    // Marcar TODOS los paneles elegidos como Ocupado (mismo
+    // comportamiento que en el ERP, ahora para cada uno). Si marcar
+    // algun panel falla, no se revierte la campaña ya creada -- se
+    // avisa igual con exito, el panel se puede corregir a mano desde
+    // Paneles si hiciera falta.
+    await Promise.all(
+      panelIds.map((panelId) =>
+        db.doc(`paneles/${panelId}`).set({ estado: "Ocupado" }, { merge: true }).catch((err) => {
+          console.error(`No se pudo marcar el panel ${panelId} como Ocupado.`, err);
+        })
+      )
+    );
+
+    return { ok: true, contratoId: contratoRef.id };
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    // Cualquier otro error (de Firestore, de red, etc.) se manda con
+    // el detalle real -- antes esto se perdía y el cliente solo veía
+    // el mensaje generico "internal", imposible de diagnosticar sin
+    // revisar los logs del servidor.
+    console.error("Error inesperado al crear la campaña.", error);
+    const detail = error instanceof Error ? error.message : "Error desconocido";
+    throw new HttpsError("internal", `No se pudo crear la campaña: ${detail}`);
   }
-
-  const contratoRef = db.collection("contratos").doc();
-  await contratoRef.set({
-    panel_id: panelIds[0],
-    panel_ids: panelIds,
-    cliente_id: clienteId,
-    ...(nombre ? { nombre } : {}),
-    inicio,
-    fin,
-    monto,
-    pagado: false,
-    fotos_campania: [],
-    createdAt: FieldValue.serverTimestamp(),
-  });
-
-  // Marcar TODOS los paneles elegidos como Ocupado (mismo
-  // comportamiento que en el ERP, ahora para cada uno).
-  await Promise.all(
-    panelIds.map((panelId) => db.doc(`paneles/${panelId}`).set({ estado: "Ocupado" }, { merge: true }))
-  );
-
-  return { ok: true, contratoId: contratoRef.id };
 });
