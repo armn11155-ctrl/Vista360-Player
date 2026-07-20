@@ -25,6 +25,24 @@ function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
 
+/**
+ * Tamaño de letra del nombre segun cuanto texto haya -- el nombre sale
+ * del nombre del PDF que se sube, puede ser corto ("F001-123") o muy
+ * largo ("Factura de servicios de publicidad exterior - Julio 2026").
+ * Antes el tamaño era fijo (y encima con reglas de CSS que competian
+ * entre si en distintos anchos de pantalla, sin ganador consistente) --
+ * ahora se calcula segun el largo real del texto y se aplica inline,
+ * asi siempre entra bien sin cortarse ni verse forzado.
+ */
+function tamanoTitulo(texto: string): number {
+  const len = texto.length;
+  if (len <= 14) return 20;
+  if (len <= 22) return 18;
+  if (len <= 30) return 16;
+  if (len <= 40) return 14.5;
+  return 13;
+}
+
 function formatoBytes(bytes?: number) {
   if (!bytes || bytes <= 0) return null;
   // Base decimal (1000), no binaria (1024) -- ver nota en
@@ -129,6 +147,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     };
   }, [esKeyR2, f.pdfUrl, f.numero_fmt]);
 
+  const nombreFactura = f.numero_fmt ?? f.serie ?? "Sin número";
   const badge = BADGE[f.estado] ?? BADGE.Borrador;
   const tamano = formatoBytes(f.pdfPesoBytes);
   const mensaje = urlVer ? mensajeFactura(f, cliente, urlVer) : "";
@@ -164,7 +183,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>
-          <div className="report-title">{f.numero_fmt ?? f.serie ?? "Sin número"}</div>
+          <div className="report-title" style={{ fontSize: tamanoTitulo(nombreFactura) }}>{nombreFactura}</div>
           <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
           {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
         </div>
