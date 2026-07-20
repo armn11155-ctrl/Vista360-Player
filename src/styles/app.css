@@ -4464,6 +4464,10 @@
     text-shadow: 0 2px 12px rgba(0,0,0,.78);
   }
   .campaign-detail-summary {
+    align-self: flex-start;
+    width: fit-content;
+    min-width: min(100%, 340px);
+    max-width: 100%;
     margin-top: auto;
     padding: 15px 16px;
     border: 1px solid rgba(255,255,255,.18);
@@ -4473,11 +4477,16 @@
     backdrop-filter: blur(12px) saturate(120%);
     -webkit-backdrop-filter: blur(12px) saturate(120%);
   }
+  .campaign-detail-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 9px 12px;
+  }
   .campaign-detail-panel-name {
-    max-width: 780px;
-    margin-bottom: 9px;
+    max-width: 680px;
     color: #FFFFFF;
-    font-size: clamp(20px, 5.5vw, 27px);
+    font-size: clamp(23px, 6vw, 30px);
     line-height: 1.08;
     font-weight: 900;
     letter-spacing: -.35px;
@@ -4505,11 +4514,13 @@
       background-position: center 52%;
     }
     .campaign-detail-summary {
-      width: min(680px, 58%);
-      padding: 18px 20px;
+      width: fit-content;
+      min-width: 420px;
+      max-width: min(720px, 72%);
+      padding: 20px 22px;
     }
-    .campaign-detail-panel-name { font-size: 29px; }
-    .campaign-detail-meta { font-size: 12.5px; }
+    .campaign-detail-panel-name { font-size: clamp(31px, 2.35vw, 38px); }
+    .campaign-detail-meta { font-size: 14px; }
   }
   .solicitud-detail-image img {
     width: 100%;

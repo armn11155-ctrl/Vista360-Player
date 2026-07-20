@@ -111,10 +111,12 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
 
         {/* Nombre / estado / fechas — arriba, ancho completo */}
         <div className="campaign-detail-summary">
-          <div className="campaign-detail-panel-name">
-            {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
+          <div className="campaign-detail-title-row">
+            <div className="campaign-detail-panel-name">
+              {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
+            </div>
+            <Badge estado={estado} />
           </div>
-          <Badge estado={estado} />
           <div className="campaign-detail-meta campaign-detail-meta-first">
             <HeaderIcon type="calendar" />
             <span>{contrato.inicio} - {contrato.fin}</span>
