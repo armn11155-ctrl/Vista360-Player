@@ -195,7 +195,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: brandLoaderFloat 2.8s ease-in-out calc(2.4s + var(--brand-loader-delay, 0s)) infinite;
+    transform: translateY(0) scale(.995);
+    will-change: transform;
+    animation: brandLoaderFloat 4.2s cubic-bezier(.45,.05,.55,.95) calc(2.8s + var(--brand-loader-delay, 0s)) infinite;
   }
   .brand-loader-mark::before {
     content: "";
@@ -206,7 +208,7 @@
     filter: blur(18px);
     opacity: .35;
     transform: scale(.82);
-    animation: brandLoaderGlow 2.8s ease-in-out calc(2.4s + var(--brand-loader-delay, 0s)) infinite;
+    animation: brandLoaderGlow 4.2s ease-in-out calc(2.8s + var(--brand-loader-delay, 0s)) infinite;
   }
   .brand-loader-dark .brand-loader-mark::before {
     background: rgba(15,23,42,.055);
@@ -235,7 +237,8 @@
     overflow: hidden;
     border-radius: 24px;
     clip-path: inset(100% 0 0 0);
-    animation: brandLoaderLiquidRise 2.4s cubic-bezier(.45,.05,.25,1) var(--brand-loader-delay, 0s) 1 forwards;
+    will-change: clip-path;
+    animation: brandLoaderLiquidRise 2.8s cubic-bezier(.22,.61,.36,1) var(--brand-loader-delay, 0s) 1 forwards;
   }
   .brand-loader-logo-fill {
     filter: brightness(1.08) contrast(1.03);
@@ -250,12 +253,12 @@
   }
   @keyframes brandLoaderLiquidRise {
     0% { clip-path: inset(100% 0 0 0); opacity: .75; }
-    72% { clip-path: inset(8% 0 0 0); opacity: 1; }
+    50% { clip-path: inset(48% 0 0 0); opacity: .94; }
     100% { clip-path: inset(0 0 0 0); opacity: 1; }
   }
   @keyframes brandLoaderFloat {
-    0%, 100% { transform: translateY(0) scale(.985); }
-    50% { transform: translateY(-3px) scale(1); }
+    0%, 100% { transform: translateY(0) rotate(-.25deg) scale(.995); }
+    50% { transform: translateY(-7px) rotate(.25deg) scale(1); }
   }
 
   /* En mobile, el shell completo queda fijo a la pantalla (como el
@@ -3467,11 +3470,11 @@
     overflow: hidden;
     background-color: #050A12;
     background-image:
-      linear-gradient(180deg, rgba(2,6,15,.18) 0%, rgba(2,6,15,.36) 58%, rgba(1,4,10,.52) 100%),
-      url('/admin-picker-stars-mobile.png');
+      linear-gradient(180deg, rgba(2,6,15,.06) 0%, rgba(2,6,15,.14) 58%, rgba(1,4,10,.30) 100%),
+      url('/login-ny-mobile-tailored.jpg');
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center center;
+    background-position: center bottom;
   }
   .admin-picker-shell::after {
     content: none;

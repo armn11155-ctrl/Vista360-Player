@@ -13,7 +13,7 @@ interface Props {
 const loaderInicio = Date.now();
 
 export default function BrandLoader({ label = "Cargando", dark = false }: Props) {
-  const segundosTranscurridos = Math.min((Date.now() - loaderInicio) / 1000, 2.4);
+  const segundosTranscurridos = Math.min((Date.now() - loaderInicio) / 1000, 2.8);
   const estilo = {
     "--brand-loader-delay": `${-segundosTranscurridos}s`,
   } as CSSProperties;
