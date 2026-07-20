@@ -63,3 +63,48 @@ self.addEventListener("fetch", (event) => {
       .catch(() => caches.match(event.request))
   );
 });
+
+// ── Notificaciones push (FCM) ──────────────────────────────────────
+// Cuando la app está cerrada o en segundo plano, el navegador entrega
+// el push acá directo (no pasa por React) -- hay que mostrar la
+// notificación del sistema a mano con showNotification(). No hace
+// falta el SDK completo de Firebase Messaging en el Service Worker:
+// un push de FCM para web es, a fin de cuentas, un Push API normal.
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  let payload = {};
+  try {
+    payload = event.data.json();
+  } catch {
+    return;
+  }
+  const notif = payload.notification || {};
+  const datos = payload.data || {};
+  const titulo = notif.title || datos.title || "Vista360 Player";
+  const cuerpo = notif.body || datos.body || "";
+
+  event.waitUntil(
+    self.registration.showNotification(titulo, {
+      body: cuerpo,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: datos.url || "/" },
+    })
+  );
+});
+
+// Al tocar la notificación, enfoca una pestaña ya abierta si hay una,
+// o abre una nueva -- así no se le abren 5 pestañas al cliente si ya
+// tenía la app abierta cuando le llegó el aviso.
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((lista) => {
+      for (const cliente of lista) {
+        if ("focus" in cliente) return cliente.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
+});

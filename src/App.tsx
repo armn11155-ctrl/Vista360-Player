@@ -247,6 +247,7 @@ export default function App() {
     return (
       <AuthenticatedApp
         clienteId={adminClienteId}
+        uid={uid}
         email={auth.user.email ?? ""}
         view={view}
         setView={setView}
@@ -271,6 +272,7 @@ export default function App() {
   return (
     <AuthenticatedApp
       clienteId={auth.clienteId ?? ""}
+      uid={uid}
       email={auth.user.email ?? ""}
       view={view}
       setView={setView}
@@ -284,6 +286,7 @@ export default function App() {
 
 interface AuthenticatedProps {
   clienteId: string;
+  uid?: string;
   email: string;
   view: View;
   setView: (v: View) => void;
@@ -298,6 +301,7 @@ interface AuthenticatedProps {
 
 function AuthenticatedApp({
   clienteId,
+  uid,
   email,
   view,
   setView,
@@ -476,7 +480,7 @@ function AuthenticatedApp({
         content = <Facturas ruc={cliente?.ruc} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "notificaciones":
-        content = <Notificaciones clienteId={clienteId} onBack={() => setView("inicio")} />;
+        content = <Notificaciones clienteId={clienteId} uid={uid} onBack={() => setView("inicio")} />;
         break;
       case "nuevoCliente":
         content = isAdmin ? (

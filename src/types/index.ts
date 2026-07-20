@@ -65,6 +65,9 @@ export interface Contrato {
   calificacionFecha?: string;
   deleted?: boolean;
   createdAt?: Timestamp | null;
+  /** true despues de mandar el push de "tu campaña está por vencer" --
+   *  evita mandarlo de nuevo cada día mientras siga dentro del rango. */
+  notificadoVencimiento?: boolean;
 }
 
 export type PanelEstado = "Disponible" | "Ocupado" | "Mantenimiento" | "Libre";
@@ -105,6 +108,10 @@ export interface PortalUser {
   avatarUrl?: string;
   archived?: boolean;
   createdAt?: Timestamp | null;
+  /** Tokens de notificaciones push (uno por dispositivo/navegador en
+   *  el que activó notificaciones) -- puede haber más de uno si entra
+   *  desde el celular y la compu. */
+  fcmTokens?: string[];
 }
 
 /** Estado derivado en el cliente a partir de inicio/fin — no se guarda. */

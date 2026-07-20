@@ -42,4 +42,10 @@ export const env = {
     appId: values.VITE_FIREBASE_APP_ID ?? "",
   },
   appVersion: (import.meta.env.VITE_APP_VERSION as string | undefined) ?? "0.1.0",
+  // Clave pública para notificaciones push (Firebase Console → Configuración
+  // del proyecto → Cloud Messaging → "Certificados push web" → generar par
+  // de claves). A propósito NO es obligatoria como las de arriba: si falta,
+  // el botón de activar notificaciones simplemente se oculta en vez de
+  // romper el resto de la app.
+  vapidKey: (import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined) ?? "",
 };
