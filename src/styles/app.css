@@ -671,8 +671,8 @@
     overflow: hidden;
     background-color: #07111F;
     background-image:
-      linear-gradient(90deg, rgba(3,7,14,.96) 0%, rgba(3,7,14,.84) 44%, rgba(3,7,14,.48) 76%, rgba(3,7,14,.32) 100%),
-      linear-gradient(0deg, rgba(3,7,14,.78) 0%, rgba(3,7,14,.08) 72%),
+      linear-gradient(90deg, rgba(3,7,14,.88) 0%, rgba(3,7,14,.70) 44%, rgba(3,7,14,.30) 76%, rgba(3,7,14,.15) 100%),
+      linear-gradient(0deg, rgba(3,7,14,.62) 0%, rgba(3,7,14,.04) 72%),
       var(--campaign-city-image);
     background-size: cover;
     background-position: center;
@@ -693,7 +693,7 @@
   }
   .premium-campaign-card:active { transform: scale(.988); }
   .premium-campaign-kicker {
-    color: #60A5FA;
+    color: #FFFFFF;
     font-size: 9.5px;
     line-height: 1;
     font-weight: 900;
