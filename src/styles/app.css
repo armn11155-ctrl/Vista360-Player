@@ -2182,11 +2182,12 @@
     flex-direction: column;
     background: var(--bg);
   }
-  .facturas-screen .content-area {
+  .facturas-screen-body {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    padding-top: 12px;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }

@@ -100,7 +100,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
         </div>
       </div>
 
-      <div className="content-area">
+      <div className="reports-screen-body facturas-screen-body">
         {isAdmin && (ruc || clienteId) && (
           <div className="card factura-upload-card">
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
