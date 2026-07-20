@@ -1,0 +1,37 @@
+# Cloudflare Pages lee este archivo para poner Cache-Control por ruta.
+# Sin esto, TODO se sirve con el header por defecto de Pages (revalida
+# en cada carga), incluidos los JS/CSS que Vite ya nombra con un hash
+# de contenido (ej. index-cqgnt120.js) -- esos nunca cambian de
+# contenido bajo el mismo nombre, asi que se pueden cachear para
+# siempre sin riesgo: si el codigo cambia, el nombre del archivo
+# tambien cambia.
+
+# JS/CSS con hash de Vite -- cache maximo, "immutable" le dice al
+# navegador que ni siquiera revalide, se salta la red por completo.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# El HTML (shell de la SPA) y el manifest SI pueden cambiar de
+# contenido sin cambiar de nombre -- deben revalidarse siempre para
+# que el usuario reciba las referencias a los assets nuevos despues de
+# cada deploy.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.json
+  Cache-Control: public, max-age=3600
+
+# El service worker se debe revisar seguido para que las actualizaciones
+# lleguen rapido -- si el navegador lo cachea de mas, un deploy nuevo
+# puede tardar en notarse.
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Iconos/imagenes estaticas sueltas (no llevan hash, pero cambian poco)
+# -- cache moderado en vez de immutable, por si algun dia se
+# reemplazan.
+/*.png
+  Cache-Control: public, max-age=86400
+
+/*.svg
+  Cache-Control: public, max-age=86400

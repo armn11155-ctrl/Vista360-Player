@@ -43,6 +43,8 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
         <img
           src={src}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           onError={() => setFallo(true)}
         />
