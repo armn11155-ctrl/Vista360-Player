@@ -179,13 +179,14 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
               <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Ubicación de pantalla</div>
                 {panel.lat && panel.lng ? (
-                  <div style={{ borderRadius: 12, overflow: "hidden", height: 140, background: "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div className="campaign-location-map">
                     <iframe
-                      title="map"
+                      title={`Ubicación de ${panel.nombre}`}
                       width="100%"
-                      height="140"
                       style={{ border: "none" }}
-                      src={`https://maps.google.com/maps?q=${panel.lat},${panel.lng}&z=15&output=embed`}
+                      loading="lazy"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      src={`https://maps.google.com/maps?q=${panel.lat},${panel.lng}&z=17&output=embed`}
                     />
                   </div>
                 ) : (
