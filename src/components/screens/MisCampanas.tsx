@@ -326,7 +326,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                     >
                       <img
                         className="campaign-renewal-icon"
-                        src="/auto-renewal-2-square-fill-svgrepo-com.svg"
+                        src="/auto-renewal-2-circle-fill-svgrepo-com.svg"
                         alt=""
                         aria-hidden="true"
                         draggable={false}
