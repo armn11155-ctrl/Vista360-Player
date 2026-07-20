@@ -521,7 +521,17 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
  *  mismo lenguaje visual que portada/cierre (fondo oscuro + anillo de
  *  marca), asi el reporte se siente diseñado a proposito y no como una
  *  lista de fotos pegadas. Solo se usa cuando hay 2+ paneles en el
- *  reporte -- con un solo panel/elemento no hace falta anunciarlo. */
+ *  reporte -- con un solo panel/elemento no hace falta anunciarlo.
+ *
+ *  OJO: esta version (fondo oscuro + anillo) se usa para el panel 2 en
+ *  adelante -- para el PRIMER panel se usa paginaPrimerPanel() en vez
+ *  de esta, porque queda pegada justo despues de la portada (que tiene
+ *  este mismo estilo) y se sentia como una repeticion inmediata en vez
+ *  de una seccion nueva. Del segundo panel en adelante, como ya hubo
+ *  paginas de evidencia blancas/oscuras en el medio, este mismo estilo
+ *  SI se lee como "vuelve el diseño de portada para anunciar algo
+ *  nuevo" en vez de repetitivo.
+ */
 function paginaSeccionPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   drawRingAsset(doc, 1001, 0, 599);
@@ -546,6 +556,41 @@ function paginaSeccionPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicac
   drawFooterLine(doc, pad2(pageNum), true);
 }
 
+/** Divisoria del PRIMER panel -- fondo blanco con una franja de acento
+ *  a todo el alto en vez de fondo oscuro + anillo (eso es lo que usa
+ *  la portada justo antes, y de ahi el "se ve repetido" original).
+ *  Mismo tamaño de letra que paginaSeccionPanel (tamanoQueEntra con
+ *  64/32) para que el titulo de este panel y el del siguiente se vean
+ *  del mismo tamaño relativo, aunque el diseño de fondo sea distinto. */
+function paginaPrimerPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
+
+  const barW = 26;
+  doc.rect(0, 0, barW, PAGE.height).fill(COLORS.accent);
+
+  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+
+  const leftX = barW + 58;
+  const y0 = PAGE.height * 0.34;
+  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, leftX, y0, COLORS.accent, 16);
+
+  const maxWidth = PAGE.width - leftX - PAGE.margin - 220;
+  const titulo = sinTildes(nombrePanel).toUpperCase();
+  const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 64, 32);
+  doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.ink)
+    .text(titulo, leftX, y0 + 42, { width: maxWidth });
+
+  const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
+  if (ubicacion && sinTildes(ubicacion) !== titulo) {
+    doc.font("Helvetica").fontSize(19).fillColor(COLORS.mutedOnLight)
+      .text(sinTildes(ubicacion), leftX, y0 + 42 + tituloHeight + 16, { width: maxWidth });
+  }
+
+  doc.moveTo(leftX, y0 - 24).lineTo(leftX + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.accent).stroke();
+
+  drawFooterBar(doc, pad2(pageNum));
+}
+
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
   const doc = new PDFDocument({ size: [PAGE.width, PAGE.height], margin: 0, autoFirstPage: false });
   const chunks: Buffer[] = [];
@@ -568,7 +613,11 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     const elemento = elementosConFotos[s];
     if (conSecciones) {
       doc.addPage();
-      paginaSeccionPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
+      if (s === 0) {
+        paginaPrimerPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
+      } else {
+        paginaSeccionPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
+      }
       pageNum++;
     }
 
