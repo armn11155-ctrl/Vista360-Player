@@ -3482,11 +3482,22 @@
     text-align: center;
     text-shadow: 0 2px 16px rgba(0,0,0,.55);
   }
-  .admin-picker-management-btn {
+  /* Fila que contiene "Gestión" y "Vista cliente" -- ESTA es la que
+     lleva el position:absolute (una sola vez, con un "left" fijo que
+     no depende de nada). Los botones de adentro son flex normales:
+     si "Gestión" crece (badge de notificación), "Vista cliente" se
+     corre solo, nunca se superponen. */
+  .admin-picker-top-left-actions {
     position: absolute;
     top: calc(16px + env(safe-area-inset-top));
     left: 16px;
     z-index: 7;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .admin-picker-management-btn {
+    flex: 0 0 auto;
     height: 38px;
     padding: 0 11px;
     border-radius: 19px;
@@ -3503,10 +3514,7 @@
   }
   .admin-picker-management-btn svg { width: 17px; height: 17px; }
   .admin-picker-client-view-btn {
-    position: absolute;
-    top: calc(16px + env(safe-area-inset-top));
-    left: 116px;
-    z-index: 7;
+    flex: 0 0 auto;
     height: 38px;
     padding: 0 11px;
     border-radius: 19px;
@@ -5255,14 +5263,14 @@
       margin-bottom: 10px !important;
     }
     .inicio-greeting-admin-break { display: none; }
-    .admin-picker-management-btn {
-      display: inline-flex;
+    .admin-picker-top-left-actions {
       top: 24px;
       left: 28px;
     }
+    .admin-picker-management-btn {
+      display: inline-flex;
+    }
     .admin-picker-client-view-btn {
-      top: 24px;
-      left: 136px;
       font-size: 12px;
     }
     .admin-picker-logo { display: block; }

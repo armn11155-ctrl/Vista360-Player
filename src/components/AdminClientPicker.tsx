@@ -157,33 +157,42 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   return (
     <div className="admin-picker-shell">
-      <button
-        type="button"
-        className="admin-picker-management-btn"
-        onClick={() => setGestionAbierta(true)}
-        aria-label="Abrir centro de gestión"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-          <rect x="3" y="4" width="18" height="16" rx="3" />
-          <path d="M8 9h8M8 13h5" />
-        </svg>
-        <span>Gestión</span>
-        {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
-      </button>
-      {onToggleVistaCliente && (
+      {/* Antes "Gestión" y "Vista cliente" eran dos botones cada uno
+          con su propio position:absolute + un "left" fijo a mano --
+          cuando "Gestión" se ensanchaba por la notificación (el
+          numerito rojo de solicitudes pendientes), su ancho real ya no
+          coincidia con el "left" fijo del siguiente boton y se tocaban
+          / superponían. Ahora van juntos en una sola fila flex que se
+          acomoda sola sin importar cuánto crezca "Gestión". */}
+      <div className="admin-picker-top-left-actions">
         <button
           type="button"
-          className={`admin-picker-client-view-btn${vistaClienteActiva ? " active" : ""}`}
-          onClick={onToggleVistaCliente}
-          aria-pressed={vistaClienteActiva}
+          className="admin-picker-management-btn"
+          onClick={() => setGestionAbierta(true)}
+          aria-label="Abrir centro de gestión"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-            <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-            <circle cx="12" cy="12" r="2.7" />
+            <rect x="3" y="4" width="18" height="16" rx="3" />
+            <path d="M8 9h8M8 13h5" />
           </svg>
-          <span>Vista cliente</span>
+          <span>Gestión</span>
+          {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
         </button>
-      )}
+        {onToggleVistaCliente && (
+          <button
+            type="button"
+            className={`admin-picker-client-view-btn${vistaClienteActiva ? " active" : ""}`}
+            onClick={onToggleVistaCliente}
+            aria-pressed={vistaClienteActiva}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+              <circle cx="12" cy="12" r="2.7" />
+            </svg>
+            <span>Vista cliente</span>
+          </button>
+        )}
+      </div>
       {onOpenPerfil && (
         <button type="button" className="admin-picker-perfil-btn" onClick={onOpenPerfil} title="Mi perfil" aria-label="Mi perfil">
           {miAvatarSrc && !miAvatarFallo ? (
