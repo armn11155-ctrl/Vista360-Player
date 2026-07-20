@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
-import { addDoc, collection, doc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
-import { db } from "../../config/firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { db, cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
-import { panelesDeContrato } from "../../types";
 
 interface Props {
   clienteId: string;
@@ -14,12 +14,6 @@ interface Props {
 }
 
 const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Huánuco", "Otra"];
-
-function siguienteDia(fechaStr: string): string {
-  const d = new Date(`${fechaStr}T12:00:00`);
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().slice(0, 10);
-}
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -91,13 +85,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   // ubicaciones en un solo contrato) -- por eso es multi-selección, no
   // un <select> de uno solo como antes.
   const [panelIds, setPanelIds] = useState<string[]>([]);
+  const [nombreCampanaAdmin, setNombreCampanaAdmin] = useState("");
   const [inicio, setInicio] = useState("");
   const [fin, setFin] = useState("");
   const [monto, setMonto] = useState("");
-  const [imagenAdmin, setImagenAdmin] = useState<File | null>(null);
   const [errorAdmin, setErrorAdmin] = useState("");
   const [creando, setCreando] = useState(false);
-  const imagenAdminRef = useRef<HTMLInputElement>(null);
 
   function togglePanel(id: string) {
     setPanelIds((actuales) => (actuales.includes(id) ? actuales.filter((p) => p !== id) : [...actuales, id]));
@@ -109,71 +102,31 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!inicio || !fin) { setErrorAdmin("Pon fecha de inicio y de fin."); return; }
     if (fin < inicio) { setErrorAdmin("La fecha de fin no puede ser antes que la de inicio."); return; }
     if (!monto || Number(monto) < 0) { setErrorAdmin("Pon un monto válido."); return; }
-    if (!db) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
+    if (!cloudFunctions) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
-      // Un mismo cliente no puede tener dos campañas activas a la vez
-      // en el mismo panel -- antes de crear el contrato, se revisa
-      // para CADA panel elegido si ESTE cliente ya tiene otro contrato
-      // en ese panel (como panel principal o como parte de una
-      // campaña multi-panel) cuyas fechas se crucen con las que se
-      // está por crear. Si se cruzan, se bloquea y se sugiere la fecha
-      // en que queda libre. Otro cliente distinto SÍ puede tener una
-      // campaña activa en este mismo panel al mismo tiempo -- el
-      // bloqueo es por cliente+panel, no por panel solo.
-      const contratosClienteSnap = await getDocs(
-        query(collection(db, "contratos"), where("cliente_id", "==", clienteId))
-      );
-      const contratosCliente = contratosClienteSnap.docs.map(
-        (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
-      );
-
-      for (const panelId of panelIds) {
-        const cruces = contratosCliente.filter((c) => {
-          if (c.deleted || !c.inicio || !c.fin) return false;
-          if (!(c.inicio <= fin && inicio <= c.fin)) return false;
-          return panelesDeContrato({ panel_id: c.panel_id ?? "", panel_ids: c.panel_ids }).includes(panelId);
-        });
-        if (cruces.length > 0) {
-          const panelesDisponiblesActuales = panelesState.status === "ready" ? panelesState.paneles : [];
-          const nombrePanelConflicto = panelesDisponiblesActuales.find((p) => p.id === panelId)?.nombre ?? "ese panel";
-          const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
-          setErrorAdmin(
-            `Este cliente ya tiene una campaña programada en ${nombrePanelConflicto} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
-          );
-          setCreando(false);
-          return;
-        }
-      }
-
-      const subidaAdmin = imagenAdmin
-        ? await subirEvidenciaR2(await comprimirImagen(imagenAdmin))
-        : null;
-      const imagenUrl = subidaAdmin?.key ?? "";
-      const fechaImagen = new Date().toISOString().slice(0, 10);
-      await addDoc(collection(db, "contratos"), {
-        // panel_id se sigue guardando (el primero elegido) por
-        // compatibilidad con todo el código que todavía lee un solo
-        // panel -- panel_ids es la lista completa, incluido el primero.
-        panel_id: panelIds[0],
-        panel_ids: panelIds,
-        cliente_id: clienteId,
+      // Crear el contrato pasa por una Cloud Function (Admin SDK) en
+      // vez de un addDoc directo desde el cliente -- así no depende de
+      // que las reglas de Firestore reconozcan cada campo nuevo (esto
+      // es justo lo que rompía la creación de campañas con 2+ paneles).
+      // La validación de traslape de fechas por cada panel también
+      // corre del lado del servidor ahora.
+      const fn = httpsCallable<
+        { clienteId: string; panelIds: string[]; nombre?: string; inicio: string; fin: string; monto: number },
+        { ok: boolean; contratoId: string }
+      >(cloudFunctions, "crearContrato");
+      await fn({
+        clienteId,
+        panelIds,
+        nombre: nombreCampanaAdmin.trim() || undefined,
         inicio,
         fin,
         monto: Number(monto),
-        pagado: false,
-        fotos_campania: imagenUrl
-          ? [subidaAdmin?.thumbKey ? { url: imagenUrl, thumbKey: subidaAdmin.thumbKey, fecha: fechaImagen } : { url: imagenUrl, fecha: fechaImagen }]
-          : [],
-        ...(imagenUrl ? { imagenCampaniaUrl: imagenUrl, imagenCampaniaFecha: fechaImagen } : {}),
-        createdAt: serverTimestamp(),
       });
-      // Marcar TODOS los paneles elegidos como Ocupado (mismo
-      // comportamiento que en el ERP, ahora para cada uno).
-      await Promise.all(panelIds.map((panelId) => setDoc(doc(db!, "paneles", panelId), { estado: "Ocupado" }, { merge: true })));
       onEnviada();
-    } catch {
-      setErrorAdmin("No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo.");
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : String(error || "");
+      setErrorAdmin(raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "") || "No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setCreando(false);
     }
@@ -202,6 +155,14 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
               </div>
             )}
 
+            <Field label="Nombre de la campaña (opcional)">
+              <input
+                style={inputStyle}
+                value={nombreCampanaAdmin}
+                onChange={(e) => setNombreCampanaAdmin(e.target.value)}
+                placeholder="Ej. Campaña Verano 2026"
+              />
+            </Field>
             <Field label={`Paneles${panelIds.length > 0 ? ` (${panelIds.length} elegido${panelIds.length > 1 ? "s" : ""})` : ""}`}>
               <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 8, lineHeight: 1.4 }}>
                 Elige uno o varios paneles -- si eliges más de uno, esta campaña queda como una
@@ -248,26 +209,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
             </div>
             <Field label="Monto (S/)">
               <input style={inputStyle} type="number" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="Ej. 3500" />
-            </Field>
-            <Field label="Imagen de campaña">
-              <input
-                ref={imagenAdminRef}
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                onChange={(e) => setImagenAdmin(e.target.files?.[0] ?? null)}
-              />
-              <button
-                type="button"
-                onClick={() => imagenAdminRef.current?.click()}
-                style={{
-                  width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
-                  background: "#EEF4FF",
-                  color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
-                }}
-              >
-                {imagenAdmin ? `Lista: ${imagenAdmin.name}` : "Elegir foto para esta campaña"}
-              </button>
             </Field>
           </div>
           <div style={{ height: 16 }} />

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
-import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
@@ -75,50 +74,31 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   // un dia junto al mes y año.
   const [dia, setDia] = useState(() => String(new Date().getDate()).padStart(2, "0"));
   const [generando, setGenerando] = useState(false);
-  const [fotosReporte, setFotosReporte] = useState<FotoReporte[]>([]);
   const [colaRecorte, setColaRecorte] = useState<File[] | null>(null);
-  // Cuando se recorta una foto de un panel especifico (reporte por
-  // campaña multi-panel), esto guarda A CUAL panel pertenece esa cola
-  // de recorte -- null significa el flujo viejo (una sola bandeja de
-  // fotos, sin campaña elegida).
+  // A cual panel pertenece la cola de recorte actual -- el reporte
+  // siempre se genera por campaña, así que siempre hay un panel de
+  // destino (uno o varios, según cuantos paneles tenga la campaña).
   const [colaRecortePanelId, setColaRecortePanelId] = useState<string | null>(null);
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
-  const [panelId, setPanelId] = useState("");
 
-  // Reporte organizado POR CAMPAÑA: al elegir una campaña de este
-  // cliente, si tiene 2+ paneles se pide una foto por cada uno (en vez
-  // de una sola bandeja de fotos sin distinguir de que panel es cada
-  // una). Si no se elige ninguna campaña, se sigue pudiendo generar el
-  // reporte "a mano" eligiendo un panel suelto, como antes.
-  const [contratoId, setContratoId] = useState("");
-  const contratoSeleccionado = contratoId ? contratos.find((c) => c.id === contratoId) : undefined;
+  // El reporte se genera SIEMPRE por campaña (ya no por panel suelto)
+  // -- se elige la campaña de este cliente y, si tiene 2+ paneles, se
+  // pide una foto por cada uno (en vez de una sola bandeja de fotos
+  // sin distinguir de que panel es cada una). Por defecto se deja
+  // elegida la primera campaña de la lista.
+  const [contratoId, setContratoId] = useState(() => contratos[0]?.id ?? "");
+  const contratoSeleccionado = contratos.find((c) => c.id === contratoId) ?? contratos[0];
   const panelIdsCampana = contratoSeleccionado ? panelesDeContrato(contratoSeleccionado) : [];
-  const esMultiPanel = panelIdsCampana.length > 0;
   const [fotosPorPanel, setFotosPorPanel] = useState<Record<string, FotoReporte[]>>({});
 
-  // Todos los paneles del sistema (no solo los que ya tienen un
-  // contrato con este cliente) -- asi el admin puede elegir cualquier
-  // panel para el reporte aunque todavia no exista una campaña formal
-  // que los vincule.
-  const panelesDisponiblesState = usePanelesDisponibles(!!isAdmin);
-  const panelesCliente: Panel[] = panelesDisponiblesState.status === "ready" ? panelesDisponiblesState.paneles : [];
-  // OJO: buscar en panelesCliente (TODOS los paneles), no en el prop
-  // "paneles" -- ese solo trae los paneles que ya tienen contrato con
-  // este cliente, y si se elegia uno que no estaba ahi, no pasaba
-  // nada visible al tocarlo (bug real, ya corregido).
-  const panelSeleccionado = panelId ? panelesCliente.find((p) => p.id === panelId) : undefined;
-  const panelPrincipal = panelSeleccionado ?? (contratos[0]?.panel_id ? paneles[contratos[0].panel_id] : undefined);
-  const ubicacionAuto = esMultiPanel
-    ? panelIdsCampana.map((id) => paneles[id]?.nombre).filter(Boolean).join(" + ") || cliente?.ciudad || "Ubicación del cliente"
-    : [panelPrincipal?.nombre, panelPrincipal?.direccion, panelPrincipal?.ciudad]
-        .filter(Boolean)
-        .join(" - ") || cliente?.ciudad || "Ubicación del cliente";
+  const ubicacionAuto = panelIdsCampana.map((id) => paneles[id]?.nombre).filter(Boolean).join(" + ")
+    || cliente?.ciudad || "Ubicación del cliente";
 
   function labelCampana(c: Contrato) {
     const ids = panelesDeContrato(c);
-    const nombres = ids.map((id) => paneles[id]?.nombre ?? panelesCliente.find((p) => p.id === id)?.nombre ?? id).join(" + ");
-    return `${nombres || "Campaña"} (${c.inicio} – ${c.fin})`;
+    const nombres = ids.map((id) => paneles[id]?.nombre ?? id).join(" + ");
+    return `${c.nombre || nombres || "Campaña"} (${c.inicio} – ${c.fin})`;
   }
 
   function mensajeErrorReporte(error: unknown) {
@@ -136,9 +116,9 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
     return raw.replace("FirebaseError: ", "") || "No se pudo generar el reporte.";
   }
 
-  function agregarFotos(files: FileList | null, panelId?: string) {
+  function agregarFotos(files: FileList | null, panelId: string) {
     if (!files?.length) return;
-    const actuales = panelId ? (fotosPorPanel[panelId]?.length ?? 0) : fotosReporte.length;
+    const actuales = fotosPorPanel[panelId]?.length ?? 0;
     const imagenes = Array.from(files)
       .filter((file) => file.type.startsWith("image/"))
       .slice(0, Math.max(0, 12 - actuales));
@@ -148,7 +128,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       return;
     }
     setMensajeAdmin(null);
-    setColaRecortePanelId(panelId ?? null);
+    setColaRecortePanelId(panelId);
     setColaRecorte(imagenes);
   }
 
@@ -158,32 +138,26 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       nombre: r.nombre,
       dataUrl: r.dataUrl,
     }));
-    if (colaRecortePanelId) {
-      const panelId = colaRecortePanelId;
+    const panelId = colaRecortePanelId;
+    if (panelId) {
       setFotosPorPanel((actuales) => ({
         ...actuales,
         [panelId]: [...(actuales[panelId] ?? []), ...nuevas].slice(0, 12),
       }));
-    } else {
-      setFotosReporte((actuales) => [...actuales, ...nuevas].slice(0, 12));
     }
     setColaRecorte(null);
     setColaRecortePanelId(null);
   }
 
-  function quitarFoto(id: string, panelId?: string) {
-    if (panelId) {
-      setFotosPorPanel((actuales) => ({
-        ...actuales,
-        [panelId]: (actuales[panelId] ?? []).filter((foto) => foto.id !== id),
-      }));
-    } else {
-      setFotosReporte((actuales) => actuales.filter((foto) => foto.id !== id));
-    }
+  function quitarFoto(id: string, panelId: string) {
+    setFotosPorPanel((actuales) => ({
+      ...actuales,
+      [panelId]: (actuales[panelId] ?? []).filter((foto) => foto.id !== id),
+    }));
   }
 
   async function generarReporte() {
-    if (!cloudFunctions || generando) return;
+    if (!cloudFunctions || generando || !contratoSeleccionado) return;
     setGenerando(true);
     setMensajeAdmin(null);
     try {
@@ -194,7 +168,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
           dia: string;
           panelId?: string;
           contratoId?: string;
-          fotos?: { url: string; fecha: string }[];
           panelesFotos?: PanelFotosPayload[];
         },
         GenerarReporteResponse
@@ -206,31 +179,20 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       // fecha del reporte. Ahora usan la misma fecha seleccionada.
       const fecha = `${mes}-${dia}`;
 
-      if (esMultiPanel) {
-        await generarReporteCliente({
-          clienteId,
-          mes,
-          dia,
-          contratoId: contratoId || undefined,
-          panelId: panelIdsCampana[0] || undefined,
-          panelesFotos: panelIdsCampana.map((id) => ({
-            panelId: id,
-            panelNombre: paneles[id]?.nombre,
-            fotos: (fotosPorPanel[id] ?? []).map((foto) => ({ url: foto.dataUrl, fecha })),
-          })),
-        });
-      } else {
-        await generarReporteCliente({
-          clienteId,
-          mes,
-          dia,
-          panelId: panelId || undefined,
-          fotos: fotosReporte.map((foto) => ({ url: foto.dataUrl, fecha })),
-        });
-      }
+      await generarReporteCliente({
+        clienteId,
+        mes,
+        dia,
+        contratoId: contratoSeleccionado.id,
+        panelId: panelIdsCampana[0] || undefined,
+        panelesFotos: panelIdsCampana.map((id) => ({
+          panelId: id,
+          panelNombre: paneles[id]?.nombre,
+          fotos: (fotosPorPanel[id] ?? []).map((foto) => ({ url: foto.dataUrl, fecha })),
+        })),
+      });
       setMensajeAdminTipo("ok");
       setMensajeAdmin("Reporte generado. Ya puedes verlo y enviarlo desde la lista.");
-      setFotosReporte([]);
       setFotosPorPanel({});
       informesState.recargar();
     } catch (error) {
@@ -253,7 +215,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       </div>
 
       <div className="reports-screen-body">
-        {isAdmin && (
+        {isAdmin && hayContratos && (
           <div className="report-admin-panel">
             <div className="report-admin-header">
               <div className="report-admin-icon">
@@ -272,24 +234,21 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               </div>
             </div>
             <div className="report-admin-controls">
-              {contratos.length > 0 && (
-                <div className="report-campaign-field">
-                  <span>Campaña — organiza el reporte por campaña (opcional)</span>
-                  <select
-                    className="reports-panel-select"
-                    value={contratoId}
-                    onChange={(e) => { setContratoId(e.target.value); setFotosPorPanel({}); }}
-                    aria-label="Elegir campaña para el reporte"
-                  >
-                    <option value="">Sin campaña — elegir un panel suelto</option>
-                    {contratos.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {labelCampana(c)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="report-campaign-field">
+                <span>Campaña — el reporte se organiza por campaña</span>
+                <select
+                  className="reports-panel-select"
+                  value={contratoSeleccionado?.id ?? ""}
+                  onChange={(e) => { setContratoId(e.target.value); setFotosPorPanel({}); }}
+                  aria-label="Elegir campaña para el reporte"
+                >
+                  {contratos.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {labelCampana(c)}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="report-month-field">
                 <span>Fecha del reporte — toca para cambiar día, mes o año</span>
                 <div className="report-month-selects">
@@ -331,49 +290,11 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                   </select>
                 </div>
               </div>
-              {!esMultiPanel && (
-                <>
-                  <label className="report-photo-picker">
-                    <span>Fotos del reporte</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => {
-                        agregarFotos(e.target.files);
-                        e.currentTarget.value = "";
-                      }}
-                    />
-                    <div className="report-photo-picker-btn">Agregar fotos</div>
-                  </label>
-                  {panelesCliente.length > 0 && (
-                    <div className="report-panel-field">
-                      <span>Panel del reporte — de cual panel es este reporte</span>
-                      <select
-                        className="reports-panel-select"
-                        value={panelId}
-                        onChange={(e) => setPanelId(e.target.value)}
-                        aria-label="Elegir panel para el reporte"
-                      >
-                        <option value="">Todos los paneles</option>
-                        {panelesCliente.map((p) => {
-                          const direccion = [p.direccion, p.ciudad].filter(Boolean).join(", ");
-                          return (
-                            <option key={p.id} value={p.id}>
-                              {p.nombre}{direccion ? ` — ${direccion}` : ""}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  )}
-                </>
-              )}
               <button
                 className="report-generate-btn"
                 type="button"
                 onClick={generarReporte}
-                disabled={!hayContratos || !mes || generando}
+                disabled={!contratoSeleccionado || !mes || generando}
               >
                 {generando ? "Generando..." : "Generar PDF"}
               </button>
@@ -382,12 +303,14 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
               <span>Cliente: {nombreCliente(cliente)}</span>
               <span>Ubicación: {ubicacionAuto}</span>
             </div>
-            {esMultiPanel && (
+            {panelIdsCampana.length > 0 && (
               <div className="report-campaign-panels">
-                <div className="report-campaign-panels-hint">
-                  Esta campaña tiene {panelIdsCampana.length} paneles — sube las fotos de evidencia de cada uno
-                  por separado, así el PDF sale organizado por panel.
-                </div>
+                {panelIdsCampana.length > 1 && (
+                  <div className="report-campaign-panels-hint">
+                    Esta campaña tiene {panelIdsCampana.length} paneles — sube las fotos de evidencia de cada uno
+                    por separado, así el PDF sale organizado por panel.
+                  </div>
+                )}
                 {panelIdsCampana.map((id) => {
                   const p = paneles[id];
                   const direccion = p ? [p.direccion, p.ciudad].filter(Boolean).join(", ") : "";
@@ -427,18 +350,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                     </div>
                   );
                 })}
-              </div>
-            )}
-            {!esMultiPanel && fotosReporte.length > 0 && (
-              <div className="report-photo-grid">
-                {fotosReporte.map((foto, index) => (
-                  <div className="report-photo-thumb" key={foto.id}>
-                    <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
-                    <button type="button" onClick={() => quitarFoto(foto.id)} aria-label="Quitar foto">
-                      ×
-                    </button>
-                  </div>
-                ))}
               </div>
             )}
             {mensajeAdmin && (

@@ -59,6 +59,10 @@ export interface Contrato {
    *  funcionen igual. */
   panel_ids?: string[];
   cliente_id: string;
+  /** Nombre de la campaña, puesto a mano por el admin al crearla (ej.
+   *  "Campaña Verano 2026") -- opcional, campañas viejas no lo tienen
+   *  y siguen mostrando los nombres de sus paneles como antes. */
+  nombre?: string;
   cara?: "A" | "B" | null;
   inicio: string; // "YYYY-MM-DD"
   fin: string; // "YYYY-MM-DD"

@@ -102,6 +102,10 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   const nombrePaneles = panelesContrato.length > 0
     ? panelesContrato.map((p) => p.nombre).join(" + ")
     : `Panel ${contrato.panel_id.slice(0, 6)}`;
+  // Si el admin le puso nombre a la campaña, ese es el titulo -- si no
+  // (campañas viejas, o cuando no se puso), se sigue mostrando el
+  // nombre del/los panel(es) como titulo, como antes.
+  const tituloCampana = contrato.nombre || nombrePaneles;
   // Suma del transito diario de TODOS los paneles de la campaña, solo
   // contando los que sí tienen el dato cargado (no se inventa el resto).
   const panelesConImpacto = panelesContrato.filter((p) => p.impactoDiario);
@@ -137,7 +141,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
         <div className="campaign-detail-summary">
           <div className="campaign-detail-title-row">
             <div className="campaign-detail-panel-name">
-              {nombrePaneles}
+              {tituloCampana}
             </div>
             <Badge estado={estado} />
           </div>

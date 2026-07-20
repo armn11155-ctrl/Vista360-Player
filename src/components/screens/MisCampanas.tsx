@@ -234,6 +234,10 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           const panelNombre = idsPanelesCampana.length > 1
             ? idsPanelesCampana.map((id) => paneles[id]?.nombre ?? id).join(" + ")
             : (paneles[c.panel_id]?.nombre ?? c.panel_id);
+          // Si el admin le puso nombre a la campaña, ese es el titulo de
+          // la tarjeta -- si no, se sigue mostrando el nombre del/los
+          // panel(es), como antes.
+          const tituloCampana = c.nombre || panelNombre;
           return (
             <div
               key={c.id}
@@ -245,7 +249,7 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                  <div className="premium-campaign-title">{panelNombre}</div>
+                  <div className="premium-campaign-title">{tituloCampana}</div>
                 </div>
                 <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 6, padding: "2px 8px", marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>{estado}</span>
