@@ -40,10 +40,12 @@ const ITEMS: {
   mobileOnly?: boolean;
 }[] = [
   { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
-  { id: "campanas",     icon: <IconMisPantallas />, label: "Campañas", desktopOnly: true },
+  // Antes en movil este mismo lugar decia "Mis Publicidades" (id
+  // "mispantallas", pantalla distinta) -- a pedido del cliente ahora
+  // dice "Campañas" en los dos, escritorio y movil, sin distincion.
+  { id: "campanas",     icon: <IconMisPantallas />, label: "Campañas" },
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
-  { id: "mispantallas", icon: <IconMisPantallas />, label: "Mis Publicidades", mobileOnly: true },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
   // Paneles NO va en este menú -- solo se abre desde el selector de
