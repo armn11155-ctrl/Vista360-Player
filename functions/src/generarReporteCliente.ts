@@ -437,6 +437,7 @@ async function paginaEvidenciaOscura(
  *  tocar codigo. Por ahora son valores de prueba. */
 const CONTACTO_EMAIL = "ochomillas.101@hotmail.com";
 const CONTACTO_TELEFONO = "+51 947 957 971";
+const CONTACTO_WEB = "www.vista360.pe";
 
 /** Icono simple de sobre/correo, dibujado con lineas (sin depender de
  *  fuentes con glifos de icono). */
@@ -452,6 +453,17 @@ function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number,
 function drawPhoneIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
   doc.roundedRect(x, y, w, h, h * 0.24).lineWidth(2).strokeColor(color).stroke();
   doc.moveTo(x + w * 0.32, y + h * 0.16).lineTo(x + w * 0.68, y + h * 0.16).lineWidth(2).strokeColor(color).stroke();
+}
+
+/** Icono simple de globo/pagina web (circulo + ecuador + meridiano),
+ *  mismo estilo de trazo que el sobre y el telefono. */
+function drawWebIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
+  const cx = x + w / 2;
+  const cy = y + h / 2;
+  const r = Math.min(w, h) / 2;
+  doc.circle(cx, cy, r).lineWidth(2).strokeColor(color).stroke();
+  doc.moveTo(x, cy).lineTo(x + w, cy).lineWidth(2).strokeColor(color).stroke();
+  doc.ellipse(cx, cy, r * 0.45, r).lineWidth(2).strokeColor(color).stroke();
 }
 
 function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
@@ -493,6 +505,11 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
   drawPhoneIcon(doc, leftX + 3, y + 2, 20, 24, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
     .text(CONTACTO_TELEFONO, leftX + 40, y);
+  y += 52;
+
+  drawWebIcon(doc, leftX + 2, y + 3, 22, 22, COLORS.accent2);
+  doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
+    .text(CONTACTO_WEB, leftX + 40, y);
 
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
