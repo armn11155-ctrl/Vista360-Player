@@ -215,7 +215,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       </div>
 
       <div className="reports-screen-body">
-        {isAdmin && hayContratos && (
+        {isAdmin && (
           <div className="report-admin-panel">
             <div className="report-admin-header">
               <div className="report-admin-icon">
@@ -236,18 +236,25 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
             <div className="report-admin-controls">
               <div className="report-campaign-field">
                 <span>Campaña — el reporte se organiza por campaña</span>
-                <select
-                  className="reports-panel-select"
-                  value={contratoSeleccionado?.id ?? ""}
-                  onChange={(e) => { setContratoId(e.target.value); setFotosPorPanel({}); }}
-                  aria-label="Elegir campaña para el reporte"
-                >
-                  {contratos.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {labelCampana(c)}
-                    </option>
-                  ))}
-                </select>
+                {contratos.length > 0 ? (
+                  <select
+                    className="reports-panel-select"
+                    value={contratoSeleccionado?.id ?? ""}
+                    onChange={(e) => { setContratoId(e.target.value); setFotosPorPanel({}); }}
+                    aria-label="Elegir campaña para el reporte"
+                  >
+                    {contratos.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {labelCampana(c)}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="report-campaign-panels-hint">
+                    Este cliente todavía no tiene ninguna campaña creada -- crea una primero desde
+                    "Nueva campaña" para poder generar su reporte.
+                  </div>
+                )}
               </div>
               <div className="report-month-field">
                 <span>Fecha del reporte — toca para cambiar día, mes o año</span>
