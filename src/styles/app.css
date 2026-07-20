@@ -4307,10 +4307,10 @@
     .sidebar-panel.open { transform: translateX(0); }
     .sidebar-list { padding: 8px 0 calc(12px + env(safe-area-inset-bottom)); }
     .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
-    .sidebar-item[data-sidebar-id="reportes"] { order: 2; }
-    .sidebar-item[data-sidebar-id="facturas"] { order: 3; }
-    .sidebar-item[data-sidebar-id="cobertura"] { order: 4; }
-    .sidebar-item[data-sidebar-id="mispantallas"] { order: 5; }
+    .sidebar-item[data-sidebar-id="campanas"] { order: 2; }
+    .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }
+    .sidebar-item[data-sidebar-id="reportes"] { order: 4; }
+    .sidebar-item[data-sidebar-id="facturas"] { order: 5; }
     .sidebar-item[data-sidebar-id="analitica"] { order: 6; }
     .sidebar-bottom { order: 100; }
     .sidebar-item {
