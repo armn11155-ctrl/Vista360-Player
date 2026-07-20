@@ -324,10 +324,13 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
                       className="campaign-renewal-button"
                       onClick={(e) => abrirConfirmacion(c, panelNombre, e)}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M20 11a8 8 0 1 0-2.34 5.66" />
-                        <path d="M20 4v7h-7" />
-                      </svg>
+                      <img
+                        className="campaign-renewal-icon"
+                        src="/auto-renewal-2-square-fill-svgrepo-com.svg"
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                      />
                       <span>
                         <small>Vence en {diasParaVencer(c)} día(s)</small>
                         <strong>Solicitar renovación</strong>
