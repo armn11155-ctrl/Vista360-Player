@@ -3,7 +3,7 @@ import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
-import { cargarGoogleMapsTiles, cargarLeaflet } from "../../utils/leaflet";
+import { cargarLeaflet } from "../../utils/leaflet";
 
 interface Props {
   paneles: Record<string, Panel>;
@@ -82,7 +82,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
     if (!mapEl.current) return;
 
     cargarLeaflet()
-      .then(async (L) => {
+      .then((L) => {
         if (cancelado || !mapEl.current) return;
         setMapReady(true);
         setMapError(false);
@@ -95,21 +95,10 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-
-          // Si hay VITE_GOOGLE_MAPS_API_KEY configurada, se usan las teselas
-          // reales de Google Maps (mismo mapa que ya se ve en otras partes
-          // del portal). Si no, sigue funcionando igual que siempre con
-          // OpenStreetMap -- los marcadores/popups de abajo no cambian nada.
-          const conGoogle = await cargarGoogleMapsTiles();
-          if (cancelado || !mapRef.current) return;
-          if (conGoogle && L.gridLayer?.googleMutant) {
-            L.gridLayer.googleMutant({ type: "roadmap" }).addTo(mapRef.current);
-          } else {
-            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              maxZoom: 19,
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            }).addTo(mapRef.current);
-          }
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          }).addTo(mapRef.current);
         }
 
         markersRef.current?.remove();
