@@ -4453,23 +4453,63 @@
   }
 
   .campaign-detail-hero {
+    min-height: 280px;
     background-color: #050A12;
     background-image:
-      linear-gradient(180deg, rgba(2,6,15,.97) 0%, rgba(2,6,15,.84) 30%, rgba(2,6,15,.58) 68%, rgba(2,6,15,.42) 100%),
+      linear-gradient(180deg, rgba(2,6,15,.82) 0%, rgba(2,6,15,.56) 34%, rgba(2,6,15,.34) 66%, rgba(2,6,15,.72) 100%),
       url('/campaign-detail-ny-mobile.jpg');
     background-size: cover;
     background-position: center 58%;
     background-repeat: no-repeat;
     text-shadow: 0 2px 12px rgba(0,0,0,.78);
   }
+  .campaign-detail-summary {
+    margin-top: auto;
+    padding: 15px 16px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 15px;
+    background: linear-gradient(145deg, rgba(3,7,14,.72), rgba(3,7,14,.48));
+    box-shadow: 0 18px 38px -24px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.09);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+  }
+  .campaign-detail-panel-name {
+    max-width: 780px;
+    margin-bottom: 9px;
+    color: #FFFFFF;
+    font-size: clamp(20px, 5.5vw, 27px);
+    line-height: 1.08;
+    font-weight: 900;
+    letter-spacing: -.35px;
+    text-wrap: balance;
+  }
+  .campaign-detail-meta {
+    margin-top: 5px;
+    color: rgba(255,255,255,.78);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    font-weight: 650;
+  }
+  .campaign-detail-meta-first { margin-top: 10px; }
+  .campaign-detail-meta svg { flex: 0 0 auto; color: #93C5FD; }
 
   @media (min-width: 900px) {
     .campaign-detail-hero {
+      min-height: 330px;
       background-image:
-        linear-gradient(180deg, rgba(2,6,15,.96) 0%, rgba(2,6,15,.78) 28%, rgba(2,6,15,.52) 65%, rgba(2,6,15,.38) 100%),
+        linear-gradient(180deg, rgba(2,6,15,.78) 0%, rgba(2,6,15,.48) 32%, rgba(2,6,15,.26) 66%, rgba(2,6,15,.68) 100%),
         url('/campaign-detail-ny-desktop.jpg');
       background-position: center 52%;
     }
+    .campaign-detail-summary {
+      width: min(680px, 58%);
+      padding: 18px 20px;
+    }
+    .campaign-detail-panel-name { font-size: 29px; }
+    .campaign-detail-meta { font-size: 12.5px; }
   }
   .solicitud-detail-image img {
     width: 100%;

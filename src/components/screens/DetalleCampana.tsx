@@ -1,16 +1,9 @@
-import { useEffect, useState } from "react";
-import { httpsCallable } from "firebase/functions";
+import { useState } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana } from "../../types";
-import { cloudFunctions } from "../../config/firebase";
-import { subirEvidenciaR2 } from "../../config/r2";
-import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
-import { ClientAvatar } from "../ClientAvatar";
-import { brandColor } from "../../utils/brandColor";
 import { ReportCard } from "../ReportCard";
-import { AvatarUploadModal } from "../AvatarUploadModal";
 
 interface Props {
   contrato: Contrato;
@@ -87,23 +80,8 @@ function EmptyReportsIcon() {
 
 export default function DetalleCampana({ contrato, panel, clienteNombre, cliente, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
-  const [subiendoPortada, setSubiendoPortada] = useState(false);
-  const [portadaUrl, setPortadaUrl] = useState(contrato.imagenCampaniaUrl ?? "");
-  const [modalPortadaAbierto, setModalPortadaAbierto] = useState(false);
-  // Desactivado temporalmente (a pedido del cliente) -- no borra la
-  // funcionalidad, solo la oculta hasta que se pida reactivarla.
-  const permitirCambiarPortada = false;
 
   const estado = estadoCampana(contrato);
-  const fotos = contrato.fotos_campania ?? [];
-  const imagenPortada = portadaUrl || contrato.imagenCampaniaUrl || fotos[0]?.url || "";
-
-  const keysAFirmar = [
-    imagenPortada,
-    ...fotos.flatMap((f) => [f.url, f.thumbKey]),
-  ].filter((v): v is string => typeof v === "string" && !v.startsWith("http"));
-  const urlsFirmadas = useSignedUrls(keysAFirmar);
-  const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
 
   // PDF del reporte mensual del cliente (el mismo que se ve en la
   // pantalla de Reportes) — se muestra tambien aca para no tener que
@@ -112,32 +90,6 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const keysInformes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
   const urlsInformesFirmadas = useSignedUrls(keysInformes);
-
-  useEffect(() => {
-    setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
-  }, [contrato.id, contrato.imagenCampaniaUrl]);
-
-  async function subirNuevaPortada(file: File, posicion: PosicionRecorte) {
-    if (!cloudFunctions) {
-      throw new Error("Firebase Functions no está configurado.");
-    }
-    setSubiendoPortada(true);
-    try {
-      const recortada = await comprimirAvatarWebp(file, posicion);
-      const { key: url } = await subirEvidenciaR2(recortada);
-      setPortadaUrl(url);
-      const actualizarImagenCampania = httpsCallable<
-        { contratoId: string; imagenUrl: string },
-        { contratoId: string; imagenUrl: string; fecha: string }
-      >(cloudFunctions, "actualizarImagenCampania");
-      await actualizarImagenCampania({ contratoId: contrato.id, imagenUrl: url });
-    } catch (err) {
-      setPortadaUrl(contrato.imagenCampaniaUrl ?? "");
-      throw err;
-    } finally {
-      setSubiendoPortada(false);
-    }
-  }
 
   const TABS: { id: TabId; label: string }[] = [
     { id: "resumen",    label: "Resumen" },
@@ -158,77 +110,23 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         </div>
 
         {/* Nombre / estado / fechas — arriba, ancho completo */}
-        <div style={{ marginBottom: 14, order: 2 }}>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 7 }}>
+        <div className="campaign-detail-summary">
+          <div className="campaign-detail-panel-name">
             {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
           </div>
           <Badge estado={estado} />
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 8, display: "flex", gap: 6, alignItems: "center" }}>
+          <div className="campaign-detail-meta campaign-detail-meta-first">
             <HeaderIcon type="calendar" />
             <span>{contrato.inicio} - {contrato.fin}</span>
           </div>
           {panel && (
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.58)", marginTop: 4, display: "flex", gap: 6, alignItems: "center" }}>
+            <div className="campaign-detail-meta">
               <HeaderIcon type="pin" />
-              <span>{panel.nombre} · {panel.ciudad}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Foto de campaña — banner ancho arriba de los datos principales. */}
-        {/* Cambiar la foto desde acá esta desactivado por el momento (a
-            pedido del cliente) -- se deja el modal/logica intactos para
-            poder reactivarlo despues, solo cambia esta bandera. */}
-        <div style={{ position: "relative", width: "100%", height: 156, order: 1, marginBottom: 14 }}>
-          {isAdmin && permitirCambiarPortada ? (
-            <button
-              type="button"
-              className="profile-avatar-hover-btn"
-              style={{ borderRadius: 18, width: "100%", height: "100%" }}
-              onClick={() => setModalPortadaAbierto(true)}
-              disabled={subiendoPortada}
-              aria-label="Cambiar foto de campaña"
-            >
-              {imagenPortada ? (
-                <img
-                  src={resolverUrl(imagenPortada)}
-                  alt=""
-                  style={{ width: "100%", height: "100%", borderRadius: 18, objectFit: "cover", display: "block" }}
-                />
-              ) : (
-                <div style={{ width: "100%", height: "100%", borderRadius: 18, background: brandColor(clienteNombre || panel?.nombre || "?").bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <ClientAvatar name={clienteNombre || panel?.nombre || "?"} size={54} />
-                </div>
-              )}
-              <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: 18 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
-                  <circle cx="12" cy="13" r="3.4" />
-                </svg>
-              </span>
-            </button>
-          ) : imagenPortada ? (
-            <img
-              src={resolverUrl(imagenPortada)}
-              alt=""
-              style={{ width: "100%", height: "100%", borderRadius: 18, objectFit: "cover", display: "block" }}
-            />
-          ) : (
-            <div style={{ width: "100%", height: "100%", borderRadius: 18, background: brandColor(clienteNombre || panel?.nombre || "?").bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ClientAvatar name={clienteNombre || panel?.nombre || "?"} size={54} />
+              <span>{[panel.direccion, panel.ciudad].filter(Boolean).join(" · ") || panel.nombre}</span>
             </div>
           )}
         </div>
       </div>
-
-      {modalPortadaAbierto && (
-        <AvatarUploadModal
-          titulo="Cambiar foto de campaña"
-          etiquetaMiniatura="Así se ve en la portada"
-          onSubir={subirNuevaPortada}
-          onCerrar={() => setModalPortadaAbierto(false)}
-        />
-      )}
 
       <div style={{ height: 3, background: "#0877FF", flexShrink: 0 }} />
 
