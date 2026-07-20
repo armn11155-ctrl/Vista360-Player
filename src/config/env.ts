@@ -48,4 +48,9 @@ export const env = {
   // el botón de activar notificaciones simplemente se oculta en vez de
   // romper el resto de la app.
   vapidKey: (import.meta.env.VITE_FIREBASE_VAPID_KEY as string | undefined) ?? "",
+  // Clave de la Google Maps JavaScript API (Google Cloud Console -> APIs y
+  // servicios -> Credenciales). Tampoco es obligatoria: si falta, el mapa de
+  // Cobertura sigue funcionando con las teselas de OpenStreetMap de siempre,
+  // solo que sin las teselas reales de Google.
+  googleMapsApiKey: (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ?? "",
 };
