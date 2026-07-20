@@ -89,25 +89,10 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-          const capaTopografica = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-            subdomains: "abc",
-            maxZoom: 17,
-            attribution:
-              'Datos: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, SRTM | Mapa: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
-          });
-
-          let erroresDeTesela = 0;
-          capaTopografica.on("tileerror", () => {
-            erroresDeTesela += 1;
-            if (erroresDeTesela < 3 || !mapRef.current) return;
-
-            capaTopografica.remove();
-            L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-              maxZoom: 19,
-              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            }).addTo(mapRef.current);
-          });
-          capaTopografica.addTo(mapRef.current);
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          }).addTo(mapRef.current);
         }
 
         markersRef.current?.remove();
