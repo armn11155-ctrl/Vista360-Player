@@ -1,15 +1,15 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
-import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
 import { cloudFunctions } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import MobileSidebarButton from "../MobileSidebarButton";
+import { campaignCityImage } from "../../utils/campaignCity";
 
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
 // placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
@@ -46,7 +46,7 @@ function diasParaVencer(c: Contrato): number {
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
 type ComprobanteEstado = "idle" | "subiendo" | "subido" | "error";
 
-export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
+export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
@@ -238,14 +238,16 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           // la tarjeta -- si no, se sigue mostrando el nombre del/los
           // panel(es), como antes.
           const tituloCampana = c.nombre || panelNombre;
+          const cityStyle = {
+            "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
+          } as CSSProperties;
           return (
             <div
               key={c.id}
               className={`premium-campaign-card${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
+              style={cityStyle}
               onClick={() => onAbrir(c)}
             >
-              <BrandThumb name={clienteNombre || panelNombre} size={72} radius={12} />
-
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
