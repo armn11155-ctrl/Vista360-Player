@@ -206,24 +206,37 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
               </div>
             </div>
 
-            {/* Info del panel */}
-            {panel && (
+            {/* Info del panel -- un mapa por cada panel de la campaña
+                (antes solo mostraba el primero, aunque hubiera 2+),
+                cada uno con su nombre arriba para saber cual es cual. */}
+            {panelesContrato.length > 0 && (
               <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Ubicación de pantalla</div>
-                {panel.lat && panel.lng ? (
-                  <div className="campaign-location-map">
-                    <iframe
-                      title={`Ubicación de ${panel.nombre}`}
-                      width="100%"
-                      style={{ border: "none" }}
-                      loading="lazy"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      src={`https://maps.google.com/maps?q=${panel.lat},${panel.lng}&z=18&output=embed`}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ fontSize: 13, color: "#6B7280" }}>{panel.direccion ?? "Sin coordenadas registradas"}</div>
-                )}
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>
+                  {panelesContrato.length > 1 ? "Ubicación de las pantallas" : "Ubicación de pantalla"}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {panelesContrato.map((p) => (
+                    <div key={p.id}>
+                      {panelesContrato.length > 1 && (
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0B1220", marginBottom: 6 }}>{p.nombre}</div>
+                      )}
+                      {p.lat && p.lng ? (
+                        <div className="campaign-location-map">
+                          <iframe
+                            title={`Ubicación de ${p.nombre}`}
+                            width="100%"
+                            style={{ border: "none" }}
+                            loading="lazy"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=18&output=embed`}
+                          />
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 13, color: "#6B7280" }}>{p.direccion ?? "Sin coordenadas registradas"}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -246,7 +259,51 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                 bien claro como "aproximado". */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Impacto aproximado</div>
-              {panelesConImpacto.length > 0 ? (
+              {panelesContrato.length > 1 ? (
+                // Campaña multi-panel: impacto de CADA panel por separado
+                // (cada uno puede tener un tránsito distinto), y abajo la
+                // sumatoria total de la campaña completa. Si todavía no
+                // hay dato de tránsito cargado en ningún panel, igual se
+                // muestra la estructura completa (cada fila dice "sin
+                // dato" en vez de desaparecer) para que quede lista para
+                // cuando el admin cargue los datos.
+                <div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    {panelesContrato.map((p) => (
+                      <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                        <div style={{ fontSize: 12.5, color: "#0B1220", fontWeight: 600 }}>{p.nombre}</div>
+                        {p.impactoDiario ? (
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220" }}>
+                              ≈ {(p.impactoDiario * diasCampana(contrato)).toLocaleString("es-PE")}
+                            </div>
+                            <div style={{ fontSize: 10.5, color: "#6B7280" }}>~{p.impactoDiario.toLocaleString("es-PE")}/día</div>
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 11.5, color: "#9CA3AF" }}>Sin dato de tránsito</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    marginTop: 10, paddingTop: 10, borderTop: "1px solid #F3F4F6",
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#0B1220" }}>Total de la campaña</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "#0877FF" }}>
+                      {panelesConImpacto.length > 0
+                        ? `≈ ${(impactoDiarioTotal * diasCampana(contrato)).toLocaleString("es-PE")} personas`
+                        : "Sin datos aún"}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>
+                    Estimado para los {diasCampana(contrato)} días de la campaña
+                    {panelesConImpacto.length > 0 && panelesConImpacto.length < panelesContrato.length
+                      ? ` (sumando ${panelesConImpacto.length} de ${panelesContrato.length} paneles con dato cargado)`
+                      : ""}
+                  </div>
+                </div>
+              ) : panelesConImpacto.length > 0 ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
@@ -264,16 +321,13 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                       ≈ {(impactoDiarioTotal * diasCampana(contrato)).toLocaleString("es-PE")} personas
                     </div>
                     <div style={{ fontSize: 12, color: "#6B7280" }}>
-                      Estimado para los {diasCampana(contrato)} días de la campaña (~{impactoDiarioTotal.toLocaleString("es-PE")}/día
-                      {panelesContrato.length > 1
-                        ? ` sumando ${panelesConImpacto.length} de ${panelesContrato.length} paneles con dato cargado`
-                        : " en esta ubicación"})
+                      Estimado para los {diasCampana(contrato)} días de la campaña (~{impactoDiarioTotal.toLocaleString("es-PE")}/día en esta ubicación)
                     </div>
                   </div>
                 </div>
               ) : (
                 <div style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.5 }}>
-                  Aún no hay un estimado de tránsito cargado para {panelesContrato.length > 1 ? "estos paneles" : "este panel"}. Cuando el admin lo
+                  Aún no hay un estimado de tránsito cargado para este panel. Cuando el admin lo
                   agregue, acá vas a ver el impacto aproximado de esta campaña.
                 </div>
               )}

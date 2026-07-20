@@ -4583,7 +4583,12 @@
   .campaign-detail-meta-first { margin-top: 10px; }
   .campaign-detail-meta svg { flex: 0 0 auto; color: #93C5FD; }
   .campaign-location-map {
-    height: 180px;
+    /* Antes 180px -- se pidio mejorar la calidad/legibilidad del mapa
+       en el celular; a este tamano chico apenas se distinguian calles
+       y el pin. Mas alto = se ve mas detalle del mapa real (es un
+       iframe interactivo de Maps, no una imagen, asi que no hay perdida
+       de nitidez por agrandar el contenedor). */
+    height: 230px;
     overflow: hidden;
     border-radius: 12px;
     background: #E5E7EB;
@@ -4608,7 +4613,7 @@
     }
     .campaign-detail-panel-name { font-size: clamp(31px, 2.35vw, 38px); }
     .campaign-detail-meta { font-size: 14px; }
-    .campaign-location-map { height: 220px; }
+    .campaign-location-map { height: 280px; }
   }
   .solicitud-detail-image img {
     width: 100%;
