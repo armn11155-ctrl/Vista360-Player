@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import BackChevron from "../BackChevron";
 import { useFacturas } from "../../hooks/useFacturas";
 import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
@@ -18,7 +17,7 @@ interface Props {
   onMenuClick?: () => void;
 }
 
-export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onMenuClick }: Props) {
+export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
   const fileRef = useRef<HTMLInputElement>(null);
@@ -92,13 +91,13 @@ export default function Facturas({ ruc, clienteId, cliente, onBack, isAdmin, onM
 
   return (
     <div className="facturas-screen">
-      <div className="detail-header">
-        <MobileSidebarButton onClick={onMenuClick} />
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
+      <div className="evidencias-header reports-header facturas-header">
+        <div className="ev-logo-row">
+          <div className="mobile-header-title-group">
+            <MobileSidebarButton onClick={onMenuClick} />
+            <div className="reports-header-title">Facturas</div>
+          </div>
         </div>
-        <div className="simple-title">Facturas</div>
-        <div style={{ width: 32 }} />
       </div>
 
       <div className="content-area">
