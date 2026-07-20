@@ -195,7 +195,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: brandLoaderFloat 2.8s ease-in-out infinite;
+    animation: brandLoaderFloat 2.8s ease-in-out 2.4s infinite;
   }
   .brand-loader-mark::before {
     content: "";
@@ -204,7 +204,9 @@
     border-radius: 50%;
     background: rgba(15,23,42,.055);
     filter: blur(18px);
-    animation: brandLoaderGlow 2.8s ease-in-out infinite;
+    opacity: .35;
+    transform: scale(.82);
+    animation: brandLoaderGlow 2.8s ease-in-out 2.4s infinite;
   }
   .brand-loader-dark .brand-loader-mark::before {
     background: rgba(15,23,42,.055);
@@ -233,7 +235,7 @@
     overflow: hidden;
     border-radius: 24px;
     clip-path: inset(100% 0 0 0);
-    animation: brandLoaderLiquidRise 2.7s cubic-bezier(.45,.05,.25,1) infinite;
+    animation: brandLoaderLiquidRise 2.4s cubic-bezier(.45,.05,.25,1) 1 forwards;
   }
   .brand-loader-logo-fill {
     filter: brightness(1.08) contrast(1.03);
@@ -248,8 +250,8 @@
   }
   @keyframes brandLoaderLiquidRise {
     0% { clip-path: inset(100% 0 0 0); opacity: .75; }
-    64%, 78% { clip-path: inset(0 0 0 0); opacity: 1; }
-    100% { clip-path: inset(0 0 100% 0); opacity: .72; }
+    72% { clip-path: inset(8% 0 0 0); opacity: 1; }
+    100% { clip-path: inset(0 0 0 0); opacity: 1; }
   }
   @keyframes brandLoaderFloat {
     0%, 100% { transform: translateY(0) scale(.985); }
