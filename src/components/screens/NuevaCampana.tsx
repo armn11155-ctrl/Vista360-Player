@@ -4,6 +4,7 @@ import { db } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
+import { panelesDeContrato } from "../../types";
 
 interface Props {
   clienteId: string;
@@ -86,7 +87,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
 
   // ── Formulario del ADMIN: crear el contrato real directo ───────────
   const panelesState = usePanelesDisponibles(!!isAdmin);
-  const [panelId, setPanelId] = useState("");
+  // Una campaña puede tener 2+ paneles (ej. el cliente cotiza dos
+  // ubicaciones en un solo contrato) -- por eso es multi-selección, no
+  // un <select> de uno solo como antes.
+  const [panelIds, setPanelIds] = useState<string[]>([]);
   const [inicio, setInicio] = useState("");
   const [fin, setFin] = useState("");
   const [monto, setMonto] = useState("");
@@ -95,9 +99,13 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [creando, setCreando] = useState(false);
   const imagenAdminRef = useRef<HTMLInputElement>(null);
 
+  function togglePanel(id: string) {
+    setPanelIds((actuales) => (actuales.includes(id) ? actuales.filter((p) => p !== id) : [...actuales, id]));
+  }
+
   async function crearContrato() {
     setErrorAdmin("");
-    if (!panelId) { setErrorAdmin("Elige un panel."); return; }
+    if (panelIds.length === 0) { setErrorAdmin("Elige al menos un panel."); return; }
     if (!inicio || !fin) { setErrorAdmin("Pon fecha de inicio y de fin."); return; }
     if (fin < inicio) { setErrorAdmin("La fecha de fin no puede ser antes que la de inicio."); return; }
     if (!monto || Number(monto) < 0) { setErrorAdmin("Pon un monto válido."); return; }
@@ -105,27 +113,37 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     setCreando(true);
     try {
       // Un mismo cliente no puede tener dos campañas activas a la vez
-      // en el mismo panel -- antes de crear el contrato, se revisa si
-      // ESTE cliente ya tiene otro contrato en este mismo panel cuyas
-      // fechas se crucen con las que se está por crear. Si se cruzan,
-      // se bloquea y se sugiere la fecha en que queda libre (lo que sí
-      // se puede hacer es programar la siguiente campaña para después
-      // de esa fecha, sin traslape). Otro cliente distinto SÍ puede
-      // tener una campaña activa en este mismo panel al mismo tiempo
-      // -- el bloqueo es por cliente+panel, no por panel solo.
-      const contratosPanelSnap = await getDocs(
-        query(collection(db, "contratos"), where("panel_id", "==", panelId), where("cliente_id", "==", clienteId))
+      // en el mismo panel -- antes de crear el contrato, se revisa
+      // para CADA panel elegido si ESTE cliente ya tiene otro contrato
+      // en ese panel (como panel principal o como parte de una
+      // campaña multi-panel) cuyas fechas se crucen con las que se
+      // está por crear. Si se cruzan, se bloquea y se sugiere la fecha
+      // en que queda libre. Otro cliente distinto SÍ puede tener una
+      // campaña activa en este mismo panel al mismo tiempo -- el
+      // bloqueo es por cliente+panel, no por panel solo.
+      const contratosClienteSnap = await getDocs(
+        query(collection(db, "contratos"), where("cliente_id", "==", clienteId))
       );
-      const cruces = contratosPanelSnap.docs
-        .map((d) => d.data() as { inicio?: string; fin?: string; deleted?: boolean })
-        .filter((c) => !c.deleted && c.inicio && c.fin && c.inicio <= fin && inicio <= c.fin);
-      if (cruces.length > 0) {
-        const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
-        setErrorAdmin(
-          `Este cliente ya tiene una campaña programada en ese panel hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
-        );
-        setCreando(false);
-        return;
+      const contratosCliente = contratosClienteSnap.docs.map(
+        (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
+      );
+
+      for (const panelId of panelIds) {
+        const cruces = contratosCliente.filter((c) => {
+          if (c.deleted || !c.inicio || !c.fin) return false;
+          if (!(c.inicio <= fin && inicio <= c.fin)) return false;
+          return panelesDeContrato({ panel_id: c.panel_id ?? "", panel_ids: c.panel_ids }).includes(panelId);
+        });
+        if (cruces.length > 0) {
+          const panelesDisponiblesActuales = panelesState.status === "ready" ? panelesState.paneles : [];
+          const nombrePanelConflicto = panelesDisponiblesActuales.find((p) => p.id === panelId)?.nombre ?? "ese panel";
+          const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+          setErrorAdmin(
+            `Este cliente ya tiene una campaña programada en ${nombrePanelConflicto} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+          );
+          setCreando(false);
+          return;
+        }
       }
 
       const subidaAdmin = imagenAdmin
@@ -134,7 +152,11 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
       const imagenUrl = subidaAdmin?.key ?? "";
       const fechaImagen = new Date().toISOString().slice(0, 10);
       await addDoc(collection(db, "contratos"), {
-        panel_id: panelId,
+        // panel_id se sigue guardando (el primero elegido) por
+        // compatibilidad con todo el código que todavía lee un solo
+        // panel -- panel_ids es la lista completa, incluido el primero.
+        panel_id: panelIds[0],
+        panel_ids: panelIds,
         cliente_id: clienteId,
         inicio,
         fin,
@@ -146,8 +168,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
         ...(imagenUrl ? { imagenCampaniaUrl: imagenUrl, imagenCampaniaFecha: fechaImagen } : {}),
         createdAt: serverTimestamp(),
       });
-      // Marcar el panel como Ocupado (mismo comportamiento que en el ERP)
-      await setDoc(doc(db, "paneles", panelId), { estado: "Ocupado" }, { merge: true });
+      // Marcar TODOS los paneles elegidos como Ocupado (mismo
+      // comportamiento que en el ERP, ahora para cada uno).
+      await Promise.all(panelIds.map((panelId) => setDoc(doc(db!, "paneles", panelId), { estado: "Ocupado" }, { merge: true })));
       onEnviada();
     } catch {
       setErrorAdmin("No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo.");
@@ -179,17 +202,37 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
               </div>
             )}
 
-            <Field label="Panel">
-              <select style={selectStyle} value={panelId} onChange={(e) => setPanelId(e.target.value)}>
-                <option value="">
-                  {panelesState.status === "loading" ? "Cargando paneles…" : "Selecciona un panel"}
-                </option>
-                {paneles.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.nombre} — {p.ciudad} {p.estado === "Ocupado" ? "(Ocupado)" : ""}
-                  </option>
-                ))}
-              </select>
+            <Field label={`Paneles${panelIds.length > 0 ? ` (${panelIds.length} elegido${panelIds.length > 1 ? "s" : ""})` : ""}`}>
+              <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 8, lineHeight: 1.4 }}>
+                Elige uno o varios paneles -- si eliges más de uno, esta campaña queda como una
+                sola con todos esos paneles (útil cuando el cliente cotiza 2+ ubicaciones juntas).
+              </div>
+              <div style={{ border: "1.5px solid #E5E7EB", borderRadius: 10, maxHeight: 220, overflowY: "auto", background: "#fff" }}>
+                {panelesState.status === "loading" && (
+                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#6B7280" }}>Cargando paneles…</div>
+                )}
+                {panelesState.status === "ready" && paneles.length === 0 && (
+                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#6B7280" }}>No hay paneles registrados.</div>
+                )}
+                {paneles.map((p, i) => {
+                  const elegido = panelIds.includes(p.id);
+                  return (
+                    <label
+                      key={p.id}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 10, padding: "11px 14px", cursor: "pointer",
+                        borderTop: i === 0 ? "none" : "1px solid #F3F4F6",
+                        background: elegido ? "#EEF4FF" : "transparent",
+                      }}
+                    >
+                      <input type="checkbox" checked={elegido} onChange={() => togglePanel(p.id)} style={{ width: 16, height: 16, accentColor: "#0877FF", flexShrink: 0 }} />
+                      <span style={{ fontSize: 13.5, color: "#0B1220", flex: 1 }}>
+                        {p.nombre} — {p.ciudad} {p.estado === "Ocupado" ? "(Ocupado)" : ""}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             </Field>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>

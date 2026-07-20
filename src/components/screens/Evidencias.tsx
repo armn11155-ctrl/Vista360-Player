@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { doc, updateDoc, arrayUnion } from "firebase/firestore";
 import type { Contrato, Panel } from "../../types";
+import { panelesDeContrato } from "../../types";
 import { db } from "../../config/firebase";
 import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
@@ -22,6 +23,11 @@ interface FotoConContexto {
 }
 
 export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
+  function nombrePanelesContrato(c: Contrato) {
+    const ids = panelesDeContrato(c);
+    return ids.length > 0 ? ids.map((id) => paneles[id]?.nombre ?? id).join(" + ") : "";
+  }
+
   const fileRef = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +41,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
         url: f.url,
         thumbKey: f.thumbKey,
         fecha: f.fecha,
-        panelNombre: paneles[c.panel_id]?.nombre ?? c.panel_id,
+        panelNombre: nombrePanelesContrato(c) || c.panel_id,
         contratoId: c.id,
       });
     }
@@ -111,7 +117,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
                   <option value="">Selecciona una campaña…</option>
                   {contratos.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {paneles[c.panel_id]?.nombre ?? c.panel_id} ({c.inicio} – {c.fin})
+                      {nombrePanelesContrato(c) || c.panel_id} ({c.inicio} – {c.fin})
                     </option>
                   ))}
                 </select>

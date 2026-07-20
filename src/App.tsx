@@ -26,6 +26,7 @@ import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
 import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
 import type { Contrato } from "./types";
+import { panelesDeContrato } from "./types";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -322,7 +323,7 @@ function AuthenticatedApp({
   const solCampPendientes = solCampState.status === "ready"
     ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
     : 0;
-  const paneles = usePaneles(contratos.map((c) => c.panel_id));
+  const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
 
   useEffect(() => {
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
@@ -396,7 +397,7 @@ function AuthenticatedApp({
         content = contratoAbierto ? (
           <DetalleCampana
             contrato={contratoAbierto}
-            panel={paneles[contratoAbierto.panel_id]}
+            paneles={paneles}
             clienteNombre={cliente?.empresa ?? ""}
             cliente={cliente}
             onBack={() => setView("campanas")}

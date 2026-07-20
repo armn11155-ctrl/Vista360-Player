@@ -1,13 +1,17 @@
 import { useState } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 
 interface Props {
   contrato: Contrato;
-  panel: Panel | undefined;
+  /** Mapa id -> Panel de TODOS los paneles conocidos -- se busca acá
+   *  adentro la lista completa de paneles de este contrato (puede ser
+   *  uno o varios, ver panelesDeContrato), en vez de recibir un solo
+   *  panel ya resuelto como antes. */
+  paneles: Record<string, Panel>;
   clienteNombre: string;
   cliente: Cliente | null;
   onBack: () => void;
@@ -87,10 +91,21 @@ function EmptyReportsIcon() {
   );
 }
 
-export default function DetalleCampana({ contrato, panel, clienteNombre, cliente, onBack, isAdmin }: Props) {
+export default function DetalleCampana({ contrato, paneles, clienteNombre, cliente, onBack, isAdmin }: Props) {
   const [tab, setTab] = useState<TabId>("resumen");
 
   const estado = estadoCampana(contrato);
+
+  // Uno o varios paneles segun sea una campaña normal o multi-panel.
+  const panelesContrato = panelesDeContrato(contrato).map((id) => paneles[id]).filter((p): p is Panel => !!p);
+  const panel = panelesContrato[0];
+  const nombrePaneles = panelesContrato.length > 0
+    ? panelesContrato.map((p) => p.nombre).join(" + ")
+    : `Panel ${contrato.panel_id.slice(0, 6)}`;
+  // Suma del transito diario de TODOS los paneles de la campaña, solo
+  // contando los que sí tienen el dato cargado (no se inventa el resto).
+  const panelesConImpacto = panelesContrato.filter((p) => p.impactoDiario);
+  const impactoDiarioTotal = panelesConImpacto.reduce((sum, p) => sum + (p.impactoDiario ?? 0), 0);
 
   // PDF del reporte mensual del cliente (el mismo que se ve en la
   // pantalla de Reportes) — se muestra tambien aca para no tener que
@@ -122,7 +137,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
         <div className="campaign-detail-summary">
           <div className="campaign-detail-title-row">
             <div className="campaign-detail-panel-name">
-              {panel?.nombre ?? `Panel ${contrato.panel_id.slice(0,6)}`}
+              {nombrePaneles}
             </div>
             <Badge estado={estado} />
           </div>
@@ -133,7 +148,11 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
           {panel && (
             <div className="campaign-detail-meta">
               <HeaderIcon type="pin" />
-              <span>{[panel.direccion, panel.ciudad].filter(Boolean).join(" · ") || panel.nombre}</span>
+              <span>
+                {panelesContrato.length > 1
+                  ? panelesContrato.map((p) => p.nombre).join(", ")
+                  : [panel.direccion, panel.ciudad].filter(Boolean).join(" · ") || panel.nombre}
+              </span>
             </div>
           )}
         </div>
@@ -223,7 +242,7 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
                 bien claro como "aproximado". */}
             <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Impacto aproximado</div>
-              {panel?.impactoDiario ? (
+              {panelesConImpacto.length > 0 ? (
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
@@ -238,16 +257,19 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
                   </div>
                   <div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1220" }}>
-                      ≈ {(panel.impactoDiario * diasCampana(contrato)).toLocaleString("es-PE")} personas
+                      ≈ {(impactoDiarioTotal * diasCampana(contrato)).toLocaleString("es-PE")} personas
                     </div>
                     <div style={{ fontSize: 12, color: "#6B7280" }}>
-                      Estimado para los {diasCampana(contrato)} días de la campaña (~{panel.impactoDiario.toLocaleString("es-PE")}/día en esta ubicación)
+                      Estimado para los {diasCampana(contrato)} días de la campaña (~{impactoDiarioTotal.toLocaleString("es-PE")}/día
+                      {panelesContrato.length > 1
+                        ? ` sumando ${panelesConImpacto.length} de ${panelesContrato.length} paneles con dato cargado`
+                        : " en esta ubicación"})
                     </div>
                   </div>
                 </div>
               ) : (
                 <div style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.5 }}>
-                  Aún no hay un estimado de tránsito cargado para este panel. Cuando el admin lo
+                  Aún no hay un estimado de tránsito cargado para {panelesContrato.length > 1 ? "estos paneles" : "este panel"}. Cuando el admin lo
                   agregue, acá vas a ver el impacto aproximado de esta campaña.
                 </div>
               )}

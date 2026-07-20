@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato } from "../../types";
-import { estadoCampana } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { cloudFunctions, db, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
@@ -117,7 +117,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc);
   const activas = contratos.filter((contrato) => estadoCampana(contrato) === "Activa").length;
-  const pantallas = new Set(contratos.map((contrato) => contrato.panel_id)).size;
+  const pantallas = new Set(contratos.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((factura) => factura.estado === "Pendiente" || factura.estado === "Vencida").length
     : 0;

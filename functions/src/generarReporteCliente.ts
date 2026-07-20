@@ -517,6 +517,35 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
     .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
 
+/** Pagina divisoria entre paneles de una misma campaña multi-panel --
+ *  mismo lenguaje visual que portada/cierre (fondo oscuro + anillo de
+ *  marca), asi el reporte se siente diseñado a proposito y no como una
+ *  lista de fotos pegadas. Solo se usa cuando hay 2+ paneles en el
+ *  reporte -- con un solo panel/elemento no hace falta anunciarlo. */
+function paginaSeccionPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  drawRingAsset(doc, 1001, 0, 599);
+
+  const y0 = PAGE.height * 0.34;
+  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, PAGE.margin, y0, COLORS.accent, 16);
+
+  const maxWidth = PAGE.width - PAGE.margin * 2 - 480;
+  const titulo = sinTildes(nombrePanel).toUpperCase();
+  const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 64, 32);
+  doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.white)
+    .text(titulo, PAGE.margin, y0 + 42, { width: maxWidth });
+
+  const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
+  if (ubicacion && sinTildes(ubicacion) !== titulo) {
+    doc.font("Helvetica").fontSize(19).fillColor(COLORS.muted)
+      .text(sinTildes(ubicacion), PAGE.margin, y0 + 42 + tituloHeight + 16, { width: maxWidth });
+  }
+
+  doc.moveTo(PAGE.margin, y0 - 24).lineTo(PAGE.margin + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.accent2).stroke();
+
+  drawFooterLine(doc, pad2(pageNum), true);
+}
+
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
   const doc = new PDFDocument({ size: [PAGE.width, PAGE.height], margin: 0, autoFirstPage: false });
   const chunks: Buffer[] = [];
@@ -525,24 +554,43 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
   doc.addPage();
   portada(doc, cliente);
 
-  const fotosFlat = elementos.flatMap((elemento) =>
-    elemento.fotos.filter(Boolean).map((foto) => {
-      const f = normalizeFoto(foto);
-      return { url: f.url, fecha: f.fecha, ubicacion: elemento.ubicacion };
-    })
-  );
+  // Elementos con al menos una foto -- si un panel se eligió pero no se
+  // le subió ninguna foto, no genera una sección vacía en el PDF.
+  const elementosConFotos = elementos.filter((elemento) => elemento.fotos.filter(Boolean).length > 0);
+  // Encabezado de sección por panel SOLO si el reporte junta 2+ paneles
+  // -- con un solo panel/elemento, el reporte sigue viéndose igual que
+  // siempre (sin una portadilla de más).
+  const conSecciones = elementosConFotos.length > 1;
 
   let pageNum = 2;
-  for (let i = 0; i < fotosFlat.length; i++) {
-    doc.addPage();
-    // Empieza en blanco y alterna: blanco, negro, blanco, negro...
-    const dark = i % 2 === 1;
-    if (dark) {
-      await paginaEvidenciaOscura(doc, fotosFlat[i], pageNum, i + 1);
-    } else {
-      await paginaEvidenciaBlanca(doc, fotosFlat[i], pageNum, i + 1);
+  let numEvidencias = 0;
+  for (let s = 0; s < elementosConFotos.length; s++) {
+    const elemento = elementosConFotos[s];
+    if (conSecciones) {
+      doc.addPage();
+      paginaSeccionPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
+      pageNum++;
     }
-    pageNum++;
+
+    const fotosElemento = elemento.fotos.filter(Boolean).map((foto) => {
+      const f = normalizeFoto(foto);
+      return { url: f.url, fecha: f.fecha };
+    });
+
+    for (let i = 0; i < fotosElemento.length; i++) {
+      doc.addPage();
+      // Empieza en blanco y alterna: blanco, negro, blanco, negro...
+      // (se reinicia por cada panel, para que cada sección arranque
+      // siempre en la misma página blanca de bienvenida)
+      const dark = i % 2 === 1;
+      if (dark) {
+        await paginaEvidenciaOscura(doc, fotosElemento[i], pageNum, i + 1);
+      } else {
+        await paginaEvidenciaBlanca(doc, fotosElemento[i], pageNum, i + 1);
+      }
+      pageNum++;
+      numEvidencias++;
+    }
   }
 
   doc.addPage();
@@ -556,8 +604,8 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
 
   return {
     buffer: Buffer.concat(chunks),
-    numEvidencias: fotosFlat.length,
-    numElementos: elementos.length,
+    numEvidencias,
+    numElementos: elementosConFotos.length,
   };
 }
 
@@ -643,6 +691,49 @@ function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemen
   }];
 }
 
+interface PanelFotosInput {
+  panelId?: string;
+  panelNombre?: string;
+  fotos?: FotoInput[];
+}
+
+/** Reporte organizado POR CAMPAÑA cuando esta tiene 2+ paneles: cada
+ *  entrada de "paneles" trae sus propias fotos ya subidas (una cajita
+ *  de carga por panel en Reportes.tsx) -- acá se arma un ReporteElemento
+ *  por panel, buscando nombre/dirección/ciudad real en Firestore para
+ *  que la sección de cada uno salga bien identificada en el PDF. */
+async function cargarElementosSubidosPorPanel(
+  db: FirebaseFirestore.Firestore,
+  data: unknown
+): Promise<ReporteElemento[]> {
+  if (!Array.isArray(data)) return [];
+  const elementos: ReporteElemento[] = [];
+  for (const entradaRaw of data as PanelFotosInput[]) {
+    if (!entradaRaw || typeof entradaRaw !== "object") continue;
+    const panelId = String(entradaRaw.panelId ?? "").trim();
+    const fotos = (Array.isArray(entradaRaw.fotos) ? entradaRaw.fotos : [])
+      .map(normalizeFoto)
+      .filter((foto) => typeof foto.url === "string" && foto.url.startsWith("data:image/"))
+      .slice(0, 12);
+    if (fotos.length === 0) continue;
+
+    let nombre = String(entradaRaw.panelNombre ?? "").trim();
+    let ubicacion = nombre;
+    if (panelId) {
+      const panelSnap = await db.doc(`paneles/${panelId}`).get();
+      const panel = panelSnap.exists ? panelSnap.data() ?? {} : {};
+      if (!nombre) nombre = String(panel.nombre ?? "Panel");
+      ubicacion = [panel.nombre ?? nombre, panel.direccion, panel.ciudad].filter(Boolean).join(" - ");
+    }
+    elementos.push({
+      titulo: nombre || "Panel",
+      ubicacion: ubicacion || nombre || "Panel",
+      fotos,
+    });
+  }
+  return elementos;
+}
+
 export const generarReporteCliente = onCall(
   { timeoutSeconds: 540, memory: "1GiB", secrets: R2_SECRETS },
   async (request) => {
@@ -675,18 +766,32 @@ export const generarReporteCliente = onCall(
       }
 
       const panelId = String(request.data?.panelId ?? "").trim();
+      const contratoId = String(request.data?.contratoId ?? "").trim();
 
       const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
       if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");
       const clienteData = clienteSnap.data() ?? {};
       const ubicacionDb = String(clienteData.ciudad ?? "");
-      const ubicacionPanel = await cargarUbicacionCliente(clienteId, panelId || undefined);
-      const ubicacion = ubicacionPanel || ubicacionDb || "Perú";
-      const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
-      const elementos = elementosSubidos.length > 0 && elementosSubidos[0].fotos.length > 0
-        ? elementosSubidos
-        : await cargarElementos(clienteId, mes, panelId || undefined);
-      if (elementos.length === 0) {
+
+      // Reporte organizado por campaña (2+ paneles, uno o mas cuadros
+      // de fotos por panel) -- si viene esto, tiene prioridad sobre el
+      // flujo viejo de "fotos" plano / panel único.
+      const elementosPorPanel = await cargarElementosSubidosPorPanel(db, request.data?.panelesFotos);
+
+      let elementos: ReporteElemento[];
+      let ubicacion: string;
+      if (elementosPorPanel.length > 0) {
+        elementos = elementosPorPanel;
+        ubicacion = elementosPorPanel.map((e) => e.titulo).join(" + ") || ubicacionDb || "Perú";
+      } else {
+        const ubicacionPanel = await cargarUbicacionCliente(clienteId, panelId || undefined);
+        ubicacion = ubicacionPanel || ubicacionDb || "Perú";
+        const elementosSubidos = cargarElementosSubidos(request.data?.fotos, ubicacion);
+        elementos = elementosSubidos.length > 0 && elementosSubidos[0].fotos.length > 0
+          ? elementosSubidos
+          : await cargarElementos(clienteId, mes, panelId || undefined);
+      }
+      if (elementos.length === 0 || elementos.every((e) => e.fotos.length === 0)) {
         throw new HttpsError(
           "failed-precondition",
           panelId ? "Ese panel no tiene fotos de campaña para este mes." : "Agrega fotos para generar el reporte."
@@ -729,6 +834,7 @@ export const generarReporteCliente = onCall(
           numCampanas: reporte.numElementos,
           numEvidencias: reporte.numEvidencias,
           ...(panelId ? { panel_id: panelId } : { panel_id: FieldValue.delete() }),
+          ...(contratoId ? { contrato_id: contratoId } : { contrato_id: FieldValue.delete() }),
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }

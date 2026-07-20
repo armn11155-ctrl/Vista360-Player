@@ -1,5 +1,5 @@
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { useFacturas } from "../../hooks/useFacturas";
 import { useInformes } from "../../hooks/useInformes";
 
@@ -46,7 +46,7 @@ const HEADER = "#050A12";
 
 export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
-  const pantallasActivas = new Set(activas.map(c => c.panel_id)).size;
+  const pantallasActivas = new Set(activas.flatMap(c => panelesDeContrato(c))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
   const proxVenc = proximoVencimiento(contratos);

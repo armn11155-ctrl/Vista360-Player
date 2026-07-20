@@ -43,9 +43,16 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
   }
   const contrato = contratoSnap.data() ?? {};
 
-  if (contrato.panel_id) {
-    await db.doc(`paneles/${contrato.panel_id}`).set({ estado: "Disponible" }, { merge: true }).catch(() => undefined);
-  }
+  // Campaña multi-panel: libera TODOS los paneles del contrato, no
+  // solo el primero (panel_ids incluye al primero cuando existe).
+  const panelIds: string[] = Array.isArray(contrato.panel_ids) && contrato.panel_ids.length > 0
+    ? contrato.panel_ids
+    : (contrato.panel_id ? [contrato.panel_id] : []);
+  await Promise.all(
+    panelIds.map((panelId) =>
+      db.doc(`paneles/${panelId}`).set({ estado: "Disponible" }, { merge: true }).catch(() => undefined)
+    )
+  );
   if (typeof contrato.imagenCampaniaUrl === "string" && contrato.imagenCampaniaUrl) {
     await borrarObjetoR2(contrato.imagenCampaniaUrl);
   }

@@ -49,6 +49,15 @@ export interface FotoCampania {
 export interface Contrato {
   id: string;
   panel_id: string;
+  /** Paneles adicionales de esta misma campaña, cuando el cliente
+   *  contrata 2+ paneles en un solo contrato (ej. "quiero cotizar estos
+   *  dos paneles juntos"). panel_id se sigue guardando como el primero
+   *  de la lista, por compatibilidad con todo el código que todavía lee
+   *  panel_id solo -- panel_ids es la lista completa (incluye al
+   *  primero). Usa panelesDeContrato() en vez de leer estos campos
+   *  directo, para que ambos casos (1 panel viejo, 2+ paneles nuevo)
+   *  funcionen igual. */
+  panel_ids?: string[];
   cliente_id: string;
   cara?: "A" | "B" | null;
   inicio: string; // "YYYY-MM-DD"
@@ -123,6 +132,15 @@ export function estadoCampana(contrato: Contrato, hoy: Date = new Date()): Campa
   if (hoy < inicio) return "Programada";
   if (hoy > fin) return "Finalizada";
   return "Activa";
+}
+
+/** Lista completa de paneles de una campaña -- si el contrato tiene
+ *  panel_ids (campaña multi-panel) usa esa lista, si no, cae al panel_id
+ *  único de siempre. Usar SIEMPRE esto en vez de leer panel_id/panel_ids
+ *  directo, así cualquier pantalla nueva soporta multi-panel gratis. */
+export function panelesDeContrato(contrato: Pick<Contrato, "panel_id" | "panel_ids">): string[] {
+  if (contrato.panel_ids && contrato.panel_ids.length > 0) return contrato.panel_ids;
+  return contrato.panel_id ? [contrato.panel_id] : [];
 }
 
 /** Solicitud de nueva campaña enviada por el cliente — el dueño la revisa

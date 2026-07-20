@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
-import { estadoCampana } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { BrandThumb } from "../BrandThumb";
 import { db } from "../../config/firebase";
@@ -230,7 +230,10 @@ export default function MisCampanas({ contratos, paneles, clienteNombre, onAbrir
           const estado = estadoCampana(c);
           const badge = BADGE[estado] ?? BADGE.Finalizada;
           const pct = progreso(c);
-          const panelNombre = paneles[c.panel_id]?.nombre ?? c.panel_id;
+          const idsPanelesCampana = panelesDeContrato(c);
+          const panelNombre = idsPanelesCampana.length > 1
+            ? idsPanelesCampana.map((id) => paneles[id]?.nombre ?? id).join(" + ")
+            : (paneles[c.panel_id]?.nombre ?? c.panel_id);
           return (
             <div
               key={c.id}

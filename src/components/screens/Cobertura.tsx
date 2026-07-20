@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
+import { panelesDeContrato } from "../../types";
 import { cargarLeaflet } from "../../utils/leaflet";
 
 interface Props {
@@ -56,7 +57,12 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
   const [mapError, setMapError] = useState(false);
 
   const lista = useMemo<PanelConUso[]>(() => {
-    const usados = new Map(contratos.map((contrato) => [contrato.panel_id, contrato]));
+    // Un contrato multi-panel ocupa TODOS sus paneles en el mapa, no
+    // solo el primero.
+    const usados = new Map<string, Contrato>();
+    contratos.forEach((contrato) => {
+      panelesDeContrato(contrato).forEach((panelId) => usados.set(panelId, contrato));
+    });
     return Object.values(paneles)
       .map((panel) => ({
         ...panel,

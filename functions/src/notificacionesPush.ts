@@ -103,8 +103,18 @@ export const recordatorioVencimientoCampanas = onSchedule(
       const clienteId = String(contrato.cliente_id || "");
       if (!clienteId) continue;
 
-      const panelSnap = contrato.panel_id ? await db.doc(`paneles/${contrato.panel_id}`).get() : null;
-      const nombrePanel = panelSnap?.exists ? String(panelSnap.data()?.nombre || "tu panel") : "tu panel";
+      // Campaña multi-panel: junta los nombres de todos los paneles del
+      // contrato, no solo el primero.
+      const panelIdsContrato: string[] = Array.isArray(contrato.panel_ids) && contrato.panel_ids.length > 0
+        ? contrato.panel_ids
+        : (contrato.panel_id ? [contrato.panel_id] : []);
+      const nombresPaneles = await Promise.all(
+        panelIdsContrato.map(async (panelId) => {
+          const panelSnap = await db.doc(`paneles/${panelId}`).get();
+          return panelSnap.exists ? String(panelSnap.data()?.nombre || "") : "";
+        })
+      );
+      const nombrePanel = nombresPaneles.filter(Boolean).join(" + ") || "tu panel";
 
       await enviarPushACliente(clienteId, {
         title: "Tu campaña está por vencer",
