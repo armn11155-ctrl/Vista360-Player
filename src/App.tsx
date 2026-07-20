@@ -37,7 +37,6 @@ const NuevaCampana = lazy(() => import("./components/screens/NuevaCampana"));
 const Portafolio = lazy(() => import("./components/screens/Portafolio"));
 const Cobertura = lazy(() => import("./components/screens/Cobertura"));
 const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
-const Impacto = lazy(() => import("./components/screens/Impacto"));
 const Contactanos = lazy(() => import("./components/screens/Contactanos"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
 const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
@@ -61,7 +60,6 @@ function precargarPantallas() {
   void import("./components/screens/Portafolio");
   void import("./components/screens/Cobertura");
   void import("./components/screens/MisPantallas");
-  void import("./components/screens/Impacto");
   void import("./components/screens/Contactanos");
   void import("./components/screens/AnaliticaClientes");
   void import("./components/screens/SolicitudesCampana");
@@ -79,7 +77,6 @@ type View =
   | "nueva"
   | "portafolio"
   | "mispantallas"
-  | "impacto"
   | "contactanos"
   | "analitica"
   | "solicitudes"
@@ -104,7 +101,6 @@ const VIEW_COLORS: Record<View, string> = {
   portafolio: "#0B1220",
   cobertura: "#0B1220",
   mispantallas: "#0B1220",
-  impacto: "#0B1220",
   contactanos: "#0B1220",
   analitica: "#0B1220",
   solicitudes: "#0B1220",
@@ -122,7 +118,6 @@ const VIEW_COLORS: Record<View, string> = {
 const SIDEBAR_VIEWS = new Set<View>([
   "portafolio",
   "mispantallas",
-  "impacto",
   "contactanos",
   "analitica",
   "solicitudes",
@@ -453,9 +448,6 @@ function AuthenticatedApp({
         break;
       case "mispantallas":
         content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} onMenuClick={() => setSidebarOpen(true)} />;
-        break;
-      case "impacto":
-        content = <Impacto onBack={() => setView("inicio")} />;
         break;
       case "contactanos":
         content = <Contactanos cliente={cliente} onBack={() => setView("inicio")} />;

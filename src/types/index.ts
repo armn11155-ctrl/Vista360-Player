@@ -79,6 +79,11 @@ export interface Panel {
   lng?: number;
   direccion?: string;
   icono?: string;
+  /** Estimado de personas/vehículos que pasan por este panel en un
+   *  día promedio (dato aproximado que carga el admin, no un sensor
+   *  real) -- se usa para calcular el "Impacto aproximado" de cada
+   *  campaña en ese panel. */
+  impactoDiario?: number;
 }
 
 /**

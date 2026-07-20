@@ -16,6 +16,7 @@ interface ActualizarPanelData {
   lng?: number | string;
   estado?: string;
   icono?: string;
+  impactoDiario?: number | string;
 }
 
 const ESTADOS_VALIDOS = new Set(["Disponible", "Ocupado", "Mantenimiento", "Libre"]);
@@ -69,6 +70,7 @@ export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
   const estado = ESTADOS_VALIDOS.has(estadoRaw) ? estadoRaw : undefined;
   const lat = numeroOpcional(request.data.lat);
   const lng = numeroOpcional(request.data.lng);
+  const impactoDiario = numeroOpcional(request.data.impactoDiario);
 
   if (!nombre) {
     throw new HttpsError("invalid-argument", "El nombre del panel es obligatorio.");
@@ -87,6 +89,7 @@ export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
       lat: lat !== undefined ? lat : FieldValue.delete(),
       lng: lng !== undefined ? lng : FieldValue.delete(),
       icono: icono || FieldValue.delete(),
+      impactoDiario: impactoDiario !== undefined ? impactoDiario : FieldValue.delete(),
       updatedAt: FieldValue.serverTimestamp(),
     },
     { merge: true }

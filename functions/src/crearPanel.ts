@@ -15,6 +15,7 @@ interface CrearPanelData {
   lng?: number | string;
   estado?: string;
   icono?: string;
+  impactoDiario?: number | string;
 }
 
 const ESTADOS_VALIDOS = new Set(["Disponible", "Ocupado", "Mantenimiento", "Libre"]);
@@ -58,6 +59,7 @@ export const crearPanel = onCall<CrearPanelData>(async (request) => {
   const estado = ESTADOS_VALIDOS.has(estadoRaw) ? estadoRaw : "Disponible";
   const lat = numeroOpcional(request.data.lat);
   const lng = numeroOpcional(request.data.lng);
+  const impactoDiario = numeroOpcional(request.data.impactoDiario);
 
   if (!nombre) {
     throw new HttpsError("invalid-argument", "El nombre del panel es obligatorio.");
@@ -76,6 +78,7 @@ export const crearPanel = onCall<CrearPanelData>(async (request) => {
     ...(lat !== undefined ? { lat } : {}),
     ...(lng !== undefined ? { lng } : {}),
     ...(icono ? { icono } : {}),
+    ...(impactoDiario !== undefined ? { impactoDiario } : {}),
     createdAt: FieldValue.serverTimestamp(),
   });
 

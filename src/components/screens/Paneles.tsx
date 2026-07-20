@@ -59,6 +59,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
   const [estado, setEstado] = useState<PanelEstado>("Disponible");
+  const [impactoDiario, setImpactoDiario] = useState("");
   const [creando, setCreando] = useState(false);
   const [error, setError] = useState("");
   const [mensajeOk, setMensajeOk] = useState("");
@@ -152,6 +153,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setLat("");
     setLng("");
     setEstado("Disponible");
+    setImpactoDiario("");
     if (markerRef.current && mapRef.current) {
       mapRef.current.removeLayer(markerRef.current);
       markerRef.current = null;
@@ -169,6 +171,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setLat(p.lat !== undefined ? String(p.lat) : "");
     setLng(p.lng !== undefined ? String(p.lng) : "");
     setEstado(p.estado ?? "Disponible");
+    setImpactoDiario(p.impactoDiario !== undefined ? String(p.impactoDiario) : "");
     setMostrarForm(true);
 
     // Si el mapa ya estaba abierto (se toco otro panel sin cerrar el
@@ -201,9 +204,10 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setMensajeOk("");
     setCreando(true);
     try {
+      const impactoNum = numeroCoordenada(impactoDiario);
       if (panelEditando) {
         const fn = httpsCallable<
-          { panelId: string; nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
+          { panelId: string; nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
           { ok: boolean }
         >(cloudFunctions, "actualizarPanel");
         await fn({
@@ -215,11 +219,12 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           lat: numeroCoordenada(lat),
           lng: numeroCoordenada(lng),
           estado,
+          impactoDiario: impactoNum,
         });
         setMensajeOk("Panel actualizado.");
       } else {
         const fn = httpsCallable<
-          { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string },
+          { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
           { id: string }
         >(cloudFunctions, "crearPanel");
         await fn({
@@ -230,6 +235,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           lat: numeroCoordenada(lat),
           lng: numeroCoordenada(lng),
           estado,
+          impactoDiario: impactoNum,
         });
         setMensajeOk("Panel creado.");
       }
@@ -307,6 +313,20 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                   <option key={e} value={e}>{e}</option>
                 ))}
               </select>
+              <div>
+                <input
+                  value={impactoDiario}
+                  onChange={(e) => setImpactoDiario(e.target.value)}
+                  placeholder="Impacto diario aprox. (personas o vehículos, opcional)"
+                  inputMode="numeric"
+                  style={inputStyle}
+                />
+                <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 5, lineHeight: 1.4 }}>
+                  Estimado de cuánta gente pasa por acá en un día -- se usa para calcular el
+                  impacto aproximado de las campañas en este panel. No hace falta un sensor,
+                  puede ser un número de referencia (tránsito de la zona, etc).
+                </div>
+              </div>
             </div>
             {error && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{error}</div>}
             <button

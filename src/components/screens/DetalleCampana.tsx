@@ -67,6 +67,15 @@ function HeaderIcon({ type }: { type: "calendar" | "pin" }) {
   );
 }
 
+/** Dias totales del contrato (inclusive) -- se usa para estimar el
+ *  impacto total de la campaña a partir del transito diario del panel. */
+function diasCampana(contrato: Contrato): number {
+  const inicio = new Date(`${contrato.inicio}T00:00:00`).getTime();
+  const fin = new Date(`${contrato.fin}T00:00:00`).getTime();
+  if (Number.isNaN(inicio) || Number.isNaN(fin) || fin < inicio) return 0;
+  return Math.round((fin - inicio) / 86400000) + 1;
+}
+
 function EmptyReportsIcon() {
   return (
     <svg width="42" height="42" viewBox="0 0 48 48" fill="none" aria-hidden="true">
@@ -203,6 +212,45 @@ export default function DetalleCampana({ contrato, panel, clienteNombre, cliente
                 <div>Monto: <strong style={{ color: "#0B1220" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
                 <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
               </div>
+            </div>
+
+            {/* Impacto aproximado -- reemplaza a la antigua pantalla
+                "Impacto" (que dependia de un sensor que nunca se
+                instaló). Con el estimado de tránsito diario que carga
+                el admin en el panel, se calcula un numero aproximado
+                de personas/vehículos alcanzados durante toda la
+                campaña -- no es una medición real, por eso se marca
+                bien claro como "aproximado". */}
+            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Impacto aproximado</div>
+              {panel?.impactoDiario ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{
+                    width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
+                    background: "#EEF4FF", display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1220" }}>
+                      ≈ {(panel.impactoDiario * diasCampana(contrato)).toLocaleString("es-PE")} personas
+                    </div>
+                    <div style={{ fontSize: 12, color: "#6B7280" }}>
+                      Estimado para los {diasCampana(contrato)} días de la campaña (~{panel.impactoDiario.toLocaleString("es-PE")}/día en esta ubicación)
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12.5, color: "#6B7280", lineHeight: 1.5 }}>
+                  Aún no hay un estimado de tránsito cargado para este panel. Cuando el admin lo
+                  agregue, acá vas a ver el impacto aproximado de esta campaña.
+                </div>
+              )}
             </div>
           </>
         )}
