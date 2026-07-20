@@ -195,7 +195,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: brandLoaderFloat 2.8s ease-in-out 2.4s infinite;
+    animation: brandLoaderFloat 2.8s ease-in-out calc(2.4s + var(--brand-loader-delay, 0s)) infinite;
   }
   .brand-loader-mark::before {
     content: "";
@@ -206,7 +206,7 @@
     filter: blur(18px);
     opacity: .35;
     transform: scale(.82);
-    animation: brandLoaderGlow 2.8s ease-in-out 2.4s infinite;
+    animation: brandLoaderGlow 2.8s ease-in-out calc(2.4s + var(--brand-loader-delay, 0s)) infinite;
   }
   .brand-loader-dark .brand-loader-mark::before {
     background: rgba(15,23,42,.055);
@@ -235,7 +235,7 @@
     overflow: hidden;
     border-radius: 24px;
     clip-path: inset(100% 0 0 0);
-    animation: brandLoaderLiquidRise 2.4s cubic-bezier(.45,.05,.25,1) 1 forwards;
+    animation: brandLoaderLiquidRise 2.4s cubic-bezier(.45,.05,.25,1) var(--brand-loader-delay, 0s) 1 forwards;
   }
   .brand-loader-logo-fill {
     filter: brightness(1.08) contrast(1.03);
