@@ -1136,10 +1136,10 @@
   select.reports-panel-select {
     width: 100%;
     min-height: 40px;
-    border: 1px solid #E2E8F0;
+    border: 1px solid rgba(255,255,255,.14);
     border-radius: 8px;
-    background-color: #F8FAFC;
-    color: #0B1220;
+    background-color: rgba(255,255,255,.045);
+    color: #EAEFF7;
     padding: 0 30px 0 12px;
     font-size: 13px;
     font-weight: 700;
@@ -1147,15 +1147,15 @@
     -webkit-appearance: none;
     cursor: pointer;
     font-family: inherit;
-    color-scheme: light;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230877FF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234C8DFF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
   }
   select.reports-panel-select:focus {
     outline: none;
-    border-color: #0877FF;
-    box-shadow: 0 0 0 3px rgba(15,23,42,.12);
+    border-color: #4C8DFF;
+    box-shadow: 0 0 0 3px rgba(76,141,255,.28);
   }
   .reports-filter-stack {
     display: flex;
@@ -1411,15 +1411,19 @@
     margin-top: 18px;
   }
   .report-admin-panel {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
+    /* Fondo oscuro a propósito -- para diferenciar de un vistazo el
+       bloque de "generar reporte" (solo admin) del resto de la
+       pantalla, que es clara. Degradado sutil en vez de negro plano
+       para que se vea elegante y no como un simple recuadro apagado. */
+    background: linear-gradient(165deg, #0F1626 0%, #060910 100%);
+    border: 1px solid rgba(255,255,255,.08);
     border-radius: 20px;
     padding: 18px 18px 16px;
     /* El margen de arriba ahora lo da el padding-top de
        .reports-screen-body (parejo para admin y cliente) -- antes
        este margin-top de 10px se sumaba aparte solo en la vista admin. */
     margin: 0 0 14px;
-    box-shadow: 0 18px 42px rgba(15,23,42,0.07);
+    box-shadow: 0 24px 48px rgba(0,0,0,.45);
   }
   .report-admin-header {
     display: flex;
@@ -1437,11 +1441,11 @@
     justify-content: center;
     color: #fff;
     background: linear-gradient(135deg, #0877FF, #2F6FED);
-    box-shadow: 0 10px 18px rgba(5,10,18,.16);
+    box-shadow: 0 10px 20px rgba(8,119,255,.35);
   }
   .report-admin-copy { margin-bottom: 0; padding-top: 1px; }
-  .report-admin-title { color: #0B1220; font-size: 14.5px; font-weight: 800; }
-  .report-admin-sub { color: #64748B; font-size: 11.5px; margin-top: 3px; line-height: 1.4; }
+  .report-admin-title { color: #F4F7FC; font-size: 14.5px; font-weight: 800; }
+  .report-admin-sub { color: #93A0B8; font-size: 11.5px; margin-top: 3px; line-height: 1.4; }
   .report-admin-controls { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
   .report-month-field {
     display: flex;
@@ -1451,7 +1455,7 @@
     flex: 1 1 260px;
   }
   .report-month-field span {
-    color: #64748B;
+    color: #8B96AC;
     font-size: 11px;
     font-weight: 700;
   }
@@ -1469,23 +1473,23 @@
   .report-month-selects {
     display: flex;
     gap: 6px;
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.10);
     border-radius: 12px;
     padding: 4px;
   }
   .report-month-select {
     min-height: 40px;
-    border: 1px solid #E2E8F0;
+    border: 1px solid rgba(255,255,255,.14);
     border-radius: 8px;
-    background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230877FF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+    background: rgba(255,255,255,.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234C8DFF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
     -webkit-appearance: none;
     appearance: none;
-    color: #0B1220;
+    color: #EAEFF7;
     padding: 0 22px 0 10px;
     font-size: 13px;
     font-weight: 700;
-    color-scheme: light;
+    color-scheme: dark;
     flex: 1 1 auto;
     min-width: 0;
     cursor: pointer;
@@ -1493,8 +1497,8 @@
   }
   .report-month-select:focus {
     outline: none;
-    border-color: #0877FF;
-    box-shadow: 0 0 0 3px rgba(15,23,42,.12);
+    border-color: #4C8DFF;
+    box-shadow: 0 0 0 3px rgba(76,141,255,.28);
   }
   .report-month-select-dia {
     flex: 0 0 64px;
@@ -1545,9 +1549,9 @@
   }
   .report-auto-data span {
     border-radius: 999px;
-    background: #F1F5F9;
-    border: 1px solid #E2E8F0;
-    color: #475569;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    color: #C7D2E3;
     font-size: 11px;
     line-height: 1.35;
     padding: 6px 9px;
@@ -1563,8 +1567,8 @@
     aspect-ratio: 1 / 1;
     border-radius: 10px;
     overflow: hidden;
-    background: #F1F5F9;
-    border: 1px solid #E2E8F0;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.10);
   }
   .report-photo-thumb img {
     width: 100%;
@@ -1596,7 +1600,7 @@
     flex: 1 1 100%;
   }
   .report-campaign-field span {
-    color: #64748B;
+    color: #8B96AC;
     font-size: 11px;
     font-weight: 700;
   }
@@ -1611,14 +1615,14 @@
   }
   .report-campaign-panels-hint {
     font-size: 11.5px;
-    color: #64748B;
+    color: #8B96AC;
     line-height: 1.5;
   }
   .report-campaign-panel-box {
-    border: 1px solid #E2E8F0;
+    border: 1px solid rgba(255,255,255,.10);
     border-radius: 12px;
     padding: 12px;
-    background: #F8FAFC;
+    background: rgba(255,255,255,.035);
   }
   .report-campaign-panel-header {
     display: flex;
@@ -1630,11 +1634,11 @@
   .report-campaign-panel-name {
     font-size: 13px;
     font-weight: 800;
-    color: #0B1220;
+    color: #F1F5F9;
   }
   .report-campaign-panel-sub {
     font-size: 11px;
-    color: #64748B;
+    color: #8B96AC;
     margin-top: 2px;
   }
   .report-campaign-panel-add {
@@ -1645,9 +1649,9 @@
     min-height: 34px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px dashed rgba(8,119,255,.38);
-    background: rgba(8,119,255,.06);
-    color: #0877FF;
+    border: 1px dashed rgba(76,141,255,.55);
+    background: rgba(76,141,255,.12);
+    color: #6EA8FF;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
@@ -1674,7 +1678,7 @@
     letter-spacing: .1px;
     padding: 0 22px;
     cursor: pointer;
-    box-shadow: 0 12px 22px rgba(5,10,18,.18);
+    box-shadow: 0 14px 28px rgba(8,119,255,.35);
     transition: box-shadow .15s ease, transform .15s ease;
   }
   .report-generate-btn:active { transform: translateY(1px); }
@@ -1693,6 +1697,19 @@
   .report-admin-status.error {
     color: #DC2626;
     background: rgba(239,68,68,.08);
+  }
+  /* Dentro del panel oscuro el verde/rojo normal (pensados para fondo
+     claro) casi no se leían -- versión más clara solo para ese
+     contexto, sin tocar el estado normal que usan ReportCard.tsx y el
+     error de "no se pudo cargar la lista" (esos sí quedan en fondo
+     claro). */
+  .report-admin-panel .report-admin-status.ok {
+    color: #4ADE80;
+    background: rgba(34,197,94,.16);
+  }
+  .report-admin-panel .report-admin-status.error {
+    color: #F87171;
+    background: rgba(239,68,68,.16);
   }
   .report-empty-state {
     margin-top: 16px;
