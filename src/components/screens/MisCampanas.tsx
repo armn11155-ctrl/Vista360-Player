@@ -80,7 +80,72 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     .sort((a, b) => ORDEN_ESTADO[estadoCampana(a)] - ORDEN_ESTADO[estadoCampana(b)]);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
-  const informeDelMes = informesState.status === "ready" ? informesState.informes.find((i) => i.mes === mesActual) : undefined;
+  // Antes esto era un solo mensaje para TODO el cliente ("ya se envió
+  // / falta el informe de este mes"), sin distinguir ni campaña ni
+  // panel -- con un cliente de 2+ campañas activas (o una campaña de
+  // 2+ paneles) ese mensaje único no decía nada útil. Ahora se arma
+  // una fila por cada campaña ACTIVA, y si esa campaña tiene 2+
+  // paneles, dice puntualmente cuál panel falta (o si ya están todos).
+  const informesDelMes = informesState.status === "ready"
+    ? informesState.informes.filter((i) => i.mes === mesActual)
+    : [];
+  const campanasActivasMes = contratos.filter((c) => estadoCampana(c) === "Activa");
+  const estadosMesCampanas = campanasActivasMes.map((c) => {
+    const idsPaneles = panelesDeContrato(c);
+    const panelNombreLocal = idsPaneles.length > 1
+      ? idsPaneles.map((id) => paneles[id]?.nombre ?? id).join(" + ")
+      : (paneles[c.panel_id]?.nombre ?? c.panel_id);
+    const nombreCampana = formatCampaignName(c.nombre || panelNombreLocal);
+    const informesCampana = informesDelMes.filter((i) => i.contratoId === c.id);
+
+    if (idsPaneles.length <= 1) {
+      const listo = informesCampana.length > 0;
+      return {
+        id: c.id,
+        listo,
+        texto: listo
+          ? `${nombreCampana}: informe de este mes enviado`
+          : `${nombreCampana}: falta generar el informe de este mes`,
+      };
+    }
+
+    // Campaña con 2+ paneles -- se junta que paneles quedaron
+    // cubiertos entre TODOS los reportes de este mes de esta campaña
+    // (puede haber más de uno por mes, uno por día). Reportes viejos
+    // sin ese detalle (generados antes de que existiera este
+    // seguimiento) se toman como "cubre todo", para no mostrar un
+    // falso "falta" sobre datos que no se pueden saber.
+    const panelesCubiertos = new Set<string>();
+    let huboInformeSinDetalle = false;
+    informesCampana.forEach((i) => {
+      if (i.panelesIncluidos && i.panelesIncluidos.length > 0) {
+        i.panelesIncluidos.forEach((id) => panelesCubiertos.add(id));
+      } else if (informesCampana.length > 0 && (!i.panelesIncluidos || i.panelesIncluidos.length === 0)) {
+        huboInformeSinDetalle = true;
+      }
+    });
+
+    if (huboInformeSinDetalle || panelesCubiertos.size >= idsPaneles.length) {
+      return {
+        id: c.id,
+        listo: true,
+        texto: `${nombreCampana}: informe de este mes enviado (${idsPaneles.length} paneles)`,
+      };
+    }
+    if (panelesCubiertos.size === 0) {
+      return {
+        id: c.id,
+        listo: false,
+        texto: `${nombreCampana}: falta subir los ${idsPaneles.length} paneles de este mes`,
+      };
+    }
+    const faltantes = idsPaneles.filter((id) => !panelesCubiertos.has(id)).map((id) => paneles[id]?.nombre ?? id);
+    return {
+      id: c.id,
+      listo: false,
+      texto: `${nombreCampana}: falta subir ${faltantes.join(", ")} este mes`,
+    };
+  });
 
   async function eliminarCampana(c: Contrato, panelNombre: string) {
     if (!cloudFunctions || eliminandoId) return;
@@ -255,9 +320,9 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
       {/* List */}
       <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
-        {isAdmin && (
-          <div className={`mis-campanas-month-status ${informeDelMes ? "is-sent" : "is-pending"}`}>
-            {informeDelMes ? (
+        {isAdmin && estadosMesCampanas.map((e) => (
+          <div key={e.id} className={`mis-campanas-month-status ${e.listo ? "is-sent" : "is-pending"}`}>
+            {e.listo ? (
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" />
                 <path d="m8 12 2.6 2.6L16.5 9" />
@@ -269,13 +334,9 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                 <path d="M12 17h.01" />
               </svg>
             )}
-            <span>
-              {informeDelMes
-                ? `Informe de ${informeDelMes.mesLabel} enviado correctamente`
-                : "Falta generar y enviar el informe de este mes"}
-            </span>
+            <span>{e.texto}</span>
           </div>
-        )}
+        ))}
 
         {filtradas.length === 0 && (
           <div className="mis-campanas-empty" style={{ textAlign: "center", color: "#6B7280", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>

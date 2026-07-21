@@ -17,6 +17,11 @@ export interface ReporteElemento {
   titulo: string;
   fotos: FotoInput[];
   ubicacion?: string;
+  /** Solo se llena cuando el elemento viene de panelesFotos (reporte
+   *  por campaña) -- se usa despues para guardar en el informe cuales
+   *  paneles quedaron cubiertos ese dia (ver panelesIncluidos mas
+   *  abajo). En el flujo viejo (sin campaña) queda undefined. */
+  panelId?: string;
 }
 
 interface ClienteReporte {
@@ -781,6 +786,7 @@ async function cargarElementosSubidosPorPanel(
       titulo: nombre || "Panel",
       ubicacion: ubicacion || nombre || "Panel",
       fotos,
+      ...(panelId ? { panelId } : {}),
     });
   }
   return elementos;
@@ -866,6 +872,14 @@ export const generarReporteCliente = onCall(
       // y DetalleCampana.tsx para el título).
       const contratoNombre = contratoNombreManual || elementos.map((e) => e.titulo).join(" + ") || undefined;
 
+      // Qué paneles de la campaña quedaron con fotos en ESTE reporte
+      // (solo se llena en el flujo por campaña, panelId viene de
+      // cargarElementosSubidosPorPanel) -- MisCampanas.tsx lo usa para
+      // la barra de estado del mes, para poder decir "falta el panel
+      // X" en vez de solo "falta el informe" cuando la campaña tiene
+      // 2+ paneles.
+      const panelesIncluidos = elementos.map((e) => e.panelId).filter((id): id is string => Boolean(id));
+
       const cliente: ClienteReporte = {
         id: clienteId,
         nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
@@ -905,6 +919,7 @@ export const generarReporteCliente = onCall(
           ...(panelId ? { panel_id: panelId } : { panel_id: FieldValue.delete() }),
           ...(contratoId ? { contrato_id: contratoId } : { contrato_id: FieldValue.delete() }),
           ...(contratoNombre ? { contratoNombre } : { contratoNombre: FieldValue.delete() }),
+          ...(panelesIncluidos.length > 0 ? { panelesIncluidos } : { panelesIncluidos: FieldValue.delete() }),
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }

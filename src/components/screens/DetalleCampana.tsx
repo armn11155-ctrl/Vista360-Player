@@ -120,7 +120,16 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   // pantalla de Reportes) — se muestra tambien aca para no tener que
   // salir de la campaña a buscarlo.
   const informesState = useInformes(contrato.cliente_id);
-  const informes = informesState.status === "ready" ? informesState.informes : [];
+  // Solo los reportes de ESTA campaña -- useInformes trae todos los del
+  // cliente juntos (para la pantalla Reportes.tsx), pero acá antes se
+  // mostraban sin filtrar y aparecía la lista completa de reportes del
+  // cliente en cualquier campaña que abrieras. contratoId lo guarda
+  // generarReporteCliente.ts desde que el reporte se genera por
+  // campaña -- reportes viejos sin ese dato no van a aparecer acá (sí
+  // siguen viéndose en la pantalla Reportes.tsx general).
+  const informes = informesState.status === "ready"
+    ? informesState.informes.filter((i) => i.contratoId === contrato.id)
+    : [];
   const keysInformes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
   const urlsInformesFirmadas = useSignedUrls(keysInformes);
 
@@ -358,7 +367,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
                   <EmptyReportsIcon />
                 </div>
-                <div style={{ fontSize: 13, color: "#6B7280" }}>Aún no hay un reporte PDF generado para este cliente.</div>
+                <div style={{ fontSize: 13, color: "#6B7280" }}>Aún no hay un reporte PDF generado para esta campaña.</div>
               </div>
             )}
 

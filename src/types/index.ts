@@ -231,4 +231,14 @@ export interface InformeCliente {
    *  para saber si el cliente ya revisó su reporte o no. */
   vistoPorCliente?: boolean;
   vistoEn?: string | null;
+  /** Id de la campaña (contrato) a la que pertenece este reporte --
+   *  permite filtrar la lista de reportes por campaña individual (ver
+   *  DetalleCampana.tsx) en vez de mostrar siempre todos los reportes
+   *  del cliente juntos. */
+  contratoId?: string;
+  /** Ids de los paneles de la campaña que tuvieron fotos en ESTE
+   *  reporte -- solo se llena en campañas de 2+ paneles generadas con
+   *  el flujo por panel. Usado en MisCampanas.tsx para la barra de
+   *  estado del mes (saber si falta subir algún panel). */
+  panelesIncluidos?: string[];
 }

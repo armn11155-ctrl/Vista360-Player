@@ -23,6 +23,8 @@ interface InformeListado {
   contratoNombre?: string;
   vistoPorCliente?: boolean;
   vistoEn?: string | null;
+  contratoId?: string;
+  panelesIncluidos?: string[];
 }
 
 const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
@@ -146,6 +148,8 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
           ...(infoData.contratoNombre ? { contratoNombre: String(infoData.contratoNombre) } : {}),
           vistoPorCliente: Boolean(infoData.vistoPorCliente),
           vistoEn: infoData.vistoEn?.toDate ? infoData.vistoEn.toDate().toISOString() : null,
+          ...(infoData.contrato_id ? { contratoId: String(infoData.contrato_id) } : {}),
+          ...(Array.isArray(infoData.panelesIncluidos) ? { panelesIncluidos: infoData.panelesIncluidos.map(String) } : {}),
         };
       })
     );
