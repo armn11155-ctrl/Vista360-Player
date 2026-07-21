@@ -457,7 +457,14 @@ async function paginaEvidenciaOscura(
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
     .text(fechaCorta(foto.fecha), cardX, cardY + 202, { width: cardW, align: "center" });
 
-  drawFooterLine(doc, pad2(pageNum), true, false);
+  // Antes usaba drawFooterLine (pie fino) mientras que la pagina
+  // blanca de al lado usa drawFooterBar (pie de barra) -- distinta
+  // altura para el texto "VISTA360 - REPORTE FOTOGRAFICO" entre una
+  // pagina y otra, se notaba feo al alternar blanco/negro. Ahora las
+  // dos usan drawFooterBar, misma altura siempre (la barra queda del
+  // mismo color que el fondo oscuro, asi que no se nota como barra,
+  // solo alinea el texto).
+  drawFooterBar(doc, pad2(pageNum));
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.

@@ -1136,10 +1136,10 @@
   select.reports-panel-select {
     width: 100%;
     min-height: 40px;
-    border: 1px solid rgba(255,255,255,.14);
+    border: 1px solid #E2E8F0;
     border-radius: 8px;
-    background-color: rgba(255,255,255,.045);
-    color: #EAEFF7;
+    background-color: #FFFFFF;
+    color: #0B1220;
     padding: 0 30px 0 12px;
     font-size: 13px;
     font-weight: 700;
@@ -1147,15 +1147,15 @@
     -webkit-appearance: none;
     cursor: pointer;
     font-family: inherit;
-    color-scheme: dark;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234C8DFF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    color-scheme: light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230877FF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
   }
   select.reports-panel-select:focus {
     outline: none;
-    border-color: #4C8DFF;
-    box-shadow: 0 0 0 3px rgba(76,141,255,.28);
+    border-color: #0877FF;
+    box-shadow: 0 0 0 3px rgba(15,23,42,.12);
   }
   .reports-filter-stack {
     display: flex;
@@ -1441,7 +1441,7 @@
     justify-content: center;
     color: #fff;
     background: linear-gradient(135deg, #0877FF, #2F6FED);
-    box-shadow: 0 10px 20px rgba(8,119,255,.35);
+    box-shadow: 0 10px 18px rgba(5,10,18,.16);
   }
   .report-admin-copy { margin-bottom: 0; padding-top: 1px; }
   .report-admin-title { color: #F4F7FC; font-size: 14.5px; font-weight: 800; }
@@ -1480,16 +1480,16 @@
   }
   .report-month-select {
     min-height: 40px;
-    border: 1px solid rgba(255,255,255,.14);
+    border: 1px solid #E2E8F0;
     border-radius: 8px;
-    background: rgba(255,255,255,.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234C8DFF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+    background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230877FF' stroke-width='2.6'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
     -webkit-appearance: none;
     appearance: none;
-    color: #EAEFF7;
+    color: #0B1220;
     padding: 0 22px 0 10px;
     font-size: 13px;
     font-weight: 700;
-    color-scheme: dark;
+    color-scheme: light;
     flex: 1 1 auto;
     min-width: 0;
     cursor: pointer;
@@ -1497,8 +1497,8 @@
   }
   .report-month-select:focus {
     outline: none;
-    border-color: #4C8DFF;
-    box-shadow: 0 0 0 3px rgba(76,141,255,.28);
+    border-color: #0877FF;
+    box-shadow: 0 0 0 3px rgba(15,23,42,.12);
   }
   .report-month-select-dia {
     flex: 0 0 64px;
@@ -1678,7 +1678,7 @@
     letter-spacing: .1px;
     padding: 0 22px;
     cursor: pointer;
-    box-shadow: 0 14px 28px rgba(8,119,255,.35);
+    box-shadow: 0 12px 22px rgba(5,10,18,.18);
     transition: box-shadow .15s ease, transform .15s ease;
   }
   .report-generate-btn:active { transform: translateY(1px); }
