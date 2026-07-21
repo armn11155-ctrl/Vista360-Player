@@ -277,23 +277,32 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
       {/* List */}
       <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
-        {isAdmin && estadosMesCampanas.map((e) => (
-          <div key={e.id} className={`mis-campanas-month-status ${e.listo ? "is-sent" : "is-pending"}`}>
-            {e.listo ? (
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="m8 12 2.6 2.6L16.5 9" />
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v6" />
-                <path d="M12 17h.01" />
-              </svg>
-            )}
-            <span>{e.texto}</span>
+        {/* Un solo cuadro para todas las campañas -- antes era un
+         *  cuadro separado por cada campaña activa, y con varias
+         *  campañas quedaban un montón de cajas apiladas. Ahora es UN
+         *  cuadro con una fila adentro por campaña (se pidió
+         *  explícitamente: "un cuadro nada más, no dos"). */}
+        {isAdmin && estadosMesCampanas.length > 0 && (
+          <div className="mis-campanas-month-status">
+            {estadosMesCampanas.map((e) => (
+              <div key={e.id} className={`mis-campanas-month-status-row ${e.listo ? "is-sent" : "is-pending"}`}>
+                {e.listo ? (
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="m8 12 2.6 2.6L16.5 9" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v6" />
+                    <path d="M12 17h.01" />
+                  </svg>
+                )}
+                <span>{e.texto}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
 
         {filtradas.length === 0 && (
           <div className="mis-campanas-empty" style={{ textAlign: "center", color: "#6B7280", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>

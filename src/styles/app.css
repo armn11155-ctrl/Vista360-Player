@@ -733,26 +733,39 @@
     font-size: 11px;
     margin-top: 5px;
   }
+  /* Un solo cuadro (no uno por campaña) -- adentro va una fila por
+   *  campaña activa (.mis-campanas-month-status-row). max-height +
+   *  scroll para que el cuadro no siga creciendo sin límite si hay
+   *  muchas campañas activas a la vez -- se queda del mismo tamaño y
+   *  ahí adentro se puede hacer scroll. */
   .mis-campanas-month-status {
     width: 100%;
-    min-height: 48px;
+    max-height: 168px;
+    overflow-y: auto;
     margin-bottom: 14px;
-    padding: 11px 13px;
+    padding: 4px 13px;
     border: 1px solid rgba(255,255,255,.11);
     border-radius: 12px;
     background: #050505;
+    box-shadow: 0 16px 30px -22px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.05);
+    box-sizing: border-box;
+  }
+  .mis-campanas-month-status-row {
+    min-height: 48px;
+    padding: 9px 0;
     display: flex;
     align-items: center;
     gap: 9px;
     font-size: 12px;
     line-height: 1.35;
     font-weight: 800;
-    box-shadow: 0 16px 30px -22px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.05);
-    box-sizing: border-box;
   }
-  .mis-campanas-month-status.is-sent { color: #22C55E; }
-  .mis-campanas-month-status.is-pending { color: #EF4444; }
-  .mis-campanas-month-status svg {
+  .mis-campanas-month-status-row + .mis-campanas-month-status-row {
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .mis-campanas-month-status-row.is-sent { color: #22C55E; }
+  .mis-campanas-month-status-row.is-pending { color: #EF4444; }
+  .mis-campanas-month-status-row svg {
     width: 21px;
     height: 21px;
     flex: 0 0 21px;
@@ -761,7 +774,7 @@
     stroke-linecap: round;
     stroke-linejoin: round;
   }
-  .mis-campanas-month-status span { min-width: 0; }
+  .mis-campanas-month-status-row span { min-width: 0; }
   .campaign-renewal-button {
     width: 100%;
     min-height: 48px;
