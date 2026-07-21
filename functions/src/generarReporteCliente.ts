@@ -464,12 +464,12 @@ async function paginaEvidenciaOscura(
   // dos usan drawFooterBar, misma altura siempre (la barra queda del
   // mismo color que el fondo oscuro, asi que no se nota como barra,
   // solo alinea el texto).
-  // Pagina de fondo negro -- la rayita de acento arriba de la barra
-  // (tambien negra) se ve mejor gris/blanca que azul brillante contra
-  // tanto negro, mas elegante y menos "aviso publicitario". La pagina
-  // blanca de al lado (paginaEvidenciaBlanca) SI se queda con el azul
-  // de siempre, ahi si contrasta bien.
-  drawFooterBar(doc, pad2(pageNum), COLORS.muted);
+  // Pagina de fondo negro -- se pidio quitar del todo la rayita de
+  // acento (ni azul ni gris) cuando el fondo es negro -- usando el
+  // mismo color que la barra/fondo (COLORS.bg) la franja se dibuja
+  // igual pero queda invisible, sin alterar la altura del pie (sigue
+  // exactamente alineada con la pagina blanca de al lado).
+  drawFooterBar(doc, pad2(pageNum), COLORS.bg);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
@@ -506,7 +506,10 @@ function drawWebIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h
   doc.ellipse(cx, cy, r * 0.45, r).lineWidth(2).strokeColor(color).stroke();
 }
 
-function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
+function cierre(doc: PDFKit.PDFDocument) {
+  // Ya no recibe totalPages -- se pidio que el cierre no tenga pie de
+  // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
+  // de pagina), asi que ese dato ya no hace falta aca.
   // Cierre: fondo oscuro solido + anillo de marca (diseño original --
   // se probo un fondo con foto de ciudad y no se queria, se revirtio).
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
@@ -550,11 +553,6 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
   drawWebIcon(doc, leftX + 2, y + 3, 22, 22, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
     .text(CONTACTO_WEB, leftX + 40, y);
-
-  doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
-    .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, PAGE.height - 40, { characterSpacing: 1 });
-  doc.font("Helvetica-Bold").fontSize(11).fillColor(COLORS.white)
-    .text(pad2(totalPages), PAGE.width - PAGE.margin - 40, PAGE.height - 40, { width: 40, align: "right" });
 }
 
 /** Pagina divisoria entre paneles de una misma campaña multi-panel --
@@ -672,7 +670,7 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
   }
 
   doc.addPage();
-  cierre(doc, pageNum);
+  cierre(doc);
   doc.end();
 
   await new Promise<void>((resolve, reject) => {

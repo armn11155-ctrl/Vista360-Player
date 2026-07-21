@@ -1649,9 +1649,9 @@
     min-height: 34px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px dashed rgba(8,119,255,.45);
-    background: #FFFFFF;
-    color: #0877FF;
+    border: 1px solid #0877FF;
+    background: #0877FF;
+    color: #FFFFFF;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
