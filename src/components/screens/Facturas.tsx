@@ -4,9 +4,10 @@ import { useFacturas } from "../../hooks/useFacturas";
 import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
-import type { Cliente } from "../../types";
+import type { Cliente, Factura } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { FacturaCard } from "../FacturaCard";
+import { etiquetaMes } from "../../utils/informesGrouping";
 
 const NOMBRES_MES_FACTURAS = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -31,6 +32,28 @@ function anioMesDeFactura(fecha?: string): { anio: string; mes: string } | null 
   const ddmmyyyy = fecha.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (ddmmyyyy) return { anio: ddmmyyyy[3], mes: ddmmyyyy[2].padStart(2, "0") };
   return null;
+}
+
+/** Agrupa las facturas por mes con el mismo criterio visual que
+ *  Reportes.tsx (encabezado "Julio 2026" arriba de cada grupo). Como
+ *  facturasFiltradas ya viene ordenada (por numero, ver useFacturas.ts,
+ *  que en la práctica sigue el orden cronológico), agrupar por
+ *  coincidencias consecutivas alcanza sin tener que reordenar nada. Las
+ *  facturas con fecha en un formato no reconocido caen en el grupo ""
+ *  (encabezado "Sin fecha") en vez de desaparecer. */
+function agruparFacturasPorMes(facturas: Factura[]): { mes: string; items: Factura[] }[] {
+  const grupos: { mes: string; items: Factura[] }[] = [];
+  for (const factura of facturas) {
+    const partes = anioMesDeFactura(factura.fecha_emision);
+    const clave = partes ? `${partes.anio}-${partes.mes}` : "";
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.mes === clave) {
+      ultimo.items.push(factura);
+    } else {
+      grupos.push({ mes: clave, items: [factura] });
+    }
+  }
+  return grupos;
 }
 
 interface Props {
@@ -222,11 +245,17 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
           </div>
         )}
 
-        <div className="reports-list" style={{ marginTop: 12 }}>
-          {facturasFiltradas.map((f) => (
-            <FacturaCard key={f.id} factura={f} cliente={cliente ?? null} isAdmin={isAdmin} />
+        {facturasFiltradas.length > 0 &&
+          agruparFacturasPorMes(facturasFiltradas).map((grupo, indice) => (
+            <div key={`${grupo.mes}-${indice}`}>
+              <div className="reports-month-header">{grupo.mes ? etiquetaMes(grupo.mes) : "Sin fecha"}</div>
+              <div className="reports-list">
+                {grupo.items.map((f) => (
+                  <FacturaCard key={f.id} factura={f} cliente={cliente ?? null} isAdmin={isAdmin} />
+                ))}
+              </div>
+            </div>
           ))}
-        </div>
       </div>
     </div>
   );
