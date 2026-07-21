@@ -567,22 +567,33 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
  *  distintos -- ahora todos usan exactamente este mismo diseño). La
  *  barra oscura del pie de pagina no cambia, sigue negra. */
 function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
+  // Todo el fondo azul, sin la franja blanca de la izquierda que tenia
+  // antes (se pidio que no quede espacio blanco, que sea todo azul).
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.accent);
-
-  const barW = 26;
-  doc.rect(0, 0, barW, PAGE.height).fill(COLORS.white);
 
   doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
-  const leftX = barW + 58;
+  const leftX = PAGE.margin;
   const y0 = PAGE.height * 0.34;
-  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, leftX, y0, COLORS.white, 16);
+  // "PANEL X DE Y" mas grande que antes (16 -> 24) y SOLO con la
+  // rayita de abajo (la que dibuja drawKicker) -- se saco la otra
+  // rayita que habia arriba del todo, quedaba una encima y otra abajo
+  // y se pidio que solo quede la de abajo.
+  const kickerSize = 24;
+  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, leftX, y0, COLORS.white, kickerSize);
+
+  // Mas espacio entre la rayita del kicker y el titulo (antes quedaban
+  // pegados) -- la rayita de drawKicker cae en y0 + kickerSize + 8.
+  const kickerLineY = y0 + kickerSize + 8;
+  const tituloY = kickerLineY + 34;
 
   const maxWidth = PAGE.width - leftX - PAGE.margin - 220;
   const titulo = sinTildes(nombrePanel).toUpperCase();
-  const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 64, 32);
+  // Letra mas grande que antes (era 64/32 de maximo/minimo) ya que
+  // ahora hay mas ancho disponible sin la franja blanca.
+  const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 76, 38);
   doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.white)
-    .text(titulo, leftX, y0 + 42, { width: maxWidth });
+    .text(titulo, leftX, tituloY, { width: maxWidth });
 
   const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
   if (ubicacion && sinTildes(ubicacion) !== titulo) {
@@ -594,11 +605,9 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
     doc.save();
     doc.fillOpacity(0.72);
     doc.font("Helvetica").fontSize(19).fillColor(COLORS.white)
-      .text(sinTildes(ubicacion), leftX, y0 + 42 + tituloHeight + 16, { width: maxWidth });
+      .text(sinTildes(ubicacion), leftX, tituloY + tituloHeight + 18, { width: maxWidth });
     doc.restore();
   }
-
-  doc.moveTo(leftX, y0 - 24).lineTo(leftX + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.white).stroke();
 
   drawFooterBar(doc, pad2(pageNum), COLORS.accentDark);
 }
