@@ -1,10 +1,9 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, cloudFunctions } from "../../config/firebase";
-import { subirEvidenciaR2 } from "../../config/r2";
-import { comprimirImagen } from "../../utils/comprimirImagen";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
+import { formatCampaignName } from "../../utils/campaignName";
 
 interface Props {
   clienteId: string;
@@ -41,13 +40,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   //    solicitud pendiente, la revisa el admin) ──────────────────────
   const [nombre, setNombre] = useState("");
   const [objetivo, setObjetivo] = useState("");
-  const [presupuesto, setPresupuesto] = useState("");
   const [ciudad, setCiudad] = useState("");
   const [comentarios, setComentarios] = useState("");
-  const [imagenCampana, setImagenCampana] = useState<File | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
-  const imagenRef = useRef<HTMLInputElement>(null);
 
   async function enviar() {
     setError("");
@@ -56,18 +52,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
     setEnviando(true);
     try {
-      const subidaCampana = imagenCampana
-        ? await subirEvidenciaR2(await comprimirImagen(imagenCampana))
-        : null;
-      const imagenUrl = subidaCampana?.key ?? "";
       await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
-        nombre: nombre.trim(),
+        nombre: formatCampaignName(nombre),
         objetivo: objetivo.trim(),
-        presupuesto: presupuesto ? Number(presupuesto) : null,
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
-        ...(imagenUrl ? { imagenReferencialUrl: imagenUrl, imagenReferencialFecha: new Date().toISOString().slice(0, 10) } : {}),
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
@@ -88,7 +78,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   const [nombreCampanaAdmin, setNombreCampanaAdmin] = useState("");
   const [inicio, setInicio] = useState("");
   const [fin, setFin] = useState("");
-  const [monto, setMonto] = useState("");
   const [errorAdmin, setErrorAdmin] = useState("");
   const [creando, setCreando] = useState(false);
 
@@ -101,7 +90,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     if (panelIds.length === 0) { setErrorAdmin("Elige al menos un panel."); return; }
     if (!inicio || !fin) { setErrorAdmin("Pon fecha de inicio y de fin."); return; }
     if (fin < inicio) { setErrorAdmin("La fecha de fin no puede ser antes que la de inicio."); return; }
-    if (!monto || Number(monto) < 0) { setErrorAdmin("Pon un monto válido."); return; }
     if (!cloudFunctions) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
     try {
@@ -118,10 +106,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
       await fn({
         clienteId,
         panelIds,
-        nombre: nombreCampanaAdmin.trim() || undefined,
+        nombre: formatCampaignName(nombreCampanaAdmin) || undefined,
         inicio,
         fin,
-        monto: Number(monto),
+        monto: 0,
       });
       onEnviada();
     } catch (error) {
@@ -207,9 +195,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
                 </Field>
               </div>
             </div>
-            <Field label="Monto (S/)">
-              <input style={inputStyle} type="number" value={monto} onChange={(e) => setMonto(e.target.value)} placeholder="Ej. 3500" />
-            </Field>
           </div>
           <div style={{ height: 16 }} />
         </div>
@@ -253,9 +238,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           <Field label="Objetivo de la campaña">
             <input style={inputStyle} value={objetivo} onChange={(e) => setObjetivo(e.target.value)} placeholder="Ej. Dar a conocer nuevo producto" />
           </Field>
-          <Field label="Presupuesto (USD)">
-            <input style={inputStyle} type="number" value={presupuesto} onChange={(e) => setPresupuesto(e.target.value)} placeholder="Ej. 5,000" />
-          </Field>
           <Field label="Ciudad">
             <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
               <option value="">Selecciona una ciudad</option>
@@ -264,26 +246,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
           </Field>
           <Field label="Comentarios adicionales">
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
-          </Field>
-          <Field label="Imagen de referencia">
-            <input
-              ref={imagenRef}
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => setImagenCampana(e.target.files?.[0] ?? null)}
-            />
-            <button
-              type="button"
-              onClick={() => imagenRef.current?.click()}
-              style={{
-                width: "100%", minHeight: 58, border: "1.5px dashed #0877FF", borderRadius: 12,
-                background: "#EEF4FF",
-                color: "#0B3F8A", fontSize: 13, fontWeight: 800, cursor: "pointer",
-              }}
-            >
-              {imagenCampana ? `Lista: ${imagenCampana.name}` : "Elegir foto o diseño de la campaña"}
-            </button>
           </Field>
         </div>
         <div style={{ height: 16 }} />

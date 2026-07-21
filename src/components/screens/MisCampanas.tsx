@@ -10,6 +10,7 @@ import { subirEvidenciaR2 } from "../../config/r2";
 import { comprimirImagen } from "../../utils/comprimirImagen";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { campaignCityImage } from "../../utils/campaignCity";
+import { formatCampaignName } from "../../utils/campaignName";
 
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
 // placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
@@ -55,6 +56,14 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   const [hoverEstrella, setHoverEstrella] = useState<{ id: string; n: number } | null>(null);
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  const [editando, setEditando] = useState<{
+    contrato: Contrato;
+    nombre: string;
+    inicio: string;
+    fin: string;
+    guardando: boolean;
+    error: string;
+  } | null>(null);
   // Desactivado temporalmente (a pedido del cliente) -- no borra la
   // funcionalidad, solo la oculta hasta que se pida reactivarla.
   const mostrarCalificacion = false;
@@ -86,6 +95,47 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       window.alert(err instanceof Error ? err.message : "No se pudo eliminar la campaña.");
     } finally {
       setEliminandoId(null);
+    }
+  }
+
+  function abrirEdicion(c: Contrato, panelNombre: string) {
+    setMenuAbiertoId(null);
+    setEditando({
+      contrato: c,
+      nombre: c.nombre || panelNombre,
+      inicio: c.inicio,
+      fin: c.fin,
+      guardando: false,
+      error: "",
+    });
+  }
+
+  async function guardarEdicion() {
+    if (!editando || !db) return;
+    const nombre = formatCampaignName(editando.nombre);
+    if (!nombre) {
+      setEditando({ ...editando, error: "Escribe el nombre de la campaña." });
+      return;
+    }
+    if (!editando.inicio || !editando.fin) {
+      setEditando({ ...editando, error: "Completa las dos fechas." });
+      return;
+    }
+    if (editando.fin < editando.inicio) {
+      setEditando({ ...editando, error: "La fecha de fin no puede ser anterior al inicio." });
+      return;
+    }
+    setEditando({ ...editando, guardando: true, error: "" });
+    try {
+      await updateDoc(doc(db, "contratos", editando.contrato.id), {
+        nombre,
+        inicio: editando.inicio,
+        fin: editando.fin,
+      });
+      setEditando(null);
+    } catch (error) {
+      const mensaje = error instanceof Error ? error.message : "No se pudo actualizar la campaña.";
+      setEditando({ ...editando, guardando: false, error: mensaje.replace("FirebaseError: ", "") });
     }
   }
 
@@ -237,7 +287,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           // Si el admin le puso nombre a la campaña, ese es el titulo de
           // la tarjeta -- si no, se sigue mostrando el nombre del/los
           // panel(es), como antes.
-          const tituloCampana = c.nombre || panelNombre;
+          const tituloCampana = formatCampaignName(c.nombre || panelNombre);
           const cityStyle = {
             "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
           } as CSSProperties;
@@ -360,6 +410,13 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                       <div className="report-card-menu-dropdown">
                         <button
                           type="button"
+                          className="report-card-menu-item neutral"
+                          onClick={() => abrirEdicion(c, panelNombre)}
+                        >
+                          Editar campaña
+                        </button>
+                        <button
+                          type="button"
                           className="report-card-menu-item"
                           onClick={() => void eliminarCampana(c, panelNombre)}
                           disabled={eliminandoId === c.id}
@@ -390,6 +447,113 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           Nueva campaña
         </button>
       </div>
+
+      {editando && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Editar campaña"
+          onClick={() => !editando.guardando && setEditando(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 520, background: "rgba(3,7,14,.68)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 18,
+          }}
+        >
+          <div
+            onClick={(event) => event.stopPropagation()}
+            style={{
+              width: "100%", maxWidth: 470, borderRadius: 20, background: "#FFFFFF",
+              boxShadow: "0 28px 70px rgba(2,6,23,.34)", padding: 22,
+            }}
+          >
+            <div style={{ fontSize: 19, fontWeight: 850, color: "#0B1220", marginBottom: 5 }}>
+              Editar campaña
+            </div>
+            <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.45, marginBottom: 20 }}>
+              Actualiza el nombre y la vigencia de la campaña.
+            </div>
+
+            <label style={{ display: "block", color: "#475569", fontSize: 12, fontWeight: 750, marginBottom: 6 }}>
+              Nombre de la campaña
+            </label>
+            <input
+              autoFocus
+              value={editando.nombre}
+              onChange={(event) => setEditando({ ...editando, nombre: event.target.value, error: "" })}
+              disabled={editando.guardando}
+              style={{
+                width: "100%", boxSizing: "border-box", border: "1.5px solid #DCE3EC",
+                borderRadius: 11, padding: "12px 13px", background: "#FFFFFF", color: "#0B1220",
+                fontSize: 14, outline: "none", marginBottom: 16,
+              }}
+            />
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+              <label style={{ color: "#475569", fontSize: 12, fontWeight: 750 }}>
+                Fecha de inicio
+                <input
+                  type="date"
+                  value={editando.inicio}
+                  onChange={(event) => setEditando({ ...editando, inicio: event.target.value, error: "" })}
+                  disabled={editando.guardando}
+                  style={{
+                    display: "block", width: "100%", boxSizing: "border-box", marginTop: 6,
+                    border: "1.5px solid #DCE3EC", borderRadius: 11, padding: "11px 10px",
+                    background: "#FFFFFF", color: "#0B1220", fontSize: 13,
+                  }}
+                />
+              </label>
+              <label style={{ color: "#475569", fontSize: 12, fontWeight: 750 }}>
+                Fecha de fin
+                <input
+                  type="date"
+                  value={editando.fin}
+                  onChange={(event) => setEditando({ ...editando, fin: event.target.value, error: "" })}
+                  disabled={editando.guardando}
+                  style={{
+                    display: "block", width: "100%", boxSizing: "border-box", marginTop: 6,
+                    border: "1.5px solid #DCE3EC", borderRadius: 11, padding: "11px 10px",
+                    background: "#FFFFFF", color: "#0B1220", fontSize: 13,
+                  }}
+                />
+              </label>
+            </div>
+
+            {editando.error && (
+              <div style={{ color: "#DC2626", background: "#FEF2F2", borderRadius: 10, padding: "9px 11px", fontSize: 12.5, marginTop: 14 }}>
+                {editando.error}
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <button
+                type="button"
+                onClick={() => setEditando(null)}
+                disabled={editando.guardando}
+                style={{
+                  flex: 1, border: "none", borderRadius: 12, padding: 13, background: "#F1F5F9",
+                  color: "#334155", fontSize: 14, fontWeight: 750, cursor: "pointer",
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void guardarEdicion()}
+                disabled={editando.guardando}
+                style={{
+                  flex: 1, border: "none", borderRadius: 12, padding: 13,
+                  background: editando.guardando ? "#93C5FD" : "#0877FF",
+                  color: "#FFFFFF", fontSize: 14, fontWeight: 800,
+                  cursor: editando.guardando ? "default" : "pointer",
+                }}
+              >
+                {editando.guardando ? "Guardando…" : "Guardar cambios"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de confirmación / éxito — en el mismo lugar, sin salir de la pantalla */}
       {modal && (

@@ -5,6 +5,7 @@ import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImage } from "../../utils/campaignCity";
+import { formatCampaignName } from "../../utils/campaignName";
 
 interface Props {
   contrato: Contrato;
@@ -106,7 +107,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   // Si el admin le puso nombre a la campaña, ese es el titulo -- si no
   // (campañas viejas, o cuando no se puso), se sigue mostrando el
   // nombre del/los panel(es) como titulo, como antes.
-  const tituloCampana = contrato.nombre || nombrePaneles;
+  const tituloCampana = formatCampaignName(contrato.nombre || nombrePaneles);
   const cityStyle = {
     "--campaign-city-image": `url("${campaignCityImage(contrato.id)}")`,
   } as CSSProperties;
