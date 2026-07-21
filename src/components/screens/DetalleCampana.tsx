@@ -6,6 +6,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
+import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 
 interface Props {
   contrato: Contrato;
@@ -372,18 +373,25 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
             )}
 
             {informesState.status === "ready" && informes.length > 0 && (
-              <div className="reports-list">
-                {informes.map((informe) => (
-                  <ReportCard
-                    key={informe.id}
-                    informe={informe}
-                    cliente={cliente}
-                    clienteId={contrato.cliente_id}
-                    isAdmin={isAdmin}
-                    onEliminado={informesState.recargar}
-                  />
+              <>
+                {agruparPorMes(informes).map((grupo) => (
+                  <div key={grupo.mes}>
+                    <div className="reports-month-header">{etiquetaMes(grupo.mes)}</div>
+                    <div className="reports-list">
+                      {grupo.items.map((informe) => (
+                        <ReportCard
+                          key={informe.id}
+                          informe={informe}
+                          cliente={cliente}
+                          clienteId={contrato.cliente_id}
+                          isAdmin={isAdmin}
+                          onEliminado={informesState.recargar}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 ))}
-              </div>
+              </>
             )}
           </div>
         )}

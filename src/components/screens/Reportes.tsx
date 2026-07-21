@@ -4,6 +4,7 @@ import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
+import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
@@ -64,6 +65,8 @@ function diasDelMes(mes: string) {
 function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
+
+
 
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
@@ -404,20 +407,24 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
           </div>
         )}
 
-        {informes.length > 0 && (
-          <div className={`reports-list${isAdmin ? "" : " reports-list-client"}`}>
-            {informes.map((informe) => (
-              <ReportCard
-                key={informe.id}
-                informe={informe}
-                cliente={cliente}
-                clienteId={clienteId}
-                isAdmin={isAdmin}
-                onEliminado={informesState.recargar}
-              />
-            ))}
-          </div>
-        )}
+        {informes.length > 0 &&
+          agruparPorMes(informes).map((grupo) => (
+            <div key={grupo.mes}>
+              <div className="reports-month-header">{etiquetaMes(grupo.mes)}</div>
+              <div className={`reports-list${isAdmin ? "" : " reports-list-client"}`}>
+                {grupo.items.map((informe) => (
+                  <ReportCard
+                    key={informe.id}
+                    informe={informe}
+                    cliente={cliente}
+                    clienteId={clienteId}
+                    isAdmin={isAdmin}
+                    onEliminado={informesState.recargar}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
       </div>
 
       {colaRecorte && colaRecorte.length > 0 && (
