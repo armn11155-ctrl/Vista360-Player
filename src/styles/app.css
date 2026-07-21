@@ -1260,6 +1260,9 @@
   .report-meta-generated {
     white-space: nowrap;
   }
+  .report-meta-size {
+    white-space: nowrap;
+  }
   .report-ready-badge {
     align-self: start;
     min-width: 62px;

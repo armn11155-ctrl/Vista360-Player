@@ -150,7 +150,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           <div className="report-kicker">Reporte mensual</div>
           <div className="report-title">{informe.mesLabel}</div>
           <div className="report-meta report-meta-generated">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
-          {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
+          {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
         </div>
         <div className="report-ready-badge">Listo</div>
       </div>

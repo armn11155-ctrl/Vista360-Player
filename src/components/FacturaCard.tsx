@@ -185,7 +185,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           <div className="report-kicker">Factura</div>
           <div className="report-title" style={{ fontSize: tamanoTitulo(nombreFactura) }}>{nombreFactura}</div>
           <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
-          {tamano && <div className="report-meta">Tamaño: {tamano}</div>}
+          {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
         </div>
         <div className="factura-badge-row">
           {isAdmin && !editandoNombre && (
