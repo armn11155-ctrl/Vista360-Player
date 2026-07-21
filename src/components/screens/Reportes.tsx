@@ -72,6 +72,17 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(mesActual());
+  // Selector de año/mes para ENCONTRAR un reporte viejo rápido -- antes
+  // solo se podía bajar haciendo scroll por todos los meses. "" en
+  // cualquiera de los dos significa "Todos" (sin filtrar por ese eje).
+  const [filtroAnio, setFiltroAnio] = useState("");
+  const [filtroMes, setFiltroMes] = useState("");
+  const aniosConReportes = Array.from(new Set(informes.map((i) => i.mes.slice(0, 4)))).sort((a, b) => b.localeCompare(a));
+  const informesFiltrados = informes.filter((i) => {
+    if (filtroAnio && i.mes.slice(0, 4) !== filtroAnio) return false;
+    if (filtroMes && i.mes.slice(5, 7) !== filtroMes) return false;
+    return true;
+  });
   // Solo de referencia visual (no se envia al generar el reporte, que
   // sigue siendo por mes completo) -- el admin pidio poder ver/elegir
   // un dia junto al mes y año.
@@ -407,8 +418,42 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
           </div>
         )}
 
-        {informes.length > 0 &&
-          agruparPorMes(informes).map((grupo) => (
+        {informes.length > 0 && aniosConReportes.length > 0 && (
+          <div className="reports-filter-bar">
+            <select
+              className="reports-filter-select"
+              value={filtroAnio}
+              onChange={(e) => setFiltroAnio(e.target.value)}
+              aria-label="Filtrar por año"
+            >
+              <option value="">Todos los años</option>
+              {aniosConReportes.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <select
+              className="reports-filter-select"
+              value={filtroMes}
+              onChange={(e) => setFiltroMes(e.target.value)}
+              aria-label="Filtrar por mes"
+            >
+              <option value="">Todos los meses</option>
+              {NOMBRES_MES.map((nombre, i) => (
+                <option key={nombre} value={String(i + 1).padStart(2, "0")}>{nombre}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {informes.length > 0 && informesFiltrados.length === 0 && (
+          <div className="report-empty-state">
+            <div className="report-empty-title">Sin reportes en ese período</div>
+            <div className="report-empty-sub">Prueba con otro año o mes, o vuelve a "Todos" para ver la lista completa.</div>
+          </div>
+        )}
+
+        {informesFiltrados.length > 0 &&
+          agruparPorMes(informesFiltrados).map((grupo) => (
             <div key={grupo.mes}>
               <div className="reports-month-header">{etiquetaMes(grupo.mes)}</div>
               <div className={`reports-list${isAdmin ? "" : " reports-list-client"}`}>
