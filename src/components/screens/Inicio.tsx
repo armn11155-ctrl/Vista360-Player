@@ -170,6 +170,8 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         )}
 
+        <div className="inicio-dashboard-grid">
+        <div className="inicio-main-col">
         {/* RESUMEN GENERAL — título suelto, cards individuales */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
         <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
@@ -227,6 +229,8 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           ))}
         </div>
 
+        </div>
+        <div className="inicio-side-col">
         {/* ÚLTIMO REPORTE — sí es una card (igual al mockup) */}
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
           <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
@@ -256,6 +260,8 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           ) : (
             <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Aún no hay reportes registrados.</div>
           )}
+        </div>
+        </div>
         </div>
 
         <div style={{ height:8 }} />
