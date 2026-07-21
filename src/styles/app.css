@@ -1107,7 +1107,12 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: #F8F9FB;
-    padding: 0 14px 18px;
+    /* Antes el padding-top era 0 -- en la vista admin no se notaba
+       porque el cuadro de "Generar reporte" traía su propio margen de
+       arriba, pero en la vista cliente (sin ese cuadro) el contenido
+       quedaba pegado a la línea azul del header. Ahora el espacio de
+       arriba lo da siempre este padding, parejo en las dos vistas. */
+    padding: 16px 14px 18px;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
   }
@@ -1152,6 +1157,11 @@
     border-color: #0877FF;
     box-shadow: 0 0 0 3px rgba(15,23,42,.12);
   }
+  .reports-filter-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
   .reports-filter-bar {
     display: flex;
     gap: 10px;
@@ -1182,6 +1192,9 @@
     border-color: #0877FF;
     box-shadow: 0 0 0 3px rgba(15,23,42,.12);
   }
+  select.reports-filter-select-full {
+    width: 100%;
+  }
   .reports-month-header {
     font-size: 13px;
     font-weight: 800;
@@ -1193,8 +1206,8 @@
   .reports-month-header:first-child {
     margin-top: 4px;
   }
-  .reports-filter-bar + .reports-month-header:first-child,
-  .reports-filter-bar + .report-empty-state + .reports-month-header:first-child {
+  .reports-filter-stack + .reports-month-header:first-child,
+  .reports-filter-stack + .report-empty-state + .reports-month-header:first-child {
     margin-top: 22px;
   }
   .reports-list {
@@ -1402,7 +1415,10 @@
     border: 1px solid #E2E8F0;
     border-radius: 20px;
     padding: 18px 18px 16px;
-    margin: 10px 0 14px;
+    /* El margen de arriba ahora lo da el padding-top de
+       .reports-screen-body (parejo para admin y cliente) -- antes
+       este margin-top de 10px se sumaba aparte solo en la vista admin. */
+    margin: 0 0 14px;
     box-shadow: 0 18px 42px rgba(15,23,42,0.07);
   }
   .report-admin-header {

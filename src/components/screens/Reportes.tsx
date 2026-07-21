@@ -77,6 +77,10 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   // cualquiera de los dos significa "Todos" (sin filtrar por ese eje).
   const [filtroAnio, setFiltroAnio] = useState("");
   const [filtroMes, setFiltroMes] = useState("");
+  // Filtro por campaña -- distinto del contratoId de más abajo (ese es
+  // para elegir a QUÉ campaña se le genera un reporte nuevo). "" acá
+  // significa "Todas las campañas".
+  const [filtroCampana, setFiltroCampana] = useState("");
   // Rango fijo 2026-2080, en orden ascendente (2026 primero, 2080 al
   // final -- se pidió específicamente ese orden) -- en vez de solo los
   // años que ya tienen reportes, así el filtro también sirve para ir
@@ -85,6 +89,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const informesFiltrados = informes.filter((i) => {
     if (filtroAnio && i.mes.slice(0, 4) !== filtroAnio) return false;
     if (filtroMes && i.mes.slice(5, 7) !== filtroMes) return false;
+    if (filtroCampana && i.contratoId !== filtroCampana) return false;
     return true;
   });
   // Solo de referencia visual (no se envia al generar el reporte, que
@@ -423,36 +428,51 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         )}
 
         {informes.length > 0 && aniosConReportes.length > 0 && (
-          <div className="reports-filter-bar">
-            <select
-              className="reports-filter-select"
-              value={filtroAnio}
-              onChange={(e) => setFiltroAnio(e.target.value)}
-              aria-label="Filtrar por año"
-            >
-              <option value="">Todos los años</option>
-              {aniosConReportes.map((a) => (
-                <option key={a} value={a}>{a}</option>
-              ))}
-            </select>
-            <select
-              className="reports-filter-select"
-              value={filtroMes}
-              onChange={(e) => setFiltroMes(e.target.value)}
-              aria-label="Filtrar por mes"
-            >
-              <option value="">Todos los meses</option>
-              {NOMBRES_MES.map((nombre, i) => (
-                <option key={nombre} value={String(i + 1).padStart(2, "0")}>{nombre}</option>
-              ))}
-            </select>
+          <div className="reports-filter-stack">
+            {contratos.length > 1 && (
+              <select
+                className="reports-filter-select reports-filter-select-full"
+                value={filtroCampana}
+                onChange={(e) => setFiltroCampana(e.target.value)}
+                aria-label="Filtrar por campaña"
+              >
+                <option value="">Todas las campañas</option>
+                {contratos.map((c) => (
+                  <option key={c.id} value={c.id}>{labelCampana(c)}</option>
+                ))}
+              </select>
+            )}
+            <div className="reports-filter-bar">
+              <select
+                className="reports-filter-select"
+                value={filtroAnio}
+                onChange={(e) => setFiltroAnio(e.target.value)}
+                aria-label="Filtrar por año"
+              >
+                <option value="">Todos los años</option>
+                {aniosConReportes.map((a) => (
+                  <option key={a} value={a}>{a}</option>
+                ))}
+              </select>
+              <select
+                className="reports-filter-select"
+                value={filtroMes}
+                onChange={(e) => setFiltroMes(e.target.value)}
+                aria-label="Filtrar por mes"
+              >
+                <option value="">Todos los meses</option>
+                {NOMBRES_MES.map((nombre, i) => (
+                  <option key={nombre} value={String(i + 1).padStart(2, "0")}>{nombre}</option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
 
         {informes.length > 0 && informesFiltrados.length === 0 && (
           <div className="report-empty-state">
             <div className="report-empty-title">Sin reportes en ese período</div>
-            <div className="report-empty-sub">Prueba con otro año o mes, o vuelve a "Todos" para ver la lista completa.</div>
+            <div className="report-empty-sub">Prueba con otra campaña, año o mes, o vuelve a "Todos" para ver la lista completa.</div>
           </div>
         )}
 
