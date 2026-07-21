@@ -8,6 +8,31 @@ import type { Cliente } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { FacturaCard } from "../FacturaCard";
 
+const NOMBRES_MES_FACTURAS = [
+  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+];
+
+// Rango fijo 2026-2080 en orden ascendente, mismo criterio que el
+// selector de Reportes.tsx.
+const ANIOS_FILTRO_FACTURAS = Array.from({ length: 2080 - 2026 + 1 }, (_, i) => String(2026 + i));
+
+/** fecha_emision no tiene un formato único garantizado -- las facturas
+ *  subidas desde Vista360 Player usan ISO (YYYY-MM-DD), pero las que
+ *  vienen del sistema externo facturacion-web podrían venir en
+ *  DD/MM/YYYY (formato común de facturación en Perú). Se intentan los
+ *  dos; si no calza ninguno, no se puede confirmar el año/mes real --
+ *  esa factura se sigue viendo con los dos selectores en "Todos", pero
+ *  se oculta apenas se filtra por un año o mes específico. */
+function anioMesDeFactura(fecha?: string): { anio: string; mes: string } | null {
+  if (!fecha) return null;
+  const iso = fecha.match(/^(\d{4})-(\d{2})/);
+  if (iso) return { anio: iso[1], mes: iso[2] };
+  const ddmmyyyy = fecha.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ddmmyyyy) return { anio: ddmmyyyy[3], mes: ddmmyyyy[2].padStart(2, "0") };
+  return null;
+}
+
 interface Props {
   ruc: string | undefined;
   clienteId?: string;
@@ -20,6 +45,16 @@ interface Props {
 export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
+  const [filtroAnio, setFiltroAnio] = useState("");
+  const [filtroMes, setFiltroMes] = useState("");
+  const facturasFiltradas = facturas.filter((f) => {
+    if (!filtroAnio && !filtroMes) return true; // "Todos" en los dos -- no se filtra nada
+    const partes = anioMesDeFactura(f.fecha_emision);
+    if (!partes) return false; // fecha en un formato no reconocido -- no se puede confirmar que calce
+    if (filtroAnio && partes.anio !== filtroAnio) return false;
+    if (filtroMes && partes.mes !== filtroMes) return false;
+    return true;
+  });
   const fileRef = useRef<HTMLInputElement>(null);
   const [pdfListo, setPdfListo] = useState<File | null>(null);
   const [pesoOriginal, setPesoOriginal] = useState(0);
@@ -153,8 +188,42 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
           </div>
         )}
 
+        {facturas.length > 0 && (
+          <div className="reports-filter-bar" style={{ marginTop: 12 }}>
+            <select
+              className="reports-filter-select"
+              value={filtroAnio}
+              onChange={(e) => setFiltroAnio(e.target.value)}
+              aria-label="Filtrar por año"
+            >
+              <option value="">Todos los años</option>
+              {ANIOS_FILTRO_FACTURAS.map((a) => (
+                <option key={a} value={a}>{a}</option>
+              ))}
+            </select>
+            <select
+              className="reports-filter-select"
+              value={filtroMes}
+              onChange={(e) => setFiltroMes(e.target.value)}
+              aria-label="Filtrar por mes"
+            >
+              <option value="">Todos los meses</option>
+              {NOMBRES_MES_FACTURAS.map((nombre, i) => (
+                <option key={nombre} value={String(i + 1).padStart(2, "0")}>{nombre}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {facturas.length > 0 && facturasFiltradas.length === 0 && (
+          <div className="report-empty-state">
+            <div className="report-empty-title">Sin facturas en ese período</div>
+            <div className="report-empty-sub">Prueba con otro año o mes, o vuelve a "Todos" para ver la lista completa.</div>
+          </div>
+        )}
+
         <div className="reports-list" style={{ marginTop: 12 }}>
-          {facturas.map((f) => (
+          {facturasFiltradas.map((f) => (
             <FacturaCard key={f.id} factura={f} cliente={cliente ?? null} isAdmin={isAdmin} />
           ))}
         </div>
