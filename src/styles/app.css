@@ -1455,7 +1455,7 @@
     flex: 1 1 260px;
   }
   .report-month-field span {
-    color: #8B96AC;
+    color: #F4F7FC;
     font-size: 11px;
     font-weight: 700;
   }
@@ -1600,7 +1600,7 @@
     flex: 1 1 100%;
   }
   .report-campaign-field span {
-    color: #8B96AC;
+    color: #F4F7FC;
     font-size: 11px;
     font-weight: 700;
   }
@@ -1619,10 +1619,10 @@
     line-height: 1.5;
   }
   .report-campaign-panel-box {
-    border: 1px solid rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.32);
     border-radius: 12px;
     padding: 12px;
-    background: rgba(255,255,255,.035);
+    background: rgba(255,255,255,.045);
   }
   .report-campaign-panel-header {
     display: flex;

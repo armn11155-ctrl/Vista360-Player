@@ -258,7 +258,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
             </div>
             <div className="report-admin-controls">
               <div className="report-campaign-field">
-                <span>Campaña — el reporte se organiza por campaña</span>
+                <span>Campaña</span>
                 {contratos.length > 0 ? (
                   <select
                     className="reports-panel-select"
@@ -280,7 +280,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                 )}
               </div>
               <div className="report-month-field">
-                <span>Fecha del reporte — toca para cambiar día, mes o año</span>
+                <span>Fecha del reporte</span>
                 <div className="report-month-selects">
                   <select
                     className="report-month-select report-month-select-dia"
