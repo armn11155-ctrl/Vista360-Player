@@ -52,6 +52,35 @@ function formatoBytes(bytes?: number) {
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
+// ── Fecha "Generado el ..." -- mismo formato y misma frase que usa
+// ReportCard.tsx para los reportes, para que las dos tarjetas se vean
+// consistentes. fecha_emision no tiene un formato único garantizado
+// (ver misma nota en Facturas.tsx/anioMesDeFactura): ISO (YYYY-MM-DD)
+// para las facturas subidas desde Vista360 Player, o DD/MM/YYYY para
+// las que llegan del sistema externo facturacion-web. Si no calza
+// ninguno, se muestra el texto crudo tal cual venga (o "—" si no hay
+// fecha), en vez de romper la tarjeta.
+function fechaCorta(date: Date) {
+  const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  return `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
+}
+
+function fechaDeFactura(fecha?: string): Date | null {
+  if (!fecha) return null;
+  const iso = fecha.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    const d = new Date(`${iso[1]}-${iso[2]}-${iso[3]}T12:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const ddmmyyyy = fecha.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (ddmmyyyy) {
+    const [, dd, mm, yyyy] = ddmmyyyy;
+    const d = new Date(`${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}T12:00:00`);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+}
+
 /** No se menciona el monto en el mensaje -- todavia no se registra un
  *  monto real por factura subida desde aca, y decir "$ 0.00" se veia
  *  mal tanto en la tarjeta como en el mensaje. */
@@ -150,6 +179,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const nombreFactura = f.numero_fmt ?? f.serie ?? "Sin número";
   const badge = BADGE[f.estado] ?? BADGE.Borrador;
   const tamano = formatoBytes(f.pdfPesoBytes);
+  const fechaEmisionDate = fechaDeFactura(f.fecha_emision);
   const mensaje = urlVer ? mensajeFactura(f, cliente, urlVer) : "";
   const emailSubject = `Factura ${f.numero_fmt ?? f.serie ?? ""} - Vista360`;
   const emailTo = cliente?.email ?? "";
@@ -184,7 +214,9 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>
           <div className="report-title" style={{ fontSize: tamanoTitulo(nombreFactura) }}>{nombreFactura}</div>
-          <div className="report-meta report-meta-generated">{f.fecha_emision ?? "—"}</div>
+          <div className="report-meta report-meta-generated">
+            {fechaEmisionDate ? `Generado el ${fechaCorta(fechaEmisionDate)}` : (f.fecha_emision ?? "—")}
+          </div>
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
         </div>
         <div className="factura-badge-row">
