@@ -25,6 +25,12 @@ interface ClienteReporte {
   periodo: string;
   ubicacion: string;
   ciudad: string;
+  /** true si el reporte junta 2+ paneles -- en ese caso `ubicacion` en
+   *  realidad son los nombres de los paneles unidos (no una dirección
+   *  real), asi que la portada debe decir "PANELES" en vez de
+   *  "UBICACION" para no confundir. Con 1 panel (o el flujo viejo sin
+   *  campaña) sigue diciendo "UBICACION" como siempre. */
+  esMultiPanel?: boolean;
 }
 
 interface ReportePdf {
@@ -336,7 +342,8 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
   doc.restore();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
-  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent)
+    .text(cliente.esMultiPanel ? "PANELES" : "UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(lugarSize).fillColor(COLORS.white).text(lugar, cardX2 + 30, cardY + lugarY, { width: innerW2 });
   if (resto) {
     doc.font("Helvetica").fontSize(restoSize).fillColor(COLORS.muted).text(resto, cardX2 + 30, cardY + restoY, { width: innerW2 });
@@ -862,6 +869,7 @@ export const generarReporteCliente = onCall(
       const cliente: ClienteReporte = {
         id: clienteId,
         nombre: String(clienteData.empresa ?? clienteData.nombre ?? "Cliente"),
+        esMultiPanel: elementosPorPanel.length > 1,
         periodo: nombreMes(mes),
         ubicacion,
         ciudad: ubicacionDb || "Peru",
