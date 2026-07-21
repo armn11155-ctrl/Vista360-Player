@@ -464,7 +464,12 @@ async function paginaEvidenciaOscura(
   // dos usan drawFooterBar, misma altura siempre (la barra queda del
   // mismo color que el fondo oscuro, asi que no se nota como barra,
   // solo alinea el texto).
-  drawFooterBar(doc, pad2(pageNum));
+  // Pagina de fondo negro -- la rayita de acento arriba de la barra
+  // (tambien negra) se ve mejor gris/blanca que azul brillante contra
+  // tanto negro, mas elegante y menos "aviso publicitario". La pagina
+  // blanca de al lado (paginaEvidenciaBlanca) SI se queda con el azul
+  // de siempre, ahi si contrasta bien.
+  drawFooterBar(doc, pad2(pageNum), COLORS.muted);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
@@ -866,7 +871,17 @@ export const generarReporteCliente = onCall(
       let ubicacion: string;
       if (elementosPorPanel.length > 0) {
         elementos = elementosPorPanel;
-        ubicacion = elementosPorPanel.map((e) => e.titulo).join(" + ") || ubicacionDb || "Perú";
+        // Con un solo panel el rotulo de la portada dice "UBICACION"
+        // (ver portada() mas abajo), asi que ahi si tiene que ir la
+        // direccion completa (nombre - direccion - ciudad), no solo el
+        // nombre del panel -- para eso usa `.ubicacion` de cada
+        // elemento (ya viene armada asi en cargarElementosSubidosPorPanel)
+        // en vez de `.titulo` (que es solo el nombre, pensado para el
+        // rotulo "PANELES" cuando son 2+ y no hay una sola direccion
+        // que mostrar).
+        ubicacion = elementosPorPanel.length === 1
+          ? (elementosPorPanel[0].ubicacion || elementosPorPanel[0].titulo || ubicacionDb || "Perú")
+          : (elementosPorPanel.map((e) => e.titulo).join(" + ") || ubicacionDb || "Perú");
       } else {
         const ubicacionPanel = await cargarUbicacionCliente(clienteId, panelId || undefined);
         ubicacion = ubicacionPanel || ubicacionDb || "Perú";
