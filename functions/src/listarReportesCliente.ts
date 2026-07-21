@@ -20,6 +20,9 @@ interface InformeListado {
   storage: "r2";
   r2Keys: { digital: string };
   createdAt: string;
+  contratoNombre?: string;
+  vistoPorCliente?: boolean;
+  vistoEn?: string | null;
 }
 
 const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
@@ -113,17 +116,23 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     const informes: InformeListado[] = await Promise.all(
       [...porFecha.entries()].map(async ([idKey, v]) => {
         const nombreArchivo = `Reporte ${nombreFechaCorta(v.mes, v.dia)}.pdf`.replace(/[\\/:*?"<>|]/g, "-");
+        const id = `${clienteId}_${idKey}`;
         // Dos URLs firmadas de la misma key: una para verla en el
         // navegador (sin Content-Disposition) y otra que fuerza la
         // descarga (con Content-Disposition: attachment) -- el admin
-        // pidió que el botón haga las dos cosas a la vez.
-        const [url, urlDescarga] = await Promise.all([
+        // pidió que el botón haga las dos cosas a la vez. De paso se
+        // trae el documento en Firestore (mismo id) para saber el
+        // nombre de campaña y si el cliente ya lo vio -- esa parte
+        // vive en Firestore porque el PDF en R2 no guarda esos datos.
+        const [url, urlDescarga, infoDoc] = await Promise.all([
           firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS),
           firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS, nombreArchivo),
+          db.doc(`informesCliente/${id}`).get(),
         ]);
+        const infoData = infoDoc.exists ? infoDoc.data() ?? {} : {};
         const fecha = v.fecha ?? new Date();
         return {
-          id: `${clienteId}_${idKey}`,
+          id,
           mes: v.mes,
           dia: v.dia,
           mesLabel: nombreFechaCorta(v.mes, v.dia),
@@ -134,6 +143,9 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
           storage: "r2" as const,
           r2Keys: { digital: v.key },
           createdAt: fecha.toISOString(),
+          ...(infoData.contratoNombre ? { contratoNombre: String(infoData.contratoNombre) } : {}),
+          vistoPorCliente: Boolean(infoData.vistoPorCliente),
+          vistoEn: infoData.vistoEn?.toDate ? infoData.vistoEn.toDate().toISOString() : null,
         };
       })
     );

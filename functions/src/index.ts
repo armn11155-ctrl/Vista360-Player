@@ -10,6 +10,7 @@ export { listarAccesosClientes } from "./listarAccesosClientes.js";
 export { generarReporteCliente } from "./generarReporteCliente.js";
 export { listarReportesCliente } from "./listarReportesCliente.js";
 export { eliminarReporteCliente } from "./eliminarReporteCliente.js";
+export { marcarReporteVisto } from "./marcarReporteVisto.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
 export { crearClienteNuevo } from "./crearClienteNuevo.js";
 export { crearPanel } from "./crearPanel.js";

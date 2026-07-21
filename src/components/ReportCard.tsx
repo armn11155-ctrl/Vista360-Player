@@ -106,6 +106,20 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     }
   }
 
+  /** Se dispara cuando el CLIENTE (nunca el admin) toca "Ver" o
+   *  "Descargar" -- avisa al backend que ya revisó este reporte, para
+   *  que el admin lo vea reflejado en su lista. No bloquea el enlace
+   *  (sin preventDefault): si falla, el cliente igual ve/descarga su
+   *  PDF con normalidad, solo no queda marcado como visto. */
+  function marcarVisto() {
+    if (isAdmin || !cloudFunctions) return;
+    const marcarReporteVisto = httpsCallable<{ clienteId: string; informeId: string }, { ok: boolean }>(
+      cloudFunctions,
+      "marcarReporteVisto"
+    );
+    marcarReporteVisto({ clienteId, informeId: informe.id }).catch(() => undefined);
+  }
+
   return (
     <div className="report-card">
       {isAdmin && (
@@ -147,10 +161,17 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           <span>PDF</span>
         </div>
         <div className="report-card-copy">
-          <div className="report-kicker">Reporte mensual</div>
+          <div className="report-kicker">{informe.contratoNombre || "Reporte mensual"}</div>
           <div className="report-title">{informe.mesLabel}</div>
           <div className="report-meta report-meta-generated">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
+          {isAdmin && (
+            <div className={`report-meta report-seen-status ${informe.vistoPorCliente ? "is-seen" : "is-unseen"}`}>
+              {informe.vistoPorCliente
+                ? `Visto por el cliente${informe.vistoEn ? ` · ${fechaCorta(new Date(informe.vistoEn))}` : ""}`
+                : "Aún no visto por el cliente"}
+            </div>
+          )}
         </div>
         <div className="report-ready-badge">Listo</div>
       </div>
@@ -160,7 +181,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
-        <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer">
+        <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer" onClick={marcarVisto}>
           Ver
         </a>
         <a
@@ -168,6 +189,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           href={informe.urlDescarga || url}
           download
           rel="noreferrer"
+          onClick={marcarVisto}
         >
           Descargar
         </a>

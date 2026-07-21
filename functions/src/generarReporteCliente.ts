@@ -822,6 +822,16 @@ export const generarReporteCliente = onCall(
       const clienteData = clienteSnap.data() ?? {};
       const ubicacionDb = String(clienteData.ciudad ?? "");
 
+      // Nombre de la campaña puesto a mano por el admin (si lo tiene) --
+      // se guarda junto con el reporte para que la notificación push y
+      // cualquier lista de reportes puedan decir "Campaña Verano 2026"
+      // en vez de solo la fecha. Campañas viejas sin nombre siguen sin
+      // mostrar nada especial acá (se resuelve con los títulos de los
+      // paneles más abajo, una vez armado `elementos`).
+      const contratoNombreManual = contratoId
+        ? String((await db.doc(`contratos/${contratoId}`).get()).data()?.nombre ?? "").trim()
+        : "";
+
       // Reporte organizado por campaña (2+ paneles, uno o mas cuadros
       // de fotos por panel) -- si viene esto, tiene prioridad sobre el
       // flujo viejo de "fotos" plano / panel único.
@@ -846,6 +856,12 @@ export const generarReporteCliente = onCall(
           panelId ? "Ese panel no tiene fotos de campaña para este mes." : "Agrega fotos para generar el reporte."
         );
       }
+
+      // Nombre final para mostrar/notificar: el que puso el admin a
+      // mano en la campaña, o si no tiene, los nombres de sus paneles
+      // unidos (mismo criterio que ya usa el portal en MisCampanas.tsx
+      // y DetalleCampana.tsx para el título).
+      const contratoNombre = contratoNombreManual || elementos.map((e) => e.titulo).join(" + ") || undefined;
 
       const cliente: ClienteReporte = {
         id: clienteId,
@@ -884,6 +900,7 @@ export const generarReporteCliente = onCall(
           numEvidencias: reporte.numEvidencias,
           ...(panelId ? { panel_id: panelId } : { panel_id: FieldValue.delete() }),
           ...(contratoId ? { contrato_id: contratoId } : { contrato_id: FieldValue.delete() }),
+          ...(contratoNombre ? { contratoNombre } : { contratoNombre: FieldValue.delete() }),
           createdAt: FieldValue.serverTimestamp(),
         },
         { merge: true }

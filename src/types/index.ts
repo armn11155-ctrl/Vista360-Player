@@ -223,4 +223,12 @@ export interface InformeCliente {
   numCampanas?: number;
   numEvidencias?: number;
   createdAt?: Timestamp | string | null;
+  /** Nombre de la campaña a la que pertenece este reporte (si se
+   *  generó con una campaña que tiene nombre puesto a mano). */
+  contratoNombre?: string;
+  /** true si el cliente ya abrió/descargó este reporte -- se marca
+   *  desde ReportCard.tsx (ver marcarReporteVisto.ts). El admin lo usa
+   *  para saber si el cliente ya revisó su reporte o no. */
+  vistoPorCliente?: boolean;
+  vistoEn?: string | null;
 }

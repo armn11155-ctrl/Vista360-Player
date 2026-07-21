@@ -1263,6 +1263,13 @@
   .report-meta-size {
     white-space: nowrap;
   }
+  .report-seen-status.is-seen {
+    color: #16A34A;
+    font-weight: 700;
+  }
+  .report-seen-status.is-unseen {
+    color: #94A3B8;
+  }
   .report-ready-badge {
     align-self: start;
     min-width: 62px;

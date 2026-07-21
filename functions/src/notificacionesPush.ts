@@ -137,9 +137,17 @@ export const notificarReporteListo = onDocumentCreated("informesCliente/{id}", a
   const clienteId = String(data.cliente_id || "");
   if (!clienteId) return;
   const mesLabel = String(data.mesLabel || "tu campaña");
+  // Si el reporte tiene nombre de campaña (contratoNombre, guardado en
+  // generarReporteCliente.ts), el aviso dice de cuál campaña se trata
+  // en vez de solo la fecha -- útil apenas el cliente tiene más de una
+  // campaña activa y no sabría a cuál se refiere el push.
+  const contratoNombre = String(data.contratoNombre || "").trim();
+  const body = contratoNombre
+    ? `Ya está listo el reporte de "${contratoNombre}" (${mesLabel}) en tu portal.`
+    : `Ya puedes ver tu reporte de ${mesLabel} en el portal.`;
   await enviarPushACliente(clienteId, {
     title: "Tu reporte ya está listo",
-    body: `Ya puedes ver tu reporte de ${mesLabel} en el portal.`,
+    body,
     url: "/",
   }).catch(() => undefined);
 });
