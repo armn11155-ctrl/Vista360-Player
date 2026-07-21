@@ -77,7 +77,12 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   // cualquiera de los dos significa "Todos" (sin filtrar por ese eje).
   const [filtroAnio, setFiltroAnio] = useState("");
   const [filtroMes, setFiltroMes] = useState("");
-  const aniosConReportes = Array.from(new Set(informes.map((i) => i.mes.slice(0, 4)))).sort((a, b) => b.localeCompare(a));
+  // Rango fijo 2026-2080 (se pidió específicamente ese rango, igual
+  // que el selector de año del generador de reportes más abajo) --
+  // en vez de solo los años que ya tienen reportes, así el filtro
+  // también sirve para ir directo a un año futuro que todavía no
+  // tiene nada.
+  const aniosConReportes = Array.from({ length: 2080 - 2026 + 1 }, (_, i) => String(2026 + i)).reverse();
   const informesFiltrados = informes.filter((i) => {
     if (filtroAnio && i.mes.slice(0, 4) !== filtroAnio) return false;
     if (filtroMes && i.mes.slice(5, 7) !== filtroMes) return false;

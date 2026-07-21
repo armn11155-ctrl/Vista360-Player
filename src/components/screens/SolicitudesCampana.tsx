@@ -8,6 +8,59 @@ import { BrandThumb } from "../BrandThumb";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { SolicitudCampana } from "../../types";
 
+// Iconos en vez de emojis (se pidió que no queden emojis en la
+// pantalla de solicitudes) -- Target y Pin son los SVG que mandó el
+// admin, recoloreados a fill="currentColor" para heredar el color del
+// texto de al lado. Money y Paperclip no tenían un SVG propio, así que
+// se usan los íconos de línea estándar (mismo estilo stroke que ya usa
+// el resto del portal, ej. los botones de ReportCard).
+function TargetIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 512 512" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M204.762,254.456l34.212-34.204c-39.807-18.293-88.544-11.079-121.29,21.675
+        c-42.013,42.006-42.013,110.372,0,152.393c42.005,42.014,110.38,42.014,152.386,0c32.746-32.745,39.968-81.49,21.675-121.298
+        l-34.211,34.211c3.381,19.976-2.553,41.224-17.939,56.604c-25.21,25.218-66.225,25.218-91.434,0
+        c-25.21-25.21-25.21-66.224,0-91.427C163.546,257.016,184.794,251.074,204.762,254.456z" />
+      <path d="M323.628,241.146c34.324,57.876,26.642,133.939-23.076,183.65c-58.826,58.826-154.527,58.826-213.345,0
+        c-58.826-58.817-58.826-154.527,0-213.352c49.703-49.711,125.775-57.393,183.65-23.076l31.216-31.225
+        c-75.387-50.693-178.754-42.77-245.35,23.817c-75.629,75.621-75.629,198.69,0,274.311c75.63,75.638,198.683,75.638,274.312,0
+        c66.603-66.595,74.518-169.962,23.809-245.358L323.628,241.146z" />
+      <path d="M511.279,84.84c-1.61-4.195-5.684-6.78-10.298-6.57l-70.565,3.31l3.318-70.556
+        c0.201-4.622-2.384-8.68-6.578-10.306c-4.17-1.61-9.122-0.451-12.52,2.931l-75.299,75.306l-3.809,81.322L198.634,297.162
+        c-6.964-1.578-14.565,0.29-19.992,5.716c-8.422,8.422-8.422,22.062,0,30.484c8.414,8.422,22.062,8.422,30.484,0
+        c5.418-5.427,7.295-13.028,5.716-20l136.886-136.894l81.314-3.8l75.307-75.316C511.739,93.963,512.89,89.026,511.279,84.84z" />
+    </svg>
+  );
+}
+
+function PinIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="-3 0 20 20" fill="currentColor" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M174,5248.219 C172.895,5248.219 172,5247.324 172,5246.219 C172,5245.114 172.895,5244.219 174,5244.219
+        C175.105,5244.219 176,5245.114 176,5246.219 C176,5247.324 175.105,5248.219 174,5248.219 M174,5239
+        C170.134,5239 167,5242.134 167,5246 C167,5249.866 174,5259 174,5259 C174,5259 181,5249.866 181,5246
+        C181,5242.134 177.866,5239 174,5239" transform="translate(-167, -5239)" />
+    </svg>
+  );
+}
+
+function MoneyIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
+function PaperclipIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  );
+}
+
 interface Props {
   onBack: () => void;
   onCrearCampana?: (clienteId: string) => void;
@@ -116,16 +169,18 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                       {nombreCliente(s.cliente_id)} — {s.nombre}
                     </div>
                     {s.objetivo && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 3 }}>🎯 {s.objetivo}</div>
+                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 3, display: "flex", alignItems: "center", gap: 5 }}>
+                        <TargetIcon /> <span>{s.objetivo}</span>
+                      </div>
                     )}
                     {s.presupuesto != null && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                        💰 S/ {s.presupuesto.toLocaleString("es-PE")}
+                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                        <MoneyIcon /> <span>S/ {s.presupuesto.toLocaleString("es-PE")}</span>
                       </div>
                     )}
                     {s.ciudades?.length > 0 && (
-                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                        📍 {s.ciudades.join(", ")}
+                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2, display: "flex", alignItems: "center", gap: 5 }}>
+                        <PinIcon /> <span>{s.ciudades.join(", ")}</span>
                       </div>
                     )}
                     {s.comentarios && (
@@ -144,7 +199,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                           color: s.pagoConfirmado ? "var(--green)" : "#D97706",
                         }}
                       >
-                        📎 Ver comprobante de pago {s.pagoConfirmado ? "· Confirmado ✓" : "· Sin confirmar"}
+                        <PaperclipIcon /> Ver comprobante de pago {s.pagoConfirmado ? "· Confirmado ✓" : "· Sin confirmar"}
                       </a>
                     )}
                   </div>
@@ -169,7 +224,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                         fontWeight: 700, cursor: resolviendo === s.id ? "not-allowed" : "pointer",
                       }}
                     >
-                      💰 Confirmar pago recibido
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><MoneyIcon /> Confirmar pago recibido</span>
                     </button>
                   </div>
                 )}

@@ -733,48 +733,57 @@
     font-size: 11px;
     margin-top: 5px;
   }
-  /* Un solo cuadro (no uno por campaña) -- adentro va una fila por
-   *  campaña activa (.mis-campanas-month-status-row). max-height +
-   *  scroll para que el cuadro no siga creciendo sin límite si hay
-   *  muchas campañas activas a la vez -- se queda del mismo tamaño y
-   *  ahí adentro se puede hacer scroll. */
+  /* Un solo cuadro (no uno por campaña) -- adentro va un encabezado
+   *  con el ícono del "asistente" (mismo SVG que mandó el admin,
+   *  recoloreado a blanco) y una fila de texto por campaña activa.
+   *  max-height + scroll para que el cuadro no siga creciendo sin
+   *  límite si hay muchas campañas activas a la vez. */
   .mis-campanas-month-status {
     width: 100%;
-    max-height: 168px;
+    max-height: 200px;
     overflow-y: auto;
     margin-bottom: 14px;
-    padding: 4px 13px;
+    padding: 4px 13px 6px;
     border: 1px solid rgba(255,255,255,.11);
     border-radius: 12px;
     background: #050505;
     box-shadow: 0 16px 30px -22px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.05);
     box-sizing: border-box;
   }
+  .mis-campanas-month-status-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 9px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .mis-campanas-month-status-header img {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+  }
+  /* Texto blanco por default (incluye "falta generar...") -- solo se
+   *  pinta de verde cuando ya está enviado. Antes "falta" era rojo, se
+   *  pidió explícitamente que ya no lo sea. */
   .mis-campanas-month-status-row {
-    min-height: 48px;
+    min-height: 40px;
     padding: 9px 0;
     display: flex;
     align-items: center;
-    gap: 9px;
     font-size: 12px;
     line-height: 1.35;
     font-weight: 800;
+    color: #fff;
   }
   .mis-campanas-month-status-row + .mis-campanas-month-status-row {
     border-top: 1px solid rgba(255,255,255,.08);
   }
   .mis-campanas-month-status-row.is-sent { color: #22C55E; }
-  .mis-campanas-month-status-row.is-pending { color: #EF4444; }
-  .mis-campanas-month-status-row svg {
-    width: 21px;
-    height: 21px;
-    flex: 0 0 21px;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .mis-campanas-month-status-row span { min-width: 0; }
   .campaign-renewal-button {
     width: 100%;
     min-height: 48px;

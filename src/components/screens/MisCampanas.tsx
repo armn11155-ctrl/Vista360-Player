@@ -80,6 +80,11 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     .sort((a, b) => ORDEN_ESTADO[estadoCampana(a)] - ORDEN_ESTADO[estadoCampana(b)]);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
+  const NOMBRES_MES_LARGO = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  ];
+  const nombreMesActual = NOMBRES_MES_LARGO[Number(mesActual.slice(5, 7)) - 1] ?? "este mes";
   // Por campaña: solo importa si YA se subió/generó algún reporte
   // este mes o no -- el admin pidió explícitamente que no se cuenten
   // paneles (el reporte va por campaña completa, sea de 1 o de 2+
@@ -99,8 +104,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       id: c.id,
       listo,
       texto: listo
-        ? `${nombreCampana}: informe de este mes enviado`
-        : `${nombreCampana}: falta generar el informe de este mes`,
+        ? `${nombreCampana}: informe de ${nombreMesActual} enviado`
+        : `${nombreCampana}: falta generar informe de ${nombreMesActual}`,
     };
   });
 
@@ -284,21 +289,13 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
          *  explícitamente: "un cuadro nada más, no dos"). */}
         {isAdmin && estadosMesCampanas.length > 0 && (
           <div className="mis-campanas-month-status">
+            <div className="mis-campanas-month-status-header">
+              <img src="/vista360-assistant-icon.svg" alt="" aria-hidden="true" />
+              <span>Estado de reportes</span>
+            </div>
             {estadosMesCampanas.map((e) => (
               <div key={e.id} className={`mis-campanas-month-status-row ${e.listo ? "is-sent" : "is-pending"}`}>
-                {e.listo ? (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="m8 12 2.6 2.6L16.5 9" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="12" cy="12" r="9" />
-                    <path d="M12 7v6" />
-                    <path d="M12 17h.01" />
-                  </svg>
-                )}
-                <span>{e.texto}</span>
+                {e.texto}
               </div>
             ))}
           </div>
