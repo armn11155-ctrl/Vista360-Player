@@ -216,11 +216,16 @@ function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, sho
 }
 
 /** Pie de pagina de barra (paginas blancas de evidencia): barra oscura de
- *  103px con una linea de acento azul de 5px justo encima, a todo el ancho. */
-function drawFooterBar(doc: PDFKit.PDFDocument, num: string) {
+ *  103px con una linea de acento de 5px justo encima, a todo el ancho.
+ *  El color de esa linea es configurable (stripColor) -- en la
+ *  divisoria de panel (fondo azul) tiene que ser blanca para que se
+ *  note contra el azul; en las paginas de evidencia (fondo blanco)
+ *  sigue siendo el azul de acento de siempre. La barra oscura de abajo
+ *  NO cambia en ningun caso -- se pidio que esa se quede siempre negra. */
+function drawFooterBar(doc: PDFKit.PDFDocument, num: string, stripColor = COLORS.accent) {
   const barH = 103;
   const barY = PAGE.height - barH;
-  doc.rect(0, barY - 5, PAGE.width, 5).fill(COLORS.accent);
+  doc.rect(0, barY - 5, PAGE.width, 5).fill(stripColor);
   doc.rect(0, barY, PAGE.width, barH).fill(COLORS.bg);
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, barY + (barH - 11) / 2, { characterSpacing: 1 });
@@ -532,63 +537,47 @@ function cierre(doc: PDFKit.PDFDocument, totalPages: number) {
  *  SI se lee como "vuelve el diseño de portada para anunciar algo
  *  nuevo" en vez de repetitivo.
  */
-function paginaSeccionPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  drawRingAsset(doc, 1001, 0, 599);
-
-  const y0 = PAGE.height * 0.34;
-  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, PAGE.margin, y0, COLORS.accent, 16);
-
-  const maxWidth = PAGE.width - PAGE.margin * 2 - 480;
-  const titulo = sinTildes(nombrePanel).toUpperCase();
-  const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 64, 32);
-  doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.white)
-    .text(titulo, PAGE.margin, y0 + 42, { width: maxWidth });
-
-  const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
-  if (ubicacion && sinTildes(ubicacion) !== titulo) {
-    doc.font("Helvetica").fontSize(19).fillColor(COLORS.muted)
-      .text(sinTildes(ubicacion), PAGE.margin, y0 + 42 + tituloHeight + 16, { width: maxWidth });
-  }
-
-  doc.moveTo(PAGE.margin, y0 - 24).lineTo(PAGE.margin + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.accent2).stroke();
-
-  drawFooterLine(doc, pad2(pageNum), true);
-}
-
-/** Divisoria del PRIMER panel -- fondo blanco con una franja de acento
- *  a todo el alto en vez de fondo oscuro + anillo (eso es lo que usa
- *  la portada justo antes, y de ahi el "se ve repetido" original).
- *  Mismo tamaño de letra que paginaSeccionPanel (tamanoQueEntra con
- *  64/32) para que el titulo de este panel y el del siguiente se vean
- *  del mismo tamaño relativo, aunque el diseño de fondo sea distinto. */
-function paginaPrimerPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
+/** Divisoria de panel -- fondo azul solido a todo lo ancho, con una
+ *  franja BLANCA a todo el alto a la izquierda (invertido: antes era
+ *  al reves, fondo blanco con franja azul). Mismo diseño para
+ *  cualquier panel de la campaña (antes el primero y el resto se veian
+ *  distintos -- ahora todos usan exactamente este mismo diseño). La
+ *  barra oscura del pie de pagina no cambia, sigue negra. */
+function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.accent);
 
   const barW = 26;
-  doc.rect(0, 0, barW, PAGE.height).fill(COLORS.accent);
+  doc.rect(0, 0, barW, PAGE.height).fill(COLORS.white);
 
-  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   const leftX = barW + 58;
   const y0 = PAGE.height * 0.34;
-  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, leftX, y0, COLORS.accent, 16);
+  drawKicker(doc, `Panel ${indiceSeccion} de ${totalSecciones}`, leftX, y0, COLORS.white, 16);
 
   const maxWidth = PAGE.width - leftX - PAGE.margin - 220;
   const titulo = sinTildes(nombrePanel).toUpperCase();
   const tituloSize = tamanoQueEntra(doc, titulo, maxWidth, "Helvetica-Bold", 64, 32);
-  doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.ink)
+  doc.font("Helvetica-Bold").fontSize(tituloSize).fillColor(COLORS.white)
     .text(titulo, leftX, y0 + 42, { width: maxWidth });
 
   const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
   if (ubicacion && sinTildes(ubicacion) !== titulo) {
-    doc.font("Helvetica").fontSize(19).fillColor(COLORS.mutedOnLight)
+    // Blanco con opacidad reducida en vez de accent2 -- accent2 (azul
+    // claro) sobre el fondo azul de esta pagina practicamente no se
+    // veia (muy poco contraste). Blanco semi-transparente si contrasta
+    // bien y se sigue leyendo como texto secundario, no tan fuerte
+    // como el titulo de arriba.
+    doc.save();
+    doc.fillOpacity(0.72);
+    doc.font("Helvetica").fontSize(19).fillColor(COLORS.white)
       .text(sinTildes(ubicacion), leftX, y0 + 42 + tituloHeight + 16, { width: maxWidth });
+    doc.restore();
   }
 
-  doc.moveTo(leftX, y0 - 24).lineTo(leftX + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.accent).stroke();
+  doc.moveTo(leftX, y0 - 24).lineTo(leftX + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.white).stroke();
 
-  drawFooterBar(doc, pad2(pageNum));
+  drawFooterBar(doc, pad2(pageNum), COLORS.white);
 }
 
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
@@ -613,11 +602,7 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
     const elemento = elementosConFotos[s];
     if (conSecciones) {
       doc.addPage();
-      if (s === 0) {
-        paginaPrimerPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
-      } else {
-        paginaSeccionPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
-      }
+      paginaPanel(doc, elemento.titulo, elemento.ubicacion ?? "", pageNum, s + 1, elementosConFotos.length);
       pageNum++;
     }
 
