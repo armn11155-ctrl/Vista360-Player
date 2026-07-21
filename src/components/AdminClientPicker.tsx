@@ -324,7 +324,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   )}
                 </div>
                 <span className="admin-picker-tile-name">{c.empresa}</span>
-                {tab === "activos" && <span className="admin-picker-tile-hint">Entrar a la cuenta <span>→</span></span>}
                 {tab !== "activos" && (
                   <div className="admin-picker-archive-actions">
                     <button type="button" onClick={() => restaurarCliente(c)} disabled={busy} title="Recuperar perfil">
