@@ -78,13 +78,6 @@ const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png"
 const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
-// Misma imagen que LOGO_PLAYER_WHITE pero con "PLAYER" (y las lineas)
-// tambien en blanco en vez de azul -- en LOGO_PLAYER_WHITE ese texto es
-// azul, que sobre el fondo azul de paginaPanel() practicamente no se
-// veia (mismo problema que ya se corrigio con la direccion). Se usa
-// SOLO en paginaPanel(); el resto de paginas (fondo oscuro casi negro)
-// siguen usando LOGO_PLAYER_WHITE normal, donde el azul si contrasta.
-const LOGO_PLAYER_WHITE_MONO = join(ASSETS_DIR, "logos/vista360-player-white-mono.png");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -237,13 +230,13 @@ function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, sho
     .text(num, PAGE.width - PAGE.margin - 40, y + 12, { width: 40, align: "right" });
 }
 
-/** Pie de pagina de barra (paginas blancas de evidencia): barra oscura de
- *  103px con una linea de acento de 5px justo encima, a todo el ancho.
- *  El color de esa linea es configurable (stripColor) -- en la
- *  divisoria de panel (fondo azul) tiene que ser blanca para que se
- *  note contra el azul; en las paginas de evidencia (fondo blanco)
- *  sigue siendo el azul de acento de siempre. La barra oscura de abajo
- *  NO cambia en ningun caso -- se pidio que esa se quede siempre negra. */
+/** Pie de pagina de barra: barra oscura de 103px con una linea de
+ *  acento configurable de 5px justo encima, a todo el ancho. Color y
+ *  grosor de esa linea son parametros (stripColor/stripHeight) -- en
+ *  las paginas de evidencia (fondo blanco) es el azul de acento de
+ *  siempre; en la divisoria de panel (fondo oscuro) es accentDark. La
+ *  barra oscura de abajo NO cambia en ningun caso -- se pidio que esa
+ *  se quede siempre negra. */
 function drawFooterBar(doc: PDFKit.PDFDocument, num: string, stripColor = COLORS.accent, stripHeight = 5) {
   const barH = 103;
   const barY = PAGE.height - barH;
@@ -409,70 +402,6 @@ async function paginaEvidenciaBlanca(
   drawFooterBar(doc, pad2(pageNum));
 }
 
-async function paginaEvidenciaOscura(
-  doc: PDFKit.PDFDocument,
-  foto: { url: string; fecha?: string },
-  pageNum: number,
-  indice: number
-) {
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
-
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
-  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
-  doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
-
-  // Misma composicion que la pagina blanca (foto + tarjeta flotante a
-  // la derecha), pero con la tarjeta en blanco para que resalte contra
-  // el fondo oscuro (en la pagina blanca la tarjeta es oscura).
-  const photoX = 74;
-  const photoY = 195;
-  const photoW = 996;
-  const photoH = 546;
-  const buffer = await cargarFotoComprimida(foto.url);
-  drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
-  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
-
-  const cardW = 346;
-  const cardH = 269;
-  const cardX = 1518 - cardW;
-  const cardY = photoY + (photoH - cardH) / 2;
-  const cx = cardX + cardW / 2;
-  doc.save();
-  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
-  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.white);
-  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
-  doc.restore();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
-    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.ink)
-    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
-  doc.font("Helvetica").fontSize(12).fillColor(COLORS.mutedOnLight)
-    .text("Presencia confirmada en punto de exhibicion.", cardX + 20, cardY + 92, { width: cardW - 40, align: "center" });
-  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent).stroke();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
-    .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
-    .text(fechaCorta(foto.fecha), cardX, cardY + 202, { width: cardW, align: "center" });
-
-  // Antes usaba drawFooterLine (pie fino) mientras que la pagina
-  // blanca de al lado usa drawFooterBar (pie de barra) -- distinta
-  // altura para el texto "VISTA360 - REPORTE FOTOGRAFICO" entre una
-  // pagina y otra, se notaba feo al alternar blanco/negro. Ahora las
-  // dos usan drawFooterBar, misma altura siempre (la barra queda del
-  // mismo color que el fondo oscuro, asi que no se nota como barra,
-  // solo alinea el texto).
-  // Pagina de fondo negro -- se probo sin ninguna rayita, pero se
-  // pidio despues que SI haya una, delgadita y gris, igual que la
-  // rayita divisoria que ya se usa en el Inicio de la app (1px, gris
-  // clarito) -- por eso el grosor es mucho mas fino (2pt) que el de
-  // las otras paginas (5pt) y el color es gris (COLORS.muted) en vez
-  // de azul.
-  drawFooterBar(doc, pad2(pageNum), COLORS.muted, 2);
-}
-
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
  *  TODO: mover esto a config/Firestore si se necesita cambiar sin
  *  tocar codigo. Por ahora son valores de prueba. */
@@ -556,33 +485,22 @@ function cierre(doc: PDFKit.PDFDocument) {
     .text(CONTACTO_WEB, leftX + 40, y);
 }
 
-/** Pagina divisoria entre paneles de una misma campaña multi-panel --
- *  mismo lenguaje visual que portada/cierre (fondo oscuro + anillo de
- *  marca), asi el reporte se siente diseñado a proposito y no como una
- *  lista de fotos pegadas. Solo se usa cuando hay 2+ paneles en el
- *  reporte -- con un solo panel/elemento no hace falta anunciarlo.
- *
- *  OJO: esta version (fondo oscuro + anillo) se usa para el panel 2 en
- *  adelante -- para el PRIMER panel se usa paginaPrimerPanel() en vez
- *  de esta, porque queda pegada justo despues de la portada (que tiene
- *  este mismo estilo) y se sentia como una repeticion inmediata en vez
- *  de una seccion nueva. Del segundo panel en adelante, como ya hubo
- *  paginas de evidencia blancas/oscuras en el medio, este mismo estilo
- *  SI se lee como "vuelve el diseño de portada para anunciar algo
- *  nuevo" en vez de repetitivo.
- */
-/** Divisoria de panel -- fondo azul solido a todo lo ancho, con una
- *  franja BLANCA a todo el alto a la izquierda (invertido: antes era
- *  al reves, fondo blanco con franja azul). Mismo diseño para
- *  cualquier panel de la campaña (antes el primero y el resto se veian
- *  distintos -- ahora todos usan exactamente este mismo diseño). La
- *  barra oscura del pie de pagina no cambia, sigue negra. */
+/** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
+ *  era azul, se pidio que sea oscuro en su totalidad, igual que el
+ *  resto de paginas oscuras del reporte -- portada, cierre, etc).
+ *  Mismo diseño para cualquier panel de la campaña. La barra del pie
+ *  de pagina no cambia, sigue con la franja de acento azul. */
 function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: string, pageNum: number, indiceSeccion: number, totalSecciones: number) {
-  // Todo el fondo azul, sin la franja blanca de la izquierda que tenia
-  // antes (se pidio que no quede espacio blanco, que sea todo azul).
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.accent);
+  // Fondo oscuro (antes era azul solido) -- se pidio que ya no sea
+  // azul claro, que sea oscuro en su totalidad.
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
 
-  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  // Con fondo oscuro el logo normal (con "PLAYER" en azul) SI contrasta
+  // bien -- la version MONO (todo blanco) se habia creado solo porque
+  // antes el fondo era azul y el azul del logo se perdia contra el
+  // azul del fondo. Ahora que el fondo es oscuro, se usa el logo
+  // normal para que quede igual que el resto de paginas oscuras.
+  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   const leftX = PAGE.margin;
   const y0 = PAGE.height * 0.34;
@@ -608,11 +526,8 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
 
   const tituloHeight = doc.heightOfString(titulo, { width: maxWidth });
   if (ubicacion && sinTildes(ubicacion) !== titulo) {
-    // Blanco con opacidad reducida en vez de accent2 -- accent2 (azul
-    // claro) sobre el fondo azul de esta pagina practicamente no se
-    // veia (muy poco contraste). Blanco semi-transparente si contrasta
-    // bien y se sigue leyendo como texto secundario, no tan fuerte
-    // como el titulo de arriba.
+    // Blanco con opacidad reducida -- se sigue leyendo bien como texto
+    // secundario sobre el fondo oscuro, sin competir con el titulo.
     doc.save();
     doc.fillOpacity(0.72);
     doc.font("Helvetica").fontSize(19).fillColor(COLORS.white)
@@ -656,15 +571,11 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
 
     for (let i = 0; i < fotosElemento.length; i++) {
       doc.addPage();
-      // Empieza en blanco y alterna: blanco, negro, blanco, negro...
-      // (se reinicia por cada panel, para que cada sección arranque
-      // siempre en la misma página blanca de bienvenida)
-      const dark = i % 2 === 1;
-      if (dark) {
-        await paginaEvidenciaOscura(doc, fotosElemento[i], pageNum, i + 1);
-      } else {
-        await paginaEvidenciaBlanca(doc, fotosElemento[i], pageNum, i + 1);
-      }
+      // Ya no alterna blanco/negro -- se pidio que TODAS las paginas
+      // de evidencia usen siempre el mismo diseño (fondo blanco, linea
+      // de acento azul, pie de pagina negro). La variante oscura
+      // (paginaEvidenciaOscura) se elimino.
+      await paginaEvidenciaBlanca(doc, fotosElemento[i], pageNum, i + 1);
       pageNum++;
       numEvidencias++;
     }
