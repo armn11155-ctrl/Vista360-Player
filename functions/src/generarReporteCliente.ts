@@ -56,6 +56,10 @@ const COLORS = {
   mutedOnLight: "#64748b",
   line: "#1c2942",
   lineLight: "#e2e8f0",
+  // Azul intermedio -- mas oscuro que el "accent" (fondo grande de
+  // paginaPanel) pero mas claro que "bg" (la barra negra del pie). Se
+  // usa solo en la linea fina que separa el fondo azul de esa barra.
+  accentDark: "#123778",
 };
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
@@ -63,6 +67,13 @@ const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png"
 const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
+// Misma imagen que LOGO_PLAYER_WHITE pero con "PLAYER" (y las lineas)
+// tambien en blanco en vez de azul -- en LOGO_PLAYER_WHITE ese texto es
+// azul, que sobre el fondo azul de paginaPanel() practicamente no se
+// veia (mismo problema que ya se corrigio con la direccion). Se usa
+// SOLO en paginaPanel(); el resto de paginas (fondo oscuro casi negro)
+// siguen usando LOGO_PLAYER_WHITE normal, donde el azul si contrasta.
+const LOGO_PLAYER_WHITE_MONO = join(ASSETS_DIR, "logos/vista360-player-white-mono.png");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -549,7 +560,7 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
   const barW = 26;
   doc.rect(0, 0, barW, PAGE.height).fill(COLORS.white);
 
-  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   const leftX = barW + 58;
   const y0 = PAGE.height * 0.34;
@@ -577,7 +588,7 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
 
   doc.moveTo(leftX, y0 - 24).lineTo(leftX + 90, y0 - 24).lineWidth(3).strokeColor(COLORS.white).stroke();
 
-  drawFooterBar(doc, pad2(pageNum), COLORS.white);
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark);
 }
 
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
