@@ -92,6 +92,17 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
             zoomControl: false,
             attributionControl: false,
             scrollWheelZoom: false,
+            // Sin esto, al alejar el zoom se veia gris arriba/abajo (zonas
+            // sin tiles cerca de los polos) y arrastrando el mapa a los
+            // lados se podia seguir de largo viendo el mismo mapa repetido
+            // sin fin. maxBounds + viscosity "frena" el arrastre justo en
+            // el borde del mundo, minZoom no deja alejarse tanto como para
+            // que aparezca esa zona gris, y worldCopyJump:false evita que
+            // Leaflet dibuje copias repetidas del mapa al cruzar los 180°.
+            minZoom: 3,
+            maxBounds: [[-85, -180], [85, 180]],
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false,
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);

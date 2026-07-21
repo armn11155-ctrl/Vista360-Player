@@ -244,10 +244,10 @@ function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, sho
  *  note contra el azul; en las paginas de evidencia (fondo blanco)
  *  sigue siendo el azul de acento de siempre. La barra oscura de abajo
  *  NO cambia en ningun caso -- se pidio que esa se quede siempre negra. */
-function drawFooterBar(doc: PDFKit.PDFDocument, num: string, stripColor = COLORS.accent) {
+function drawFooterBar(doc: PDFKit.PDFDocument, num: string, stripColor = COLORS.accent, stripHeight = 5) {
   const barH = 103;
   const barY = PAGE.height - barH;
-  doc.rect(0, barY - 5, PAGE.width, 5).fill(stripColor);
+  doc.rect(0, barY - stripHeight, PAGE.width, stripHeight).fill(stripColor);
   doc.rect(0, barY, PAGE.width, barH).fill(COLORS.bg);
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, barY + (barH - 11) / 2, { characterSpacing: 1 });
@@ -464,12 +464,13 @@ async function paginaEvidenciaOscura(
   // dos usan drawFooterBar, misma altura siempre (la barra queda del
   // mismo color que el fondo oscuro, asi que no se nota como barra,
   // solo alinea el texto).
-  // Pagina de fondo negro -- se pidio quitar del todo la rayita de
-  // acento (ni azul ni gris) cuando el fondo es negro -- usando el
-  // mismo color que la barra/fondo (COLORS.bg) la franja se dibuja
-  // igual pero queda invisible, sin alterar la altura del pie (sigue
-  // exactamente alineada con la pagina blanca de al lado).
-  drawFooterBar(doc, pad2(pageNum), COLORS.bg);
+  // Pagina de fondo negro -- se probo sin ninguna rayita, pero se
+  // pidio despues que SI haya una, delgadita y gris, igual que la
+  // rayita divisoria que ya se usa en el Inicio de la app (1px, gris
+  // clarito) -- por eso el grosor es mucho mas fino (2pt) que el de
+  // las otras paginas (5pt) y el color es gris (COLORS.muted) en vez
+  // de azul.
+  drawFooterBar(doc, pad2(pageNum), COLORS.muted, 2);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
