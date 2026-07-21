@@ -1567,8 +1567,8 @@
     aspect-ratio: 1 / 1;
     border-radius: 10px;
     overflow: hidden;
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.10);
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
   }
   .report-photo-thumb img {
     width: 100%;
@@ -1619,10 +1619,10 @@
     line-height: 1.5;
   }
   .report-campaign-panel-box {
-    border: 1px solid rgba(255,255,255,.32);
+    border: 1px solid #E2E8F0;
     border-radius: 12px;
     padding: 12px;
-    background: rgba(255,255,255,.045);
+    background: #FFFFFF;
   }
   .report-campaign-panel-header {
     display: flex;
@@ -1634,11 +1634,11 @@
   .report-campaign-panel-name {
     font-size: 13px;
     font-weight: 800;
-    color: #F1F5F9;
+    color: #0B1220;
   }
   .report-campaign-panel-sub {
     font-size: 11px;
-    color: #8B96AC;
+    color: #64748B;
     margin-top: 2px;
   }
   .report-campaign-panel-add {
@@ -2900,10 +2900,7 @@
     }
     .inicio-header {
       padding: 42px 48px 54px !important;
-      background:
-        radial-gradient(900px 420px at 12% -18%, rgba(8,119,255,.22), transparent 60%),
-        radial-gradient(700px 380px at 94% 130%, rgba(47,111,237,.14), transparent 65%),
-        #050A12 !important;
+      background: #050A12 !important;
       border-bottom: 3px solid var(--premium-rule) !important;
       box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
     }
