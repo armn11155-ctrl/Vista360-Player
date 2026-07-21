@@ -21,6 +21,11 @@ function formatoEspacio(bytes: number) {
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
+// Plan gratuito de Cloudflare R2: 10 GB de almacenamiento incluidos. Si el
+// día de mañana se contrata más espacio, este es el único número que hay
+// que cambiar para que la barra de abajo refleje el límite real.
+const LIMITE_ESPACIO_BYTES = 10 * 1024 * 1024 * 1024;
+
 type EspacioEstado = { status: "loading" | "ready" | "error"; bytes?: number; objetos?: number };
 
 /** Espacio total usado en R2 (todos los clientes juntos), en vivo — no cacheado. */
@@ -59,6 +64,10 @@ function useEspacioR2(): EspacioEstado {
  */
 export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
   const espacio = useEspacioR2();
+  const porcentajeUsado =
+    espacio.status === "ready" && espacio.bytes !== undefined
+      ? (espacio.bytes / LIMITE_ESPACIO_BYTES) * 100
+      : 0;
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
@@ -152,6 +161,27 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                       : "…"}
                 </strong>
               </div>
+              {espacio.status === "ready" && espacio.bytes !== undefined && (
+                <div className="storage-usage-bar-wrap">
+                  <div className="storage-usage-bar-track">
+                    <div
+                      className={`storage-usage-bar-fill${porcentajeUsado >= 90 ? " is-critical" : ""}`}
+                      style={{ width: `${Math.min(100, Math.max(porcentajeUsado, porcentajeUsado > 0 ? 2 : 0))}%` }}
+                    />
+                  </div>
+                  <div className="storage-usage-bar-caption">
+                    <span>{formatoEspacio(espacio.bytes)} de 10 GB usados</span>
+                    <strong className={porcentajeUsado >= 90 ? "is-critical" : ""}>
+                      {porcentajeUsado.toFixed(porcentajeUsado < 10 ? 1 : 0)}%
+                    </strong>
+                  </div>
+                  {porcentajeUsado >= 90 && (
+                    <div className="storage-usage-bar-warning">
+                      Te estás quedando sin espacio -- considera borrar archivos que ya no uses.
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </section>

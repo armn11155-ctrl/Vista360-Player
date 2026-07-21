@@ -2258,6 +2258,50 @@
   .profile-metric-row.blue strong { color: #0877FF; }
   .profile-metric-row.green strong { color: #16A34A; }
   .profile-metric-row.orange strong { color: #0B3F8A; }
+  .storage-usage-bar-wrap {
+    padding: 4px 18px 16px;
+  }
+  .storage-usage-bar-track {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background: #EEF2F7;
+    overflow: hidden;
+  }
+  .storage-usage-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #0877FF, #65B1FF);
+    transition: width 0.4s ease;
+  }
+  .storage-usage-bar-fill.is-critical {
+    background: linear-gradient(90deg, #DC2626, #EF4444);
+  }
+  .storage-usage-bar-caption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #7C8AA0;
+  }
+  .storage-usage-bar-caption strong {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #0877FF;
+  }
+  .storage-usage-bar-caption strong.is-critical {
+    color: #DC2626;
+  }
+  .storage-usage-bar-warning {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #DC2626;
+    line-height: 1.4;
+  }
   .menu-item.danger .menu-item-icon { background: rgba(239,68,68,0.14); }
 
   .facturas-screen {
