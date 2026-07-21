@@ -80,12 +80,10 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     .sort((a, b) => ORDEN_ESTADO[estadoCampana(a)] - ORDEN_ESTADO[estadoCampana(b)]);
   const informesState = useInformes(isAdmin ? clienteId ?? "" : "");
   const mesActual = new Date().toISOString().slice(0, 7);
-  // Antes esto era un solo mensaje para TODO el cliente ("ya se envió
-  // / falta el informe de este mes"), sin distinguir ni campaña ni
-  // panel -- con un cliente de 2+ campañas activas (o una campaña de
-  // 2+ paneles) ese mensaje único no decía nada útil. Ahora se arma
-  // una fila por cada campaña ACTIVA, y si esa campaña tiene 2+
-  // paneles, dice puntualmente cuál panel falta (o si ya están todos).
+  // Por campaña: solo importa si YA se subió/generó algún reporte
+  // este mes o no -- el admin pidió explícitamente que no se cuenten
+  // paneles (el reporte va por campaña completa, sea de 1 o de 2+
+  // paneles), así que da igual cuántos paneles tenga.
   const informesDelMes = informesState.status === "ready"
     ? informesState.informes.filter((i) => i.mes === mesActual)
     : [];
@@ -96,54 +94,13 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       ? idsPaneles.map((id) => paneles[id]?.nombre ?? id).join(" + ")
       : (paneles[c.panel_id]?.nombre ?? c.panel_id);
     const nombreCampana = formatCampaignName(c.nombre || panelNombreLocal);
-    const informesCampana = informesDelMes.filter((i) => i.contratoId === c.id);
-
-    if (idsPaneles.length <= 1) {
-      const listo = informesCampana.length > 0;
-      return {
-        id: c.id,
-        listo,
-        texto: listo
-          ? `${nombreCampana}: informe de este mes enviado`
-          : `${nombreCampana}: falta generar el informe de este mes`,
-      };
-    }
-
-    // Campaña con 2+ paneles -- se junta que paneles quedaron
-    // cubiertos entre TODOS los reportes de este mes de esta campaña
-    // (puede haber más de uno por mes, uno por día). Reportes viejos
-    // sin ese detalle (generados antes de que existiera este
-    // seguimiento) se toman como "cubre todo", para no mostrar un
-    // falso "falta" sobre datos que no se pueden saber.
-    const panelesCubiertos = new Set<string>();
-    let huboInformeSinDetalle = false;
-    informesCampana.forEach((i) => {
-      if (i.panelesIncluidos && i.panelesIncluidos.length > 0) {
-        i.panelesIncluidos.forEach((id) => panelesCubiertos.add(id));
-      } else if (informesCampana.length > 0 && (!i.panelesIncluidos || i.panelesIncluidos.length === 0)) {
-        huboInformeSinDetalle = true;
-      }
-    });
-
-    if (huboInformeSinDetalle || panelesCubiertos.size >= idsPaneles.length) {
-      return {
-        id: c.id,
-        listo: true,
-        texto: `${nombreCampana}: informe de este mes enviado (${idsPaneles.length} paneles)`,
-      };
-    }
-    if (panelesCubiertos.size === 0) {
-      return {
-        id: c.id,
-        listo: false,
-        texto: `${nombreCampana}: falta subir los ${idsPaneles.length} paneles de este mes`,
-      };
-    }
-    const faltantes = idsPaneles.filter((id) => !panelesCubiertos.has(id)).map((id) => paneles[id]?.nombre ?? id);
+    const listo = informesDelMes.some((i) => i.contratoId === c.id);
     return {
       id: c.id,
-      listo: false,
-      texto: `${nombreCampana}: falta subir ${faltantes.join(", ")} este mes`,
+      listo,
+      texto: listo
+        ? `${nombreCampana}: informe de este mes enviado`
+        : `${nombreCampana}: falta generar el informe de este mes`,
     };
   });
 
