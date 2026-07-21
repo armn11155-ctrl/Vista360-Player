@@ -2964,52 +2964,138 @@
       font-size: 20px !important;
       margin-bottom: 14px !important;
     }
+    /* "Resumen general" queda a todo el ancho (fuera de
+       .inicio-dashboard-grid, ver mas abajo) para que las 4 tarjetas
+       KPI tengan espacio de sobra -- antes competian por ancho con la
+       columna lateral y el valor (fecha, mes, etc.) se veia apretado
+       o cortado. */
     .inicio-summary-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      gap: 14px !important;
-      margin-bottom: 26px !important;
+      gap: 16px !important;
+      margin-bottom: 8px !important;
     }
-    .inicio-summary-grid > div {
-      min-height: 106px !important;
-      padding: 18px !important;
-      border-radius: 14px !important;
+    /* Tarjeta KPI en escritorio: de fila horizontal comprimida (icono +
+       texto pegados) pasa a tarjeta vertical tipo dashboard -- icono
+       arriba, etiqueta chica en mayusculas, valor grande debajo, con
+       espacio de sobra para que nada se corte ni se amontone. */
+    .inicio-kpi-card {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0 !important;
+      min-height: 128px !important;
+      padding: 20px 20px 22px !important;
+      border-radius: 16px !important;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .inicio-kpi-icon {
+      width: 44px !important;
+      height: 44px !important;
+      border-radius: 13px !important;
+      margin-bottom: 16px !important;
+    }
+    .inicio-kpi-body {
+      width: 100%;
+    }
+    .inicio-kpi-label {
+      font-size: 12.5px !important;
+      font-weight: 700 !important;
+      color: #64748B !important;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px !important;
+      white-space: normal !important;
+    }
+    .inicio-kpi-value {
+      font-size: 25px !important;
+      line-height: 1.18 !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      word-break: break-word;
+    }
+    @media (hover: hover) {
+      .inicio-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 38px rgba(15,23,42,0.10);
+        border-color: #C9DBFF !important;
+      }
     }
     .inicio-divider {
-      margin-bottom: 22px !important;
+      margin-bottom: 24px !important;
     }
+    /* De aca para abajo, Accesos rapidos + Ultimo reporte comparten
+       las dos columnas (ver .inicio-dashboard-grid) -- Resumen general
+       ya quedo arriba, a todo el ancho. */
     .inicio-quick-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       gap: 14px !important;
-      margin-bottom: 26px !important;
+      margin-bottom: 0 !important;
     }
+    /* Iconos de accesos rapidos con un leve efecto al pasar el mouse --
+       en movil no aplica (hover:hover excluye tactil), es un detalle
+       solo para escritorio. */
     .inicio-quick-grid > div {
-      min-height: 100px !important;
+      min-height: 108px !important;
       border-radius: 14px !important;
-    }
-    .inicio-evidence-card {
-      border-radius: 14px !important;
-      min-height: 140px;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
     }
     .inicio-dashboard-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+      grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
       gap: 22px;
       align-items: start;
     }
     .inicio-side-col .inicio-evidence-card {
       margin-top: 0;
     }
-    /* Iconos de accesos rapidos con un leve efecto al pasar el mouse --
-       en movil no aplica (hover:hover excluye tactil), es un detalle
-       solo para escritorio. */
-    .inicio-quick-grid > div {
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-    }
     @media (hover: hover) {
       .inicio-quick-grid > div:hover {
         transform: translateY(-3px);
         box-shadow: 0 18px 34px rgba(15,23,42,0.10);
         border-color: #C9DBFF !important;
+      }
+    }
+    /* "Ultimo reporte" -- mas aire y elementos mas grandes, se veia
+       apretado compartiendo ancho con el resto antes de este ajuste. */
+    .inicio-evidence-card {
+      border-radius: 16px !important;
+      min-height: 220px;
+      padding: 26px !important;
+      display: flex;
+      flex-direction: column;
+    }
+    .inicio-report-title {
+      font-size: 19px !important;
+      margin-bottom: 20px !important;
+    }
+    .inicio-report-row {
+      align-items: flex-start !important;
+      gap: 20px !important;
+    }
+    .inicio-report-icon {
+      width: 68px !important;
+      height: 86px !important;
+      border-radius: 12px !important;
+    }
+    .inicio-report-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+    .inicio-report-month {
+      font-size: 20px !important;
+      margin-bottom: 10px !important;
+    }
+    .inicio-report-meta {
+      font-size: 14.5px !important;
+      margin-bottom: 20px !important;
+    }
+    .inicio-report-link {
+      font-size: 16.5px !important;
+      transition: opacity .15s ease;
+    }
+    @media (hover: hover) {
+      .inicio-report-link:hover {
+        opacity: .72;
       }
     }
 

@@ -170,9 +170,9 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         )}
 
-        <div className="inicio-dashboard-grid">
-        <div className="inicio-main-col">
-        {/* RESUMEN GENERAL — título suelto, cards individuales */}
+        {/* RESUMEN GENERAL — título suelto, cards individuales, a todo el
+            ancho (si compartiera columna con "Accesos rápidos" los KPIs
+            se veian apretados/cortados en escritorio) */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
         <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
           {[
@@ -192,22 +192,26 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           ].map((k,i) => (
             <div
               key={i}
+              className="inicio-kpi-card"
               onClick={k.onClick}
               style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor: k.onClick ? "pointer" : "default" }}
             >
-              <div style={{ width:38, height:38, borderRadius:19, background:k.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:19, background:k.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {k.icon}
               </div>
-              <div style={{ minWidth:0, flex:1 }}>
-                <div style={{ fontSize: 12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{k.label}</div>
-                <div style={{ fontSize:17, fontWeight:800, color:k.valColor ?? "#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
+              <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
+                <div className="inicio-kpi-label" style={{ fontSize: 12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{k.label}</div>
+                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:k.valColor ?? "#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
         <div className="inicio-divider" style={{ height:1, background:"#E6EAF1", marginBottom:16 }} />
+
+        <div className="inicio-dashboard-grid">
+        <div className="inicio-main-col">
+        {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>
           {[
@@ -233,26 +237,26 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <div className="inicio-side-col">
         {/* ÚLTIMO REPORTE — sí es una card (igual al mockup) */}
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
-          <div style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
+          <div className="inicio-report-title" style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
           {informesState.status === "loading" ? (
             <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Cargando…</div>
           ) : ultimoInforme ? (
-            <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-              <div style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
+              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
                   <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
                 </svg>
               </div>
-              <div style={{ flex:1, paddingTop:2 }}>
-                <div style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
+              <div className="inicio-report-body" style={{ flex:1, paddingTop:2 }}>
+                <div className="inicio-report-month" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
                   {ultimoInforme.mesLabel}
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:8, color:"#52627A", fontSize: 14, marginBottom:16 }}>
+                <div className="inicio-report-meta" style={{ display:"flex", alignItems:"center", gap:8, color:"#52627A", fontSize: 14, marginBottom:16 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52627A" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                   Generado el {fechaGeneradoInforme(ultimoInforme.createdAt)}
                 </div>
-                <div onClick={() => onGoTo("reportes")} style={{ display:"inline-flex", alignItems:"center", gap:4, color:"#0877FF", fontSize:16, fontWeight:800, cursor:"pointer" }}>
+                <div className="inicio-report-link" onClick={() => onGoTo("reportes")} style={{ display:"inline-flex", alignItems:"center", gap:4, color:"#0877FF", fontSize:16, fontWeight:800, cursor:"pointer" }}>
                   Ver reportes <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
               </div>
