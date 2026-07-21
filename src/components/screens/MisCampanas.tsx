@@ -111,7 +111,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   }
 
   async function guardarEdicion() {
-    if (!editando || !db) return;
+    if (!editando || !cloudFunctions) return;
     const nombre = formatCampaignName(editando.nombre);
     if (!nombre) {
       setEditando({ ...editando, error: "Escribe el nombre de la campaña." });
@@ -127,7 +127,12 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     }
     setEditando({ ...editando, guardando: true, error: "" });
     try {
-      await updateDoc(doc(db, "contratos", editando.contrato.id), {
+      const fn = httpsCallable<
+        { contratoId: string; nombre: string; inicio: string; fin: string },
+        { ok: boolean }
+      >(cloudFunctions, "actualizarContrato");
+      await fn({
+        contratoId: editando.contrato.id,
         nombre,
         inicio: editando.inicio,
         fin: editando.fin,
