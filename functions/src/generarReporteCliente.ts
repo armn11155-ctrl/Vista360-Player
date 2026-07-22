@@ -78,6 +78,10 @@ const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png"
 const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
+// Version del logo con "PLAYER" (y las lineas) en blanco en vez de
+// azul -- se usa SOLO en paginaPanel(), donde se pidio el logo
+// totalmente blanco (sin nada de azul).
+const LOGO_PLAYER_WHITE_MONO = join(ASSETS_DIR, "logos/vista360-player-white-mono.png");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -234,13 +238,34 @@ function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, sho
  *  acento configurable de 5px justo encima, a todo el ancho. Color y
  *  grosor de esa linea son parametros (stripColor/stripHeight) -- en
  *  las paginas de evidencia (fondo blanco) es el azul de acento de
- *  siempre; en la divisoria de panel (fondo oscuro) es accentDark. La
- *  barra oscura de abajo NO cambia en ningun caso -- se pidio que esa
- *  se quede siempre negra. */
-function drawFooterBar(doc: PDFKit.PDFDocument, num: string, stripColor = COLORS.accent, stripHeight = 5) {
+ *  siempre; en la divisoria de panel (fondo oscuro) es un degradado
+ *  (ver stripGradient) en vez de un color solido. La barra oscura de
+ *  abajo NO cambia en ningun caso -- se pidio que esa se quede siempre
+ *  negra.
+ *
+ *  stripGradient (opcional): lista de colores para pintar la linea
+ *  como un degradado horizontal en vez de solida -- se pidio para la
+ *  divisoria de panel un azul que "empieza oscuro, se aclara al medio
+ *  y vuelve oscuro", como un brillo metalico elegante. Si se pasa,
+ *  tiene prioridad sobre stripColor. */
+function drawFooterBar(
+  doc: PDFKit.PDFDocument,
+  num: string,
+  stripColor = COLORS.accent,
+  stripHeight = 5,
+  stripGradient?: string[]
+) {
   const barH = 103;
   const barY = PAGE.height - barH;
-  doc.rect(0, barY - stripHeight, PAGE.width, stripHeight).fill(stripColor);
+  if (stripGradient && stripGradient.length > 1) {
+    const gradient = doc.linearGradient(0, 0, PAGE.width, 0);
+    stripGradient.forEach((color, i) => {
+      gradient.stop(i / (stripGradient.length - 1), color);
+    });
+    doc.rect(0, barY - stripHeight, PAGE.width, stripHeight).fill(gradient);
+  } else {
+    doc.rect(0, barY - stripHeight, PAGE.width, stripHeight).fill(stripColor);
+  }
   doc.rect(0, barY, PAGE.width, barH).fill(COLORS.bg);
   doc.font("Helvetica").fontSize(10.5).fillColor(COLORS.muted)
     .text("VISTA360 - REPORTE FOTOGRAFICO", PAGE.margin, barY + (barH - 11) / 2, { characterSpacing: 1 });
@@ -495,12 +520,9 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
   // azul claro, que sea oscuro en su totalidad.
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
 
-  // Con fondo oscuro el logo normal (con "PLAYER" en azul) SI contrasta
-  // bien -- la version MONO (todo blanco) se habia creado solo porque
-  // antes el fondo era azul y el azul del logo se perdia contra el
-  // azul del fondo. Ahora que el fondo es oscuro, se usa el logo
-  // normal para que quede igual que el resto de paginas oscuras.
-  doc.image(LOGO_PLAYER_WHITE, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  // Logo totalmente blanco (sin nada de azul) -- se pidio
+  // especificamente para esta pagina.
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
   const leftX = PAGE.margin;
   const y0 = PAGE.height * 0.34;
@@ -535,7 +557,10 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
     doc.restore();
   }
 
-  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark);
+  // Linea de acento como degradado -- empieza oscura, se aclara al
+  // medio y vuelve oscura, efecto de brillo elegante en vez de un
+  // azul plano.
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark]);
 }
 
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
