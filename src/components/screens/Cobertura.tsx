@@ -110,6 +110,7 @@ function popupHtml(panel: PanelConUso) {
   return `
     <div class="coverage-popup-card">
       <div class="coverage-popup-media" style="background-image:url('${fotoUrl}')">
+        <span class="coverage-popup-panel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg></span>
         <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
       </div>
       <div class="coverage-popup-body">

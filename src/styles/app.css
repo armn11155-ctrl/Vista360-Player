@@ -451,7 +451,18 @@
      pinta la barra azul solida de base (nunca se pone oscura/negra en
      las puntas, se pidio que "todo sea azul"), y ::after es una franja
      de brillo blanco que viaja de izquierda a derecha en loop --
-     el efecto de "luz pasando" que se pidio, en vez de una linea fija. */
+     el efecto de "luz pasando" que se pidio, en vez de una linea fija.
+     OJO: con background-size:45%, background-position 0%/100% NO es
+     "fuera de pantalla" -- ese porcentaje se calcula sobre el espacio
+     sobrante (ancho contenedor - ancho franja), asi que un valor de
+     100% todavia deja la franja pegada y visible del lado derecho.
+     Antes usabamos -45%/145%, que en la practica dejaba la franja A
+     MEDIO ENTRAR durante toda la "pausa" (por eso se veia como que se
+     quedaba pegada ahi y luego "recargaba" de golpe al reiniciar el
+     loop, en vez de verse fluido). Los valores para que la franja
+     quede REALMENTE oculta son <= -82% / >= 182% -- usamos -100%/200%
+     con margen, asi la pausa es de verdad invisible y cada pasada se
+     ve como una unica barrida limpia, sin salto visible al reiniciar. */
   .header-dark, .detail-header, .profile-top, .reports-header,
   .coverage-header-compact, .inicio-header, .campanas-header {
     position: relative;
@@ -479,17 +490,17 @@
     background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.92) 50%, transparent 100%);
     background-size: 45% 100%;
     background-repeat: no-repeat;
-    background-position: -45% 0;
-    animation: premium-rule-shine 13s ease-in-out infinite;
+    background-position: -100% 0;
+    animation: premium-rule-shine 10s ease-in-out infinite;
   }
   /* El brillo en si sigue siendo rapido (pasa en menos de 2s) -- lo
      que se alargo fue la PAUSA entre pasadas (antes se repetia cada
      3.6s seguido, se sentia muy insistente/parpadeante; ahora pasa
      una vez y despues espera, se repite recien a los 13s). */
   @keyframes premium-rule-shine {
-    0% { background-position: -45% 0; }
-    11% { background-position: 145% 0; }
-    100% { background-position: 145% 0; }
+    0% { background-position: -100% 0; }
+    12% { background-position: 200% 0; }
+    100% { background-position: 200% 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .header-dark::after, .detail-header::after, .profile-top::after,
@@ -520,8 +531,46 @@
     background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.92) 50%, transparent 100%);
     background-size: 45% 100%;
     background-repeat: no-repeat;
-    background-position: -45% 0;
-    animation: premium-rule-shine 13s ease-in-out infinite;
+    background-position: -100% 0;
+    animation: premium-rule-shine 10s ease-in-out infinite;
+  }
+
+  /* En mobile, Inicio.tsx monta ".inicio-content" con margin-top:-26
+     y border-radius:26px 26px 0 0 (ver estilo inline) -- la tarjeta
+     blanca "sube" y tapa la esquina inferior del header oscuro con un
+     borde REDONDEADO, no con una linea recta. Por eso la barra azul
+     compartida (".inicio-header::after", pegada al borde inferior
+     REAL del header) queda escondida detras de esa tarjeta en la
+     parte plana -- no se veia "una linea", se pidio arreglarlo.
+     Solucion: en vez de mover la barra a otro elemento (probado y
+     descartado -- con position:relative sin stacking context propio,
+     un pseudo-elemento con z-index negativo queda tapado tambien por
+     el propio header, que al ser "position:relative" compite en el
+     mismo nivel de stacking que ".inicio-content" y se pinta despues
+     si no le ganamos el orden), se agranda la barra DEL HEADER mismo
+     (sigue siendo ".inicio-header::before/::after", sin z-index) para
+     que se meta 3px mas alla del borde de la tarjeta en los 3 lados
+     (arriba/izq/der), con el mismo radio +3px (29px vs 26px, radios
+     concentricos). ".inicio-content" pasa a position:relative (sin
+     z-index) para quedar en el MISMO nivel de stacking que el header
+     y pintarse despues por venir despues en el DOM -- asi la tarjeta
+     tapa toda la barra excepto esos 3px parejos que sobresalen por la
+     curva, exactamente como una franja siguiendo el borde redondeado.
+     En desktop (>=900px) ".inicio-content" no tiene ni el margen
+     negativo ni el radio (se resetean mas abajo con !important), asi
+     que ahi se deja la barra recta de siempre (mismo bottom:0). */
+  @media (max-width: 899px) {
+    .inicio-content {
+      position: relative;
+    }
+    .inicio-header::before,
+    .inicio-header::after {
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      height: 32px;
+      border-radius: 29px 29px 0 0;
+    }
   }
 
   .header-dark {
@@ -5194,6 +5243,29 @@
     inset: 0;
     background: linear-gradient(180deg, rgba(3,7,14,.06) 0%, rgba(3,7,14,.52) 100%);
   }
+  /* Icono de "panel" (el mismo rectangulo tipo pantalla que se usa en
+     las tarjetas de Mis Campanas) como sello sobre la foto -- se pidio
+     de vuelta porque antes (antes de poner la foto de la ciudad real)
+     habia un dibujo de panel ahi, y se extraño ese detalle. La foto se
+     queda (le gusto), este es un sello chiquito aparte, esquina
+     opuesta al badge de estado para no pisarse. */
+  .coverage-popup-panel-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(5,10,18,.5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+  .coverage-popup-panel-icon svg {
+    width: 12px;
+    height: 12px;
+  }
   .coverage-popup-badge {
     position: absolute;
     left: 8px;
@@ -5288,8 +5360,8 @@
     background-image: linear-gradient(90deg, transparent 0%, rgba(91,147,255,.95) 50%, transparent 100%);
     background-size: 45% 100%;
     background-repeat: no-repeat;
-    background-position: -45% 0;
-    animation: premium-rule-shine 13s ease-in-out infinite;
+    background-position: -100% 0;
+    animation: premium-rule-shine 10s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
     .coverage-popup-card::after { animation: none; display: none; }
