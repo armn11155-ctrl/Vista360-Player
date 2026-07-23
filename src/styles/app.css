@@ -18,10 +18,16 @@
     --accent-lt: rgba(8,119,255,0.14);
     --border: rgba(8,119,255,0.13);
     --premium-rule: #0877FF;
-    /* Mismo degradado "oscuro-claro-oscuro" que se uso en la
-       divisoria de panel del PDF (efecto de brillo elegante) --
-       reemplaza la linea azul plana de los headers en toda la app. */
-    --premium-rule-gradient: linear-gradient(90deg, #123778, #5b93ff, #123778);
+    /* Antes iba de oscuro a claro y de vuelta a oscuro (calcado del
+       pie de la divisoria de panel del PDF) -- en la app se veia mal
+       en las esquinas: el azul oscuro solido cortaba feo justo en el
+       borde de la barra en vez de fundirse con el fondo. Ahora se
+       desvanece a transparente en los extremos (en vez de terminar en
+       un azul oscuro solido) y solo se ve el brillo claro al centro,
+       fundiendose limpio con el fondo oscuro del header en vez de
+       dejar una esquina oscura y cortada. En el PDF se deja tal cual
+       estaba (ahi si se ve bien, es un fondo distinto). */
+    --premium-rule-gradient: linear-gradient(90deg, rgba(47,111,237,0) 0%, rgba(47,111,237,.55) 20%, #5b93ff 50%, rgba(47,111,237,.55) 80%, rgba(47,111,237,0) 100%);
     --premium-shadow: 0 22px 52px rgba(5,10,18,0.10);
     --premium-shadow-soft: 0 12px 32px rgba(5,10,18,0.07);
     --green: #22C55E;
