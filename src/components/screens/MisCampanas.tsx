@@ -238,7 +238,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       {/* Header */}
       <div style={{
         background: "#050A12",
-        borderBottom: "3px solid #0877FF",
+        borderBottom: "3px solid transparent",
+        borderImage: "var(--premium-rule-gradient) 1",
         padding: "calc(24px + env(safe-area-inset-top)) 20px 16px",
         flexShrink: 0,
       }}>

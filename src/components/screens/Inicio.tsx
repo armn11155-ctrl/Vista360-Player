@@ -72,7 +72,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
     <div className="inicio-screen" style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
 
       {/* ── HEADER ── */}
-      <div className="inicio-header" style={{ padding:"calc(14px + env(safe-area-inset-top)) 22px 42px", flexShrink:0, background:headerBg, borderBottom:"3px solid #0877FF" }}>
+      <div className="inicio-header" style={{ padding:"calc(14px + env(safe-area-inset-top)) 22px 42px", flexShrink:0, background:headerBg, borderBottom:"3px solid transparent", borderImage:"var(--premium-rule-gradient) 1" }}>
         {/* Logo + menú + campana */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:24 }}>
           {/* Botón menú lateral ☰ — solo visible en móvil, en escritorio el nav siempre está abierto */}
