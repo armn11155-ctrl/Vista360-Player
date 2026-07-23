@@ -108,9 +108,11 @@ function popupHtml(panel: PanelConUso) {
     <div class="coverage-popup-card">
       <div class="coverage-popup-media">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z" stroke="#FFFFFF" stroke-width="1.6"/>
-          <path d="M8 20l1-4M16 20l-1-4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
-          <path d="M4 12h16" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/>
+          <rect x="2.5" y="4.5" width="19" height="12.5" rx="1.6" stroke="#FFFFFF" stroke-width="1.5"/>
+          <circle cx="7.6" cy="9.2" r="1.35" stroke="#FFFFFF" stroke-width="1.2"/>
+          <path d="M4 14.3l3.6-3.7 2.6 2.4 3.4-4 4.9 5.3" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8.3 21l1-4.2M15.7 21l-1-4.2" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M18.4 3c1.15.5 1.95 1.45 2.2 2.7M16.9 4.05c.75.35 1.25.95 1.4 1.75" stroke="rgba(255,255,255,.8)" stroke-width="1.1" stroke-linecap="round"/>
         </svg>
         <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
       </div>
@@ -204,7 +206,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 254, minWidth: 224, offset: [0, -6] });
+          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 288, minWidth: 258, offset: [0, -6] });
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];

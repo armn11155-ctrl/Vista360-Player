@@ -320,16 +320,19 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
             "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
           } as CSSProperties;
           return (
-            // Wrapper que detecta click/hover y NO se mueve nunca (evita
-            // el parpadeo de antes) -- el translateY del hover se lo
-            // aplica solo a la tarjeta interior (.premium-campaign-card,
-            // via selector descendiente en el CSS), asi la caja que
-            // decide "estoy en hover o no" se queda quieta siempre.
+            // Tres capas, cada una con un solo trabajo (ver comentario
+            // largo junto a .premium-campaign-card-lift en app.css):
+            // -hit detecta click/hover y nunca se mueve ni recorta nada.
+            // -lift solo se mueve (translateY), sin imagen de fondo ni
+            //  esquinas redondeadas propias -- moverla es barato.
+            // -card (adentro) tiene el recorte de esquinas + la imagen
+            //  de fondo, pero nunca se transforma a si misma.
             <div
               key={c.id}
               className={`premium-campaign-card-hit${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
               onClick={() => onAbrir(c)}
             >
+              <div className="premium-campaign-card-lift">
               <div className="premium-campaign-card" style={cityStyle}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
@@ -460,6 +463,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     )}
                   </div>
                 )}
+              </div>
               </div>
               </div>
             </div>
