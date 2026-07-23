@@ -480,11 +480,16 @@
     background-size: 45% 100%;
     background-repeat: no-repeat;
     background-position: -45% 0;
-    animation: premium-rule-shine 3.6s ease-in-out infinite;
+    animation: premium-rule-shine 13s ease-in-out infinite;
   }
+  /* El brillo en si sigue siendo rapido (pasa en menos de 2s) -- lo
+     que se alargo fue la PAUSA entre pasadas (antes se repetia cada
+     3.6s seguido, se sentia muy insistente/parpadeante; ahora pasa
+     una vez y despues espera, se repite recien a los 13s). */
   @keyframes premium-rule-shine {
-    0%, 8% { background-position: -45% 0; }
-    58%, 100% { background-position: 145% 0; }
+    0% { background-position: -45% 0; }
+    11% { background-position: 145% 0; }
+    100% { background-position: 145% 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .header-dark::after, .detail-header::after, .profile-top::after,
@@ -516,7 +521,7 @@
     background-size: 45% 100%;
     background-repeat: no-repeat;
     background-position: -45% 0;
-    animation: premium-rule-shine 3.6s ease-in-out infinite;
+    animation: premium-rule-shine 13s ease-in-out infinite;
   }
 
   .header-dark {
@@ -752,6 +757,19 @@
     cursor: pointer;
     box-shadow: 0 10px 24px -16px rgba(0,0,0,0.6);
   }
+  /* Contenedor exterior: es el que detecta click/hover y define el
+     espacio en la lista (margin-bottom) -- a proposito NUNCA cambia de
+     tamano/posicion en ningun estado (hover/active), para que el area
+     donde se detecta "estoy encima" quede siempre fija. La tarjeta de
+     adentro (.premium-campaign-card) es la que se mueve/agranda, via
+     selectores descendientes (":hover .premium-campaign-card" mas
+     abajo) -- asi el movimiento no puede correr el borde fuera del
+     cursor y volver a causar el parpadeo de antes. */
+  .premium-campaign-card-hit {
+    display: block;
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
   .premium-campaign-card {
     position: relative;
     overflow: hidden;
@@ -772,28 +790,20 @@
     border: 1px solid rgba(147,197,253,.18);
     border-radius: 18px;
     padding: 18px 15px 15px;
-    margin-bottom: 14px;
     box-shadow: 0 20px 38px -22px rgba(2,6,23,.9), inset 0 1px 0 rgba(255,255,255,.06);
-    cursor: pointer;
     display: flex;
     gap: 14px;
     align-items: flex-start;
-    /* Solo border-color en la transicion -- antes tambien transicionaba
-       box-shadow (una sombra de 48px de blur), que no se acelera por
-       GPU y obliga a repintar la tarjeta entera en cada frame. Con
-       varias tarjetas en la lista y el mouse pasando por encima, eso
-       se sentia como parpadeo/lag (esto sumado al translateY que ya
-       se habia sacado antes). border-color es una propiedad barata de
-       pintar, no debería volver a parpadear. */
-    /* transform si queda en la transicion (es barata, GPU) para que el
-       ":active { scale(.988) }" de abajo se sienta suave al presionar;
-       lo que se saco fue box-shadow, que es la propiedad cara. */
-    transition: transform .12s ease, border-color .18s ease;
+    /* Solo transform y border-color en la transicion -- box-shadow se
+       saco (era una sombra de 48px de blur, cara de repintar en cada
+       frame y causaba parpadeo/lag). Ambas son propiedades baratas
+       (GPU), no deberían volver a parpadear. */
+    transition: transform .18s ease, border-color .18s ease;
   }
   .premium-campaign-card::before {
     content: none;
   }
-  .premium-campaign-card:active { transform: scale(.988); }
+  .premium-campaign-card-hit:active .premium-campaign-card { transform: scale(.988); }
   .premium-campaign-kicker {
     color: #FFFFFF;
     font-size: 9.5px;
@@ -952,17 +962,22 @@
   }
 
   @media (hover: hover) {
-    /* Antes tenia "transform: translateY(-2px)" -- eso movia la
-       tarjeta hacia arriba al pasar el mouse, lo que corria el borde
-       de la tarjeta fuera del cursor cuando este estaba cerca del
-       limite (arriba o abajo): se disparaba mouseleave, la tarjeta
-       volvia a su lugar, el cursor volvia a quedar dentro, se
-       disparaba mouseenter de nuevo... un parpadeo infinito (se
-       prende/se apaga) mientras el mouse estuviera cerca de ese
-       borde. Se saca el translateY y se deja solo el brillo (borde +
-       sombra), que no mueve la caja ni cambia el area donde se
-       detecta el hover. */
-    .premium-campaign-card:hover {
+    /* Se pidio que vuelva el movimiento de antes (la tarjeta subiendo
+       un poco al pasar el mouse) -- la version vieja lo hacia con
+       ":hover" directo sobre la propia tarjeta, y ESA tarjeta era a la
+       vez la caja que detecta el hover: al moverse, se corria a si
+       misma fuera del cursor y parpadeaba (ver .premium-campaign-card-hit
+       mas arriba). Ahora quien detecta hover es el wrapper de afuera
+       (.premium-campaign-card-hit), que nunca se mueve -- el translateY
+       se lo aplica solo a la tarjeta de adentro, via este selector
+       descendiente. El wrapper se queda quieto siempre, no hay forma
+       de que se salga de si mismo. */
+    .premium-campaign-card-hit:hover .premium-campaign-card {
+      /* Sin box-shadow aca a proposito -- eso fue lo que causaba el
+         lag/parpadeo de repintado que se arreglo antes. transform y
+         border-color son baratos (GPU), el movimiento se ve fluido
+         sin ese costo. */
+      transform: translateY(-2px);
       border-color: rgba(96,165,250,.48);
     }
   }
@@ -5801,10 +5816,18 @@
       gap: 16px;
       padding: 26px 40px 48px !important;
     }
-    .mis-campanas-list .premium-campaign-card {
+    /* El grid item ahora es el wrapper (.premium-campaign-card-hit) --
+       la tarjeta interior (.premium-campaign-card) solo llena el
+       wrapper al 100%, para que le siga quedando espacio para
+       moverse (translateY) sin que la caja del grid cambie de tamano. */
+    .mis-campanas-list .premium-campaign-card-hit {
       width: 100%;
       min-height: 178px;
       margin-bottom: 0;
+    }
+    .mis-campanas-list .premium-campaign-card {
+      width: 100%;
+      height: 100%;
     }
     .mis-campanas-list .premium-campaign-card-last-single {
       grid-column: 1 / -1;

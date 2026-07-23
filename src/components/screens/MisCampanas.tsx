@@ -320,12 +320,17 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
             "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
           } as CSSProperties;
           return (
+            // Wrapper que detecta click/hover y NO se mueve nunca (evita
+            // el parpadeo de antes) -- el translateY del hover se lo
+            // aplica solo a la tarjeta interior (.premium-campaign-card,
+            // via selector descendiente en el CSS), asi la caja que
+            // decide "estoy en hover o no" se queda quieta siempre.
             <div
               key={c.id}
-              className={`premium-campaign-card${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
-              style={cityStyle}
+              className={`premium-campaign-card-hit${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
               onClick={() => onAbrir(c)}
             >
+              <div className="premium-campaign-card" style={cityStyle}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -455,6 +460,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     )}
                   </div>
                 )}
+              </div>
               </div>
             </div>
           );
