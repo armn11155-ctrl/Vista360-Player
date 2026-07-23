@@ -5147,69 +5147,68 @@
     line-height: inherit;
   }
   .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-close-button {
-    color: rgba(255,255,255,.85);
+    /* Antes blanco (el banner ocupaba todo el ancho arriba, fondo
+       oscuro) -- ahora el layout es horizontal (foto a la izquierda,
+       texto a la derecha) y la esquina de arriba a la derecha cae
+       sobre el fondo BLANCO de la columna de texto, asi que el boton
+       tiene que ser oscuro para verse. */
+    color: rgba(15,23,42,.55);
     top: 7px;
     right: 9px;
     font-size: 17px;
     font-weight: 400;
   }
   .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-close-button:hover {
-    color: #fff;
+    color: #0B1220;
   }
+  /* Layout horizontal a pedido -- antes era vertical (foto arriba,
+     texto abajo). Ahora la tarjeta es una fila: la foto ocupa una
+     columna angosta a la izquierda a todo el alto, el texto ocupa el
+     resto a la derecha. La foto ya no es un icono sobre un degradado
+     -- es la MISMA foto de ciudad que usa la campaña que esta usando
+     este panel (ver campaignCityImage() en popupHtml), para que
+     combine con la tarjeta de esa campaña en Mis Campañas. */
   .coverage-popup-card {
-    width: 258px;
+    width: 296px;
     border-radius: 18px;
     overflow: hidden;
     background: #FFFFFF;
+    display: flex;
+    align-items: stretch;
+    position: relative;
     box-shadow: 0 24px 52px -18px rgba(2,6,23,.58), 0 0 0 1px rgba(15,23,42,.06);
   }
   .coverage-popup-media {
     position: relative;
-    height: 84px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    /* Mismo degradado oscuro-claro-oscuro de marca que ya se usa en el
-       pie de la divisoria de panel del PDF y en las lineas de los
-       headers -- no hay foto real del panel todavia en los datos, asi
-       que esto hace de "imagen" del panel en vez de una foto. */
-    background: linear-gradient(135deg, #123778 0%, #2f6fed 55%, #5b93ff 100%);
+    width: 104px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
   }
-  .coverage-popup-media svg { width: 42px; height: 42px; }
-  /* Mismo brillo animado (linea que viaja y se repite cada 13s) que ya
-     se usa en los headers de toda la app -- se pidio que esta tarjeta
-     tambien tenga ese acento premium, asi combina con el resto. */
-  .coverage-popup-media::after {
+  /* Degradado oscuro para que el badge de estado (blanco) se siga
+     leyendo bien encima de cualquier foto, clara u oscura. */
+  .coverage-popup-media::before {
     content: "";
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 3px;
-    background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.95) 50%, transparent 100%);
-    background-size: 45% 100%;
-    background-repeat: no-repeat;
-    background-position: -45% 0;
-    animation: premium-rule-shine 13s ease-in-out infinite;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .coverage-popup-media::after { animation: none; display: none; }
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3,7,14,.06) 0%, rgba(3,7,14,.52) 100%);
   }
   .coverage-popup-badge {
     position: absolute;
-    right: 10px;
-    bottom: 12px;
+    left: 8px;
+    bottom: 9px;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 9.5px;
+    font-size: 9px;
     font-weight: 800;
     letter-spacing: .02em;
     color: #fff;
-    background: rgba(5,10,18,.52);
-    padding: 4px 9px 4px 7px;
+    background: rgba(5,10,18,.55);
+    padding: 4px 8px 4px 6px;
     border-radius: 999px;
+    z-index: 1;
   }
   .coverage-popup-badge i {
     width: 6px;
@@ -5217,24 +5216,31 @@
     border-radius: 50%;
     display: inline-block;
   }
-  .coverage-popup-body { padding: 15px 17px 17px; }
+  .coverage-popup-body {
+    flex: 1;
+    min-width: 0;
+    padding: 14px 15px 15px 14px;
+  }
   .coverage-popup-name {
-    font-size: 15.5px;
+    font-size: 14.5px;
     font-weight: 800;
     color: #0B1220;
     line-height: 1.26;
     letter-spacing: -.01em;
-    margin-bottom: 9px;
+    margin-bottom: 8px;
+    /* Deja espacio para el boton de cerrar de Leaflet, que cae arriba
+       a la derecha de esta columna. */
+    padding-right: 16px;
   }
   .coverage-popup-address {
     display: flex;
     align-items: flex-start;
     gap: 6px;
-    font-size: 12px;
+    font-size: 11.5px;
     color: #64748B;
     line-height: 1.4;
   }
-  .coverage-popup-address svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+  .coverage-popup-address svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
   /* Fila de vigencia ("hasta cuando es") -- separada de la direccion
      por una rayita fina, mismo lenguaje visual sobrio que el resto de
      la tarjeta (icono + texto muted), con la fecha en un tono mas
@@ -5242,14 +5248,14 @@
   .coverage-popup-divider {
     height: 1px;
     background: #EDF1F7;
-    margin: 13px 0 12px;
+    margin: 11px 0 10px;
   }
   .coverage-popup-until {
     display: flex;
     align-items: flex-start;
-    gap: 7px;
+    gap: 6px;
   }
-  .coverage-popup-until svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; }
+  .coverage-popup-until svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 2px; }
   .coverage-popup-until-body {
     display: flex;
     flex-direction: column;
@@ -5257,17 +5263,36 @@
     min-width: 0;
   }
   .coverage-popup-until-label {
-    font-size: 9.5px;
+    font-size: 9px;
     font-weight: 800;
     letter-spacing: .05em;
     text-transform: uppercase;
     color: #94A3B8;
   }
   .coverage-popup-until-value {
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
     color: #1E293B;
     line-height: 1.3;
+  }
+  /* Brillo animado premium (el mismo de los headers y la version
+     anterior de esta tarjeta) -- ahora a todo el ancho, abajo del
+     todo, ya que la foto no ocupa mas todo el ancho arriba. */
+  .coverage-popup-card::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background-image: linear-gradient(90deg, transparent 0%, rgba(91,147,255,.95) 50%, transparent 100%);
+    background-size: 45% 100%;
+    background-repeat: no-repeat;
+    background-position: -45% 0;
+    animation: premium-rule-shine 13s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .coverage-popup-card::after { animation: none; display: none; }
   }
   .coverage-leaflet-map .leaflet-control-attribution {
     background: rgba(255,255,255,.84);

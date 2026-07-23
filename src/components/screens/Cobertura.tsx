@@ -4,6 +4,7 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
 import { cargarLeaflet } from "../../utils/leaflet";
+import { campaignCityImage } from "../../utils/campaignCity";
 
 interface Props {
   paneles: Record<string, Panel>;
@@ -78,18 +79,20 @@ function escapeHtml(value: string) {
 
 /** Mini tarjeta premium que se abre al hacer click en un pin del mapa
  *  -- antes era el popup por defecto de Leaflet (solo nombre y
- *  direccion en texto plano, sin nada de diseño). No hay fotos reales
- *  de los paneles en el modelo de datos todavia, asi que la "imagen"
- *  de la tarjeta es un icono de valla ilustrado sobre un degradado de
- *  marca en vez de una foto -- el mismo lenguaje visual (degradado
- *  azul oscuro-claro) que ya se uso en el pie del PDF y en las lineas
- *  de los headers. */
+ *  direccion en texto plano, sin nada de diseño). Layout horizontal
+ *  (imagen a la izquierda, texto a la derecha) a pedido -- antes era
+ *  vertical (imagen arriba). La foto es la MISMA que usa la campaña
+ *  que esta usando este panel (campaignCityImage keyed por el id del
+ *  contrato, igual que en Mis Campañas) -- si el panel no tiene
+ *  campaña asignada, se usa el id del panel como reemplazo, para que
+ *  siempre se vea una foto en vez de un cuadro vacio. */
 function popupHtml(panel: PanelConUso) {
   const nombre = escapeHtml(panel.nombre);
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
   const label = estadoTexto(panel.contrato);
   const color = estadoColor(label);
   const contrato = panel.contrato;
+  const fotoUrl = campaignCityImage(contrato?.id ?? panel.id);
   // Fila de vigencia (fecha "hasta cuando") -- solo si el panel tiene
   // una campaña/contrato asignado; si no, no hay fecha que mostrar.
   const vigenciaHtml = contrato
@@ -106,14 +109,7 @@ function popupHtml(panel: PanelConUso) {
     : "";
   return `
     <div class="coverage-popup-card">
-      <div class="coverage-popup-media">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <rect x="2.5" y="4.5" width="19" height="12.5" rx="1.6" stroke="#FFFFFF" stroke-width="1.5"/>
-          <circle cx="7.6" cy="9.2" r="1.35" stroke="#FFFFFF" stroke-width="1.2"/>
-          <path d="M4 14.3l3.6-3.7 2.6 2.4 3.4-4 4.9 5.3" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M8.3 21l1-4.2M15.7 21l-1-4.2" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
-          <path d="M18.4 3c1.15.5 1.95 1.45 2.2 2.7M16.9 4.05c.75.35 1.25.95 1.4 1.75" stroke="rgba(255,255,255,.8)" stroke-width="1.1" stroke-linecap="round"/>
-        </svg>
+      <div class="coverage-popup-media" style="background-image:url('${fotoUrl}')">
         <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
       </div>
       <div class="coverage-popup-body">
@@ -206,7 +202,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 288, minWidth: 258, offset: [0, -6] });
+          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 320, minWidth: 296, offset: [0, -6] });
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
