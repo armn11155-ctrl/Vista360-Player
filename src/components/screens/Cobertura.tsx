@@ -49,6 +49,22 @@ function estadoColor(label: string) {
   return "#60A5FA";
 }
 
+const MESES_LARGOS = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** "15 de agosto de 2026" -- para la fecha de vigencia del popup del
+ *  pin. Distinto al formato corto que usa Mis Campañas porque acá hay
+ *  espacio de sobra (la tarjeta es mas chica) y se pidió que se vea
+ *  elegante, no apretado. */
+function fechaLarga(fecha: string) {
+  if (!fecha) return "";
+  const d = new Date(`${fecha.slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getDate()} de ${MESES_LARGOS[d.getMonth()]} de ${d.getFullYear()}`;
+}
+
 /** El popup del pin se arma como HTML plano (Leaflet no acepta JSX) --
  *  escapamos nombre/direccion/ciudad porque vienen de datos cargados
  *  por el admin, no queremos que un "<" o "&" suelto rompa el markup. */
@@ -73,6 +89,21 @@ function popupHtml(panel: PanelConUso) {
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
   const label = estadoTexto(panel.contrato);
   const color = estadoColor(label);
+  const contrato = panel.contrato;
+  // Fila de vigencia (fecha "hasta cuando") -- solo si el panel tiene
+  // una campaña/contrato asignado; si no, no hay fecha que mostrar.
+  const vigenciaHtml = contrato
+    ? `
+        <div class="coverage-popup-divider"></div>
+        <div class="coverage-popup-until">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#94A3B8" stroke-width="1.6"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#94A3B8" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <div class="coverage-popup-until-body">
+            <span class="coverage-popup-until-label">${label === "Finalizado" ? "Finalizó" : "Vigente hasta"}</span>
+            <span class="coverage-popup-until-value">${escapeHtml(fechaLarga(contrato.fin))}</span>
+          </div>
+        </div>
+      `
+    : "";
   return `
     <div class="coverage-popup-card">
       <div class="coverage-popup-media">
@@ -89,6 +120,7 @@ function popupHtml(panel: PanelConUso) {
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" stroke="#94A3B8" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" stroke="#94A3B8" stroke-width="1.6"/></svg>
           <span>${direccion}</span>
         </div>
+        ${vigenciaHtml}
       </div>
     </div>
   `;
@@ -172,7 +204,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 240, minWidth: 210, offset: [0, -6] });
+          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 254, minWidth: 224, offset: [0, -6] });
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
