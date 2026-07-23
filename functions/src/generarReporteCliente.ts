@@ -402,8 +402,13 @@ async function paginaEvidenciaBlanca(
   // Tarjeta oscura flotante, centrada verticalmente frente a la foto,
   // con todo el contenido centrado (calcado de x:1172-1518 y:386-655),
   // con la linea de acento azul arriba (recortada al radio de la tarjeta).
+  // Se saco la linea "Presencia confirmada en punto de exhibicion." --
+  // se repetia igual en cada pagina de evidencia y quedaba redundante
+  // (ya lo dice "Evidencia N" arriba). Sin esa linea la tarjeta
+  // tambien se hizo mas baja (269 -> 190) y se reacomodo el espaciado
+  // entre elementos para que no quede un hueco vacio en el medio.
   const cardW = 346;
-  const cardH = 269;
+  const cardH = 190;
   const cardX = 1518 - cardW;
   const cardY = photoY + (photoH - cardH) / 2;
   const cx = cardX + cardW / 2;
@@ -416,13 +421,11 @@ async function paginaEvidenciaBlanca(
     .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.white)
     .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
-  doc.font("Helvetica").fontSize(12).fillColor(COLORS.muted)
-    .text("Presencia confirmada en punto de exhibicion.", cardX + 20, cardY + 92, { width: cardW - 40, align: "center" });
-  doc.moveTo(cx - 60, cardY + 158).lineTo(cx + 60, cardY + 158).lineWidth(1.5).strokeColor(COLORS.accent2).stroke();
+  doc.moveTo(cx - 60, cardY + 96).lineTo(cx + 60, cardY + 96).lineWidth(1.5).strokeColor(COLORS.accent2).stroke();
   doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
-    .text("FECHA DE REGISTRO", cardX, cardY + 178, { width: cardW, align: "center", characterSpacing: 1.5 });
+    .text("FECHA DE REGISTRO", cardX, cardY + 116, { width: cardW, align: "center", characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
-    .text(fechaCorta(foto.fecha), cardX, cardY + 202, { width: cardW, align: "center" });
+    .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
 
   drawFooterBar(doc, pad2(pageNum));
 }
