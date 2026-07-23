@@ -778,7 +778,17 @@
     display: flex;
     gap: 14px;
     align-items: flex-start;
-    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    /* Solo border-color en la transicion -- antes tambien transicionaba
+       box-shadow (una sombra de 48px de blur), que no se acelera por
+       GPU y obliga a repintar la tarjeta entera en cada frame. Con
+       varias tarjetas en la lista y el mouse pasando por encima, eso
+       se sentia como parpadeo/lag (esto sumado al translateY que ya
+       se habia sacado antes). border-color es una propiedad barata de
+       pintar, no debería volver a parpadear. */
+    /* transform si queda en la transicion (es barata, GPU) para que el
+       ":active { scale(.988) }" de abajo se sienta suave al presionar;
+       lo que se saco fue box-shadow, que es la propiedad cara. */
+    transition: transform .12s ease, border-color .18s ease;
   }
   .premium-campaign-card::before {
     content: none;
@@ -953,8 +963,7 @@
        sombra), que no mueve la caja ni cambia el area donde se
        detecta el hover. */
     .premium-campaign-card:hover {
-      border-color: rgba(96,165,250,.38);
-      box-shadow: 0 26px 48px -24px rgba(2,6,23,.95), 0 0 0 1px rgba(15,23,42,.08);
+      border-color: rgba(96,165,250,.48);
     }
   }
   .campaign-thumb {
