@@ -892,6 +892,22 @@
     -webkit-backface-visibility: hidden;
     will-change: transform;
     isolation: isolate;
+    /* Cuarta vuelta, especifica de Safari (confirmado por el cliente
+       que el flash es en Safari de Mac): WebKit tiene un bug conocido
+       y viejo donde un elemento con "overflow:hidden" + border-radius
+       que termina compuesto en su propia capa de GPU (que es
+       exactamente lo que se acaba de forzar arriba) parpadea en negro
+       un frame la primera vez que esa capa se crea o se regenera --
+       el recorte de esquinas redondeadas de WebKit y su motor de
+       capas no se llevan bien. El arreglo documentado para esto es
+       forzar que WebKit use su motor de MASCARAS (Core Animation
+       mask layer) en vez del clip normal por overflow -- un
+       "-webkit-mask-image" con un degradado de blanco a blanco (osea
+       sin degradado real, mismo color en las dos puntas) no cambia
+       nada visualmente pero cambia el camino interno que usa Safari
+       para recortar las esquinas, evitando el bug. No afecta a
+       Chrome/Firefox (ignoran esta propiedad con prefijo). */
+    -webkit-mask-image: -webkit-radial-gradient(white, white);
   }
   .premium-campaign-card::before {
     content: none;
