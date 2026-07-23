@@ -236,10 +236,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
       {/* Header */}
-      <div style={{
+      <div className="campanas-header" style={{
         background: "#050A12",
-        borderBottom: "3px solid transparent",
-        borderImage: "var(--premium-rule-gradient) 1",
         padding: "calc(24px + env(safe-area-inset-top)) 20px 16px",
         flexShrink: 0,
       }}>

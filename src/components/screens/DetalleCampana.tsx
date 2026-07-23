@@ -177,7 +177,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
         </div>
       </div>
 
-      <div style={{ height: 3, background: "var(--premium-rule-gradient)", flexShrink: 0 }} />
+      <div className="detalle-campana-line" style={{ height: 3, flexShrink: 0 }} />
 
       {/* Tabs */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>

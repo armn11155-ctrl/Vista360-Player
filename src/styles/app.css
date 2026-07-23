@@ -27,7 +27,7 @@
        fundiendose limpio con el fondo oscuro del header en vez de
        dejar una esquina oscura y cortada. En el PDF se deja tal cual
        estaba (ahi si se ve bien, es un fondo distinto). */
-    --premium-rule-gradient: linear-gradient(90deg, rgba(47,111,237,0) 0%, rgba(47,111,237,.55) 20%, #5b93ff 50%, rgba(47,111,237,.55) 80%, rgba(47,111,237,0) 100%);
+    --premium-rule-gradient: linear-gradient(90deg, #2f6fed, #5b93ff 50%, #2f6fed);
     --premium-shadow: 0 22px 52px rgba(5,10,18,0.10);
     --premium-shadow-soft: 0 12px 32px rgba(5,10,18,0.07);
     --green: #22C55E;
@@ -443,12 +443,87 @@
   }
 
   /* ===== SCREEN 1: INICIO ===== */
+  /* Linea de acento de los headers -- antes usaba el truco de
+     "border-image: gradient() 1", pero ese truco deja un feo corte
+     justo en las esquinas sin importar que colores se usen (limitacion
+     real del border-image con degradados, no era el color). Ahora es
+     un par de pseudo-elementos reales sobre cada header: ::before
+     pinta la barra azul solida de base (nunca se pone oscura/negra en
+     las puntas, se pidio que "todo sea azul"), y ::after es una franja
+     de brillo blanco que viaja de izquierda a derecha en loop --
+     el efecto de "luz pasando" que se pidio, en vez de una linea fija. */
+  .header-dark, .detail-header, .profile-top, .reports-header,
+  .coverage-header-compact, .inicio-header, .campanas-header {
+    position: relative;
+  }
+  .header-dark::before, .detail-header::before, .profile-top::before,
+  .reports-header::before, .coverage-header-compact::before,
+  .inicio-header::before, .campanas-header::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--premium-rule-gradient);
+  }
+  .header-dark::after, .detail-header::after, .profile-top::after,
+  .reports-header::after, .coverage-header-compact::after,
+  .inicio-header::after, .campanas-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.92) 50%, transparent 100%);
+    background-size: 45% 100%;
+    background-repeat: no-repeat;
+    background-position: -45% 0;
+    animation: premium-rule-shine 3.6s ease-in-out infinite;
+  }
+  @keyframes premium-rule-shine {
+    0%, 8% { background-position: -45% 0; }
+    58%, 100% { background-position: 145% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .header-dark::after, .detail-header::after, .profile-top::after,
+    .reports-header::after, .coverage-header-compact::after,
+    .inicio-header::after, .campanas-header::after,
+    .detalle-campana-line::after {
+      animation: none;
+      display: none;
+    }
+  }
+  /* Detalle de campana: esta barra no es el borde de un header con
+     contenido encima, es un div suelto que YA ES la linea -- misma
+     base azul + brillo animado, pero con overflow:hidden propio
+     (el ::after es mas ancho que la franja por el degradado con
+     transparencia en los extremos). */
+  .detalle-campana-line {
+    position: relative;
+    overflow: hidden;
+    background: var(--premium-rule-gradient);
+  }
+  .detalle-campana-line::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.92) 50%, transparent 100%);
+    background-size: 45% 100%;
+    background-repeat: no-repeat;
+    background-position: -45% 0;
+    animation: premium-rule-shine 3.6s ease-in-out infinite;
+  }
+
   .header-dark {
     background: var(--app-bg);
     padding: calc(20px + env(safe-area-inset-top)) 24px 48px;
     flex-shrink: 0;
-    border-bottom: 3px solid transparent;
-    border-image: var(--premium-rule-gradient) 1;
+    position: relative;
   }
   .header-dark .logo-row {
     display: flex;
@@ -940,9 +1015,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 3px solid transparent;
-    border-image: var(--premium-rule-gradient) 1;
     flex-shrink: 0;
+    position: relative;
   }
 
   .campaign-hero {
@@ -1033,9 +1107,8 @@
   }
   .reports-header {
     background: #050A12;
-    border-bottom: 3px solid transparent;
-    border-image: var(--premium-rule-gradient) 1;
     padding-bottom: 16px;
+    position: relative;
   }
   .reports-header .ev-logo-row {
     margin-bottom: 0;
@@ -1857,8 +1930,7 @@
     flex-direction: column;
     justify-content: flex-start;
     flex-shrink: 0;
-    border-bottom: 3px solid transparent;
-    border-image: var(--premium-rule-gradient) 1;
+    position: relative;
   }
   .profile-top-bar {
     display: flex;
@@ -2924,8 +2996,6 @@
     .inicio-header {
       padding: 42px 48px 54px !important;
       background: #050A12 !important;
-      border-bottom: 3px solid transparent !important;
-      border-image: var(--premium-rule-gradient) 1 !important;
       box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
     }
     .inicio-header > div,
@@ -4906,13 +4976,12 @@
   }
   .coverage-header-compact {
     background: #050A12;
-    border-bottom: 3px solid transparent;
-    border-image: var(--premium-rule-gradient) 1;
     justify-content: flex-start;
     gap: 12px;
     padding-top: calc(12px + env(safe-area-inset-top));
     padding-bottom: 12px;
     min-height: 46px;
+    position: relative;
   }
   .coverage-header-compact .simple-title {
     color: #FFFFFF;
