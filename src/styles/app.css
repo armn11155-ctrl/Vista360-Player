@@ -5008,6 +5008,94 @@
     font-size: 12px;
     line-height: 1.35;
   }
+  /* Mini tarjeta premium al hacer click en un pin -- antes el popup
+     solo mostraba nombre y direccion en texto plano (el estilo por
+     defecto de Leaflet de arriba). Para el popup nuevo (className
+     "coverage-popup", ver popupHtml() en Cobertura.tsx) el wrapper de
+     Leaflet se deja transparente/sin padding y toda la tarjeta la
+     dibuja .coverage-popup-card, para no tener una caja blanca
+     duplicada por fuera. */
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 16px;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+  }
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-content {
+    margin: 0;
+    width: auto !important;
+    font-size: inherit;
+    line-height: inherit;
+  }
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-close-button {
+    color: rgba(255,255,255,.85);
+    top: 7px;
+    right: 9px;
+    font-size: 17px;
+    font-weight: 400;
+  }
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-close-button:hover {
+    color: #fff;
+  }
+  .coverage-popup-card {
+    width: 208px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #FFFFFF;
+    box-shadow: 0 20px 44px -18px rgba(2,6,23,.55), 0 0 0 1px rgba(15,23,42,.06);
+  }
+  .coverage-popup-media {
+    position: relative;
+    height: 62px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Mismo degradado oscuro-claro-oscuro de marca que ya se usa en el
+       pie de la divisoria de panel del PDF y en las lineas de los
+       headers -- no hay foto real del panel todavia en los datos, asi
+       que esto hace de "imagen" del panel en vez de una foto. */
+    background: linear-gradient(135deg, #123778 0%, #2f6fed 55%, #5b93ff 100%);
+  }
+  .coverage-popup-media svg { width: 28px; height: 28px; }
+  .coverage-popup-badge {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    color: #fff;
+    background: rgba(5,10,18,.5);
+    padding: 3px 8px 3px 6px;
+    border-radius: 999px;
+  }
+  .coverage-popup-badge i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .coverage-popup-body { padding: 11px 13px 13px; }
+  .coverage-popup-name {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0B1220;
+    line-height: 1.28;
+    margin-bottom: 6px;
+  }
+  .coverage-popup-address {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+    font-size: 11.5px;
+    color: #64748B;
+    line-height: 1.35;
+  }
+  .coverage-popup-address svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
   .coverage-leaflet-map .leaflet-control-attribution {
     background: rgba(255,255,255,.84);
     color: #64748B;

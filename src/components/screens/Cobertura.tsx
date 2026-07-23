@@ -49,6 +49,51 @@ function estadoColor(label: string) {
   return "#60A5FA";
 }
 
+/** El popup del pin se arma como HTML plano (Leaflet no acepta JSX) --
+ *  escapamos nombre/direccion/ciudad porque vienen de datos cargados
+ *  por el admin, no queremos que un "<" o "&" suelto rompa el markup. */
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Mini tarjeta premium que se abre al hacer click en un pin del mapa
+ *  -- antes era el popup por defecto de Leaflet (solo nombre y
+ *  direccion en texto plano, sin nada de diseño). No hay fotos reales
+ *  de los paneles en el modelo de datos todavia, asi que la "imagen"
+ *  de la tarjeta es un icono de valla ilustrado sobre un degradado de
+ *  marca en vez de una foto -- el mismo lenguaje visual (degradado
+ *  azul oscuro-claro) que ya se uso en el pie del PDF y en las lineas
+ *  de los headers. */
+function popupHtml(panel: PanelConUso) {
+  const nombre = escapeHtml(panel.nombre);
+  const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
+  const label = estadoTexto(panel.contrato);
+  const color = estadoColor(label);
+  return `
+    <div class="coverage-popup-card">
+      <div class="coverage-popup-media">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 5.5h16a1 1 0 0 1 1 1V15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z" stroke="#FFFFFF" stroke-width="1.6"/>
+          <path d="M8 20l1-4M16 20l-1-4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M4 12h16" stroke="rgba(255,255,255,.55)" stroke-width="1.3"/>
+        </svg>
+        <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
+      </div>
+      <div class="coverage-popup-body">
+        <div class="coverage-popup-name">${nombre}</div>
+        <div class="coverage-popup-address">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" stroke="#94A3B8" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" stroke="#94A3B8" stroke-width="1.6"/></svg>
+          <span>${direccion}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -127,7 +172,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(`<strong>${panel.nombre}</strong><br>${panel.direccion || panel.ciudad || ""}`);
+          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 240, minWidth: 210, offset: [0, -6] });
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];

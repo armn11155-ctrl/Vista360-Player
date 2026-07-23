@@ -76,7 +76,7 @@ export default function Inicio({ cliente, clienteId, contratos, onGoTo, onMenuCl
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </div>
-          <img src="/logo-player.png" alt="Vista360 Player" className="inicio-logo" style={{ height:36, maxWidth:"64%", objectFit:"contain", position:"relative", top:3 }} />
+          <img src="/logo-player.png" alt="Vista360 Player" className="inicio-logo" style={{ height:36, maxWidth:"64%", objectFit:"contain", position:"relative", top:9 }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center", gap:10 }}>
             <button
               type="button"
@@ -192,7 +192,7 @@ export default function Inicio({ cliente, clienteId, contratos, onGoTo, onMenuCl
             <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Cargando…</div>
           ) : ultimoInforme ? (
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
-              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:4 }}>
+              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:10 }}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
                   <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
