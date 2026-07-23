@@ -873,6 +873,25 @@
     /* Solo border-color en la transicion -- ya no necesita transform
        aca, eso lo hace el .lift de afuera. */
     transition: border-color .18s ease;
+    /* Tercera vuelta: separar el movimiento del recorte (hit/lift/card)
+       no elimino el flash del todo -- porque ESTE elemento (el que
+       tiene el recorte de esquinas + la imagen pesada) sigue viviendo
+       DENTRO de la capa de .lift, y cuando .lift se transforma, el
+       navegador puede volver a componer/rasterizar este hijo como
+       parte de esa capa en vez de reusar un bitmap ya listo. La unica
+       forma de garantizar que este elemento tenga SU PROPIO bitmap
+       estable, que no se vuelva a calcular nunca (ni al entrar ni al
+       salir del hover), es forzar SU PROPIA capa de composicion de
+       forma permanente -- de ahi el translateZ(0) (no mueve nada, es
+       0, pero fuerza aceleracion por GPU) + backface-visibility para
+       evitar el "pop"/flash negro de Chrome/Safari al crear esa capa
+       la primera vez que hace falta. willChange avisa esto desde el
+       primer render, no recien cuando empieza el hover. */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+    isolation: isolate;
   }
   .premium-campaign-card::before {
     content: none;
@@ -5247,14 +5266,16 @@
      las tarjetas de Mis Campanas) como sello sobre la foto -- se pidio
      de vuelta porque antes (antes de poner la foto de la ciudad real)
      habia un dibujo de panel ahi, y se extraño ese detalle. La foto se
-     queda (le gusto), este es un sello chiquito aparte, esquina
-     opuesta al badge de estado para no pisarse. */
+     queda (le gusto). Va CENTRADO en la foto (a pedido -- antes estaba
+     en la esquina) -- el badge de estado sigue abajo a la izquierda,
+     no se pisan. */
   .coverage-popup-panel-icon {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 22px;
-    height: 22px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
     background: rgba(5,10,18,.5);
     display: inline-flex;
@@ -5263,8 +5284,8 @@
     z-index: 1;
   }
   .coverage-popup-panel-icon svg {
-    width: 12px;
-    height: 12px;
+    width: 17px;
+    height: 17px;
   }
   .coverage-popup-badge {
     position: absolute;
