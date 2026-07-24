@@ -5286,41 +5286,36 @@
     background-position: center;
     background-repeat: no-repeat;
   }
-  /* Degradado oscuro para que el badge de estado (blanco) se siga
-     leyendo bien encima de cualquier foto, clara u oscura. */
-  .coverage-popup-media::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(3,7,14,.06) 0%, rgba(3,7,14,.52) 100%);
-  }
-  /* Icono de "panel" como sello centrado sobre la foto -- se pidio de
-     vuelta porque antes (antes de poner la foto de la ciudad real)
-     habia un dibujo de panel ahi, y se extraño ese detalle. La foto se
-     queda (le gusto). El primer intento uso el rectangulo chiquito de
-     Mis Campanas, pero se veia como un cuadrado generico, no como un
-     panel publicitario -- ahora es el dibujo mas detallado (marco +
-     paisaje + las dos patas del panel parado en un poste) que ya
-     existia antes en esta misma pantalla, mas grande para que se
-     reconozca bien. Va centrado en la foto -- el badge de estado sigue
-     abajo a la izquierda, no se pisan. */
+  /* Antes iba un degradado oscuro sobre TODA la foto para que el
+     badge de estado se leyera bien -- se pidio que la foto se vea
+     clara/nitida, sin ese oscurecido general. El badge de estado ya
+     tiene su propio fondo oscuro solido (ver .coverage-popup-badge
+     mas abajo), asi que se sigue leyendo bien sin necesidad del
+     degradado -- se saca por completo, la foto queda a la vista tal
+     cual es. */
+  /* Icono de panel (el que mando el cliente: un cartel/valla parada en
+     un poste) como sello centrado sobre la foto. A diferencia del
+     badge de estado, este icono SI necesita su propio fondo para
+     leerse bien encima de cualquier foto -- pero solo el, no toda la
+     imagen: un cuadradito negro chico detras del icono nomas, para que
+     el resto de la foto se siga viendo clara. */
   .coverage-popup-panel-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: rgba(5,10,18,.5);
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+    background: rgba(5,10,18,.62);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
   }
   .coverage-popup-panel-icon svg {
-    width: 27px;
-    height: 27px;
+    width: 24px;
+    height: 24px;
   }
   .coverage-popup-badge {
     position: absolute;

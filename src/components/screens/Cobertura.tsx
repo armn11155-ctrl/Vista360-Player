@@ -111,11 +111,12 @@ function popupHtml(panel: PanelConUso) {
     <div class="coverage-popup-card">
       <div class="coverage-popup-media" style="background-image:url('${fotoUrl}')">
         <span class="coverage-popup-panel-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="2.5" y="4.5" width="19" height="12.5" rx="1.6" stroke="#FFFFFF" stroke-width="1.5"/>
-            <circle cx="7.6" cy="9.2" r="1.35" stroke="#FFFFFF" stroke-width="1.2"/>
-            <path d="M4 14.3l3.6-3.7 2.6 2.4 3.4-4 4.9 5.3" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8.3 21l1-4.2M15.7 21l-1-4.2" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+          <svg viewBox="0 0 512 512" fill="#FFFFFF" aria-hidden="true">
+            <rect x="76.043" y="122.165" width="359.916" height="115.585"/>
+            <path d="M451.795,46.121L425.953,0H372.42v30.417h35.71l8.799,15.703H95.071l8.799-15.703h35.71V0H86.046L60.205,46.121H0v277.812
+              h512V46.121H451.795z M466.374,268.167H45.626V91.746h420.748V268.167z"/>
+            <polygon points="299.715,481.583 299.715,354.352 212.284,354.352 212.284,481.583 103.914,481.583 103.914,512 212.284,512
+              299.715,512 408.086,512 408.086,481.583"/>
           </svg>
         </span>
         <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
