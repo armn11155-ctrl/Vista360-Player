@@ -335,11 +335,11 @@ export default function Accesos({ onBack }: Props) {
           })}
         </div>
 
-        <div style={{ margin: "12px 0" }}>
+        <div className="accesos-create-btn-row" style={{ margin: "12px 0" }}>
           <button
+            className="accesos-create-btn"
             onClick={toggleFormNuevo}
             style={{
-              width: "100%",
               background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
               border: "none", borderRadius: 12, padding: "13px", fontSize: 12.5,
               fontWeight: 800, cursor: "pointer",

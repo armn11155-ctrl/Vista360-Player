@@ -4738,6 +4738,33 @@
     width: 100%;
     box-sizing: border-box;
   }
+  /* Botón "+ Crear cliente" de Usuarios (Accesos.tsx) -- en mobile
+     sigue siendo un botón ancho de punta a punta (como cualquier CTA
+     de mobile), pero en escritorio NO tiene por qué estirarse ni
+     quedar centrado ocupando todo el ancho de la columna -- ver
+     media query de escritorio más abajo, donde pasa a ser un botón
+     normal, del tamaño de su texto, pegado a la izquierda. */
+  .accesos-create-btn {
+    width: 100%;
+  }
+  @media (min-width: 900px) {
+    /* El botón no tiene por qué estirarse a todo el ancho de la
+       columna ni verse como una barra centrada -- en escritorio pasa
+       a ser un botón normal, del tamaño de su texto, pegado a la
+       izquierda. (Este bloque tiene que ir DESPUÉS de la regla base
+       de arriba en el archivo -- con la misma especificidad, CSS
+       rompe el empate por orden de aparición, sin importar que esta
+       regla esté adentro de un @media: si apareciera antes, la regla
+       base de abajo la seguiría ganando incluso en escritorio.) */
+    .accesos-create-btn-row {
+      display: flex;
+      justify-content: flex-start;
+    }
+    .accesos-create-btn {
+      width: auto;
+      padding: 12px 26px;
+    }
+  }
   .solicitudes-card {
     cursor: pointer;
     transition: transform .15s ease, border-color .15s ease;
