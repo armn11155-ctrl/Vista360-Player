@@ -30,7 +30,15 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
     const q = query(collection(db, "facturas"), where("cliente_doc", "==", ruc));
     const unsub = onSnapshot(
       q,
-      (snap) => setPorRuc(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) }))),
+      (snap) => {
+        // Limpiar un error viejo si esta consulta ahora si funciona --
+        // antes "error" solo se ENCENDIA (nunca se apagaba), asi que un
+        // hipo pasajero de red dejaba la pantalla de Facturas mostrando
+        // el error PARA SIEMPRE, aunque el listener se reconecte solo y
+        // vuelva a traer datos buenos despues.
+        setError(null);
+        setPorRuc(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
+      },
       (err) => setError(err.message)
     );
     return unsub;
@@ -45,7 +53,10 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
     const q = query(collection(db, "facturas"), where("cliente_id", "==", clienteId));
     const unsub = onSnapshot(
       q,
-      (snap) => setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) }))),
+      (snap) => {
+        setError(null);
+        setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
+      },
       (err) => setError(err.message)
     );
     return unsub;
