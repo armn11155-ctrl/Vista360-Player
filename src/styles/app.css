@@ -5049,7 +5049,7 @@
   .campaign-detail-hero {
     min-height: 250px;
     background-color: #050A12;
-    background-image: var(--campaign-city-image, url('/campaign-city-new-york.jpg'));
+    background-image: var(--campaign-city-image, url('/campaign-city-new-york.webp'));
     background-size: cover;
     background-position: center 44%;
     background-repeat: no-repeat;
@@ -5116,7 +5116,7 @@
   @media (min-width: 900px) {
     .campaign-detail-hero {
       min-height: 290px;
-      background-image: var(--campaign-city-image, url('/campaign-city-new-york.jpg'));
+      background-image: var(--campaign-city-image, url('/campaign-city-new-york.webp'));
       background-position: center 43%;
     }
     .campaign-detail-summary {
