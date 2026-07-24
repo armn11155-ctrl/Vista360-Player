@@ -1,6 +1,5 @@
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
-import { useFacturas } from "../../hooks/useFacturas";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 
 interface Props {
@@ -62,10 +61,6 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   // cualquier hora menor a 12 como mañana y por eso a la 1 a. m. aparecía
   // "Buenos días".
   const saludo = hora < 5 ? "Buenas noches" : hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
-  const facturasState = useFacturas(isAdmin ? undefined : rucCliente(cliente));
-  const facturasPendientes = facturasState.status === "ready"
-    ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
-    : 0;
   const headerBg = "#050A12";
 
   return (
@@ -184,11 +179,12 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
             { bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
-            ...(!isAdmin ? [{
-              bg:"#EAF3FF", label:"Facturas pendientes", val:String(facturasPendientes), valColor:"#0B3F8A",
-              icon:<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>,
-              onClick: () => onGoTo("facturas"),
-            }] : []),
+            // "Facturas pendientes" -- se habia decidido no usar esta
+            // tarjeta (quedo afuera hasta ahora sin querer, al
+            // restaurar todo el bloque de Resumen general que se
+            // habia borrado en un commit anterior). Se saca de nuevo,
+            // esta vez a proposito -- si se necesita mas adelante, el
+            // calculo esta en useFacturas.ts, no hay que rehacerlo.
           ].map((k,i) => (
             <div
               key={i}
@@ -201,7 +197,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </div>
               <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
                 <div className="inicio-kpi-label" style={{ fontSize: 12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{k.label}</div>
-                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:k.valColor ?? "#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
+                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:"#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
               </div>
             </div>
           ))}
