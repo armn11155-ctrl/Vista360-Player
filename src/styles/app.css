@@ -5049,7 +5049,7 @@
   .campaign-detail-hero {
     min-height: 250px;
     background-color: #050A12;
-    background-image: var(--campaign-city-image, url('/campaign-city-new-york.webp'));
+    background-image: var(--campaign-city-image, url('/campaign-city-new-york-hero.webp'));
     background-size: cover;
     background-position: center 44%;
     background-repeat: no-repeat;
@@ -5116,7 +5116,7 @@
   @media (min-width: 900px) {
     .campaign-detail-hero {
       min-height: 290px;
-      background-image: var(--campaign-city-image, url('/campaign-city-new-york.webp'));
+      background-image: var(--campaign-city-image, url('/campaign-city-new-york-hero.webp'));
       background-position: center 43%;
     }
     .campaign-detail-summary {
@@ -5351,7 +5351,14 @@
     width: 42px;
     height: 42px;
     border-radius: 9px;
-    background: rgba(5,10,18,.62);
+    /* Antes rgba(5,10,18,.62) -- semitransparente. Sobre una foto con
+       colores fuertes (atardecer naranja, cielo celeste, etc) ese
+       fondo se mezclaba con la foto de abajo y salia un parche verde
+       oliva/marron sucio en vez de un cuadrado negro limpio -- se
+       pidio explicitamente que el fondo del icono sea "negro total".
+       Con opacidad 1 el cuadrado se ve igual sin importar que foto
+       tenga detras. */
+    background: #000000;
     display: inline-flex;
     align-items: center;
     justify-content: center;

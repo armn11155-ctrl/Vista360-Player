@@ -4,7 +4,7 @@ import { estadoCampana, panelesDeContrato } from "../../types";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
-import { campaignCityImage } from "../../utils/campaignCity";
+import { campaignCityImageHero } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 
@@ -110,7 +110,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   // nombre del/los panel(es) como titulo, como antes.
   const tituloCampana = formatCampaignName(contrato.nombre || nombrePaneles);
   const cityStyle = {
-    "--campaign-city-image": `url("${campaignCityImage(contrato.id)}")`,
+    "--campaign-city-image": `url("${campaignCityImageHero(contrato.id)}")`,
   } as CSSProperties;
   // Suma del transito diario de TODOS los paneles de la campaña, solo
   // contando los que sí tienen el dato cargado (no se inventa el resto).

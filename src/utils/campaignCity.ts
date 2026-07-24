@@ -1,15 +1,31 @@
-const CAMPAIGN_CITY_IMAGES = [
-  "/campaign-city-new-york.webp",
-  "/campaign-city-los-angeles.webp",
-  "/campaign-city-san-francisco.webp",
-  "/campaign-city-rio.webp",
-] as const;
+const CAMPAIGN_CITY_NAMES = ["new-york", "los-angeles", "san-francisco", "rio"] as const;
 
-// Precarga las 4 fotos apenas se importa este modulo (una sola vez por
-// sesion) -- se reportó que la foto de fondo "aparecía" (se veía negra
-// un instante) al pasar el mouse por una tarjeta. La causa real no era
-// nada de CSS/hover: las fotos pesaban 400-460KB cada una y recién se
-// descargaban la primera vez que el navegador las necesitaba.
+const CAMPAIGN_CITY_IMAGES = CAMPAIGN_CITY_NAMES.map((n) => `/campaign-city-${n}.webp`);
+
+// Version en resolucion mas alta de las mismas 4 fotos -- SOLO para el
+// header grande de Detalle de campaña (.campaign-detail-hero), que se
+// pinta a todo el ancho de la pantalla sin ningun degradado oscuro
+// encima (a diferencia de la tarjeta de Mis Campañas, que sí tiene un
+// degradado y por eso puede quedarse con la version chica). A ese
+// tamaño y sin nada tapando la foto, la version de 1100px/calidad 75
+// se veia borrosa/pixelada -- quedaba estirada mas alla de su
+// resolucion real. Esta version usa el ancho original de la foto
+// fuente (hasta 1900px, no hay mas resolucion que esa disponible) a
+// calidad 78 -- se probo contra bandas visibles en los degradados de
+// cielo/atardecer (el peor caso) tanto de cerca como al tamaño real
+// del header, sin encontrar ninguna. Pesa mas que la version chica
+// (121-181KB en vez de 46-73KB) pero sigue siendo un dato menor: son
+// solo 4 fotos y esta version solo se pide cuando alguien abre el
+// detalle de una campaña, no en cada tarjeta de la lista.
+const CAMPAIGN_CITY_IMAGES_HERO = CAMPAIGN_CITY_NAMES.map((n) => `/campaign-city-${n}-hero.webp`);
+
+// Precarga las 4 fotos (version chica, la que se usa en todos lados
+// menos el header grande) apenas se importa este modulo (una sola vez
+// por sesion) -- se reportó que la foto de fondo "aparecía" (se veía
+// negra un instante) al pasar el mouse por una tarjeta. La causa real
+// no era nada de CSS/hover: las fotos pesaban 400-460KB cada una y
+// recién se descargaban la primera vez que el navegador las
+// necesitaba.
 //
 // La primera compresion (JPEG, 900px, calidad 78) dejo las fotos
 // livianas pero con bloques/bandas visibles en el cielo nocturno (los
@@ -24,12 +40,25 @@ const CAMPAIGN_CITY_IMAGES = [
 // en 46-73KB cada una (el original sin comprimir pesaba 400-460KB).
 // Se siguen precargando aca para que ya esten en cache antes de que
 // el usuario llegue a verlas -- tanto en Mis Campañas como en el pin
-// de Cobertura, que usan las mismas 4 fotos.
+// de Cobertura, que usan las mismas 4 fotos. La version "hero" (mas
+// pesada, solo para Detalle de campaña) NO se precarga -- no vale la
+// pena bajarla de entrada si la persona nunca abre el detalle.
 if (typeof window !== "undefined" && typeof Image !== "undefined") {
   CAMPAIGN_CITY_IMAGES.forEach((src) => {
     const img = new Image();
     img.src = src;
   });
+}
+
+/** Mismo hash para las dos listas (chica y hero) -- así una campaña
+ *  siempre recibe LA MISMA foto de ciudad sin importar en qué pantalla
+ *  se muestre. */
+function indiceCiudad(campaignId: string): number {
+  let hash = 0;
+  for (let i = 0; i < campaignId.length; i += 1) {
+    hash = (hash * 31 + campaignId.charCodeAt(i)) >>> 0;
+  }
+  return hash % CAMPAIGN_CITY_NAMES.length;
 }
 
 /**
@@ -39,9 +68,12 @@ if (typeof window !== "undefined" && typeof Image !== "undefined") {
  * dispositivo.
  */
 export function campaignCityImage(campaignId: string): string {
-  let hash = 0;
-  for (let i = 0; i < campaignId.length; i += 1) {
-    hash = (hash * 31 + campaignId.charCodeAt(i)) >>> 0;
-  }
-  return CAMPAIGN_CITY_IMAGES[hash % CAMPAIGN_CITY_IMAGES.length];
+  return CAMPAIGN_CITY_IMAGES[indiceCiudad(campaignId)];
+}
+
+/** Misma foto que campaignCityImage(), en la version de mayor
+ *  resolucion -- usar solo para el header grande de Detalle de
+ *  campaña (ver comentario de CAMPAIGN_CITY_IMAGES_HERO arriba). */
+export function campaignCityImageHero(campaignId: string): string {
+  return CAMPAIGN_CITY_IMAGES_HERO[indiceCiudad(campaignId)];
 }
