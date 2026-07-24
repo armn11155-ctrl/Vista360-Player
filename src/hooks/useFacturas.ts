@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, type FirestoreError } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Factura } from "../types";
 
@@ -16,6 +16,21 @@ export type FacturasState =
  * guardadas con cliente_id en vez de cliente_doc. Por eso este hook
  * escucha ambas colecciones (por ruc y por clienteId) y las combina.
  */
+
+/** "permission-denied" en CUALQUIERA de las dos consultas se trata
+ *  como "esta consulta no tiene nada para mostrar", no como un error
+ *  duro -- un cliente viendo SU PROPIA pantalla de Facturas nunca
+ *  deberia toparse con un mensaje tecnico de permisos (eso es ruido
+ *  de configuracion del lado de las reglas de Firestore, no algo que
+ *  el cliente pueda hacer algo al respecto). La otra consulta puede
+ *  seguir funcionando bien -- por ejemplo, un cliente sin RUC nunca
+ *  iba a tener resultados por RUC de todos modos. Solo un error que
+ *  NO sea de permisos (ej. sin conexion) sigue mostrandose como error
+ *  real, para no esconder un problema genuino de red para siempre. */
+function esPermisoDenegado(err: FirestoreError): boolean {
+  return err.code === "permission-denied";
+}
+
 export function useFacturas(ruc: string | undefined, clienteId?: string): FacturasState {
   const [porRuc, setPorRuc] = useState<Factura[] | null>(null);
   const [porCliente, setPorCliente] = useState<Factura[] | null>(null);
@@ -39,7 +54,7 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
         setError(null);
         setPorRuc(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
       },
-      (err) => setError(err.message)
+      (err) => (esPermisoDenegado(err) ? setPorRuc([]) : setError(err.message))
     );
     return unsub;
   }, [ruc]);
@@ -57,7 +72,7 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
         setError(null);
         setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
       },
-      (err) => setError(err.message)
+      (err) => (esPermisoDenegado(err) ? setPorCliente([]) : setError(err.message))
     );
     return unsub;
   }, [clienteId]);

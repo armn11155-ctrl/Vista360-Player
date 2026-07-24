@@ -39,6 +39,33 @@ export interface Cliente {
   createdAt?: Timestamp | null;
 }
 
+/** RUC/documento del cliente -- no siempre viene en el mismo campo:
+ *  segun de donde haya salido el cliente (creado a mano en el portal,
+ *  importado del sistema viejo, etc) puede quedar guardado como
+ *  "ruc", "documento", "documentoIdentidad", "numDoc",
+ *  "numeroDocumento" o "cliente_doc". Se prueban todos en orden y se
+ *  usa el primero que tenga algo -- MISMA logica que ya usaba
+ *  Perfil.tsx (y administrarClienteAdmin.ts del lado del servidor)
+ *  para no perder de vista clientes viejos con el dato en otro
+ *  campo. Facturas.tsx tenia esto roto: solo miraba "ruc" a secas, asi
+ *  que un cliente con el RUC guardado en otro campo se quedaba sin
+ *  "ruc" -> la pantalla de Facturas ni siquiera intentaba buscar sus
+ *  facturas por RUC, solo por cliente_id (y esa consulta puede fallar
+ *  con "Missing or insufficient permissions" si las reglas de
+ *  Firestore de esa coleccion solo estan pensadas para el camino por
+ *  RUC). */
+export function rucCliente(cliente: Cliente | null | undefined): string {
+  return (
+    cliente?.ruc ||
+    cliente?.documento ||
+    cliente?.documentoIdentidad ||
+    cliente?.numDoc ||
+    cliente?.numeroDocumento ||
+    cliente?.cliente_doc ||
+    ""
+  );
+}
+
 export interface FotoCampania {
   url: string;
   /** Key de la miniatura WebP nítida generada en el navegador al subir. */

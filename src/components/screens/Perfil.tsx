@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato } from "../../types";
-import { estadoCampana, panelesDeContrato } from "../../types";
+import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { cloudFunctions, db, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
@@ -33,10 +33,6 @@ type ProfileIcon =
   | "logout";
 
 type MetricTone = "blue" | "green" | "orange";
-
-function rucCliente(cliente: Cliente | null) {
-  return cliente?.ruc || cliente?.documento || cliente?.documentoIdentidad || cliente?.numDoc || cliente?.numeroDocumento || cliente?.cliente_doc || "";
-}
 
 function Icon({ type }: { type: ProfileIcon }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };

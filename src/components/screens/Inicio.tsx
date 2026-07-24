@@ -1,5 +1,5 @@
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato } from "../../types";
+import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { useFacturas } from "../../hooks/useFacturas";
 import { useInformes } from "../../hooks/useInformes";
 
@@ -62,7 +62,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   // cualquier hora menor a 12 como mañana y por eso a la 1 a. m. aparecía
   // "Buenos días".
   const saludo = hora < 5 ? "Buenas noches" : hora < 12 ? "Buenos días" : hora < 19 ? "Buenas tardes" : "Buenas noches";
-  const facturasState = useFacturas(isAdmin ? undefined : cliente?.ruc);
+  const facturasState = useFacturas(isAdmin ? undefined : rucCliente(cliente));
   const facturasPendientes = facturasState.status === "ready"
     ? facturasState.facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length
     : 0;

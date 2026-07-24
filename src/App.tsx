@@ -26,7 +26,7 @@ import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
 import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
 import type { Contrato } from "./types";
-import { panelesDeContrato } from "./types";
+import { panelesDeContrato, rucCliente } from "./types";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -478,7 +478,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Paneles onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
-        content = <Facturas ruc={cliente?.ruc} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
+        content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} uid={uid} onBack={() => setView("inicio")} />;
