@@ -3137,9 +3137,19 @@
       overflow: hidden;
     }
     .inicio-header {
-      padding: 42px 48px 54px !important;
+      padding: 28px 48px 36px !important;
       background: #050A12 !important;
       box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
+    }
+    .inicio-greeting-title {
+      font-size: 26px !important;
+      line-height: 1.08 !important;
+      margin-bottom: 5px !important;
+    }
+    .inicio-greeting-sub {
+      font-size: 13.5px !important;
+      line-height: 1.35 !important;
+      margin-bottom: 10px !important;
     }
     .inicio-header > div,
     .inicio-header > div + div,
@@ -3159,6 +3169,7 @@
       margin-left: auto;
       margin-right: auto;
       align-self: center;
+      padding: 5px 11px !important;
     }
     .inicio-header > div:first-child > div:last-child {
       right: 0 !important;
