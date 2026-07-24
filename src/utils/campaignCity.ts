@@ -14,14 +14,17 @@ const CAMPAIGN_CITY_IMAGES = [
 // La primera compresion (JPEG, 900px, calidad 78) dejo las fotos
 // livianas pero con bloques/bandas visibles en el cielo nocturno (los
 // degradados suaves son justo donde peor se nota la compresion JPEG a
-// baja calidad) -- se reporto que "se ven de mala calidad". Ahora son
-// WebP a 1100px de ancho y calidad 90: WebP comprime muchisimo mejor
-// un degradado suave que JPEG al mismo peso, asi que salen limpias
-// (sin bandas) pesando 96-131KB -- bastante mas livianas que el
-// original (400-460KB) pero sin sacrificar como antes. Se siguen
-// precargando aca para que ya esten en cache antes de que el usuario
-// llegue a verlas -- tanto en Mis Campañas como en el pin de
-// Cobertura, que usan las mismas 4 fotos.
+// baja calidad) -- se reporto que "se ven de mala calidad". Se paso a
+// WebP (comprime un degradado suave mucho mejor que JPEG al mismo
+// peso), y se probaron varios niveles de calidad comparando SIEMPRE
+// contra el tamaño real en el que se muestran (una tarjeta chica, con
+// el degradado oscuro encima) y no solo con zoom -- a calidad 75 ya no
+// se nota ninguna banda ni al tamaño real ni haciendole zoom, y pesa
+// bastante menos que el primer intento en WebP (calidad 90): quedan
+// en 46-73KB cada una (el original sin comprimir pesaba 400-460KB).
+// Se siguen precargando aca para que ya esten en cache antes de que
+// el usuario llegue a verlas -- tanto en Mis Campañas como en el pin
+// de Cobertura, que usan las mismas 4 fotos.
 if (typeof window !== "undefined" && typeof Image !== "undefined") {
   CAMPAIGN_CITY_IMAGES.forEach((src) => {
     const img = new Image();
