@@ -85,41 +85,58 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
     // con las que se está por crear. Otro cliente distinto SÍ puede
     // tener una campaña activa en el mismo panel al mismo tiempo -- el
     // bloqueo es por cliente+panel, no por panel solo.
-    const contratosClienteSnap = await db.collection("contratos").where("cliente_id", "==", clienteId).get();
-    const contratosCliente = contratosClienteSnap.docs.map(
-      (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
-    );
-
-    for (const panelId of panelIds) {
-      const cruces = contratosCliente.filter((c) => {
-        if (c.deleted || !c.inicio || !c.fin) return false;
-        if (!(c.inicio <= fin && inicio <= c.fin)) return false;
-        const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
-        return idsDeC.includes(panelId);
-      });
-      if (cruces.length > 0) {
-        const panelSnap = await db.doc(`paneles/${panelId}`).get();
-        const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
-        const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
-        throw new HttpsError(
-          "failed-precondition",
-          `Este cliente ya tiene una campaña programada en ${nombrePanel} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
-        );
-      }
-    }
-
+    //
+    // Esto va dentro de una TRANSACCION a proposito: antes se leia
+    // "los contratos de este cliente", se revisaba en memoria, y RECIEN
+    // despues se escribia el contrato nuevo -- si dos llamadas llegaban
+    // casi al mismo tiempo (doble click, dos pestañas del admin
+    // abiertas), las DOS podian leer "sin cruces" antes de que
+    // cualquiera hubiera escrito nada, y las dos terminaban creando
+    // campañas superpuestas para el mismo cliente+panel (la regla de
+    // negocio que esto deberia impedir). Con runTransaction, Firestore
+    // reintenta la funcion completa si algo que leyo cambio antes de
+    // que termine de escribir -- en el reintento, la segunda llamada
+    // SI ve el contrato que la primera ya creo, y el cruce se detecta
+    // como corresponde.
     const contratoRef = db.collection("contratos").doc();
-    await contratoRef.set({
-      panel_id: panelIds[0],
-      panel_ids: panelIds,
-      cliente_id: clienteId,
-      ...(nombre ? { nombre } : {}),
-      inicio,
-      fin,
-      monto,
-      pagado: false,
-      fotos_campania: [],
-      createdAt: FieldValue.serverTimestamp(),
+    await db.runTransaction(async (tx) => {
+      const contratosClienteSnap = await tx.get(
+        db.collection("contratos").where("cliente_id", "==", clienteId)
+      );
+      const contratosCliente = contratosClienteSnap.docs.map(
+        (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
+      );
+
+      for (const panelId of panelIds) {
+        const cruces = contratosCliente.filter((c) => {
+          if (c.deleted || !c.inicio || !c.fin) return false;
+          if (!(c.inicio <= fin && inicio <= c.fin)) return false;
+          const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
+          return idsDeC.includes(panelId);
+        });
+        if (cruces.length > 0) {
+          const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
+          const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
+          const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+          throw new HttpsError(
+            "failed-precondition",
+            `Este cliente ya tiene una campaña programada en ${nombrePanel} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+          );
+        }
+      }
+
+      tx.set(contratoRef, {
+        panel_id: panelIds[0],
+        panel_ids: panelIds,
+        cliente_id: clienteId,
+        ...(nombre ? { nombre } : {}),
+        inicio,
+        fin,
+        monto,
+        pagado: false,
+        fotos_campania: [],
+        createdAt: FieldValue.serverTimestamp(),
+      });
     });
 
     // Marcar TODOS los paneles elegidos como Ocupado (mismo

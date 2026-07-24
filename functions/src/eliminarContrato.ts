@@ -45,13 +45,39 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
 
   // Campaña multi-panel: libera TODOS los paneles del contrato, no
   // solo el primero (panel_ids incluye al primero cuando existe).
+  //
+  // OJO: un panel puede estar compartido por VARIOS clientes distintos
+  // al mismo tiempo (crearContrato.ts solo bloquea que un mismo
+  // cliente se cruce consigo mismo en el mismo panel, no bloquea a
+  // otros clientes) -- antes esta funcion marcaba el panel como
+  // "Disponible" sin mirar nada mas, asi que borrar la campaña de UN
+  // cliente podia liberar por error un panel que en ese mismo momento
+  // seguia ocupado por la campaña ACTIVA de otro cliente. Ahora, antes
+  // de liberar cada panel, se revisa si queda algun OTRO contrato (no
+  // borrado, no este mismo) cuyo rango de fechas incluya hoy y que use
+  // ese panel -- si lo hay, el panel se deja "Ocupado" tal como esta.
   const panelIds: string[] = Array.isArray(contrato.panel_ids) && contrato.panel_ids.length > 0
     ? contrato.panel_ids
     : (contrato.panel_id ? [contrato.panel_id] : []);
+
+  const hoy = new Date().toISOString().slice(0, 10);
   await Promise.all(
-    panelIds.map((panelId) =>
-      db.doc(`paneles/${panelId}`).set({ estado: "Disponible" }, { merge: true }).catch(() => undefined)
-    )
+    panelIds.map(async (panelId) => {
+      try {
+        const otrosSnap = await db.collection("contratos").where("panel_ids", "array-contains", panelId).get();
+        const otrosPorPanelIdSnap = await db.collection("contratos").where("panel_id", "==", panelId).get();
+        const todos = new Map<string, FirebaseFirestore.DocumentData>();
+        [...otrosSnap.docs, ...otrosPorPanelIdSnap.docs].forEach((d) => todos.set(d.id, d.data()));
+        todos.delete(contratoId);
+        const siguesUsado = [...todos.values()].some(
+          (c) => !c.deleted && typeof c.inicio === "string" && typeof c.fin === "string" && c.inicio <= hoy && hoy <= c.fin
+        );
+        if (siguesUsado) return;
+        await db.doc(`paneles/${panelId}`).set({ estado: "Disponible" }, { merge: true });
+      } catch (err) {
+        console.error(`No se pudo verificar/liberar el panel ${panelId} al eliminar la campaña.`, err);
+      }
+    })
   );
   if (typeof contrato.imagenCampaniaUrl === "string" && contrato.imagenCampaniaUrl) {
     await borrarObjetoR2(contrato.imagenCampaniaUrl);

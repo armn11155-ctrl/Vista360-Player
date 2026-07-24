@@ -21,6 +21,19 @@ const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
  * urlDescarga para forzar la descarga), pero como aquí cada factura
  * se pide bajo demanda (no en un listado por mes), es una función
  * chica aparte en vez de agregarla al firmado en lote de fotos.
+ *
+ * Verificación de dueño: antes esta función firmaba CUALQUIER key que
+ * llegara con forma válida (carpeta correcta, sin ".."), sin revisar
+ * si la factura de esa key en verdad pertenece al cliente que llama.
+ * Desde el portal esto nunca se nota (la tarjeta solo conoce las keys
+ * de sus propias facturas, ya filtradas por las reglas de Firestore),
+ * pero esta función se puede llamar directo (con cualquier token
+ * válido, sin pasar por la UI) -- si alguien adivinara o consiguiera
+ * la key de la factura de OTRO cliente, esta función se la firmaba
+ * igual. Ahora se busca en Firestore el documento de "facturas" cuyo
+ * pdfUrl sea exactamente esa key y se exige que su cliente (por
+ * cliente_id directo o por RUC) sea el mismo que el que llama --
+ * salvo que sea admin, que puede descargar cualquiera.
  */
 export const firmarDescargaFactura = onCall({ secrets: R2_SECRETS }, async (request) => {
   const uid = request.auth?.uid;
@@ -33,11 +46,30 @@ export const firmarDescargaFactura = onCall({ secrets: R2_SECRETS }, async (requ
   if (!snap.exists) {
     throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
   }
+  const propio = snap.data() ?? {};
+  const esAdmin = propio.role === "admin";
+  const clienteIdPropio = String(propio.clienteId ?? "");
 
   const key = String(request.data?.key ?? "");
   const nombre = String(request.data?.nombre ?? "factura");
   if (!key || !esKeyValida(key)) {
     throw new HttpsError("invalid-argument", "Key inválida.");
+  }
+
+  if (!esAdmin) {
+    const facturaSnap = await db.collection("facturas").where("pdfUrl", "==", key).limit(1).get();
+    if (facturaSnap.empty) {
+      throw new HttpsError("permission-denied", "No tienes acceso a esta factura.");
+    }
+    const factura = facturaSnap.docs[0].data();
+    let clienteIdFactura = String(factura.cliente_id ?? "");
+    if (!clienteIdFactura && factura.cliente_doc) {
+      const clienteSnap = await db.collection("clientes").where("ruc", "==", String(factura.cliente_doc)).limit(1).get();
+      if (!clienteSnap.empty) clienteIdFactura = clienteSnap.docs[0].id;
+    }
+    if (!clienteIdFactura || clienteIdFactura !== clienteIdPropio) {
+      throw new HttpsError("permission-denied", "No tienes acceso a esta factura.");
+    }
   }
 
   const url = await firmarLecturaR2(key, EXPIRACION_SEGUNDOS, `${nombre}.pdf`);

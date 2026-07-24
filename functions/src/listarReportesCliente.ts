@@ -80,10 +80,25 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       throw new HttpsError("permission-denied", "No tienes acceso a los reportes de este cliente.");
     }
 
+    // ListObjectsV2 solo devuelve hasta 1000 objetos POR LLAMADA -- un
+    // cliente con reporte diario acumula mas de 1000 objetos en R2 (
+    // digital + a veces hd) en poco mas de año y medio. Sin paginar,
+    // esta lista se quedaba trunca en silencio (nunca fallaba, solo
+    // dejaba de mostrar los reportes mas viejos) a partir de ahi --
+    // mismo tipo de paginacion que ya usa obtenerEspacioR2.ts para el
+    // bucket completo, aca aplicada al prefijo de un cliente.
     const prefix = `clientes/${clienteId}/reportes/`;
-    const listado = await r2Client().send(
-      new ListObjectsV2Command({ Bucket: r2Bucket(), Prefix: prefix })
-    );
+    const client = r2Client();
+    const bucket = r2Bucket();
+    const objetos: { Key?: string; Size?: number; LastModified?: Date }[] = [];
+    let continuationToken: string | undefined;
+    do {
+      const pagina = await client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken: continuationToken })
+      );
+      objetos.push(...(pagina.Contents ?? []));
+      continuationToken = pagina.IsTruncated ? pagina.NextContinuationToken : undefined;
+    } while (continuationToken);
 
     // Un reporte por dia (nuevo) o uno por mes (viejo, de antes de
     // este cambio) -- se agrupan por una key unica que distingue ambos
@@ -93,7 +108,7 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     // existia esa version aparte; si por alguna razon falta el digital
     // pero quedo el hd viejo, lo usamos como respaldo.
     const porFecha = new Map<string, { key: string; size: number; fecha?: Date; mes: string; dia?: string }>();
-    for (const obj of listado.Contents ?? []) {
+    for (const obj of objetos) {
       if (!obj.Key) continue;
       const resto = obj.Key.slice(prefix.length); // "{mes}/{dia}/reporte-digital.pdf" o "{mes}/reporte-digital.pdf"
       const partes = resto.split("/");

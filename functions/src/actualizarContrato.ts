@@ -19,6 +19,12 @@ function nombreConMayuscula(value: string) {
   return value.charAt(0).toLocaleUpperCase("es-PE") + value.slice(1);
 }
 
+function siguienteDia(fechaStr: string): string {
+  const d = new Date(`${fechaStr}T12:00:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
 export const actualizarContrato = onCall<ActualizarContratoData>(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
@@ -40,9 +46,54 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
   if (fin < inicio) throw new HttpsError("invalid-argument", "La fecha de fin no puede ser anterior al inicio.");
 
   const ref = db.doc(`contratos/${contratoId}`);
-  const actual = await ref.get();
-  if (!actual.exists) throw new HttpsError("not-found", "No se encontró esa campaña.");
 
-  await ref.update({ nombre, inicio, fin });
+  // Igual que crearContrato.ts: esta funcion dejaba cambiar las fechas
+  // de una campaña sin volver a revisar la regla de "un mismo cliente
+  // no puede tener dos campañas activas a la vez en el mismo panel" --
+  // se podia editar una campaña para que sus fechas nuevas se crucen
+  // con otra del mismo cliente en el mismo panel, algo que crearContrato
+  // nunca hubiera dejado crear de cero. Ahora corre la misma revision
+  // (y dentro de una transaccion, por la misma razon de concurrencia:
+  // dos ediciones casi al mismo tiempo no deben poder colarse las dos
+  // a la vez con fechas que se crucen entre si).
+  await db.runTransaction(async (tx) => {
+    const actual = await tx.get(ref);
+    if (!actual.exists) throw new HttpsError("not-found", "No se encontró esa campaña.");
+    const contratoActual = actual.data() ?? {};
+    const panelIds: string[] = Array.isArray(contratoActual.panel_ids) && contratoActual.panel_ids.length > 0
+      ? contratoActual.panel_ids
+      : (contratoActual.panel_id ? [contratoActual.panel_id] : []);
+    const clienteId = String(contratoActual.cliente_id ?? "");
+
+    if (clienteId && panelIds.length > 0) {
+      const contratosClienteSnap = await tx.get(
+        db.collection("contratos").where("cliente_id", "==", clienteId)
+      );
+      const contratosCliente = contratosClienteSnap.docs
+        .filter((d) => d.id !== contratoId)
+        .map((d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean });
+
+      for (const panelId of panelIds) {
+        const cruces = contratosCliente.filter((c) => {
+          if (c.deleted || !c.inicio || !c.fin) return false;
+          if (!(c.inicio <= fin && inicio <= c.fin)) return false;
+          const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
+          return idsDeC.includes(panelId);
+        });
+        if (cruces.length > 0) {
+          const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
+          const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
+          const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+          throw new HttpsError(
+            "failed-precondition",
+            `Este cliente ya tiene otra campaña en ${nombrePanel} hasta el ${finMasLejano}. Las fechas nuevas se cruzan con esa -- puedes poner esta a partir del ${siguienteDia(finMasLejano)}.`
+          );
+        }
+      }
+    }
+
+    tx.update(ref, { nombre, inicio, fin });
+  });
+
   return { ok: true };
 });
