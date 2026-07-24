@@ -843,8 +843,21 @@
                                       tener que re-generar su mascara
                                       de esquinas en cada frame. */
   .premium-campaign-card-lift {
-    transition: transform .18s ease;
+    transition: transform .18s ease, box-shadow .18s ease;
     will-change: transform;
+    /* Quinta vuelta: el resaltado de borde (antes: border-color con
+       transition en ".premium-campaign-card", el elemento con la foto
+       pesada + recorte de esquinas) se mueve a un anillo (box-shadow)
+       en ESTA capa -- que no tiene imagen de fondo ni recorte propio.
+       Asi, ".premium-campaign-card" ya no tiene NINGUNA transicion
+       corriendo sobre si misma al pasar el mouse (ver mas abajo, se le
+       saco el "transition: border-color"), por si el flash negro en
+       Safari viniera de que CUALQUIER transicion sobre un elemento con
+       overflow:hidden + background-image pesado le hace repintar todo
+       el fondo (mostrando un instante el background-color de respaldo,
+       que es casi negro) en vez de solo la propiedad que cambio. */
+    border-radius: 18px;
+    box-shadow: 0 0 0 0 rgba(96,165,250,0);
   }
   .premium-campaign-card {
     position: relative;
@@ -870,9 +883,12 @@
     display: flex;
     gap: 14px;
     align-items: flex-start;
-    /* Solo border-color en la transicion -- ya no necesita transform
-       aca, eso lo hace el .lift de afuera. */
-    transition: border-color .18s ease;
+    /* Ya no tiene NINGUNA transicion propia -- ni transform (eso lo
+       hace .lift) ni border-color (eso ahora es un box-shadow en
+       .lift, ver comentario ahi). El borde de este elemento se queda
+       siempre en el mismo color, quieto -- asi nunca hay una
+       transicion CSS corriendo sobre el elemento con la foto pesada +
+       recorte de esquinas, ni al entrar ni al salir del hover. */
     /* Tercera vuelta: separar el movimiento del recorte (hit/lift/card)
        no elimino el flash del todo -- porque ESTE elemento (el que
        tiene el recorte de esquinas + la imagen pesada) sigue viviendo
@@ -907,7 +923,8 @@
        nada visualmente pero cambia el camino interno que usa Safari
        para recortar las esquinas, evitando el bug. No afecta a
        Chrome/Firefox (ignoran esta propiedad con prefijo). */
-    -webkit-mask-image: -webkit-radial-gradient(white, white);
+    -webkit-mask-image: radial-gradient(white, white);
+    mask-image: radial-gradient(white, white);
   }
   .premium-campaign-card::before {
     content: none;
@@ -1071,17 +1088,16 @@
   }
 
   @media (hover: hover) {
-    /* El translateY ahora va en .premium-campaign-card-lift (capa
-       intermedia, sin recorte de esquinas ni imagen de fondo -- ver
-       comentario largo junto a .premium-campaign-card-lift mas
-       arriba). border-color sigue en .premium-campaign-card, que no
-       se mueve, solo cambia de color -- eso es barato y no participa
-       del problema de la mascara de esquinas. */
+    /* El translateY Y el resaltado de borde ahora van los DOS en
+       .premium-campaign-card-lift (capa intermedia, sin recorte de
+       esquinas ni imagen de fondo) -- el resaltado se hace con un
+       box-shadow (anillo) en vez de cambiar el border-color de
+       ".premium-campaign-card" (que es el que tiene la foto pesada +
+       el recorte de esquinas, y no debe tener NINGUNA transicion
+       corriendo encima mientras se pasa el mouse). */
     .premium-campaign-card-hit:hover .premium-campaign-card-lift {
       transform: translateY(-2px);
-    }
-    .premium-campaign-card-hit:hover .premium-campaign-card {
-      border-color: rgba(96,165,250,.48);
+      box-shadow: 0 0 0 1px rgba(96,165,250,.48);
     }
   }
   .campaign-thumb {
@@ -5278,20 +5294,23 @@
     inset: 0;
     background: linear-gradient(180deg, rgba(3,7,14,.06) 0%, rgba(3,7,14,.52) 100%);
   }
-  /* Icono de "panel" (el mismo rectangulo tipo pantalla que se usa en
-     las tarjetas de Mis Campanas) como sello sobre la foto -- se pidio
-     de vuelta porque antes (antes de poner la foto de la ciudad real)
+  /* Icono de "panel" como sello centrado sobre la foto -- se pidio de
+     vuelta porque antes (antes de poner la foto de la ciudad real)
      habia un dibujo de panel ahi, y se extraño ese detalle. La foto se
-     queda (le gusto). Va CENTRADO en la foto (a pedido -- antes estaba
-     en la esquina) -- el badge de estado sigue abajo a la izquierda,
-     no se pisan. */
+     queda (le gusto). El primer intento uso el rectangulo chiquito de
+     Mis Campanas, pero se veia como un cuadrado generico, no como un
+     panel publicitario -- ahora es el dibujo mas detallado (marco +
+     paisaje + las dos patas del panel parado en un poste) que ya
+     existia antes en esta misma pantalla, mas grande para que se
+     reconozca bien. Va centrado en la foto -- el badge de estado sigue
+     abajo a la izquierda, no se pisan. */
   .coverage-popup-panel-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 34px;
-    height: 34px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: rgba(5,10,18,.5);
     display: inline-flex;
@@ -5300,8 +5319,8 @@
     z-index: 1;
   }
   .coverage-popup-panel-icon svg {
-    width: 17px;
-    height: 17px;
+    width: 27px;
+    height: 27px;
   }
   .coverage-popup-badge {
     position: absolute;
@@ -5387,6 +5406,22 @@
   /* Brillo animado premium (el mismo de los headers y la version
      anterior de esta tarjeta) -- ahora a todo el ancho, abajo del
      todo, ya que la foto no ocupa mas todo el ancho arriba. */
+  /* Antes esta franja solo tenia el brillo (::after) pasando sobre
+     blanco liso, sin ninguna base de color debajo -- se notaba muy
+     poco (se pidio que se vea "un poco mejor"). Ahora tiene la misma
+     pareja base solida + brillo animado que ya se usa en todos los
+     headers de la app (::before pinta la linea azul fija, ::after es
+     el brillo que viaja encima) -- mismo lenguaje visual, mucho mas
+     notorio que antes. */
+  .coverage-popup-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: var(--premium-rule-gradient);
+  }
   .coverage-popup-card::after {
     content: "";
     position: absolute;
@@ -5394,7 +5429,7 @@
     right: 0;
     bottom: 0;
     height: 3px;
-    background-image: linear-gradient(90deg, transparent 0%, rgba(91,147,255,.95) 50%, transparent 100%);
+    background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.92) 50%, transparent 100%);
     background-size: 45% 100%;
     background-repeat: no-repeat;
     background-position: -100% 0;
