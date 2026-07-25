@@ -60,7 +60,7 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
   // nueva). Se ofrece acá mismo, en la pantalla de notificaciones,
   // que es donde tiene más sentido -- mismo hook que usa el botón de
   // la campanita en Inicio y el aviso de bienvenida NotifPrompt. ──
-  const { estado: estadoPush, error: errorPush, activar } = usePushEstado();
+  const { estado: estadoPush, error: errorPush, activar } = usePushEstado(uid);
   const activarPush = () => activar(uid);
 
   return (

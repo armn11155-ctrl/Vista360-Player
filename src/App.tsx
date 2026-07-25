@@ -338,7 +338,7 @@ function AuthenticatedApp({
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
-  const pushEstadoGlobal = usePushEstado();
+  const pushEstadoGlobal = usePushEstado(uid);
   const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt(uid));
   // Solo para clientes (igual que el tour de bienvenida) -- el admin ya
   // sabe dónde está el botón de activar, no necesita el foco de luz.

@@ -12,27 +12,44 @@ export type EstadoPush = "oculto" | "ofrecer" | "activando" | "activado" | "erro
  * "ofrecer" = el navegador soporta push y todavía no se le preguntó
  * permiso (ni sí ni no) -- es el único estado en el que tiene sentido
  * mostrar un botón/aviso para activar.
+ *
+ * uid (opcional): el permiso del navegador (Notification.permission)
+ * es por SITIO, no por cuenta -- si en este mismo celular/navegador
+ * ya se había aceptado antes (con OTRA cuenta de cliente), una cuenta
+ * nueva que entra ahí ve directo la campanita normal, porque el
+ * navegador ya tiene el permiso resuelto y no vuelve a preguntar. El
+ * problema es que esa cuenta nueva todavía NO tiene su propio token
+ * FCM guardado en portalUsers -- sin esto, aunque el navegador diga
+ * "granted", esta cuenta en particular nunca iba a recibir push. Por
+ * eso, si se pasa el uid, se registra el token en SILENCIO (sin pedir
+ * permiso de nuevo -- el navegador ya lo tiene resuelto, esto solo
+ * hace el paso de getToken()+guardarlo) apenas se detecta que el
+ * permiso ya estaba concedido.
  */
-export function usePushEstado() {
+export function usePushEstado(uid?: string) {
   const [estado, setEstado] = useState<EstadoPush>("oculto");
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let cancelado = false;
     const permiso = estadoPermisoNotificaciones();
-    if (permiso === "granted") { setEstado("activado"); return; }
+    if (permiso === "granted") {
+      setEstado("activado");
+      if (uid) void activarNotificacionesPush(uid);
+      return;
+    }
     if (permiso === "denied") { setEstado("bloqueado"); return; }
+    let cancelado = false;
     pushDisponible().then((disponible) => {
       if (!cancelado && disponible) setEstado("ofrecer");
     });
     return () => { cancelado = true; };
-  }, []);
+  }, [uid]);
 
-  async function activar(uid?: string) {
-    if (!uid) return;
+  async function activar(uidParam?: string) {
+    if (!uidParam) return;
     setEstado("activando");
     setError("");
-    const res = await activarNotificacionesPush(uid);
+    const res = await activarNotificacionesPush(uidParam);
     if (res.ok) {
       setEstado("activado");
     } else {
