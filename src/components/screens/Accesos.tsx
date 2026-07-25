@@ -93,6 +93,14 @@ export default function Accesos({ onBack }: Props) {
   const [cargandoEdicion, setCargandoEdicion] = useState(false);
   const [mensajeOkEdicion, setMensajeOkEdicion] = useState("");
 
+  // ── Restablecer contraseña de un cliente que ya tiene cuenta --
+  // Firebase Auth no guarda la contraseña anterior en ningun lado
+  // legible, asi que esto genera una nueva y la muestra una vez para
+  // que se la pases al cliente (igual que al crear el acceso). ──
+  const [reseteandoId, setReseteandoId] = useState<string | null>(null);
+  const [resultadoReset, setResultadoReset] = useState<{ nombre: string; email: string; password: string } | null>(null);
+  const [errorReset, setErrorReset] = useState("");
+
   async function subirAvatarNuevo(file: File) {
     setNuevoSubiendoAvatar(true);
     setNuevoError("");
@@ -296,6 +304,38 @@ export default function Accesos({ onBack }: Props) {
     }
   }
 
+  async function restablecerPassword(inv: InvitacionPortal) {
+    if (!cloudFunctions) {
+      setErrorCrear("Firebase Functions no está configurado.");
+      return;
+    }
+    const nombre = inv.clienteNombre || inv.email;
+    const confirmado = window.confirm(
+      `¿Generar una contraseña nueva para ${nombre}? La contraseña actual dejará de funcionar de inmediato.`
+    );
+    if (!confirmado) return;
+
+    setReseteandoId(inv.id);
+    setMenuAbierto(null);
+    setErrorReset("");
+    try {
+      const fn = httpsCallable<
+        { uid?: string; email: string },
+        { email: string; password: string }
+      >(cloudFunctions, "restablecerPasswordCliente");
+      const res = await fn({ uid: inv.uid, email: inv.email });
+      setResultadoReset({
+        nombre,
+        email: res.data.email || inv.email,
+        password: res.data.password,
+      });
+    } catch (err) {
+      setErrorReset(err instanceof Error ? err.message : "No se pudo restablecer la contraseña.");
+    } finally {
+      setReseteandoId(null);
+    }
+  }
+
   return (
     <div className="admin-tool-screen accesos-screen">
       <div className="detail-header">
@@ -493,6 +533,11 @@ export default function Accesos({ onBack }: Props) {
                     Actualizando...
                   </div>
                 )}
+                {reseteandoId === inv.id && (
+                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>
+                    Generando contraseña nueva...
+                  </div>
+                )}
                 {yaCopiado && (
                   <div style={{ marginTop: 9, fontSize: 11.5, color: "#16A34A", fontWeight: 800 }}>
                     Link copiado
@@ -511,6 +556,7 @@ export default function Accesos({ onBack }: Props) {
                       <>
                         <MenuButton label="Copiar link" onClick={() => copiar(inv.id, inv.link)} disabled={!inv.link} />
                         <MenuLink label="Enviar por WhatsApp" href={whatsappHref} disabled={!inv.link} />
+                        <MenuButton label="Restablecer contraseña" onClick={() => void restablecerPassword(inv)} />
                         <MenuButton label="Archivar usuario" danger onClick={() => administrarUsuario(inv, "archivar")} />
                       </>
                     ) : (
@@ -526,6 +572,86 @@ export default function Accesos({ onBack }: Props) {
           })}
         </div>
       </div>
+
+      {errorReset && !resultadoReset && (
+        <div
+          onClick={() => setErrorReset("")}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(13,22,41,0.55)", zIndex: 500,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px",
+              width: "100%", maxWidth: 480, boxShadow: "0 -8px 30px rgba(0,0,0,0.2)", boxSizing: "border-box",
+            }}
+          >
+            <div style={{ color: "#DC2626", fontSize: 14, fontWeight: 700, marginBottom: 16 }}>{errorReset}</div>
+            <button
+              onClick={() => setErrorReset("")}
+              style={{ width: "100%", padding: "13px", background: "#0B1220", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {resultadoReset && (
+        <div
+          onClick={() => setResultadoReset(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(13,22,41,0.55)", zIndex: 500,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px",
+              width: "100%", maxWidth: 480, boxShadow: "0 -8px 30px rgba(0,0,0,0.2)", boxSizing: "border-box",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
+              Contraseña restablecida
+            </div>
+            <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5, marginBottom: 14 }}>
+              La contraseña anterior de <strong style={{ color: "#0B1220" }}>{resultadoReset.nombre}</strong> ya no funciona. Comparte esta nueva con el cliente.
+            </div>
+            <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 2 }}>Correo</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{resultadoReset.email}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 2 }}>Contraseña nueva</div>
+              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text)" }}>{resultadoReset.password}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `Hola, tu contraseña de Vista360 Player se restableció.
+
+Correo: ${resultadoReset.email}
+Contraseña nueva: ${resultadoReset.password}
+
+Por seguridad, te recomendamos cambiarla después de entrar (Perfil > Cambiar contraseña).`
+                )}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13, textDecoration: "none" }}
+              >
+                WhatsApp
+              </a>
+              <button
+                onClick={() => setResultadoReset(null)}
+                style={{ flex: 1, background: "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}
+              >
+                Listo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

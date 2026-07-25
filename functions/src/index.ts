@@ -27,3 +27,4 @@ export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { actualizarImagenCampania } from "./actualizarImagenCampania.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
 export { administrarUsuarioPortal } from "./administrarUsuarioPortal.js";
+export { restablecerPasswordCliente } from "./restablecerPasswordCliente.js";
