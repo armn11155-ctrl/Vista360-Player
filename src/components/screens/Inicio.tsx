@@ -1,6 +1,7 @@
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
+import { PersonIcon } from "../PersonIcon";
 
 interface Props {
   cliente: Cliente | null;
@@ -199,7 +200,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg>,
             },
             {
-              bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick:() => onGoTo("mispantallas"),
+              bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick:() => onGoTo("campanas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
             },
             {
@@ -234,21 +235,22 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>
           {[
-            // "Mis campañas" ya es una pestaña principal (bottom nav /
-            // sidebar, siempre a un toque de distancia) -- tenerla
-            // TAMBIEN acá se sentía redundante, sobre todo despues de
-            // ya tener una campaña creada. "Mis pantallas" en cambio no
-            // tiene acceso directo en ningun otro lado (solo el menu
-            // lateral), y responde una pregunta bien concreta: "¿donde
-            // se esta mostrando mi marca ahora mismo?".
-            { bg:"#FFFFFF", label:"Mis pantallas", description:"Dónde se transmite tu marca", tab:"mispantallas" as const,
-              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
+            // Orden a proposito: "Nueva campaña" primero (la accion mas
+            // frecuente), "Mi perfil" siempre al final (es la de menos
+            // uso de las 4). "Mis pantallas" ya no es un destino propio
+            // -- ese contenido se fusiono adentro de "Campañas" (ver
+            // comentario en Sidebar.tsx), asi que ya no se referencia
+            // desde ningun lado. "Mis campañas" tampoco va aca: ya es
+            // una pestaña principal (bottom nav / sidebar), repetirla
+            // en Accesos rapidos no sumaba nada.
+            { bg:"#FFFFFF", label:"Nueva campaña", description:"Crea una nueva solicitud", tab:"nueva" as const,
+              icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
             { bg:"#FFFFFF", label:"Cobertura", description:"Revisa tus ubicaciones", tab:"cobertura" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> },
             { bg:"#FFFFFF", label:"Facturas", description:"Consulta y descarga documentos", tab:"facturas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg> },
-            { bg:"#FFFFFF", label:"Nueva campaña", description:"Crea una nueva solicitud", tab:"nueva" as const,
-              icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
+            { bg:"#FFFFFF", label:"Mi perfil", description:"Tus datos y accesos", tab:"perfil" as const,
+              icon:<PersonIcon size={24} color="#0877FF" /> },
           ].map(q => (
             <div key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, background:q.bg, border:"1px solid #E2E8F0", borderRadius:8, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 12px 26px rgba(15,23,42,0.05)" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:28 }}>
@@ -356,14 +358,16 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            {/* Tercera tarjeta -- antes tambien era texto fijo ("Impulsa
-                tu marca / Solicitar nueva campaña") sin importar si ya
-                habia una campaña activa o no. Ahora solo pide una
-                campaña nueva cuando de verdad no hay ninguna activa; si
-                ya hay al menos una, muestra en cuantas pantallas está
-                transmitiendo ahora mismo (dato real, no relleno) y
-                lleva a Mis pantallas en vez de repetir el mismo pedido
-                de siempre. */}
+            {/* Tercera tarjeta -- con cero campañas activas, pide crear
+                la primera (unico "proximo paso" que tiene sentido en
+                ese momento). Con al menos una activa, en vez de solo
+                repetir un numero que ya se ve arriba en "Resumen
+                general" (Publicidades activas), se usa ese mismo dato
+                como gancho para una oportunidad real de crecimiento --
+                sumar mas cobertura -- en vez de quedarse en informativo
+                nomas. "Mis pantallas" ya no se referencia como destino
+                propio: ese contenido se fusiono adentro de "Campañas"
+                (ver Sidebar.tsx). */}
             {activas.length === 0 ? (
               <button type="button" onClick={() => onGoTo("nueva")}>
                 <div className="inicio-account-status-icon">
@@ -377,14 +381,14 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
                 <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
               </button>
             ) : (
-              <button type="button" onClick={() => onGoTo("mispantallas")}>
+              <button type="button" onClick={() => onGoTo("cobertura")}>
                 <div className="inicio-account-status-icon">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
                 </div>
                 <div>
-                  <span>Presencia activa</span>
-                  <strong>{pantallasActivas} {pantallasActivas === 1 ? "pantalla" : "pantallas"} transmitiendo</strong>
-                  <small>Revisa dónde se está mostrando tu marca ahora</small>
+                  <span>{pantallasActivas} {pantallasActivas === 1 ? "pantalla activa" : "pantallas activas"}</span>
+                  <strong>Amplía tu presencia</strong>
+                  <small>Explora cobertura y suma mas ubicaciones</small>
                 </div>
                 <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
               </button>
