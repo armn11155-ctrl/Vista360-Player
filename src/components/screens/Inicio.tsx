@@ -281,10 +281,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           {[
             { bg:"#FFFFFF", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
-            { bg:"#FFFFFF", label:"Mis publicidades", tab:"mispantallas" as const,
+            { bg:"#FFFFFF", label:"Publicidades", tab:"mispantallas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"#FFFFFF", label:"Reportes", tab:"reportes" as const,
-              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="7" x2="19" y2="7"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="17" x2="19" y2="17"/></svg> },
+            { bg:"#FFFFFF", label:"Facturas", tab:"facturas" as const,
+              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg> },
             { bg:"#FFFFFF", label:"Nueva campaña", tab:"nueva" as const,
               icon:<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> },
           ].map(q => (

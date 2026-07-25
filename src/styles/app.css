@@ -6239,6 +6239,28 @@
     .reports-list .report-meta {
       font-size: 12.5px;
     }
+    /* Los reportes aprovechan mejor la tarjeta: el icono acompaña la
+       información sin imponer una altura vacía y las acciones quedan
+       inmediatamente después del contenido. Las facturas conservan
+       su composición independiente. */
+    .reports-list .report-card:not(.factura-card) {
+      padding: 18px 20px;
+    }
+    .reports-list .report-card:not(.factura-card) .report-card-main {
+      align-items: center;
+    }
+    .reports-list .report-card:not(.factura-card) .report-pdf-icon {
+      height: 88px;
+    }
+    .reports-list .report-card:not(.factura-card) .report-pdf-icon svg {
+      height: 78px;
+    }
+    .reports-list .report-card:not(.factura-card) .report-card-copy {
+      padding-top: 0;
+    }
+    .reports-list .report-card:not(.factura-card) .report-actions {
+      margin-top: 14px;
+    }
 
     /* Acciones compactas en reportes de escritorio: dos por fila, sin
        botones que se estiren innecesariamente por toda la tarjeta. */
