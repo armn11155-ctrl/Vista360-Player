@@ -1,5 +1,5 @@
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 
 interface Props {
@@ -35,6 +35,12 @@ function proximoVencimiento(contratos: Contrato[]): Contrato | null {
     .sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
 }
 
+function diasHasta(fecha: string): number {
+  const destino = new Date(`${fecha}T23:59:59`).getTime();
+  if (!Number.isFinite(destino)) return 0;
+  return Math.max(0, Math.ceil((destino - Date.now()) / 86_400_000));
+}
+
 function fechaCorta(fecha: string) {
   if (!fecha) return "—";
   const date = new Date(`${fecha.slice(0, 10)}T00:00:00`);
@@ -46,23 +52,14 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
-  const programadas = contratos.filter(c => estadoCampana(c) === "Programada").length;
-  const finalizadas = contratos.filter(c => estadoCampana(c) === "Finalizada").length;
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
   const proxVenc = proximoVencimiento(contratos);
-  const datosPerfil = [
-    cliente?.empresa,
-    rucCliente(cliente),
-    cliente?.contacto,
-    cliente?.celular,
-    cliente?.email,
-    cliente?.ciudad || cliente?.sector,
-  ];
-  const perfilCompleto = Math.round((datosPerfil.filter((dato) => Boolean(String(dato ?? "").trim())).length / datosPerfil.length) * 100);
+  const campanaRenovable = [...activas].sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
+  const diasRenovacion = campanaRenovable ? diasHasta(campanaRenovable.fin) : null;
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
   // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
@@ -283,45 +280,52 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <section className="inicio-account-status">
           <div className="inicio-account-status-head">
             <div>
-              <span>Información complementaria</span>
-              <h2>Más sobre tu cuenta</h2>
+              <span>Oportunidades</span>
+              <h2>Próximos pasos</h2>
             </div>
             <div className="inicio-account-status-badge">
               <i aria-hidden="true" />
-              Datos diferentes al resumen
+              Acciones recomendadas
             </div>
           </div>
           <div className="inicio-account-status-grid">
-            <button type="button" onClick={() => onGoTo("campanas")}>
+            <button
+              type="button"
+              onClick={() => campanaRenovable && onAbrirCampana ? onAbrirCampana(campanaRenovable) : onGoTo("campanas")}
+            >
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 8 4 4-4 4"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.1 9a7 7 0 0 1 11.8-2L20 9M4 15l2.1 2a7 7 0 0 0 11.8-2"/></svg>
               </div>
               <div>
-                <span>Próximamente</span>
-                <strong>{programadas} {programadas === 1 ? "campaña programada" : "campañas programadas"}</strong>
-                <small>{programadas > 0 ? "Pendientes de iniciar" : "No tienes campañas en espera"}</small>
+                <span>{isAdmin ? "Gestionar renovación" : "Renovar campaña"}</span>
+                <strong>{campanaRenovable ? (campanaRenovable.nombre || "Campaña activa") : "Todo al día"}</strong>
+                <small>
+                  {campanaRenovable
+                    ? `${diasRenovacion} ${diasRenovacion === 1 ? "día" : "días"} para finalizar`
+                    : "No hay renovaciones pendientes"}
+                </small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("campanas")}>
+            <button type="button" onClick={() => onGoTo("cobertura")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
               </div>
               <div>
-                <span>Historial</span>
-                <strong>{finalizadas} {finalizadas === 1 ? "campaña finalizada" : "campañas finalizadas"}</strong>
-                <small>Consulta campañas anteriores</small>
+                <span>Amplía tu presencia</span>
+                <strong>Explorar cobertura</strong>
+                <small>Descubre nuevas ubicaciones disponibles</small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("perfil")}>
+            <button type="button" onClick={() => onGoTo("nueva")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
               </div>
               <div>
-                <span>Perfil empresarial</span>
-                <strong>{perfilCompleto}% completado</strong>
-                <small>{perfilCompleto === 100 ? "Información completa" : "Completa los datos de tu empresa"}</small>
+                <span>{isAdmin ? "Nueva oportunidad" : "Impulsa tu marca"}</span>
+                <strong>{isAdmin ? "Crear nueva campaña" : "Solicitar nueva campaña"}</strong>
+                <small>{isAdmin ? "Registra una propuesta para el cliente" : "Cuéntanos qué deseas promocionar"}</small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
