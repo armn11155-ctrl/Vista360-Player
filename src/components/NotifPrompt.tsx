@@ -3,17 +3,25 @@ import type { EstadoPush } from "../hooks/usePushEstado";
 
 const STORAGE_KEY = "vista360_notif_prompt_visto";
 
-export function debeVerNotifPrompt(): boolean {
+// Mismo criterio que OnboardingTour.tsx: la llave se guarda por uid,
+// no global, para que probar varias cuentas de cliente en el mismo
+// celular no "gaste" el aviso de la primera cuenta para todas las
+// demas.
+function clave(uid?: string) {
+  return uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
+}
+
+export function debeVerNotifPrompt(uid?: string): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== "1";
+    return localStorage.getItem(clave(uid)) !== "1";
   } catch {
     return false; // si localStorage falla (modo privado, etc.), no molestamos con esto
   }
 }
 
-function marcarVisto() {
+function marcarVisto(uid?: string) {
   try {
-    localStorage.setItem(STORAGE_KEY, "1");
+    localStorage.setItem(clave(uid), "1");
   } catch {
     // sin problema si no se pudo guardar -- simplemente se puede repetir
   }
@@ -75,14 +83,14 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
   useEffect(() => {
     if (!intentado) return;
     if (estadoPush === "activado" || estadoPush === "error" || estadoPush === "bloqueado") {
-      marcarVisto();
+      marcarVisto(uid);
       const t = window.setTimeout(onClose, estadoPush === "activado" ? 900 : 1800);
       return () => window.clearTimeout(t);
     }
   }, [intentado, estadoPush, onClose]);
 
   function cerrar() {
-    marcarVisto();
+    marcarVisto(uid);
     onClose();
   }
 

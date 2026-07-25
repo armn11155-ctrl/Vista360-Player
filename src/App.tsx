@@ -337,9 +337,9 @@ function AuthenticatedApp({
   }, []);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding());
+  const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
   const pushEstadoGlobal = usePushEstado();
-  const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt());
+  const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt(uid));
   // Solo para clientes (igual que el tour de bienvenida) -- el admin ya
   // sabe dónde está el botón de activar, no necesita el foco de luz.
   const mostrarNotifPrompt = !isAdmin && !mostrarOnboarding && !notifPromptVisto && pushEstadoGlobal.estado === "ofrecer";
@@ -511,7 +511,7 @@ function AuthenticatedApp({
   return (
     <div className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}`}>
       <OfflineBanner online={online} />
-      {mostrarOnboarding && <OnboardingTour onClose={() => setMostrarOnboarding(false)} />}
+      {mostrarOnboarding && <OnboardingTour uid={uid} onClose={() => setMostrarOnboarding(false)} />}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

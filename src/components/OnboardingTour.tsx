@@ -30,28 +30,45 @@ const PASOS = [
 
 const STORAGE_KEY = "vista360_onboarding_visto";
 
-export function debeVerOnboarding(): boolean {
+// Antes era una sola llave global (sin el uid) -- si dos cuentas de
+// cliente distintas se probaban en el MISMO celular/navegador, la
+// segunda cuenta nunca veia el tour porque localStorage ya tenia
+// "visto" guardado de la primera cuenta (localStorage es del
+// navegador, no de la cuenta). Ahora se guarda una llave por cada
+// uid, asi cada cuenta nueva ve el tour la primera vez que entra,
+// sin importar que otras cuentas se hayan probado antes en ese mismo
+// dispositivo.
+function clave(uid?: string) {
+  return uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
+}
+
+export function debeVerOnboarding(uid?: string): boolean {
   try {
-    return localStorage.getItem(STORAGE_KEY) !== "1";
+    return localStorage.getItem(clave(uid)) !== "1";
   } catch {
     return false; // si localStorage falla (modo privado, etc.), no molestamos con esto
   }
 }
 
-function marcarVisto() {
+function marcarVisto(uid?: string) {
   try {
-    localStorage.setItem(STORAGE_KEY, "1");
+    localStorage.setItem(clave(uid), "1");
   } catch {
-    // sin problema si no se pudo guardar — simplemente se puede repetir
+    // sin problema si no se pudo guardar -- simplemente se puede repetir
   }
 }
 
 interface Props {
+  uid?: string;
   onClose: () => void;
 }
 
 function Ilustracion({ tipo }: { tipo: string }) {
-  if (tipo === "final") {
+  // "bienvenida" y "final" muestran el logo real -- antes "bienvenida"
+  // tenia un dibujo abstracto (montañas + chispa) que no representaba
+  // nada concreto y confundia; mostrar el logo de una vez deja claro
+  // de que app se trata desde el primer paso.
+  if (tipo === "final" || tipo === "bienvenida") {
     return (
       <div style={{ height: 112, display: "grid", placeItems: "center", marginBottom: 16 }}>
         <img src="/logo-player.png" alt="Vista360 Player" style={{ width: 220, maxWidth: "86%", height: "auto" }} />
@@ -62,14 +79,6 @@ function Ilustracion({ tipo }: { tipo: string }) {
   return (
     <div style={{ width: 112, height: 112, margin: "0 auto 16px", borderRadius: 28, background: "linear-gradient(145deg, rgba(8,119,255,.2), rgba(255,255,255,.04))", border: "1px solid rgba(147,197,253,.18)", display: "grid", placeItems: "center" }}>
       <svg width="78" height="78" viewBox="0 0 96 96" fill="none" aria-hidden="true">
-        {tipo === "bienvenida" && (
-          <>
-            <circle cx="48" cy="48" r="33" fill="#0B2E6B" stroke="#60A5FA" strokeWidth="2" />
-            <path d="M28 55c8-1 14-6 17-14 3 9 10 15 22 17" stroke="#EAF3FF" strokeWidth="4" strokeLinecap="round" />
-            <path d="M38 34c3-5 9-8 16-7M62 32l5-6M29 36l-6-4" stroke="#93C5FD" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="67" cy="58" r="6" fill="#22C55E" />
-          </>
-        )}
         {tipo === "campanas" && (
           <>
             <rect x="15" y="20" width="66" height="48" rx="8" fill="#0B2E6B" stroke="#60A5FA" strokeWidth="2" />
@@ -100,13 +109,13 @@ function Ilustracion({ tipo }: { tipo: string }) {
   );
 }
 
-export default function OnboardingTour({ onClose }: Props) {
+export default function OnboardingTour({ uid, onClose }: Props) {
   const [paso, setPaso] = useState(0);
   const esUltimo = paso === PASOS.length - 1;
   const actual = PASOS[paso];
 
   function cerrar() {
-    marcarVisto();
+    marcarVisto(uid);
     onClose();
   }
 
