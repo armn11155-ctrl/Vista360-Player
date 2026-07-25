@@ -3892,7 +3892,7 @@
     }
     .sidebar-panel .sidebar-head img { filter: none; }
     .sidebar-panel .sidebar-head { padding: 34px 14px 16px; }
-    .sidebar-panel .sidebar-logo-img { width: 128px; }
+    .sidebar-panel .sidebar-logo-img { width: 128px !important; }
     .sidebar-close { display: none !important; }
     /* Un poco de aire extra arriba de la lista, separándola del logo
        -- antes arrancaba pegada al header. */
@@ -5302,12 +5302,13 @@
       padding-left: 16px;
       padding-right: 14px;
     }
-    .sidebar-head .sidebar-logo-img { width: 96px; }
+    .sidebar-head .sidebar-logo-img { width: 96px !important; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
-       cerrar sesión quede pegado más al fondo, no flotando en el medio) */
-    .sidebar-list { padding: 56px 0 calc(6px + env(safe-area-inset-bottom)); overflow-y: auto; }
+       cerrar sesión quede pegado más al fondo, no flotando en el medio).
+       !important: ver nota arriba de por qué hace falta acá. */
+    .sidebar-list { padding: 56px 0 calc(6px + env(safe-area-inset-bottom)) !important; overflow-y: auto; }
     .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
     .sidebar-item[data-sidebar-id="campanas"] { order: 2; }
     .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }
