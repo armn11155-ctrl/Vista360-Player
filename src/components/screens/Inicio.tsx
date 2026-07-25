@@ -57,6 +57,19 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
+  // Para la tarjeta de "Reporte del mes" en Próximos pasos -- ¿ya existe
+  // un informe generado para el mes en curso? (mismo criterio que usa
+  // Mis Campañas para su barra de "Estado de reportes"). Con esto la
+  // tarjeta muestra una situación real en vez de un texto fijo.
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const NOMBRES_MES_LARGO = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  ];
+  const nombreMesActual = NOMBRES_MES_LARGO[Number(mesActual.slice(5, 7)) - 1] ?? "este mes";
+  const reporteEsteMesListo = informesState.status === "ready"
+    ? informesState.informes.some((informe) => informe.mes === mesActual)
+    : false;
   const proxVenc = proximoVencimiento(contratos);
   const campanaRenovable = [...activas].sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
   const diasRenovacion = campanaRenovable ? diasHasta(campanaRenovable.fin) : null;
@@ -221,8 +234,15 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>
           {[
-            { bg:"#FFFFFF", label:"Mis campañas", description:"Consulta estados y avances", tab:"campanas" as const,
-              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
+            // "Mis campañas" ya es una pestaña principal (bottom nav /
+            // sidebar, siempre a un toque de distancia) -- tenerla
+            // TAMBIEN acá se sentía redundante, sobre todo despues de
+            // ya tener una campaña creada. "Mis pantallas" en cambio no
+            // tiene acceso directo en ningun otro lado (solo el menu
+            // lateral), y responde una pregunta bien concreta: "¿donde
+            // se esta mostrando mi marca ahora mismo?".
+            { bg:"#FFFFFF", label:"Mis pantallas", description:"Dónde se transmite tu marca", tab:"mispantallas" as const,
+              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
             { bg:"#FFFFFF", label:"Cobertura", description:"Revisa tus ubicaciones", tab:"cobertura" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> },
             { bg:"#FFFFFF", label:"Facturas", description:"Consulta y descarga documentos", tab:"facturas" as const,
@@ -307,28 +327,68 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("cobertura")}>
+            {/* Reporte del mes -- antes decia siempre "Amplia tu presencia
+                / Explorar cobertura", un texto fijo sin relacion con la
+                cuenta real. Ahora refleja si el informe de ESTE mes ya
+                existe o no (mismo dato que usa la barra de "Estado de
+                reportes" en Mis Campañas), asi que dice algo distinto
+                segun corresponda en vez de repetir siempre lo mismo. */}
+            <button type="button" onClick={() => onGoTo("reportes")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </div>
               <div>
-                <span>Amplía tu presencia</span>
-                <strong>Explorar cobertura</strong>
-                <small>Descubre nuevas ubicaciones disponibles</small>
+                <span>Reporte mensual</span>
+                <strong>
+                  {reporteEsteMesListo
+                    ? `Reporte de ${nombreMesActual} listo`
+                    : isAdmin
+                      ? `Genera el reporte de ${nombreMesActual}`
+                      : `Reporte de ${nombreMesActual} pendiente`}
+                </strong>
+                <small>
+                  {reporteEsteMesListo
+                    ? "Ya puedes verlo y compartirlo"
+                    : isAdmin
+                      ? "El cliente todavía no lo tiene"
+                      : "Te avisamos apenas esté listo"}
+                </small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("nueva")}>
-              <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-              </div>
-              <div>
-                <span>{isAdmin ? "Nueva oportunidad" : "Impulsa tu marca"}</span>
-                <strong>{isAdmin ? "Crear nueva campaña" : "Solicitar nueva campaña"}</strong>
-                <small>{isAdmin ? "Registra una propuesta para el cliente" : "Cuéntanos qué deseas promocionar"}</small>
-              </div>
-              <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
-            </button>
+            {/* Tercera tarjeta -- antes tambien era texto fijo ("Impulsa
+                tu marca / Solicitar nueva campaña") sin importar si ya
+                habia una campaña activa o no. Ahora solo pide una
+                campaña nueva cuando de verdad no hay ninguna activa; si
+                ya hay al menos una, muestra en cuantas pantallas está
+                transmitiendo ahora mismo (dato real, no relleno) y
+                lleva a Mis pantallas en vez de repetir el mismo pedido
+                de siempre. */}
+            {activas.length === 0 ? (
+              <button type="button" onClick={() => onGoTo("nueva")}>
+                <div className="inicio-account-status-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+                </div>
+                <div>
+                  <span>{isAdmin ? "Nueva oportunidad" : "Impulsa tu marca"}</span>
+                  <strong>{isAdmin ? "Crear nueva campaña" : "Solicitar nueva campaña"}</strong>
+                  <small>{isAdmin ? "Registra una propuesta para el cliente" : "Cuéntanos qué deseas promocionar"}</small>
+                </div>
+                <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            ) : (
+              <button type="button" onClick={() => onGoTo("mispantallas")}>
+                <div className="inicio-account-status-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                </div>
+                <div>
+                  <span>Presencia activa</span>
+                  <strong>{pantallasActivas} {pantallasActivas === 1 ? "pantalla" : "pantallas"} transmitiendo</strong>
+                  <small>Revisa dónde se está mostrando tu marca ahora</small>
+                </div>
+                <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            )}
           </div>
         </section>
 
