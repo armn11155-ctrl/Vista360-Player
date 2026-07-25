@@ -183,6 +183,10 @@
   /* position:fixed a toda la pantalla (en vez de solo llenar su
      contenedor con flex) para que todas las cargas cubran el viewport
      completo con el mismo fondo blanco, sin importar dónde se usen. */
+  /* Pantalla de carga: fondo negro, solo el wordmark VISTA360 PLAYER
+     (logo-player.png, blanco y transparente) con el efecto de "agua
+     llenando" aplicado directo a las letras -- ya no hay una marca
+     "V" aparte de eso. */
   .brand-loader {
     position: fixed;
     inset: 0;
@@ -190,24 +194,16 @@
     width: 100%;
     height: 100%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 22px;
     overflow: hidden;
-    background: #FFFFFF;
+    background: #050A12;
   }
   .brand-loader.brand-loader-dark {
-    background: #FFFFFF;
-  }
-  .brand-loader-wordmark {
-    width: min(190px, 46vw);
-    height: auto;
-    opacity: .92;
+    background: #050A12;
   }
   .brand-loader-mark {
-    width: min(230px, 58vw);
-    aspect-ratio: 1;
+    width: min(320px, 78vw);
     position: relative;
     display: flex;
     align-items: center;
@@ -216,49 +212,31 @@
     will-change: transform;
     animation: brandLoaderFloat 4.2s cubic-bezier(.45,.05,.55,.95) calc(2.8s + var(--brand-loader-delay, 0s)) infinite;
   }
-  .brand-loader-mark::before {
-    content: "";
-    position: absolute;
-    inset: 8%;
-    border-radius: 50%;
-    background: rgba(15,23,42,.055);
-    filter: blur(18px);
-    opacity: .35;
-    transform: scale(.82);
-    animation: brandLoaderGlow 4.2s ease-in-out calc(2.8s + var(--brand-loader-delay, 0s)) infinite;
-  }
-  .brand-loader-dark .brand-loader-mark::before {
-    background: rgba(15,23,42,.055);
-  }
   .brand-loader-logo {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 24px;
+    height: auto;
+    object-fit: contain;
     display: block;
   }
   .brand-loader-logo-base {
     position: relative;
     z-index: 1;
-    filter: grayscale(1) brightness(1.75);
-    opacity: .3;
+    opacity: .16;
   }
   .brand-loader-dark .brand-loader-logo-base {
-    filter: grayscale(1) brightness(1.75);
-    opacity: .3;
+    opacity: .16;
   }
   .brand-loader-liquid {
     position: absolute;
     inset: 0;
     z-index: 2;
     overflow: hidden;
-    border-radius: 24px;
     clip-path: inset(100% 0 0 0);
     will-change: clip-path;
     animation: brandLoaderLiquidRise 2.8s cubic-bezier(.22,.61,.36,1) var(--brand-loader-delay, 0s) 1 forwards;
   }
   .brand-loader-logo-fill {
-    filter: brightness(1.08) contrast(1.03);
+    filter: none;
   }
   /* Antes habia una linea blanca (::after) pensada como el "borde del
    * agua" del relleno, pero al estar fija en top:0 del contenedor

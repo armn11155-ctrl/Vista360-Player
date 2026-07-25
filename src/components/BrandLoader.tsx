@@ -21,16 +21,11 @@ export default function BrandLoader({ label = "Cargando", dark = false }: Props)
   return (
     <div className={`brand-loader${dark ? " brand-loader-dark" : ""}`} role="status" aria-label={label} style={estilo}>
       <div className="brand-loader-mark">
-        <img className="brand-loader-logo brand-loader-logo-base" src="/vista360-loader-v.png" alt="" draggable={false} />
+        <img className="brand-loader-logo brand-loader-logo-base" src="/logo-player.png" alt="" draggable={false} />
         <span className="brand-loader-liquid" aria-hidden="true">
-          <img className="brand-loader-logo brand-loader-logo-fill" src="/vista360-loader-v.png" alt="" draggable={false} />
+          <img className="brand-loader-logo brand-loader-logo-fill" src="/logo-player.png" alt="" draggable={false} />
         </span>
       </div>
-      {/* Wordmark nuevo debajo de la marca animada -- el fondo de esta
-          pantalla es blanco, por eso usa la variante oscura del logo
-          (logo-player-dark.png) en vez de la blanca que se usa en los
-          headers oscuros del resto de la app. */}
-      <img className="brand-loader-wordmark" src="/logo-player-dark.png" alt="Vista360 Player" draggable={false} />
     </div>
   );
 }
