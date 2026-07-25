@@ -1,7 +1,9 @@
+import { useRef } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { usePushEstado } from "../../hooks/usePushEstado";
+import NotifPrompt from "../NotifPrompt";
 import { PersonIcon } from "../PersonIcon";
 
 interface Props {
@@ -18,6 +20,8 @@ interface Props {
   isAdmin?: boolean;
   adminNombre?: string | null;
   uid?: string;
+  mostrarNotifSpotlight?: boolean;
+  onCerrarNotifSpotlight?: () => void;
 }
 
 function fechaGeneradoInforme(createdAt: unknown): string {
@@ -55,8 +59,9 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, uid }: Props) {
-  const { estado: estadoPush, activar: activarPush } = usePushEstado();
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, uid, mostrarNotifSpotlight, onCerrarNotifSpotlight }: Props) {
+  const { estado: estadoPush, error: errorPush, activar: activarPush } = usePushEstado();
+  const notifBtnRef = useRef<HTMLButtonElement>(null);
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
@@ -126,6 +131,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
             </button>
             {estadoPush === "ofrecer" || estadoPush === "activando" ? (
               <button
+                ref={notifBtnRef}
                 type="button"
                 onClick={() => activarPush(uid)}
                 disabled={estadoPush === "activando"}
@@ -424,6 +430,16 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         </section>
 
       </div>
+      {mostrarNotifSpotlight && estadoPush === "ofrecer" && onCerrarNotifSpotlight && (
+        <NotifPrompt
+          uid={uid}
+          targetRef={notifBtnRef}
+          estadoPush={estadoPush}
+          errorPush={errorPush}
+          activarPush={activarPush}
+          onClose={onCerrarNotifSpotlight}
+        />
+      )}
     </div>
   );
 }

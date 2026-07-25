@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { usePushEstado } from "../hooks/usePushEstado";
+import { useEffect, useState, type RefObject } from "react";
+import type { EstadoPush } from "../hooks/usePushEstado";
 
 const STORAGE_KEY = "vista360_notif_prompt_visto";
 
@@ -19,39 +19,67 @@ function marcarVisto() {
   }
 }
 
+interface Rect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 interface Props {
   uid?: string;
+  /** Ref al botón real "Activar" del header de Inicio -- se mide su
+   *  posición para recortar el hueco del foco de luz justo ahí. */
+  targetRef: RefObject<HTMLElement | null>;
+  estadoPush: EstadoPush;
+  errorPush: string;
+  activarPush: (uid?: string) => Promise<void>;
   onClose: () => void;
 }
 
 /**
- * Aviso de bienvenida a pantalla completa (mismo estilo "bloqueante"
- * que OnboardingTour) para activar las notificaciones push apenas se
- * entra a la app -- el admin pidió esto explícitamente porque, dejado
- * solo dentro de la campanita, casi nadie lo encontraba ni sabía si ya
- * estaba activado o no.
+ * Aviso de bienvenida "foco de luz" (spotlight) para activar las
+ * notificaciones push apenas se entra a la app -- pedido explícito:
+ * en vez de un modal centrado, se oscurece toda la pantalla EXCEPTO
+ * el botón "Activar" del header (que ya dice eso, ver Inicio.tsx), y
+ * un globo de texto cerca explica que hay que tocar ahí.
  *
  * Se muestra una sola vez (se guarda en localStorage apenas se toca
- * cualquiera de los dos botones) y solo si el navegador soporta push
- * y todavía no se le preguntó permiso -- si ya está activado o
- * bloqueado de antes, este componente ni se monta (ver App.tsx).
+ * el botón real o "Ahora no") y solo si el navegador soporta push y
+ * todavía no se le preguntó permiso -- si ya está activado o
+ * bloqueado, ni se monta (ver Inicio.tsx / App.tsx).
  */
-export default function NotifPrompt({ uid, onClose }: Props) {
-  const { estado, error, activar } = usePushEstado();
+export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, activarPush, onClose }: Props) {
   const [intentado, setIntentado] = useState(false);
-  const activando = estado === "activando";
+  const [rect, setRect] = useState<Rect | null>(null);
 
-  // Una vez que se pidió el permiso (aceptado, rechazado, o error),
-  // se marca como visto y se cierra solo -- con una pequeña pausa
-  // para que se alcance a leer el resultado antes de que desaparezca.
+  useEffect(() => {
+    function medir() {
+      const el = targetRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    }
+    medir();
+    const t = window.setTimeout(medir, 60); // por si el layout todavía se está acomodando
+    window.addEventListener("resize", medir);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("resize", medir);
+    };
+  }, [targetRef]);
+
+  // Una vez que se pidió el permiso (aceptado, rechazado, o error), se
+  // marca como visto y se cierra solo -- con una pequeña pausa para
+  // que se alcance a leer el resultado antes de que desaparezca.
   useEffect(() => {
     if (!intentado) return;
-    if (estado === "activado" || estado === "error" || estado === "bloqueado") {
+    if (estadoPush === "activado" || estadoPush === "error" || estadoPush === "bloqueado") {
       marcarVisto();
-      const t = window.setTimeout(onClose, estado === "activado" ? 900 : 1600);
+      const t = window.setTimeout(onClose, estadoPush === "activado" ? 900 : 1800);
       return () => window.clearTimeout(t);
     }
-  }, [intentado, estado, onClose]);
+  }, [intentado, estadoPush, onClose]);
 
   function cerrar() {
     marcarVisto();
@@ -60,85 +88,120 @@ export default function NotifPrompt({ uid, onClose }: Props) {
 
   function iniciarActivar() {
     setIntentado(true);
-    void activar(uid);
+    void activarPush(uid);
   }
 
+  if (!rect) return null;
+
+  const pad = 6;
+  const anillo = {
+    top: rect.top - pad,
+    left: rect.left - pad,
+    width: rect.width + pad * 2,
+    height: rect.height + pad * 2,
+    radius: (rect.height + pad * 2) / 2,
+  };
+
+  const espacioAbajo = window.innerHeight - (rect.top + rect.height);
+  const tooltipAbajo = espacioAbajo > 170;
+  const tooltipAncho = 250;
+  const tooltipRight = Math.max(12, window.innerWidth - (rect.left + rect.width));
+
   return (
-    <div
-      style={{
-        position: "fixed", inset: 0, background: "rgba(13,22,41,0.72)", zIndex: 600,
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-      }}
-    >
+    <div style={{ position: "fixed", inset: 0, zIndex: 550 }}>
+      {/* Bloquea toda la pantalla -- el "hueco" de abajo es solo visual,
+          este backdrop es el que de verdad impide tocar nada más. */}
+      <div
+        onClick={cerrar}
+        style={{ position: "fixed", inset: 0, background: "rgba(2,6,15,0.2)" }}
+      />
+      {/* Anillo que ilumina el botón real (truco: box-shadow gigante
+          que pinta todo alrededor de este rectángulo, dejando el
+          rectángulo mismo transparente = efecto "foco de luz"). */}
       <div
         style={{
-          background: "linear-gradient(155deg, #07111F 0%, #03070D 100%)", borderRadius: 24, padding: "28px 24px 22px",
-          width: "100%", maxWidth: 360, boxShadow: "0 28px 70px rgba(0,0,0,0.48)", border: "1px solid rgba(147,197,253,.16)",
-          textAlign: "center",
+          position: "fixed",
+          top: anillo.top, left: anillo.left,
+          width: anillo.width, height: anillo.height,
+          borderRadius: anillo.radius,
+          boxShadow: "0 0 0 9999px rgba(2,6,15,0.86)",
+          border: "2px solid rgba(147,197,253,.55)",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Botón invisible clickeable, exactamente sobre el botón real. */}
+      <button
+        type="button"
+        onClick={iniciarActivar}
+        disabled={estadoPush === "activando"}
+        aria-label="Activar notificaciones"
+        style={{
+          position: "fixed",
+          top: rect.top, left: rect.left,
+          width: rect.width, height: rect.height,
+          borderRadius: rect.height / 2,
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          cursor: estadoPush === "activando" ? "default" : "pointer",
+        }}
+      />
+      {/* Globo de texto cerca del foco de luz. */}
+      <div
+        style={{
+          position: "fixed",
+          ...(tooltipAbajo
+            ? { top: rect.top + rect.height + 16 }
+            : { bottom: window.innerHeight - rect.top + 16 }),
+          right: tooltipRight,
+          width: tooltipAncho,
+          maxWidth: "calc(100vw - 24px)",
+          background: "linear-gradient(155deg, #0D1B30 0%, #050A14 100%)",
+          border: "1px solid rgba(147,197,253,.28)",
+          borderRadius: 16,
+          padding: "16px 16px 14px",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
         }}
       >
-        <div style={{
-          width: 84, height: 84, margin: "0 auto 18px", borderRadius: 22,
-          background: "linear-gradient(145deg, rgba(8,119,255,.2), rgba(255,255,255,.04))",
-          border: "1px solid rgba(147,197,253,.18)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#93C5FD" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-        </div>
-
-        <div style={{ fontSize: 19, fontWeight: 850, color: "#FFFFFF", marginBottom: 10 }}>
-          Activa tus notificaciones
-        </div>
-        <div style={{ fontSize: 13.5, color: "rgba(226,232,240,.72)", lineHeight: 1.6, marginBottom: 20 }}>
-          Entérate al instante cuando tengas un reporte nuevo, una campaña por vencer o una factura — aunque no tengas la app abierta.
-        </div>
-
-        {intentado && estado === "error" && (
-          <div style={{ fontSize: 12, color: "#FCA5A5", marginBottom: 16, fontWeight: 600 }}>{error}</div>
+        {!intentado && (
+          <>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
+              Activa tus notificaciones
+            </div>
+            <div style={{ fontSize: 12.5, color: "rgba(226,232,240,.78)", lineHeight: 1.5, marginBottom: 12 }}>
+              Toca el botón iluminado para recibir avisos de reportes, campañas por vencer y facturas nuevas.
+            </div>
+            <button
+              type="button"
+              onClick={cerrar}
+              style={{
+                background: "transparent", border: "none", color: "rgba(226,232,240,.6)",
+                fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
+              }}
+            >
+              Ahora no
+            </button>
+          </>
         )}
-        {intentado && estado === "bloqueado" && (
-          <div style={{ fontSize: 12, color: "#FCA5A5", marginBottom: 16, fontWeight: 600 }}>
-            El navegador bloqueó el permiso. Puedes activarlo luego desde los ajustes del sitio.
-          </div>
+        {intentado && estadoPush === "activando" && (
+          <div style={{ fontSize: 13, color: "rgba(226,232,240,.85)", fontWeight: 700 }}>Activando…</div>
         )}
-        {intentado && estado === "activado" && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 13, color: "#4ADE80", fontWeight: 700, marginBottom: 16 }}>
+        {intentado && estadoPush === "activado" && (
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#4ADE80", fontWeight: 700 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
             Notificaciones activadas
           </div>
         )}
-
-        <div style={{ display: "flex", gap: 10 }}>
-          {!(intentado && estado === "activado") && (
-            <button
-              onClick={cerrar}
-              disabled={activando}
-              style={{
-                flex: 1, padding: "13px", background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12,
-                color: "#E2E8F0", fontWeight: 700, fontSize: 14, cursor: activando ? "default" : "pointer",
-              }}
-            >
-              Ahora no
-            </button>
-          )}
-          {!(intentado && (estado === "activado" || estado === "error" || estado === "bloqueado")) && (
-            <button
-              onClick={iniciarActivar}
-              disabled={activando}
-              style={{
-                flex: 1, padding: "13px", background: activando ? "#3B82F6" : "#0877FF", border: "none", borderRadius: 12,
-                color: "#fff", fontWeight: 700, fontSize: 14, cursor: activando ? "default" : "pointer", opacity: activando ? 0.8 : 1,
-              }}
-            >
-              {activando ? "Activando…" : "Activar notificaciones"}
-            </button>
-          )}
-        </div>
+        {intentado && estadoPush === "error" && (
+          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>{errorPush}</div>
+        )}
+        {intentado && estadoPush === "bloqueado" && (
+          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>
+            El navegador bloqueó el permiso. Puedes activarlo luego desde los ajustes del sitio.
+          </div>
+        )}
       </div>
     </div>
   );

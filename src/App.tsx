@@ -21,7 +21,7 @@ import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
-import NotifPrompt, { debeVerNotifPrompt } from "./components/NotifPrompt";
+import { debeVerNotifPrompt } from "./components/NotifPrompt";
 import { usePushEstado } from "./hooks/usePushEstado";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
@@ -340,7 +340,9 @@ function AuthenticatedApp({
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding());
   const pushEstadoGlobal = usePushEstado();
   const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt());
-  const mostrarNotifPrompt = !mostrarOnboarding && !notifPromptVisto && pushEstadoGlobal.estado === "ofrecer";
+  // Solo para clientes (igual que el tour de bienvenida) -- el admin ya
+  // sabe dónde está el botón de activar, no necesita el foco de luz.
+  const mostrarNotifPrompt = !isAdmin && !mostrarOnboarding && !notifPromptVisto && pushEstadoGlobal.estado === "ofrecer";
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
@@ -385,6 +387,8 @@ function AuthenticatedApp({
             isAdmin={isAdmin}
             adminNombre={adminNombre}
             uid={uid}
+            mostrarNotifSpotlight={mostrarNotifPrompt}
+            onCerrarNotifSpotlight={() => setNotifPromptVisto(true)}
           />
         );
         break;
@@ -508,7 +512,6 @@ function AuthenticatedApp({
     <div className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}`}>
       <OfflineBanner online={online} />
       {mostrarOnboarding && <OnboardingTour onClose={() => setMostrarOnboarding(false)} />}
-      {mostrarNotifPrompt && <NotifPrompt uid={uid} onClose={() => setNotifPromptVisto(true)} />}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
