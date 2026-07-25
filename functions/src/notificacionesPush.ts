@@ -148,7 +148,7 @@ function nombreMesLargo(mes: string) {
  * listo.
  */
 export const recordatorioReportesMensuales = onSchedule(
-  { schedule: "0 10 * * *", timeZone: "America/Lima" },
+  { schedule: "30 11 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
     const hoy = new Date();
