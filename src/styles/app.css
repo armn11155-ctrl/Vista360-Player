@@ -2831,6 +2831,26 @@
   }
   .form-input:focus { border-color: #0877FF; color: var(--text); }
   .form-input::placeholder { color: var(--muted); }
+  /* Ojito para mostrar/ocultar la contraseña -- por ahora solo en el
+     login (input password de un solo campo, ancho completo). */
+  .login-password-wrap { position: relative; }
+  .login-password-wrap .form-input { padding-right: 42px; }
+  .login-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .login-password-toggle:hover { color: var(--text); }
   .form-textarea {
     min-height: 70px;
     resize: none;
