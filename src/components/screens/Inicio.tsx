@@ -42,6 +42,12 @@ function progresoCampana(contrato: Contrato): number {
   return Math.round(((ahora - inicio) / (fin - inicio)) * 100);
 }
 
+function proximoVencimiento(contratos: Contrato[]): Contrato | null {
+  return contratos
+    .filter((contrato) => estadoCampana(contrato) !== "Finalizada")
+    .sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
+}
+
 function fechaCorta(fecha: string) {
   if (!fecha) return "—";
   const date = new Date(`${fecha.slice(0, 10)}T00:00:00`);
@@ -55,8 +61,10 @@ const HEADER = "#050A12";
 
 export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
+  const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
+  const proxVenc = proximoVencimiento(contratos);
   const campanaDestacada = activas[0]
     ?? contratos.find((contrato) => estadoCampana(contrato) === "Programada")
     ?? contratos[0]
@@ -188,6 +196,45 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
             </button>
           </div>
         )}
+
+        <div className="inicio-section-title inicio-summary-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>
+          Resumen general
+        </div>
+        <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
+          {[
+            {
+              bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg>,
+            },
+            {
+              bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick:() => onGoTo("mispantallas"),
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
+            },
+            {
+              bg:"#F1F5F9", label:"Último reporte", val:ultimoInforme ? ultimoInforme.mesLabel : "—", onClick:() => onGoTo("reportes"),
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+            },
+            {
+              bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
+              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>,
+            },
+          ].map((item) => (
+            <div
+              key={item.label}
+              className="inicio-kpi-card"
+              onClick={item.onClick}
+              style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor:item.onClick ? "pointer" : "default" }}
+            >
+              <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:19, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {item.icon}
+              </div>
+              <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
+                <div className="inicio-kpi-label" style={{ fontSize:12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{item.label}</div>
+                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:"#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.val}</div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <div className="inicio-dashboard-grid">
         <div className="inicio-main-col">
