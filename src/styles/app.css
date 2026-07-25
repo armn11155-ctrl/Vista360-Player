@@ -233,6 +233,9 @@
     overflow: hidden;
     clip-path: inset(100% 0 0 0);
     will-change: clip-path;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
     animation: brandLoaderLiquidRise 2.8s cubic-bezier(.22,.61,.36,1) var(--brand-loader-delay, 0s) 1 forwards;
   }
   .brand-loader-logo-fill {
@@ -250,6 +253,16 @@
     0% { clip-path: inset(100% 0 0 0); opacity: .75; }
     50% { clip-path: inset(48% 0 0 0); opacity: .94; }
     100% { clip-path: inset(0 0 0 0); opacity: 1; }
+  }
+  /* Se usa en .screens y .login-shell para que la transicion desde la
+     pantalla de carga (fondo negro) no se sienta como un corte/flash
+     -- lo que sea que aparezca despues entra con un fundido suave en
+     vez de aparecer de golpe. Solo se anima al MONTAR por primera vez
+     (login o el shell principal recien despues de cargar), no cada
+     vez que se cambia de pestaña adentro de la app. */
+  @keyframes appFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   @keyframes brandLoaderFloat {
     0%, 100% { transform: translateY(0) rotate(-.25deg) scale(.995); }
@@ -368,7 +381,7 @@
      podía crear su propia costura — quitarla es más simple y más sólido. */
 
   /* Screen container */
-  .screens { flex: 1; overflow: hidden; position: relative; }
+  .screens { flex: 1; overflow: hidden; position: relative; animation: appFadeIn .3s ease; }
   /* Cada pantalla y su div-raíz directo deben llenar el 100% del espacio
      disponible en columna — así content-area (flex:1) sabe su límite y
      el scroll nunca va más allá del contenido real. */
@@ -2878,6 +2891,7 @@
        mismo (position:fixed;inset:0), no depende de heredar un alto
        exacto de .app-shell vía flex:1. Una capa de indirección menos =
        un punto menos donde algo puede no cuadrar al pixel. */
+    animation: appFadeIn .3s ease;
     position: fixed;
     top: 0;
     left: 0;
