@@ -5253,7 +5253,7 @@
     .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
     .sidebar-panel {
       position: fixed; top: 0; bottom: 0; left: 0;
-      width: 56%; max-width: 210px;
+      width: 62%; max-width: 230px;
       height: var(--app-height);
       max-height: var(--app-height);
       background: #050A12;
@@ -5270,12 +5270,12 @@
       padding-left: 16px;
       padding-right: 14px;
     }
-    .sidebar-head .sidebar-logo-img { width: 140px; }
+    .sidebar-head .sidebar-logo-img { width: 122px; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
        cerrar sesión quede pegado más al fondo, no flotando en el medio) */
-    .sidebar-list { padding: 26px 0 calc(10px + env(safe-area-inset-bottom)); }
+    .sidebar-list { padding: 42px 0 calc(6px + env(safe-area-inset-bottom)); }
     .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
     .sidebar-item[data-sidebar-id="campanas"] { order: 2; }
     .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }
