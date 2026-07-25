@@ -4305,6 +4305,7 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center bottom;
+    animation: appFadeIn .3s ease;
   }
   .admin-picker-shell::after {
     content: none;

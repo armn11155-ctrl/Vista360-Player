@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
 
 interface Props {
   label?: string;
@@ -18,7 +19,7 @@ export default function BrandLoader({ label = "Cargando", dark = false }: Props)
     "--brand-loader-delay": `${-segundosTranscurridos}s`,
   } as CSSProperties;
 
-  return (
+  return createPortal(
     <div className={`brand-loader${dark ? " brand-loader-dark" : ""}`} role="status" aria-label={label} style={estilo}>
       <div className="brand-loader-mark">
         <img className="brand-loader-logo brand-loader-logo-base" src="/logo-player.png" alt="" draggable={false} />
@@ -26,6 +27,7 @@ export default function BrandLoader({ label = "Cargando", dark = false }: Props)
           <img className="brand-loader-logo brand-loader-logo-fill" src="/logo-player.png" alt="" draggable={false} />
         </span>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
