@@ -9,7 +9,6 @@ import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
-import BrandLoader from "./BrandLoader";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -151,12 +150,14 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     }
   }
 
-  if (!todoListo && !esperaMaxima) {
-    return <BrandLoader dark />;
-  }
-
   return (
     <div className="admin-picker-shell">
+      {!todoListo && !esperaMaxima ? (
+        <div className="admin-picker-loading">
+          <div className="admin-picker-loading-spinner" />
+        </div>
+      ) : (
+        <>
       {/* Antes "Gestión" y "Vista cliente" eran dos botones cada uno
           con su propio position:absolute + un "left" fijo a mano --
           cuando "Gestión" se ensanchaba por la notificación (el
@@ -410,6 +411,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           Cerrar sesión
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 }

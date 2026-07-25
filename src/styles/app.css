@@ -4313,6 +4313,24 @@
   .admin-picker-shell::after {
     content: none;
   }
+  /* Mientras se cargan los clientes/avatares, el shell (con su fondo
+     oscuro + foto) YA está montado -- solo cambia lo de adentro (este
+     spinner en vez de la grilla). Antes esta espera mostraba un
+     <BrandLoader> aparte que se desmontaba de golpe al terminar,
+     dejando un instante en blanco antes de que el shell volviera a
+     aparecer -- con el shell siempre presente ese hueco ya no existe. */
+  .admin-picker-loading {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-picker-loading-spinner {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.18);
+    border-top-color: rgba(255,255,255,0.85);
+    animation: spin 0.8s linear infinite;
+  }
   .admin-picker-header {
     flex-shrink: 0;
     padding: calc(26px + env(safe-area-inset-top)) 20px 20px;
