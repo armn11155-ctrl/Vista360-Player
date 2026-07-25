@@ -430,6 +430,67 @@ async function paginaEvidenciaBlanca(
   drawFooterBar(doc, pad2(pageNum));
 }
 
+/** Version oscura de paginaEvidenciaBlanca -- misma composicion (foto
+ *  grande a la izquierda + tarjeta flotante a la derecha) con los
+ *  colores invertidos: fondo azul oscuro, logo "PLAYER" totalmente
+ *  blanco (el mismo LOGO_PLAYER_WHITE_MONO que ya usa paginaPanel) y
+ *  la tarjeta flotante en BLANCO -- en la pagina blanca la tarjeta es
+ *  oscura, aca al reves para que siga resaltando contra el fondo.
+ *
+ *  Se usa SOLO cuando el reporte es de un solo panel (ver conSecciones
+ *  en generarReporte): ahi las paginas de evidencia alternan
+ *  blanco/oscuro empezando en blanco, como antes. Con 2+ paneles no se
+ *  usa -- esos reportes ya tienen una pagina oscura de por medio
+ *  (paginaPanel) separando cada seccion, alternar tambien las
+ *  evidencias ahi quedaria recargado. */
+async function paginaEvidenciaOscura(
+  doc: PDFKit.PDFDocument,
+  foto: { url: string; fecha?: string },
+  pageNum: number,
+  indice: number
+) {
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62, COLORS.accent2);
+  doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
+    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
+  doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
+
+  const photoX = 74;
+  const photoY = 195;
+  const photoW = 996;
+  const photoH = 546;
+  const buffer = await cargarFotoComprimida(foto.url);
+  drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
+  doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
+
+  // Misma tarjeta que en la pagina blanca (mismas medidas/posicion),
+  // pero en blanco -- en la pagina blanca es oscura (COLORS.card).
+  const cardW = 346;
+  const cardH = 190;
+  const cardX = 1518 - cardW;
+  const cardY = photoY + (photoH - cardH) / 2;
+  const cx = cardX + cardW / 2;
+  doc.save();
+  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
+  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.white);
+  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
+  doc.restore();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
+    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.ink)
+    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
+  doc.moveTo(cx - 60, cardY + 96).lineTo(cx + 60, cardY + 96).lineWidth(1.5).strokeColor(COLORS.accent).stroke();
+  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
+    .text("FECHA DE REGISTRO", cardX, cardY + 116, { width: cardW, align: "center", characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
+    .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
+
+  drawFooterBar(doc, pad2(pageNum));
+}
+
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
  *  TODO: mover esto a config/Firestore si se necesita cambiar sin
  *  tocar codigo. Por ahora son valores de prueba. */
@@ -599,11 +660,17 @@ export async function generarReporte(cliente: ClienteReporte, elementos: Reporte
 
     for (let i = 0; i < fotosElemento.length; i++) {
       doc.addPage();
-      // Ya no alterna blanco/negro -- se pidio que TODAS las paginas
-      // de evidencia usen siempre el mismo diseño (fondo blanco, linea
-      // de acento azul, pie de pagina negro). La variante oscura
-      // (paginaEvidenciaOscura) se elimino.
-      await paginaEvidenciaBlanca(doc, fotosElemento[i], pageNum, i + 1);
+      // Con un solo panel (sin secciones/paginaPanel de por medio) las
+      // paginas de evidencia alternan blanco/oscuro empezando en
+      // blanco -- como era originalmente, antes de que se simplificara
+      // a un solo diseño. Con 2+ paneles se dejan todas en blanco: ahi
+      // ya hay una pagina oscura (paginaPanel) separando cada seccion,
+      // alternar tambien las evidencias quedaria recargado.
+      if (!conSecciones && i % 2 === 1) {
+        await paginaEvidenciaOscura(doc, fotosElemento[i], pageNum, i + 1);
+      } else {
+        await paginaEvidenciaBlanca(doc, fotosElemento[i], pageNum, i + 1);
+      }
       pageNum++;
       numEvidencias++;
     }
