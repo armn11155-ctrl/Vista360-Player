@@ -427,7 +427,12 @@ async function paginaEvidenciaBlanca(
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
     .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
 
-  drawFooterBar(doc, pad2(pageNum));
+  // Misma linea de acento en degradado que ya usa la divisoria de
+  // panel (paginaPanel) -- empieza oscura, se aclara al medio y
+  // vuelve oscura, efecto de brillo elegante en vez de un azul
+  // plano. Se pidio ese mismo efecto tambien aca, en las paginas de
+  // evidencia (blanca y oscura), no solo en la divisoria.
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark]);
 }
 
 /** Version oscura de paginaEvidenciaBlanca -- misma composicion (foto
@@ -488,7 +493,12 @@ async function paginaEvidenciaOscura(
   doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
     .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
 
-  drawFooterBar(doc, pad2(pageNum));
+  // Misma linea de acento en degradado que ya usa la divisoria de
+  // panel (paginaPanel) -- empieza oscura, se aclara al medio y
+  // vuelve oscura, efecto de brillo elegante en vez de un azul
+  // plano. Se pidio ese mismo efecto tambien aca, en las paginas de
+  // evidencia (blanca y oscura), no solo en la divisoria.
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark]);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
