@@ -1,5 +1,5 @@
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato } from "../../types";
+import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 
 interface Props {
@@ -48,10 +48,21 @@ const HEADER = "#050A12";
 
 export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
+  const programadas = contratos.filter(c => estadoCampana(c) === "Programada").length;
+  const finalizadas = contratos.filter(c => estadoCampana(c) === "Finalizada").length;
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
   const proxVenc = proximoVencimiento(contratos);
+  const datosPerfil = [
+    cliente?.empresa,
+    rucCliente(cliente),
+    cliente?.contacto,
+    cliente?.celular,
+    cliente?.email,
+    cliente?.ciudad || cliente?.sector,
+  ];
+  const perfilCompleto = Math.round((datosPerfil.filter((dato) => Boolean(String(dato ?? "").trim())).length / datosPerfil.length) * 100);
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
   // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
@@ -272,45 +283,45 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <section className="inicio-account-status">
           <div className="inicio-account-status-head">
             <div>
-              <span>Vista general</span>
-              <h2>Estado de tu cuenta</h2>
+              <span>Información complementaria</span>
+              <h2>Más sobre tu cuenta</h2>
             </div>
             <div className="inicio-account-status-badge">
               <i aria-hidden="true" />
-              Información actualizada
+              Datos diferentes al resumen
             </div>
           </div>
           <div className="inicio-account-status-grid">
             <button type="button" onClick={() => onGoTo("campanas")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 8 4 4-4 4"/></svg>
               </div>
               <div>
-                <span>Próximo vencimiento</span>
-                <strong>{proxVenc ? (proxVenc.nombre || "Campaña activa") : "Sin vencimientos"}</strong>
-                <small>{proxVenc ? fechaCorta(proxVenc.fin) : "Tu cuenta está al día"}</small>
+                <span>Próximamente</span>
+                <strong>{programadas} {programadas === 1 ? "campaña programada" : "campañas programadas"}</strong>
+                <small>{programadas > 0 ? "Pendientes de iniciar" : "No tienes campañas en espera"}</small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("cobertura")}>
+            <button type="button" onClick={() => onGoTo("campanas")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/><path d="M12 7v5l3 2"/></svg>
               </div>
               <div>
-                <span>Cobertura activa</span>
-                <strong>{pantallasActivas} {pantallasActivas === 1 ? "panel" : "paneles"}</strong>
-                <small>Consulta las ubicaciones</small>
+                <span>Historial</span>
+                <strong>{finalizadas} {finalizadas === 1 ? "campaña finalizada" : "campañas finalizadas"}</strong>
+                <small>Consulta campañas anteriores</small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
-            <button type="button" onClick={() => onGoTo("reportes")}>
+            <button type="button" onClick={() => onGoTo("perfil")}>
               <div className="inicio-account-status-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h8M9 17h6"/></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>
               </div>
               <div>
-                <span>Actividad reciente</span>
-                <strong>{ultimoInforme ? ultimoInforme.mesLabel : "Sin reportes"}</strong>
-                <small>{ultimoInforme ? `Generado el ${fechaGeneradoInforme(ultimoInforme.createdAt)}` : "Aún no hay documentos"}</small>
+                <span>Perfil empresarial</span>
+                <strong>{perfilCompleto}% completado</strong>
+                <small>{perfilCompleto === 100 ? "Información completa" : "Completa los datos de tu empresa"}</small>
               </div>
               <svg className="inicio-account-status-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m9 18 6-6-6-6"/></svg>
             </button>
