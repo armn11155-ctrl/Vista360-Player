@@ -1,6 +1,9 @@
+import { type CSSProperties } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
+import { campaignCityImage } from "../../utils/campaignCity";
+import { formatCampaignName } from "../../utils/campaignName";
 
 interface Props {
   cliente: Cliente | null;
@@ -8,6 +11,7 @@ interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
   onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente" | "perfil") => void;
+  onAbrirCampana?: (contrato: Contrato) => void;
   onMenuClick?: () => void;
   onNotifClick?: () => void;
   onCambiarCliente?: () => void;
@@ -28,8 +32,14 @@ function fechaGeneradoInforme(createdAt: unknown): string {
   return "—";
 }
 
-function proximoVencimiento(contratos: Contrato[]): Contrato | null {
-  return contratos.filter(c => estadoCampana(c) !== "Finalizada").sort((a,b) => a.fin.localeCompare(b.fin))[0] ?? null;
+function progresoCampana(contrato: Contrato): number {
+  const inicio = new Date(`${contrato.inicio}T00:00:00`).getTime();
+  const fin = new Date(`${contrato.fin}T23:59:59`).getTime();
+  const ahora = Date.now();
+  if (!Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio) return 0;
+  if (ahora <= inicio) return 0;
+  if (ahora >= fin) return 100;
+  return Math.round(((ahora - inicio) / (fin - inicio)) * 100);
 }
 
 function fechaCorta(fecha: string) {
@@ -43,12 +53,26 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
-  const pantallasActivas = new Set(activas.flatMap(c => panelesDeContrato(c))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
-  const proxVenc = proximoVencimiento(contratos);
+  const campanaDestacada = activas[0]
+    ?? contratos.find((contrato) => estadoCampana(contrato) === "Programada")
+    ?? contratos[0]
+    ?? null;
+  const estadoDestacado = campanaDestacada ? estadoCampana(campanaDestacada) : null;
+  const panelesDestacados = campanaDestacada ? panelesDeContrato(campanaDestacada) : [];
+  const nombrePanelDestacado = panelesDestacados
+    .map((id) => paneles[id]?.nombre ?? id)
+    .join(" · ");
+  const nombreCampanaDestacada = campanaDestacada
+    ? formatCampaignName(campanaDestacada.nombre || nombrePanelDestacado || "Campaña publicitaria")
+    : "";
+  const progresoDestacado = campanaDestacada ? progresoCampana(campanaDestacada) : 0;
+  const estiloCampanaDestacada = campanaDestacada
+    ? ({ "--inicio-feature-image": `url("${campaignCityImage(campanaDestacada.id)}")` } as CSSProperties)
+    : undefined;
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
   // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
@@ -165,48 +189,45 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         )}
 
-        {/* RESUMEN GENERAL — título suelto, cards individuales, a todo el
-            ancho (si compartiera columna con "Accesos rápidos" los KPIs
-            se veian apretados/cortados en escritorio) */}
-        <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Resumen general</div>
-        <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
-          {[
-            { bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg> },
-            { bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick: () => onGoTo("mispantallas"),
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
-            { bg:"#F1F5F9", label:"Último reporte", val:ultimoInforme ? ultimoInforme.mesLabel : "—", onClick: () => onGoTo("reportes"),
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
-            { bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
-              icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg> },
-            // "Facturas pendientes" -- se habia decidido no usar esta
-            // tarjeta (quedo afuera hasta ahora sin querer, al
-            // restaurar todo el bloque de Resumen general que se
-            // habia borrado en un commit anterior). Se saca de nuevo,
-            // esta vez a proposito -- si se necesita mas adelante, el
-            // calculo esta en useFacturas.ts, no hay que rehacerlo.
-          ].map((k,i) => (
-            <div
-              key={i}
-              className="inicio-kpi-card"
-              onClick={k.onClick}
-              style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor: k.onClick ? "pointer" : "default" }}
-            >
-              <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:19, background:k.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {k.icon}
-              </div>
-              <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
-                <div className="inicio-kpi-label" style={{ fontSize: 12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{k.label}</div>
-                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:"#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{k.val}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="inicio-divider" style={{ height:1, background:"#E6EAF1", marginBottom:16 }} />
-
         <div className="inicio-dashboard-grid">
         <div className="inicio-main-col">
+        {campanaDestacada ? (
+          <section className="inicio-feature-card" style={estiloCampanaDestacada}>
+            <div className="inicio-feature-content">
+              <div className="inicio-feature-topline">
+                <span>Campaña destacada</span>
+                <span className={`inicio-feature-status ${estadoDestacado?.toLowerCase()}`}>{estadoDestacado}</span>
+              </div>
+              <h2>{nombreCampanaDestacada}</h2>
+              <p>{nombrePanelDestacado || "Publicidad Vista360"}</p>
+              <div className="inicio-feature-dates">
+                <span>{fechaCorta(campanaDestacada.inicio)}</span>
+                <i aria-hidden="true" />
+                <span>{fechaCorta(campanaDestacada.fin)}</span>
+              </div>
+              <div className="inicio-feature-progress-head">
+                <span>Progreso de campaña</span>
+                <strong>{progresoDestacado}%</strong>
+              </div>
+              <div className="inicio-feature-progress">
+                <span style={{ width: `${progresoDestacado}%` }} />
+              </div>
+              <button type="button" onClick={() => onAbrirCampana ? onAbrirCampana(campanaDestacada) : onGoTo("campanas")}>
+                Ver campaña
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+          </section>
+        ) : (
+          <section className="inicio-feature-card inicio-feature-empty">
+            <div className="inicio-feature-content">
+              <div className="inicio-feature-topline"><span>Tu próxima campaña</span></div>
+              <h2>Haz visible tu marca</h2>
+              <p>Crea una campaña y empieza a gestionar tu publicidad desde Vista360.</p>
+              <button type="button" onClick={() => onGoTo("nueva")}>Nueva campaña</button>
+            </div>
+          </section>
+        )}
         {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>

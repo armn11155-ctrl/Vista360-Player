@@ -370,6 +370,7 @@ function AuthenticatedApp({
             contratos={contratos}
             paneles={paneles}
             onGoTo={(tab) => setView(tab)}
+            onAbrirCampana={abrirContrato}
             onMenuClick={() => setSidebarOpen(true)}
             onNotifClick={() => setView("notificaciones")}
             onCambiarCliente={onCambiarCliente}

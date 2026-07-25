@@ -3023,6 +3023,10 @@
      por qué ocupar todo ese ancho — se queda compacto y centrado, igual
      que el fondo de cualquier login de escritorio real.
      En mobile no cambia nada (todo vive dentro de este media query). ===== */
+  .inicio-feature-card {
+    display: none;
+  }
+
   @media (min-width: 900px) {
     html,
     body,
@@ -3204,7 +3208,7 @@
       overflow-y: auto !important;
     }
     .inicio-content > * {
-      width: min(1320px, 100%);
+      width: min(1240px, 100%);
       margin-left: auto;
       margin-right: auto;
     }
@@ -3212,68 +3216,134 @@
       font-size: 20px !important;
       margin-bottom: 14px !important;
     }
-    /* "Resumen general" queda a todo el ancho (fuera de
-       .inicio-dashboard-grid, ver mas abajo) para que las 4 tarjetas
-       KPI tengan espacio de sobra -- antes competian por ancho con la
-       columna lateral y el valor (fecha, mes, etc.) se veia apretado
-       o cortado. */
-    .inicio-summary-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      gap: 16px !important;
-      margin-bottom: 8px !important;
+    .inicio-feature-card {
+      display: block;
+      position: relative;
+      min-height: 260px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      border-radius: 20px;
+      color: #FFFFFF;
+      background-color: #07111F;
+      background-image:
+        linear-gradient(90deg, rgba(3,7,14,.96) 0%, rgba(3,7,14,.86) 42%, rgba(3,7,14,.44) 72%, rgba(3,7,14,.12) 100%),
+        var(--inicio-feature-image);
+      background-size: cover;
+      background-position: center;
+      border: 1px solid rgba(148,163,184,.22);
+      box-shadow: 0 26px 58px -30px rgba(2,6,23,.72);
     }
-    /* Tarjeta KPI en escritorio: de fila horizontal comprimida (icono +
-       texto pegados) pasa a tarjeta vertical tipo dashboard -- icono
-       arriba, etiqueta chica en mayusculas, valor grande debajo, con
-       espacio de sobra para que nada se corte ni se amontone. */
-    .inicio-kpi-card {
-      flex-direction: column !important;
-      align-items: flex-start !important;
-      gap: 0 !important;
-      min-height: 128px !important;
-      padding: 20px 20px 22px !important;
-      border-radius: 16px !important;
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    .inicio-feature-empty {
+      background-image:
+        radial-gradient(circle at 85% 20%, rgba(8,119,255,.34), transparent 34%),
+        linear-gradient(135deg, #07111F, #0B1C34);
     }
-    .inicio-kpi-icon {
-      width: 44px !important;
-      height: 44px !important;
-      border-radius: 13px !important;
-      margin-bottom: 16px !important;
+    .inicio-feature-content {
+      width: min(66%, 620px);
+      min-height: 260px;
+      box-sizing: border-box;
+      padding: 26px 28px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
-    .inicio-kpi-body {
+    .inicio-feature-topline {
       width: 100%;
-    }
-    .inicio-kpi-label {
-      font-size: 12.5px !important;
-      font-weight: 700 !important;
-      color: #64748B !important;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: rgba(255,255,255,.72);
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: .11em;
       text-transform: uppercase;
+    }
+    .inicio-feature-status {
+      padding: 5px 9px;
+      border-radius: 999px;
+      color: #86EFAC;
+      background: rgba(34,197,94,.15);
       letter-spacing: .04em;
-      margin-bottom: 8px !important;
-      white-space: normal !important;
     }
-    .inicio-kpi-value {
-      font-size: 25px !important;
-      line-height: 1.18 !important;
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: clip !important;
-      word-break: break-word;
+    .inicio-feature-status.programada {
+      color: #BFDBFE;
+      background: rgba(8,119,255,.18);
     }
-    @media (hover: hover) {
-      .inicio-kpi-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 20px 38px rgba(15,23,42,0.10);
-        border-color: #C9DBFF !important;
-      }
+    .inicio-feature-status.finalizada {
+      color: #CBD5E1;
+      background: rgba(148,163,184,.16);
     }
-    .inicio-divider {
-      margin-bottom: 24px !important;
+    .inicio-feature-content h2 {
+      margin: 0 0 7px;
+      max-width: 100%;
+      color: #FFFFFF;
+      font-size: clamp(25px, 2.2vw, 34px);
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: -.025em;
     }
-    /* De aca para abajo, Accesos rapidos + Ultimo reporte comparten
-       las dos columnas (ver .inicio-dashboard-grid) -- Resumen general
-       ya quedo arriba, a todo el ancho. */
+    .inicio-feature-content > p {
+      margin: 0 0 15px;
+      color: rgba(226,232,240,.72);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .inicio-feature-dates {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: rgba(255,255,255,.84);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .inicio-feature-dates i {
+      width: 18px;
+      height: 1px;
+      background: rgba(255,255,255,.36);
+    }
+    .inicio-feature-progress-head {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(226,232,240,.66);
+      font-size: 10.5px;
+      font-weight: 750;
+      margin-bottom: 6px;
+    }
+    .inicio-feature-progress-head strong { color: #FFFFFF; }
+    .inicio-feature-progress {
+      width: 100%;
+      height: 5px;
+      margin-bottom: 17px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.16);
+    }
+    .inicio-feature-progress span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #0877FF, #62B0FF);
+    }
+    .inicio-feature-content button {
+      min-height: 38px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 11px;
+      background: #FFFFFF;
+      color: #050A12;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    }
     .inicio-quick-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
       gap: 14px !important;
@@ -3283,18 +3353,34 @@
        en movil no aplica (hover:hover excluye tactil), es un detalle
        solo para escritorio. */
     .inicio-quick-grid > div {
-      min-height: 108px !important;
+      min-height: 82px !important;
       border-radius: 14px !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      padding: 0 17px !important;
+      box-sizing: border-box;
       transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .inicio-quick-grid > div > span {
+      font-size: 12px !important;
+      text-align: left !important;
     }
     .inicio-dashboard-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
-      gap: 22px;
-      align-items: start;
+      grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+    .inicio-main-col,
+    .inicio-side-col {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
     .inicio-side-col .inicio-evidence-card {
       margin-top: 0;
+      height: 100%;
+      box-sizing: border-box;
     }
     @media (hover: hover) {
       .inicio-quick-grid > div:hover {
@@ -3307,7 +3393,7 @@
        apretado compartiendo ancho con el resto antes de este ajuste. */
     .inicio-evidence-card {
       border-radius: 16px !important;
-      min-height: 220px;
+      min-height: 402px;
       padding: 26px !important;
       display: flex;
       flex-direction: column;
