@@ -208,6 +208,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: -28px;
     transform: translateY(0) scale(.995);
     will-change: transform;
     animation: brandLoaderFloat 4.2s cubic-bezier(.45,.05,.55,.95) calc(2.8s + var(--brand-loader-delay, 0s)) infinite;

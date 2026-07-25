@@ -151,8 +151,10 @@ export default function App() {
   const themeColor =
     envMissing.length > 0
       ? "#1a0707"
-      : auth.status === "loading" || auth.status === "error"
-        ? "#0B1220"
+      : auth.status === "loading"
+        ? "#050A12"
+        : auth.status === "error"
+          ? "#0B1220"
         : auth.status === "out"
           ? "#050A12"
           : auth.role === "admin" && !adminClienteId

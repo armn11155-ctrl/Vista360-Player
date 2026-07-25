@@ -330,7 +330,16 @@ export default function Accesos({ onBack }: Props) {
         password: res.data.password,
       });
     } catch (err) {
-      setErrorReset(err instanceof Error ? err.message : "No se pudo restablecer la contraseña.");
+      const code = (err as { code?: string })?.code ?? "";
+      if (code.includes("not-found")) {
+        setErrorReset("No se encontró ese usuario.");
+      } else if (code.includes("permission-denied")) {
+        setErrorReset("No tienes permiso para hacer esto.");
+      } else if (code.includes("internal") || code.includes("unavailable") || !code) {
+        setErrorReset("No se pudo restablecer la contraseña. Intenta de nuevo en un momento.");
+      } else {
+        setErrorReset(err instanceof Error ? err.message : "No se pudo restablecer la contraseña.");
+      }
     } finally {
       setReseteandoId(null);
     }
