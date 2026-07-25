@@ -3026,6 +3026,10 @@
   .inicio-feature-card {
     display: none;
   }
+  .inicio-quick-copy small,
+  .inicio-account-status {
+    display: none;
+  }
 
   @media (min-width: 900px) {
     html,
@@ -3406,6 +3410,25 @@
       font-size: 12px !important;
       text-align: left !important;
     }
+    .inicio-quick-copy {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .inicio-quick-copy > span {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      text-align: left !important;
+    }
+    .inicio-quick-copy small {
+      display: block;
+      color: #7A879A;
+      font-size: 10.5px;
+      font-weight: 600;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
     .inicio-dashboard-grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
@@ -3419,7 +3442,7 @@
       flex-direction: column;
     }
     .inicio-side-col .inicio-evidence-card {
-      margin-top: 0;
+      margin-top: 18px;
       height: auto;
       box-sizing: border-box;
     }
@@ -3474,6 +3497,130 @@
     @media (hover: hover) {
       .inicio-report-link:hover {
         opacity: .72;
+      }
+    }
+    .inicio-account-status {
+      display: block;
+      margin-top: 26px;
+      padding: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 20px;
+      color: #FFFFFF;
+      background:
+        radial-gradient(circle at 92% 8%, rgba(8,119,255,.22), transparent 30%),
+        linear-gradient(145deg, #0B1220 0%, #050A12 100%);
+      box-shadow: 0 24px 56px -34px rgba(2,6,23,.72);
+      box-sizing: border-box;
+    }
+    .inicio-account-status-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .inicio-account-status-head span {
+      display: block;
+      margin-bottom: 5px;
+      color: #62A9FF;
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .inicio-account-status-head h2 {
+      margin: 0;
+      color: #FFFFFF;
+      font-size: 23px;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+    }
+    .inicio-account-status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 999px;
+      color: rgba(255,255,255,.72);
+      background: rgba(255,255,255,.06);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .inicio-account-status-badge i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22C55E;
+      box-shadow: 0 0 0 4px rgba(34,197,94,.12);
+    }
+    .inicio-account-status-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .inicio-account-status-grid button {
+      min-width: 0;
+      min-height: 108px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) 17px;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 14px;
+      color: #FFFFFF;
+      background: rgba(255,255,255,.055);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+    .inicio-account-status-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      color: #8FC2FF;
+      background: rgba(8,119,255,.14);
+    }
+    .inicio-account-status-grid button span,
+    .inicio-account-status-grid button strong,
+    .inicio-account-status-grid button small {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .inicio-account-status-grid button span {
+      margin-bottom: 5px;
+      color: rgba(255,255,255,.50);
+      font-size: 10.5px;
+      font-weight: 750;
+    }
+    .inicio-account-status-grid button strong {
+      margin-bottom: 5px;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-weight: 850;
+    }
+    .inicio-account-status-grid button small {
+      color: rgba(255,255,255,.62);
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .inicio-account-status-arrow {
+      color: rgba(255,255,255,.42);
+    }
+    @media (hover: hover) {
+      .inicio-account-status-grid button:hover {
+        transform: translateY(-2px);
+        border-color: rgba(98,169,255,.36);
+        background: rgba(255,255,255,.085);
       }
     }
 
