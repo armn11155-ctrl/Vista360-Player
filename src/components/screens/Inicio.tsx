@@ -223,7 +223,14 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </div>
               <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
                 <div className="inicio-kpi-label" style={{ fontSize:12, color:"#111827", marginBottom:4, lineHeight:1.12 }}>{item.label}</div>
-                <div className="inicio-kpi-value" style={{ fontSize:17, fontWeight:800, color:"#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.val}</div>
+                {/* fontSize mas chico que antes (17->14): en celular
+                    "Ultimo reporte" (ej. "Julio 2026") se cortaba con
+                    puntos suspensivos; "Proximo vencimiento" (fecha
+                    corta) ya entraba bien, pero se baja parejo para
+                    las 4 tarjetas asi quedan consistentes. En
+                    escritorio no cambia nada -- ahi el CSS lo pisa con
+                    !important (19px). */}
+                <div className="inicio-kpi-value" style={{ fontSize:14, fontWeight:800, color:"#08122B", lineHeight:1.08, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{item.val}</div>
               </div>
             </div>
           ))}
@@ -302,8 +309,8 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <section className="inicio-account-status">
           <div className="inicio-account-status-head">
             <div>
-              <span>Oportunidades</span>
-              <h2>Próximos pasos</h2>
+              <span>Para ti</span>
+              <h2>Continúa aquí</h2>
             </div>
             <div className="inicio-account-status-badge">
               <i aria-hidden="true" />
@@ -311,10 +318,11 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
             </div>
           </div>
           <div className="inicio-account-status-grid">
-            <button
-              type="button"
-              onClick={() => campanaRenovable && onAbrirCampana ? onAbrirCampana(campanaRenovable) : onGoTo("campanas")}
-            >
+            {/* El boton de "Solicitar renovacion" vive en la pantalla
+                Campañas (MisCampanas.tsx), no en el detalle de una
+                campaña individual -- por eso esta tarjeta siempre lleva
+                ahi, sin importar si hay o no una campaña por vencer. */}
+            <button type="button" onClick={() => onGoTo("campanas")}>
               <div className="inicio-account-status-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M6.1 9a7 7 0 0 1 11.8-2L20 9M4 15l2.1 2a7 7 0 0 0 11.8-2"/></svg>
               </div>

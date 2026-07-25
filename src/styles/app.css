@@ -3050,6 +3050,15 @@
   .inicio-account-status {
     display: none;
   }
+  /* La tarjeta "Ultimo reporte" es lo ultimo que se ve en celular antes
+     del bottom-nav -- quedaba muy pegada a el, se le suma un poco mas
+     de aire abajo. Solo en celular (en escritorio el side-col ya tiene
+     su propio margin-top de 18px y no hace falta tocar nada ahi). */
+  @media (max-width: 899px) {
+    .inicio-side-col .inicio-evidence-card {
+      margin-bottom: 28px;
+    }
+  }
 
   @media (min-width: 900px) {
     html,
