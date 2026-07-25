@@ -147,9 +147,17 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
         )}
 
         {state.status === "ready" && state.notifs.length === 0 && (
-          <div style={{ textAlign: "center", paddingTop: 60 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0D1629" }}>Todo al día</div>
+          <div style={{ textAlign: "center", paddingTop: 56 }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: "50%", margin: "0 auto 16px",
+              background: "#EEF4FF", display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#0D1629" }}>Todo al día</div>
             <div style={{ fontSize: 13, color: "#6B7A99", marginTop: 6 }}>No tienes notificaciones nuevas</div>
           </div>
         )}
