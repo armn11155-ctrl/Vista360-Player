@@ -3034,6 +3034,18 @@
   .inicio-feature-card {
     display: none;
   }
+  .inicio-quick-copy {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .inicio-quick-copy > span {
+    width: 100%;
+    display: block;
+    text-align: center !important;
+  }
   .inicio-quick-copy small,
   .inicio-account-status {
     display: none;
@@ -3422,9 +3434,12 @@
       text-align: left !important;
     }
     .inicio-quick-copy {
+      width: auto;
       min-width: 0;
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
       gap: 4px;
     }
     .inicio-quick-copy > span {
