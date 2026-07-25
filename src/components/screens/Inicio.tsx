@@ -1,16 +1,13 @@
-import { type CSSProperties } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
-import { campaignCityImage } from "../../utils/campaignCity";
-import { formatCampaignName } from "../../utils/campaignName";
 
 interface Props {
   cliente: Cliente | null;
   clienteId: string;
   contratos: Contrato[];
   paneles: Record<string, Panel>;
-  onGoTo: (tab: "campanas" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente" | "perfil") => void;
+  onGoTo: (tab: "campanas" | "cobertura" | "reportes" | "nueva" | "facturas" | "mispantallas" | "nuevoCliente" | "perfil") => void;
   onAbrirCampana?: (contrato: Contrato) => void;
   onMenuClick?: () => void;
   onNotifClick?: () => void;
@@ -32,16 +29,6 @@ function fechaGeneradoInforme(createdAt: unknown): string {
   return "—";
 }
 
-function progresoCampana(contrato: Contrato): number {
-  const inicio = new Date(`${contrato.inicio}T00:00:00`).getTime();
-  const fin = new Date(`${contrato.fin}T23:59:59`).getTime();
-  const ahora = Date.now();
-  if (!Number.isFinite(inicio) || !Number.isFinite(fin) || fin <= inicio) return 0;
-  if (ahora <= inicio) return 0;
-  if (ahora >= fin) return 100;
-  return Math.round(((ahora - inicio) / (fin - inicio)) * 100);
-}
-
 function proximoVencimiento(contratos: Contrato[]): Contrato | null {
   return contratos
     .filter((contrato) => estadoCampana(contrato) !== "Finalizada")
@@ -59,28 +46,12 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
   const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
   const proxVenc = proximoVencimiento(contratos);
-  const campanaDestacada = activas[0]
-    ?? contratos.find((contrato) => estadoCampana(contrato) === "Programada")
-    ?? contratos[0]
-    ?? null;
-  const estadoDestacado = campanaDestacada ? estadoCampana(campanaDestacada) : null;
-  const panelesDestacados = campanaDestacada ? panelesDeContrato(campanaDestacada) : [];
-  const nombrePanelDestacado = panelesDestacados
-    .map((id) => paneles[id]?.nombre ?? id)
-    .join(" · ");
-  const nombreCampanaDestacada = campanaDestacada
-    ? formatCampaignName(campanaDestacada.nombre || nombrePanelDestacado || "Campaña publicitaria")
-    : "";
-  const progresoDestacado = campanaDestacada ? progresoCampana(campanaDestacada) : 0;
-  const estiloCampanaDestacada = campanaDestacada
-    ? ({ "--inicio-feature-image": `url("${campaignCityImage(campanaDestacada.id)}")` } as CSSProperties)
-    : undefined;
   const todoOk = activas.length > 0 || contratos.length === 0;
   const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
   // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
@@ -238,51 +209,14 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
 
         <div className="inicio-dashboard-grid">
         <div className="inicio-main-col">
-        {campanaDestacada ? (
-          <section className="inicio-feature-card" style={estiloCampanaDestacada}>
-            <div className="inicio-feature-content">
-              <div className="inicio-feature-topline">
-                <span>Campaña destacada</span>
-                <span className={`inicio-feature-status ${estadoDestacado?.toLowerCase()}`}>{estadoDestacado}</span>
-              </div>
-              <h2>{nombreCampanaDestacada}</h2>
-              <p>{nombrePanelDestacado || "Publicidad Vista360"}</p>
-              <div className="inicio-feature-dates">
-                <span>{fechaCorta(campanaDestacada.inicio)}</span>
-                <i aria-hidden="true" />
-                <span>{fechaCorta(campanaDestacada.fin)}</span>
-              </div>
-              <div className="inicio-feature-progress-head">
-                <span>Progreso de campaña</span>
-                <strong>{progresoDestacado}%</strong>
-              </div>
-              <div className="inicio-feature-progress">
-                <span style={{ width: `${progresoDestacado}%` }} />
-              </div>
-              <button type="button" onClick={() => onAbrirCampana ? onAbrirCampana(campanaDestacada) : onGoTo("campanas")}>
-                Ver campaña
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
-            </div>
-          </section>
-        ) : (
-          <section className="inicio-feature-card inicio-feature-empty">
-            <div className="inicio-feature-content">
-              <div className="inicio-feature-topline"><span>Tu próxima campaña</span></div>
-              <h2>Haz visible tu marca</h2>
-              <p>Crea una campaña y empieza a gestionar tu publicidad desde Vista360.</p>
-              <button type="button" onClick={() => onGoTo("nueva")}>Nueva campaña</button>
-            </div>
-          </section>
-        )}
         {/* ACCESOS RÁPIDOS — título suelto, íconos directos sin card exterior */}
         <div className="inicio-section-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>Accesos rápidos</div>
         <div className="inicio-quick-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4, minmax(0,1fr))", gap:9, marginBottom:18 }}>
           {[
             { bg:"#FFFFFF", label:"Mis campañas", tab:"campanas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3 11v3a2 2 0 0 0 2 2h2l6 4V5L7 9H5a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/></svg> },
-            { bg:"#FFFFFF", label:"Publicidades", tab:"mispantallas" as const,
-              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg> },
+            { bg:"#FFFFFF", label:"Cobertura", tab:"cobertura" as const,
+              icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> },
             { bg:"#FFFFFF", label:"Facturas", tab:"facturas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg> },
             { bg:"#FFFFFF", label:"Nueva campaña", tab:"nueva" as const,

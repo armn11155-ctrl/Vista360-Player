@@ -3408,9 +3408,9 @@
     }
     .inicio-dashboard-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(330px, .85fr);
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr);
       gap: 24px;
-      align-items: stretch;
+      align-items: start;
     }
     .inicio-main-col,
     .inicio-side-col {
@@ -3420,8 +3420,11 @@
     }
     .inicio-side-col .inicio-evidence-card {
       margin-top: 0;
-      height: 100%;
+      height: auto;
       box-sizing: border-box;
+    }
+    .inicio-dashboard-grid .inicio-quick-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     @media (hover: hover) {
       .inicio-quick-grid > div:hover {
@@ -3434,7 +3437,7 @@
        apretado compartiendo ancho con el resto antes de este ajuste. */
     .inicio-evidence-card {
       border-radius: 16px !important;
-      min-height: 402px;
+      min-height: 0;
       padding: 26px !important;
       display: flex;
       flex-direction: column;
