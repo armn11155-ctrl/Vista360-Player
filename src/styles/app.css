@@ -3158,7 +3158,7 @@
       box-shadow: inset 0 -1px 0 rgba(255,255,255,.035);
     }
     .inicio-greeting-title {
-      font-size: 26px !important;
+      font-size: 23px !important;
       line-height: 1.08 !important;
       margin-bottom: 5px !important;
     }
@@ -6299,7 +6299,7 @@
      que Cambiar cliente use siempre la panorámica ancha en escritorio. */
   @media (min-width: 900px) {
     .inicio-greeting-title-admin {
-      font-size: 28px !important;
+      font-size: 23px !important;
       line-height: 1.08 !important;
       margin-bottom: 7px !important;
     }
