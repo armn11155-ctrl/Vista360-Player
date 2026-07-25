@@ -8,6 +8,37 @@ import { comprimirImagen } from "../../utils/comprimirImagen";
 import { esVideo, keyDeMiniatura } from "../../utils/r2Media";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 
+function CameraIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  );
+}
+
+function GalleryIcon({ size = 30 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <path d="M21 15l-5-5L5 21" />
+    </svg>
+  );
+}
+
+function Spinner({ size = 26 }: { size?: number }) {
+  return (
+    <div
+      style={{
+        width: size, height: size, borderRadius: "50%",
+        border: "3px solid rgba(8,119,255,0.15)", borderTopColor: "#0877FF",
+        animation: "spin 0.8s linear infinite", margin: "0 auto",
+      }}
+    />
+  );
+}
+
 interface Props {
   contratos: Contrato[];
   paneles: Record<string, Panel>;
@@ -99,8 +130,8 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
         {/* Zona de subida — solo admin */}
         {isAdmin && (
           <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 12 }}>
-              📸 Subir evidencia
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 12, display: "flex", alignItems: "center", gap: 7 }}>
+              <CameraIcon size={16} /> Subir evidencia
             </div>
 
             {/* Selector de campaña si hay más de una */}
@@ -146,12 +177,12 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
             >
               {subiendo ? (
                 <>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+                  <div style={{ marginBottom: 8 }}><Spinner /></div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0877FF" }}>Subiendo…</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>📷</div>
+                  <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}><CameraIcon size={30} /></div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0877FF" }}>Toca para agregar foto o video</div>
                   <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
                 </>
@@ -163,7 +194,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
         {/* Galería */}
         {fotos.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px 24px", color: "#9CA3AF" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🖼️</div>
+            <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}><GalleryIcon /></div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Sin evidencias aún</div>
             <div style={{ fontSize: 13, lineHeight: 1.6 }}>
               {isAdmin

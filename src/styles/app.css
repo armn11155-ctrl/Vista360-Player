@@ -264,6 +264,9 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
   @keyframes brandLoaderFloat {
     0%, 100% { transform: translateY(0) rotate(-.25deg) scale(.995); }
     50% { transform: translateY(-7px) rotate(.25deg) scale(1); }

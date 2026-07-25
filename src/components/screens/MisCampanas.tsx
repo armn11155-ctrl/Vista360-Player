@@ -12,6 +12,22 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 
+function WhatsAppIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
+    </svg>
+  );
+}
+
+function ClipIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+    </svg>
+  );
+}
+
 // TODO: reemplazar por el número real de WhatsApp del negocio (mismo
 // placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
 // lugares a la vez).
@@ -673,7 +689,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none", boxSizing: "border-box",
                   }}
                 >
-                  💬 Escríbenos para coordinar el pago
+                  <WhatsAppIcon /> Escríbenos para coordinar el pago
                 </a>
 
                 <div style={{ margin: "12px 0", textAlign: "center", fontSize: 12, color: "#9CA3AF" }}>o, si prefieres</div>
@@ -698,7 +714,13 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                       cursor: comprobante === "subiendo" ? "not-allowed" : "pointer",
                     }}
                   >
-                    {comprobante === "subiendo" ? "Subiendo…" : "📎 Ya pagué — adjuntar captura de Yape/Plin"}
+                    {comprobante === "subiendo" ? (
+                      "Subiendo…"
+                    ) : (
+                      <>
+                        <ClipIcon /> Ya pagué — adjuntar captura de Yape/Plin
+                      </>
+                    )}
                   </button>
                 )}
                 {comprobante === "error" && (
