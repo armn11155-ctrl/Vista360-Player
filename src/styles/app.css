@@ -190,13 +190,20 @@
     width: 100%;
     height: 100%;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 22px;
     overflow: hidden;
     background: #FFFFFF;
   }
   .brand-loader.brand-loader-dark {
     background: #FFFFFF;
+  }
+  .brand-loader-wordmark {
+    width: min(190px, 46vw);
+    height: auto;
+    opacity: .92;
   }
   .brand-loader-mark {
     width: min(230px, 58vw);
