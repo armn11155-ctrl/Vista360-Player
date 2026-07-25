@@ -560,8 +560,16 @@
      negativo ni el radio (se resetean mas abajo con !important), asi
      que ahi se deja la barra recta de siempre (mismo bottom:0). */
   @media (max-width: 899px) {
+    .inicio-screen {
+      overflow: hidden !important;
+      overscroll-behavior: none;
+    }
     .inicio-content {
       position: relative;
+      padding-bottom: 0 !important;
+      overscroll-behavior: none !important;
+      overscroll-behavior-y: none !important;
+      -webkit-overflow-scrolling: auto !important;
     }
     .inicio-header::before,
     .inicio-header::after {
@@ -3207,9 +3215,12 @@
       min-height: 0 !important;
       margin-top: 0 !important;
       border-radius: 0 !important;
-      padding: 28px 48px 52px !important;
+      padding: 28px 48px 18px !important;
       background: #F7F9FC !important;
       overflow-y: auto !important;
+      overscroll-behavior: none !important;
+      overscroll-behavior-y: none !important;
+      -webkit-overflow-scrolling: auto !important;
     }
     .inicio-content > * {
       width: min(1240px, 100%);

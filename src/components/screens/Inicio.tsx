@@ -317,7 +317,6 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
           </div>
         </section>
 
-        <div style={{ height:8 }} />
       </div>
     </div>
   );
