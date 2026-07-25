@@ -1,6 +1,7 @@
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
+import { usePushEstado } from "../../hooks/usePushEstado";
 import { PersonIcon } from "../PersonIcon";
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   totalNotifs?: number;
   isAdmin?: boolean;
   adminNombre?: string | null;
+  uid?: string;
 }
 
 function fechaGeneradoInforme(createdAt: unknown): string {
@@ -53,7 +55,8 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, uid }: Props) {
+  const { estado: estadoPush, activar: activarPush } = usePushEstado();
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const informesState = useInformes(clienteId);
@@ -121,41 +124,57 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </svg>
               <span>Perfil</span>
             </button>
-            <div
-              onClick={onNotifClick}
-              style={{
-                position:"relative",
-                width:38,
-                height:38,
-                borderRadius:19,
-                display:"flex",
-                alignItems:"center",
-                justifyContent:"center",
-                cursor:"pointer",
-                background:"rgba(255,255,255,0.10)",
-                border:"1px solid rgba(255,255,255,0.14)",
-                boxShadow:"0 12px 26px rgba(0,0,0,0.16)",
-              }}
-            >
-              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              </svg>
-              {totalNotifs > 0 && (
-                <div style={{
-                  position:"absolute", top:-5, right:-5,
-                  minWidth:20, height:20,
-                  background:"#EF4444", borderRadius:"50%",
-                  border:"2px solid #0B2243",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  fontSize: totalNotifs > 9 ? 9 : 11, color:"#fff", fontWeight:900,
-                  padding: totalNotifs > 9 ? "0 4px" : 0,
-                  boxShadow:"none",
-                }}>
-                  {totalNotifs > 9 ? "9+" : totalNotifs}
-                </div>
-              )}
-            </div>
+            {estadoPush === "ofrecer" || estadoPush === "activando" ? (
+              <button
+                type="button"
+                onClick={() => activarPush(uid)}
+                disabled={estadoPush === "activando"}
+                className="inicio-activar-push-btn"
+                aria-label="Activar notificaciones"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <span>{estadoPush === "activando" ? "Activando…" : "Activar"}</span>
+              </button>
+            ) : (
+              <div
+                onClick={onNotifClick}
+                style={{
+                  position:"relative",
+                  width:38,
+                  height:38,
+                  borderRadius:19,
+                  display:"flex",
+                  alignItems:"center",
+                  justifyContent:"center",
+                  cursor:"pointer",
+                  background:"rgba(255,255,255,0.10)",
+                  border:"1px solid rgba(255,255,255,0.14)",
+                  boxShadow:"0 12px 26px rgba(0,0,0,0.16)",
+                }}
+              >
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {totalNotifs > 0 && (
+                  <div style={{
+                    position:"absolute", top:-5, right:-5,
+                    minWidth:20, height:20,
+                    background:"#EF4444", borderRadius:"50%",
+                    border:"2px solid #0B2243",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    fontSize: totalNotifs > 9 ? 9 : 11, color:"#fff", fontWeight:900,
+                    padding: totalNotifs > 9 ? "0 4px" : 0,
+                    boxShadow:"none",
+                  }}>
+                    {totalNotifs > 9 ? "9+" : totalNotifs}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         {/* Saludo */}

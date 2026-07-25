@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import BackChevron from "../BackChevron";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
-import { activarNotificacionesPush, estadoPermisoNotificaciones, pushDisponible } from "../../utils/pushNotifications";
+import { usePushEstado } from "../../hooks/usePushEstado";
 
 interface Props {
   clienteId: string;
@@ -9,7 +9,6 @@ interface Props {
   onBack: () => void;
 }
 
-type EstadoPush = "oculto" | "ofrecer" | "activando" | "activado" | "error" | "bloqueado";
 
 const ICONOS = {
   solicitud_pendiente: (
@@ -59,33 +58,10 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
   // ── Activar notificaciones push -- avisan aunque el cliente no
   // tenga la app abierta (campaña por vencer, reporte nuevo, factura
   // nueva). Se ofrece acá mismo, en la pantalla de notificaciones,
-  // que es donde tiene más sentido. ──
-  const [estadoPush, setEstadoPush] = useState<EstadoPush>("oculto");
-  const [errorPush, setErrorPush] = useState("");
-
-  useEffect(() => {
-    let cancelado = false;
-    const permiso = estadoPermisoNotificaciones();
-    if (permiso === "granted") { setEstadoPush("activado"); return; }
-    if (permiso === "denied") { setEstadoPush("bloqueado"); return; }
-    pushDisponible().then((disponible) => {
-      if (!cancelado && disponible) setEstadoPush("ofrecer");
-    });
-    return () => { cancelado = true; };
-  }, []);
-
-  async function activarPush() {
-    if (!uid) return;
-    setEstadoPush("activando");
-    setErrorPush("");
-    const res = await activarNotificacionesPush(uid);
-    if (res.ok) {
-      setEstadoPush("activado");
-    } else {
-      setEstadoPush("error");
-      setErrorPush(res.error);
-    }
-  }
+  // que es donde tiene más sentido -- mismo hook que usa el botón de
+  // la campanita en Inicio y el aviso de bienvenida NotifPrompt. ──
+  const { estado: estadoPush, error: errorPush, activar } = usePushEstado();
+  const activarPush = () => activar(uid);
 
   return (
     <div>

@@ -21,6 +21,8 @@ import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
+import NotifPrompt, { debeVerNotifPrompt } from "./components/NotifPrompt";
+import { usePushEstado } from "./hooks/usePushEstado";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
@@ -334,6 +336,9 @@ function AuthenticatedApp({
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding());
+  const pushEstadoGlobal = usePushEstado();
+  const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt());
+  const mostrarNotifPrompt = !mostrarOnboarding && !notifPromptVisto && pushEstadoGlobal.estado === "ofrecer";
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
@@ -377,6 +382,7 @@ function AuthenticatedApp({
             totalNotifs={totalNotifs}
             isAdmin={isAdmin}
             adminNombre={adminNombre}
+            uid={uid}
           />
         );
         break;
@@ -500,6 +506,7 @@ function AuthenticatedApp({
     <div className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}`}>
       <OfflineBanner online={online} />
       {mostrarOnboarding && <OnboardingTour onClose={() => setMostrarOnboarding(false)} />}
+      {mostrarNotifPrompt && <NotifPrompt uid={uid} onClose={() => setNotifPromptVisto(true)} />}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
