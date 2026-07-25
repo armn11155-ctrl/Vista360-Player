@@ -28,10 +28,11 @@ function generarPassword() {
   // Antes era Vista360- + texto random (mayúsculas, minúsculas,
   // guiones bajos) -- dificil de leer/escribir/dictar por WhatsApp.
   // El cliente solo la usa UNA vez para entrar (después la puede
-  // cambiar desde su perfil), así que alcanza con algo simple: 6
-  // dígitos nada más.
+  // cambiar desde su perfil), así que alcanza con algo simple: SOLO
+  // la V de Vista va en mayúscula, nada de guiones ni símbolos, y
+  // 6 dígitos pegados al final (ej. Vista360482913).
   const digitos = randomInt(100000, 1000000);
-  return `Vista360-${digitos}`;
+  return `Vista360${digitos}`;
 }
 
 function validarPassword(password: string) {
