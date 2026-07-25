@@ -22,7 +22,7 @@ export { eliminarContrato } from "./eliminarContrato.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
 export { firmarDescargaFactura } from "./firmarDescargaFactura.js";
 export { actualizarNombreFactura } from "./actualizarNombreFactura.js";
-export { recordatorioVencimientoCampanas, notificarReporteListo, notificarFacturaNueva } from "./notificacionesPush.js";
+export { recordatorioVencimientoCampanas, recordatorioReportesMensuales, notificarReporteListo, notificarFacturaNueva } from "./notificacionesPush.js";
 export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { actualizarImagenCampania } from "./actualizarImagenCampania.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";

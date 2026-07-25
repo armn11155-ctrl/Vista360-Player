@@ -77,6 +77,142 @@ export async function enviarPushACliente(clienteId: string, payload: PushPayload
 }
 
 /**
+ * Igual que enviarPushACliente pero para la cuenta admin -- se manda a
+ * TODOS los portalUsers con role:"admin" (normalmente es una sola
+ * cuenta, pero si en el futuro hay más de un admin, les llega a todos).
+ * Reusa el mismo mecanismo de limpieza de tokens invalidos.
+ */
+export async function enviarPushAAdmin(payload: PushPayload): Promise<void> {
+  const db = getFirestore();
+  const adminsSnap = await db.collection("portalUsers").where("role", "==", "admin").get();
+
+  const tokens: string[] = [];
+  adminsSnap.docs.forEach((docSnap) => {
+    const lista = docSnap.data()?.fcmTokens;
+    if (Array.isArray(lista)) tokens.push(...lista.filter((t) => typeof t === "string" && t));
+  });
+  if (tokens.length === 0) return;
+
+  const respuesta = await getMessaging().sendEachForMulticast({
+    tokens,
+    notification: { title: payload.title, body: payload.body },
+    data: { url: payload.url || "/" },
+    webpush: {
+      fcmOptions: { link: payload.url || "/" },
+      notification: { icon: "/icon-192.png" },
+    },
+  });
+
+  const tokensInvalidos: string[] = [];
+  respuesta.responses.forEach((r, i) => {
+    if (!r.success) {
+      const code = r.error?.code || "";
+      if (code.includes("registration-token-not-registered") || code.includes("invalid-argument")) {
+        tokensInvalidos.push(tokens[i]);
+      }
+    }
+  });
+  if (tokensInvalidos.length > 0) {
+    const batch = db.batch();
+    adminsSnap.docs.forEach((docSnap) => {
+      const lista: string[] = Array.isArray(docSnap.data()?.fcmTokens) ? docSnap.data()!.fcmTokens : [];
+      const limpios = lista.filter((t) => !tokensInvalidos.includes(t));
+      if (limpios.length !== lista.length) {
+        batch.set(docSnap.ref, { fcmTokens: limpios }, { merge: true });
+      }
+    });
+    await batch.commit().catch(() => undefined);
+  }
+}
+
+function nombreMesLargo(mes: string) {
+  const [year, month] = mes.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, 1));
+  const label = new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric", timeZone: "UTC" }).format(date);
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+/**
+ * Recordatorio de reportes mensuales -- el admin pidió que la app le
+ * avise en los ÚLTIMOS 5 DÍAS de cada mes (calculado según cuántos
+ * días tiene ese mes, no un número de día fijo) si todavía le falta
+ * generar el informe mensual de alguna campaña activa. Corre todos
+ * los días junto con el resto de recordatorios, pero solo manda el
+ * push si:
+ *   1. Hoy cae dentro de los últimos 5 días del mes, Y
+ *   2. Hay al menos una campaña activa sin informe de este mes.
+ * En cuanto ya generó el informe de TODAS sus campañas activas, deja
+ * de mandarse solo (no hay que marcar nada a mano) -- y si vuelve a
+ * faltar uno (por ejemplo agrega una campaña nueva a último momento),
+ * el aviso vuelve a salir al día siguiente hasta que también quede
+ * listo.
+ */
+export const recordatorioReportesMensuales = onSchedule(
+  { schedule: "0 10 * * *", timeZone: "America/Lima" },
+  async () => {
+    const db = getFirestore();
+    const hoy = new Date();
+    const hoyStr = hoy.toISOString().slice(0, 10);
+    const mesActual = hoyStr.slice(0, 7);
+    const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+    const diaHoy = hoy.getDate();
+
+    // Solo en los últimos 5 días del mes (día >= diasEnMes - 4).
+    if (diaHoy < diasEnMes - 4) return;
+
+    // Campañas activas: mismo criterio que estadoCampana() en el
+    // frontend (inicio <= hoy <= fin), sin contar las eliminadas.
+    const contratosSnap = await db.collection("contratos").where("fin", ">=", hoyStr).get();
+    const activos = contratosSnap.docs
+      .map((d) => ({ id: d.id, data: d.data() }))
+      .filter(({ data }) => {
+        if (data.deleted) return false;
+        if (typeof data.inicio !== "string" || data.inicio > hoyStr) return false;
+        return true;
+      });
+    if (activos.length === 0) return;
+
+    // Reportes ya generados este mes, por contrato_id.
+    const informesSnap = await db.collection("informesCliente").where("mes", "==", mesActual).get();
+    const contratosConReporte = new Set<string>();
+    informesSnap.docs.forEach((d) => {
+      const contratoId = d.data()?.contrato_id;
+      if (typeof contratoId === "string" && contratoId) contratosConReporte.add(contratoId);
+    });
+
+    const pendientes = activos.filter(({ id }) => !contratosConReporte.has(id));
+    if (pendientes.length === 0) return;
+
+    // Nombres para el mensaje (el que puso el admin a mano, o si no
+    // tiene, cae al nombre del panel principal).
+    const nombresPendientes = await Promise.all(
+      pendientes.slice(0, 4).map(async ({ data }) => {
+        if (typeof data.nombre === "string" && data.nombre.trim()) return data.nombre.trim();
+        const panelIds: string[] = Array.isArray(data.panel_ids) && data.panel_ids.length > 0
+          ? data.panel_ids
+          : (data.panel_id ? [data.panel_id] : []);
+        const nombresPaneles = await Promise.all(
+          panelIds.map(async (panelId) => {
+            const panelSnap = await db.doc(`paneles/${panelId}`).get();
+            return panelSnap.exists ? String(panelSnap.data()?.nombre || "") : "";
+          })
+        );
+        return nombresPaneles.filter(Boolean).join(" + ") || "una campaña";
+      })
+    );
+    const listado = nombresPendientes.join(", ") + (pendientes.length > 4 ? ` y ${pendientes.length - 4} más` : "");
+    const diasRestantes = diasEnMes - diaHoy + 1;
+    const mesLabel = nombreMesLargo(mesActual);
+
+    await enviarPushAAdmin({
+      title: pendientes.length === 1 ? "Falta 1 reporte mensual" : `Faltan ${pendientes.length} reportes mensuales`,
+      body: `Quedan ${diasRestantes} día${diasRestantes === 1 ? "" : "s"} de ${mesLabel}. Todavía falta el informe de: ${listado}.`,
+      url: "/",
+    }).catch(() => undefined);
+  }
+);
+
+/**
  * Corre una vez al día -- revisa qué campañas activas están por vencer
  * (fin dentro de los próximos 7 días) y todavía no se avisaron, y
  * manda un push por cada una. Se marca notificadoVencimiento:true para
