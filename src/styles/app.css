@@ -4411,7 +4411,7 @@
     z-index: 6;
     width: 38px;
     height: 38px;
-    border-radius: 50%;
+    border-radius: 12px;
     border: 1.5px solid rgba(255,255,255,0.26);
     background: #050A12;
     color: #fff;
