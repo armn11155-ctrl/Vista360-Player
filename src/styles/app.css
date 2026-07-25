@@ -5279,8 +5279,15 @@
     .sidebar-panel {
       position: fixed; top: 0; bottom: 0; left: 0;
       width: 62%; max-width: 230px;
-      height: var(--app-height);
-      max-height: var(--app-height);
+      /* min() en vez de solo var(--app-height): en algunos celulares
+         --app-height (calculado con JS a partir de screen.height en
+         modo PWA instalada) sale MÁS ALTO que el viewport realmente
+         visible -- eso empujaba "Cerrar sesión" fuera de la pantalla
+         visible (había que hacer scroll para verlo, aunque
+         técnicamente sí estaba "al fondo" del drawer). Con min(),
+         el drawer nunca puede ser más alto que el viewport real. */
+      height: min(var(--app-height), 100dvh);
+      max-height: min(var(--app-height), 100dvh);
       background: #050A12;
       transform: translateX(-100%);
       transition: transform .28s ease;
@@ -5295,12 +5302,12 @@
       padding-left: 16px;
       padding-right: 14px;
     }
-    .sidebar-head .sidebar-logo-img { width: 122px; }
+    .sidebar-head .sidebar-logo-img { width: 96px; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
        cerrar sesión quede pegado más al fondo, no flotando en el medio) */
-    .sidebar-list { padding: 42px 0 calc(6px + env(safe-area-inset-bottom)); }
+    .sidebar-list { padding: 56px 0 calc(6px + env(safe-area-inset-bottom)); overflow-y: auto; }
     .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
     .sidebar-item[data-sidebar-id="campanas"] { order: 2; }
     .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }

@@ -2,7 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -28,8 +28,13 @@ function limpiar(value?: string) {
 }
 
 function generarPassword() {
-  const token = randomBytes(5).toString("base64url");
-  return `Vista360-${token}`;
+  // Antes era Vista360- + texto random (mayúsculas, minúsculas,
+  // guiones bajos) -- dificil de leer/escribir/dictar por WhatsApp.
+  // El cliente solo la usa UNA vez para entrar (después la puede
+  // cambiar desde su perfil), así que alcanza con algo simple: 6
+  // dígitos nada más.
+  const digitos = randomInt(100000, 1000000);
+  return `Vista360-${digitos}`;
 }
 
 function validarPassword(password: string) {
