@@ -196,7 +196,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                         style={{
                           display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
                           fontSize: 12, fontWeight: 600,
-                          color: s.pagoConfirmado ? "var(--green)" : "#D97706",
+                          color: s.pagoConfirmado ? "var(--green)" : "#7C3AED",
                         }}
                       >
                         <PaperclipIcon /> Ver comprobante de pago {s.pagoConfirmado ? "· Confirmado ✓" : "· Sin confirmar"}

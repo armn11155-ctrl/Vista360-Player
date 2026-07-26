@@ -14,7 +14,7 @@ const BADGE: Record<FacturaEstado, { bg: string; color: string }> = {
   Pagada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
   Aceptada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
   Emitida: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
-  Pendiente: { bg: "rgba(245,158,11,0.15)", color: "#D97706" },
+  Pendiente: { bg: "rgba(124,58,237,0.15)", color: "#7C3AED" },
   Vencida: { bg: "rgba(239,68,68,0.15)", color: "#DC2626" },
   Rechazada: { bg: "rgba(239,68,68,0.15)", color: "#DC2626" },
   Anulada: { bg: "rgba(107,114,128,0.12)", color: "#6B7280" },

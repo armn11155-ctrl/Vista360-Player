@@ -23,6 +23,15 @@ interface Props {
   uid?: string;
   vistaClienteActiva?: boolean;
   onToggleVistaCliente?: () => void;
+  /** true cuando se vuelve desde Usuarios/Solicitudes/Analítica/Paneles
+   *  con el botón de "atrás" -- pedido explícito: como este componente
+   *  se desmonta por completo mientras se ve cualquiera de esas
+   *  pantallas (App.tsx las renderiza en una rama separada), "Centro
+   *  de gestión" siempre se perdía y volver acá caía en la selección
+   *  de clientes de cero. Con esto se reabre directo en Centro de
+   *  gestión, que es de donde salió. */
+  gestionInicial?: boolean;
+  onGestionInicialConsumida?: () => void;
 }
 
 /**
@@ -31,7 +40,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -48,7 +57,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [errorAccion, setErrorAccion] = useState("");
   const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
-  const [gestionAbierta, setGestionAbierta] = useState(false);
+  const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
+  // Se consume una sola vez al montar -- el valor ya quedó capturado
+  // arriba como estado inicial, así que esto solo le avisa al padre
+  // que ya lo puede volver a poner en false (si no, la próxima vez
+  // que se entre a Selección de clientes por otro camino distinto se
+  // abriría Centro de gestión sin que tenga sentido).
+  useEffect(() => {
+    if (gestionInicial) onGestionInicialConsumida?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const solicitudesState = useSolicitudesCampana(true);
   const solicitudesPendientes = solicitudesState.status === "ready"
     ? solicitudesState.solicitudes.filter((solicitud) => solicitud.estado === "Pendiente").length

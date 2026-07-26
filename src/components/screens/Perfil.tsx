@@ -112,7 +112,6 @@ function ProfileMetricRow({ icon, label, value, tone }: {
 
 export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
-  const ejecutivo = cliente?.ejecutivo ?? "Vista360";
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc);
   const activas = contratos.filter((contrato) => estadoCampana(contrato) === "Activa").length;
@@ -411,8 +410,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
           </div>
         </ProfileSection>
 
-        <ProfileSection title="Soporte">
-          <ProfileRow icon="executive" label="Contáctanos" value={ejecutivo} onClick={onContactanos} />
+        <ProfileSection title="Cuenta">
           <ProfileRow icon="logout" label="Cerrar sesión" danger onClick={() => logout()} />
         </ProfileSection>
       </main>

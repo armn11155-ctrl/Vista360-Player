@@ -32,7 +32,6 @@
     --premium-shadow-soft: 0 12px 32px rgba(5,10,18,0.07);
     --green: #22C55E;
     --red: #EF4444;
-    --amber: #F59E0B;
     --purple: #8B5CF6;
   }
 
@@ -727,7 +726,6 @@
   .kpi-icon.blue { background: rgba(8,119,255,0.16); }
   .kpi-icon.green { background: rgba(34,197,94,0.16); }
   .kpi-icon.purple { background: rgba(8,119,255,0.16); }
-  .kpi-icon.orange { background: rgba(245,158,11,0.16); }
   .kpi-label { font-size: 11px; color: #6B7280; margin-bottom: 2px; }
   .kpi-value { font-size: 18px; font-weight: 800; color: #0B1220; }
 
@@ -744,7 +742,6 @@
   .qa-icon.blue { background: rgba(8,119,255,0.16); }
   .qa-icon.green { background: rgba(34,197,94,0.16); }
   .qa-icon.purple { background: rgba(8,119,255,0.16); }
-  .qa-icon.orange { background: rgba(245,158,11,0.16); }
   .qa-label { font-size: 10px; color: #374151; font-weight: 600; text-align: center; margin-top: 6px; }
 
   .evidence-preview {
@@ -1669,7 +1666,6 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .report-icon.orange { background: rgba(245,158,11,0.16); }
   .report-icon.green { background: rgba(34,197,94,0.16); }
   .report-icon.purple { background: rgba(8,119,255,0.16); }
   .report-icon.blue { background: rgba(8,119,255,0.16); }
@@ -5667,6 +5663,16 @@
     color: #FFFFFF;
     font-weight: 900;
   }
+  /* Mismo problema, mismo arreglo: Usuarios, Solicitudes, Analítica y
+     Paneles (todos con el wrapper .admin-tool-screen) comparten el
+     mismo .detail-header oscuro -- sin esto, el título quedaba con
+     var(--text) (oscuro) casi invisible sobre ese fondo. Un solo
+     selector alcanza para las cuatro pantallas a la vez, así quedan
+     consistentes entre sí sin tocar cada .tsx por separado. */
+  .admin-tool-screen .simple-title {
+    color: #FFFFFF;
+    font-weight: 900;
+  }
   .coverage-map-box {
     background: #0B1220;
     border-radius: 16px; padding: 26px 16px; margin-bottom: 16px; text-align: center;
@@ -5774,6 +5780,30 @@
     background: transparent;
     box-shadow: none;
     border: none;
+    position: relative;
+  }
+  /* El "piquito" que Leaflet dibuja por defecto (.leaflet-popup-tip) es
+     un rombo blanco suelto con su propia sombra -- se veia como una
+     figura aparte, desconectada de esta tarjeta (fondo/sombra propios,
+     centrado con la logica generica de Leaflet). Se oculta ese rombo
+     por defecto y en su lugar se dibuja un pico propio, del MISMO
+     blanco y la MISMA sombra que la tarjeta, pegado justo a su borde
+     de abajo -- así se ve como una sola pieza continua bajando derecho
+     hasta el pin, en vez de dos formas sueltas. */
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-tip-container {
+    display: none;
+  }
+  .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-content-wrapper::after {
+    content: "";
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    background: #FFFFFF;
+    box-shadow: 2px 2px 6px rgba(2,6,23,.14);
+    transform: translateX(-50%) rotate(45deg);
+    z-index: 0;
   }
   .coverage-leaflet-map .leaflet-popup.coverage-popup .leaflet-popup-content {
     margin: 0;
@@ -5811,6 +5841,7 @@
     display: flex;
     align-items: stretch;
     position: relative;
+    z-index: 1;
     box-shadow: 0 24px 52px -18px rgba(2,6,23,.58), 0 0 0 1px rgba(15,23,42,.06);
   }
   .coverage-popup-media {

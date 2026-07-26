@@ -142,6 +142,11 @@ export default function App() {
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
   const [adminClienteId, setAdminClienteId] = useState<string | null>(null);
+  // Cuando se vuelve con "atrás" desde Usuarios/Solicitudes/Analítica/
+  // Paneles, hay que reabrir Centro de gestión (de donde salió esta
+  // navegación), no la Selección de clientes de cero -- ver
+  // AdminClientPicker.tsx (gestionInicial).
+  const [volverAGestion, setVolverAGestion] = useState(false);
   const [adminVistaCliente, setAdminVistaCliente] = useState(false);
 
   // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
@@ -214,19 +219,19 @@ export default function App() {
             >
               {view === "solicitudes"
                 ? <SolicitudesCampana
-                    onBack={() => setView("inicio")}
+                    onBack={() => { setVolverAGestion(true); setView("inicio"); }}
                     onCrearCampana={(id) => {
                       setAdminClienteId(id);
                       setView("nueva");
                     }}
                   />
                 : view === "accesos"
-                  ? <Accesos onBack={() => setView("inicio")} />
+                  ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                   : view === "miPerfil"
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
                     : view === "paneles"
-                      ? <Paneles onBack={() => setView("inicio")} />
-                      : <AnaliticaClientes onBack={() => setView("inicio")} />}
+                      ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                      : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
             </Suspense>
           </div>
         );
@@ -245,6 +250,8 @@ export default function App() {
             uid={uid}
             vistaClienteActiva={adminVistaCliente}
             onToggleVistaCliente={() => setAdminVistaCliente((activa) => !activa)}
+            gestionInicial={volverAGestion}
+            onGestionInicialConsumida={() => setVolverAGestion(false)}
           />
         </div>
       );

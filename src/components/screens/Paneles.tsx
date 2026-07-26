@@ -18,7 +18,7 @@ const ESTADO_BADGE: Record<PanelEstado, { bg: string; color: string }> = {
   Disponible: { bg: "rgba(34,197,94,0.12)", color: "#16A34A" },
   Libre: { bg: "rgba(34,197,94,0.12)", color: "#16A34A" },
   Ocupado: { bg: "rgba(8,119,255,0.12)", color: "#0877FF" },
-  Mantenimiento: { bg: "rgba(245,158,11,0.12)", color: "#D97706" },
+  Mantenimiento: { bg: "rgba(124,58,237,0.12)", color: "#7C3AED" },
 };
 
 // Centro por defecto del mapa: Lima, Peru (donde opera el negocio).

@@ -54,7 +54,7 @@ export function colorEstado(ms: number | null): string {
   if (ms === null) return "#9CA3AF";
   const dias = (Date.now() - ms) / 86400000;
   if (dias < 3) return "#16A34A";
-  if (dias < 14) return "#D97706";
+  if (dias < 14) return "#7C3AED";
   return "#9CA3AF";
 }
 

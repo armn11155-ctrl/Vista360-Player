@@ -9,7 +9,7 @@ interface Props {
 }
 
 function estadoInfo(estado: Panel["estado"]) {
-  if (estado === "Mantenimiento") return { color: "#D97706", label: "Mantenimiento" };
+  if (estado === "Mantenimiento") return { color: "#7C3AED", label: "Mantenimiento" };
   if (estado === "Disponible" || estado === "Libre") return { color: "#8B96AC", label: "En espera" };
   return { color: "#22C55E", label: "Transmitiendo" };
 }

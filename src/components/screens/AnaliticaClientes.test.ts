@@ -37,7 +37,7 @@ describe("colorEstado", () => {
   });
 
   it("ámbar si entró entre 3 y 14 días", () => {
-    expect(colorEstado(Date.now() - 7 * 86_400_000)).toBe("#D97706");
+    expect(colorEstado(Date.now() - 7 * 86_400_000)).toBe("#7C3AED");
   });
 
   it("gris si entró hace más de 14 días", () => {
