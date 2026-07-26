@@ -7,7 +7,6 @@ import { auth, cloudFunctions, db, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
-import { nivelCliente, NIVEL_COLOR } from "../../utils/clienteNivel";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
 
@@ -113,7 +112,6 @@ function ProfileMetricRow({ icon, label, value, tone }: {
 
 export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
-  const nivel = nivelCliente(contratos ?? []);
   const ejecutivo = cliente?.ejecutivo ?? "Vista360";
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc);
@@ -276,23 +274,6 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                 </span>
                 <span>Cuenta verificada</span>
               </span>
-              {nivel && (
-                <span
-                  title={`Cliente desde ${nivel.desde}`}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 5,
-                    padding: "4px 10px", borderRadius: 999, fontSize: 11.5, fontWeight: 800,
-                    background: NIVEL_COLOR[nivel.nivel].bg,
-                    color: NIVEL_COLOR[nivel.nivel].text,
-                    border: `1px solid ${NIVEL_COLOR[nivel.nivel].borde}`,
-                  }}
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M12 2l2.6 6.6L21 9l-5 4.4L17.6 21 12 17.3 6.4 21 8 13.4 3 9l6.4-.4z" />
-                  </svg>
-                  Cliente {nivel.nivel}
-                </span>
-              )}
             </div>
           </div>
         </section>
