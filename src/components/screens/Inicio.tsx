@@ -140,7 +140,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
                 ref={notifBtnRef}
                 type="button"
                 onClick={() => activarPush(uid)}
-                disabled={estadoPush === "activando" || estadoPush === "bloqueado"}
+                disabled={estadoPush === "activando"}
                 className="inicio-activar-push-btn"
                 aria-label="Activar notificaciones"
               >
