@@ -348,15 +348,18 @@ function AuthenticatedApp({
   // o hubo un error). Se mantiene "enganchado" (abierto) una vez que se
   // prende para que no desaparezca de golpe apenas se toca el botón y el
   // estado pasa de "ofrecer" a "activando" a mitad de camino.
+  //
+  // Pedido explícito: esto aplica a TODAS las cuentas, incluido el admin
+  // -- antes el admin quedaba afuera a propósito, pero se pidió que
+  // también quede bloqueado hasta activar notificaciones, igual que
+  // cualquier cliente.
   const [notifPromptAbierto, setNotifPromptAbierto] = useState(false);
   useEffect(() => {
-    if (!isAdmin && !mostrarOnboarding && pushEstadoGlobal.estado === "ofrecer") {
+    if (!mostrarOnboarding && pushEstadoGlobal.estado === "ofrecer") {
       setNotifPromptAbierto(true);
     }
-  }, [isAdmin, mostrarOnboarding, pushEstadoGlobal.estado]);
-  // Solo para clientes (igual que el tour de bienvenida) -- el admin ya
-  // sabe dónde está el botón de activar, no necesita el foco de luz.
-  const mostrarNotifPrompt = !isAdmin && notifPromptAbierto;
+  }, [mostrarOnboarding, pushEstadoGlobal.estado]);
+  const mostrarNotifPrompt = notifPromptAbierto;
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
