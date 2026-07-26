@@ -17,7 +17,7 @@ interface Props {
   prefill?: { nombre?: string; ciudad?: string; comentarios?: string };
 }
 
-const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Huánuco", "Otra"];
+const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Otra"];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -44,8 +44,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // ── Formulario del CLIENTE: pedir una campaña nueva (queda como
   //    solicitud pendiente, la revisa el admin) ──────────────────────
   const [nombre, setNombre] = useState(() => prefill?.nombre ?? "");
-  const [objetivo, setObjetivo] = useState("");
-  const [ciudad, setCiudad] = useState(() => prefill?.ciudad ?? "");
+  const [ciudad, setCiudad] = useState(() => prefill?.ciudad ?? "Huánuco");
   const [comentarios, setComentarios] = useState(() => prefill?.comentarios ?? "");
   // Fecha desde la que le gustaría empezar -- no se puede pedir una
   // campaña con fecha de antes de hoy, por eso el min del input ya
@@ -73,7 +72,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
         nombre: formatCampaignName(nombre),
-        objetivo: objetivo.trim(),
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
         fechaInicioDeseada: fechaInicio,
@@ -294,12 +292,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           <Field label="Nombre de la campaña">
             <input style={inputStyle} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Campaña Invierno 2024" />
           </Field>
-          <Field label="Objetivo de la campaña">
-            <input style={inputStyle} value={objetivo} onChange={(e) => setObjetivo(e.target.value)} placeholder="Ej. Dar a conocer nuevo producto" />
-          </Field>
           <Field label="Ciudad">
             <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
-              <option value="">Selecciona una ciudad</option>
               {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
@@ -312,8 +306,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               onChange={(e) => setFechaInicio(e.target.value)}
             />
           </Field>
-          <div style={{ fontSize: 11.5, color: "#94A3B8", marginTop: -10, marginBottom: 16, lineHeight: 1.4 }}>
-            El contrato mínimo es de 3 meses (también hay opciones de 5, 6 y 12 meses).
+          <div style={{ fontSize: 11.5, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.4 }}>
+            El contrato mínimo es de 3 meses.
           </div>
           <Field label="Comentarios adicionales">
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
