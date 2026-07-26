@@ -40,7 +40,7 @@ export const confirmarActivacionPush = onCall(async (request) => {
       tokens,
       notification: {
         title: "Notificaciones activadas",
-        body: "Listo -- desde ahora te avisamos aquí mismo apenas tengas un reporte nuevo, una campaña por vencer o una factura.",
+        body: "Perfecto, desde ahora te avisamos apenas tengas un reporte nuevo, una campaña por vencer o una factura.",
       },
       data: { url: "/" },
       webpush: {
