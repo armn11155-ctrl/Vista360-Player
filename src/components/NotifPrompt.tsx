@@ -117,10 +117,12 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 550 }}>
-      {/* Bloquea toda la pantalla -- el "hueco" de abajo es solo visual,
-          este backdrop es el que de verdad impide tocar nada más. */}
+      {/* Bloquea toda la pantalla -- a propósito NO tiene onClick de
+          cierre: tocar afuera del botón iluminado no debe hacer nada,
+          para que la única forma de avanzar sea tocando el botón real
+          de Activar (pedido explícito -- antes se cerraba solo con
+          tocar cualquier otra parte). */}
       <div
-        onClick={cerrar}
         style={{ position: "fixed", inset: 0, background: "rgba(2,6,15,0.2)" }}
       />
       {/* Anillo que ilumina el botón real (truco: box-shadow gigante
@@ -176,19 +178,9 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
               Activa tus notificaciones
             </div>
-            <div style={{ fontSize: 12.5, color: "rgba(226,232,240,.78)", lineHeight: 1.5, marginBottom: 12 }}>
+            <div style={{ fontSize: 12.5, color: "rgba(226,232,240,.78)", lineHeight: 1.5 }}>
               Toca el botón iluminado para recibir avisos de reportes, campañas por vencer y facturas nuevas.
             </div>
-            <button
-              type="button"
-              onClick={cerrar}
-              style={{
-                background: "transparent", border: "none", color: "rgba(226,232,240,.6)",
-                fontSize: 12, fontWeight: 700, cursor: "pointer", padding: 0,
-              }}
-            >
-              Ahora no
-            </button>
           </>
         )}
         {intentado && estadoPush === "activando" && (
