@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { activarNotificacionesPush, estadoPermisoNotificaciones, pushDisponible } from "../utils/pushNotifications";
+import { activarNotificacionesPush, diagnosticoPush, estadoPermisoNotificaciones, pushDisponible } from "../utils/pushNotifications";
 
 export type EstadoPush = "oculto" | "ofrecer" | "activando" | "activado" | "error" | "bloqueado";
 
@@ -29,6 +29,7 @@ export type EstadoPush = "oculto" | "ofrecer" | "activando" | "activado" | "erro
 export function usePushEstado(uid?: string) {
   const [estado, setEstado] = useState<EstadoPush>("oculto");
   const [error, setError] = useState("");
+  const [diagnostico, setDiagnostico] = useState("");
 
   useEffect(() => {
     const permiso = estadoPermisoNotificaciones();
@@ -40,7 +41,12 @@ export function usePushEstado(uid?: string) {
     if (permiso === "denied") { setEstado("bloqueado"); return; }
     let cancelado = false;
     pushDisponible().then((disponible) => {
-      if (!cancelado && disponible) setEstado("ofrecer");
+      if (cancelado) return;
+      if (disponible) {
+        setEstado("ofrecer");
+      } else {
+        void diagnosticoPush().then((d) => { if (!cancelado) setDiagnostico(d); });
+      }
     });
     return () => { cancelado = true; };
   }, [uid]);
@@ -58,5 +64,5 @@ export function usePushEstado(uid?: string) {
     }
   }
 
-  return { estado, error, activar };
+  return { estado, error, activar, diagnostico };
 }

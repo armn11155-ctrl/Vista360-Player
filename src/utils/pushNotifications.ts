@@ -69,3 +69,31 @@ export function estadoPermisoNotificaciones(): NotificationPermission | "no-sopo
   if (typeof window === "undefined" || !("Notification" in window)) return "no-soportado";
   return Notification.permission;
 }
+
+/**
+ * Diagnóstico legible de por qué el botón de activar notificaciones
+ * no aparece en un dispositivo -- pensado para que un cliente pueda
+ * mandar un pantallazo de esto y se pueda saber al toque cuál de los
+ * requisitos está fallando, sin acceso al celular real.
+ */
+export async function diagnosticoPush(): Promise<string> {
+  const partes: string[] = [];
+  partes.push(`app=${app ? "sí" : "NO"}`);
+  partes.push(`vapid=${env.vapidKey ? "sí" : "NO"}`);
+  const notifSoportada = typeof window !== "undefined" && "Notification" in window;
+  partes.push(`notification=${notifSoportada ? "sí" : "NO"}`);
+  const swSoportado = typeof navigator !== "undefined" && "serviceWorker" in navigator;
+  partes.push(`serviceWorker=${swSoportado ? "sí" : "NO"}`);
+  partes.push(`permiso=${estadoPermisoNotificaciones()}`);
+  let fcm = "no-evaluado";
+  if (app && notifSoportada && swSoportado) {
+    try {
+      const { isSupported } = await import("firebase/messaging");
+      fcm = (await isSupported()) ? "sí" : "NO";
+    } catch {
+      fcm = "error";
+    }
+  }
+  partes.push(`fcmSoportado=${fcm}`);
+  return partes.join(" · ");
+}

@@ -60,7 +60,7 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
   // nueva). Se ofrece acá mismo, en la pantalla de notificaciones,
   // que es donde tiene más sentido -- mismo hook que usa el botón de
   // la campanita en Inicio y el aviso de bienvenida NotifPrompt. ──
-  const { estado: estadoPush, error: errorPush, activar } = usePushEstado(uid);
+  const { estado: estadoPush, error: errorPush, activar, diagnostico } = usePushEstado(uid);
   const activarPush = () => activar(uid);
 
   return (
@@ -104,6 +104,16 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
                 {estadoPush === "activando" ? "Activando..." : "Activar notificaciones"}
               </button>
             </div>
+          </div>
+        )}
+
+        {estadoPush === "oculto" && diagnostico && (
+          <div style={{
+            marginBottom: 12, padding: "8px 10px", borderRadius: 10, background: "#F3F4F6",
+            fontSize: 10.5, color: "#8A93A6", lineHeight: 1.5, wordBreak: "break-word",
+          }}>
+            Notificaciones push no disponibles en este dispositivo.<br />
+            Info para soporte: {diagnostico}
           </div>
         )}
 
