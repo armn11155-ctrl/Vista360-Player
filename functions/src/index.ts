@@ -25,6 +25,7 @@ export { actualizarNombreFactura } from "./actualizarNombreFactura.js";
 export { recordatorioVencimientoCampanas, recordatorioReportesMensuales, notificarReporteListo, notificarFacturaNueva, notificarSolicitudCampana } from "./notificacionesPush.js";
 export { confirmarActivacionPush } from "./confirmarActivacionPush.js";
 export { guardarTokenPush } from "./guardarTokenPush.js";
+export { exportarReportesCombinados } from "./exportarReportesCombinados.js";
 export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { actualizarImagenCampania } from "./actualizarImagenCampania.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
