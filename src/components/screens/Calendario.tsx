@@ -73,22 +73,6 @@ export default function Calendario({ contratos, paneles, modo, nombresClientes, 
     ...Array.from({ length: diasEnMes }, (_, i) => i + 1),
   ];
 
-  // Días del mes visible que caen DENTRO del rango de alguna campaña
-  // (entre inicio y fin, inclusive) -- para pintar de azul el "tiempo
-  // que está" corriendo la campaña, no solo marcar con un punto el día
-  // que empieza y el que termina. Se recalcula solo por mes visible
-  // (no todo el año) para no iterar rangos larguísimos si alguna
-  // campaña no tiene fecha de fin cercana.
-  const diasActivosDelMes = useMemo(() => {
-    const activos = new Set<string>();
-    for (let d = 1; d <= diasEnMes; d++) {
-      const fecha = `${año}-${pad(mes + 1)}-${pad(d)}`;
-      const activa = contratos.some((c) => c.inicio && c.fin && c.inicio <= fecha && fecha <= c.fin);
-      if (activa) activos.add(fecha);
-    }
-    return activos;
-  }, [contratos, año, mes, diasEnMes]);
-
   const eventosDelDia = diaSeleccionado ? eventosPorFecha[diaSeleccionado] ?? [] : [];
 
   // Próximos eventos (a partir de hoy), para no depender de que la
@@ -154,18 +138,6 @@ export default function Calendario({ contratos, paneles, modo, nombresClientes, 
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#6B7A99", fontWeight: 700 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 3, background: "rgba(8,119,255,0.14)" }} /> Campaña corriendo
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#6B7A99", fontWeight: 700 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} /> Empieza
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "#6B7A99", fontWeight: 700 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444" }} /> Termina
-            </span>
-          </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
             {celdas.map((dia, i) => {
               if (dia === null) return <div key={`vacio-${i}`} />;
@@ -173,7 +145,6 @@ export default function Calendario({ contratos, paneles, modo, nombresClientes, 
               const eventos = eventosPorFecha[fecha];
               const esHoy = fecha === hoyStr;
               const seleccionado = fecha === diaSeleccionado;
-              const enPeriodoActivo = diasActivosDelMes.has(fecha);
               const tieneInicio = eventos?.some((e) => e.tipo === "inicio");
               const tieneFin = eventos?.some((e) => e.tipo === "fin");
               return (
@@ -181,13 +152,12 @@ export default function Calendario({ contratos, paneles, modo, nombresClientes, 
                   key={fecha}
                   type="button"
                   onClick={() => setDiaSeleccionado(seleccionado ? null : fecha)}
-                  title={enPeriodoActivo ? "Hay una campaña corriendo este día" : undefined}
                   style={{
                     position: "relative",
                     aspectRatio: "1",
                     borderRadius: 10,
                     border: esHoy ? "1.5px solid #0877FF" : "1px solid transparent",
-                    background: seleccionado ? "#0877FF" : enPeriodoActivo ? "rgba(8,119,255,0.14)" : "transparent",
+                    background: seleccionado ? "#0877FF" : "transparent",
                     color: seleccionado ? "#fff" : "#0D1629",
                     fontSize: 12.5,
                     fontWeight: esHoy ? 800 : 600,
