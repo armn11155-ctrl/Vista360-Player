@@ -285,7 +285,8 @@ export const recordatorioVencimientoCampanas = onSchedule(
 
 /**
  * Se dispara solo cuando se genera un reporte mensual nuevo -- avisa
- * al cliente que ya está listo para ver/descargar.
+ * al cliente que ya está listo para ver/descargar. Texto pulido a
+ * pedido explícito ("más premium").
  */
 export const notificarReporteListo = onDocumentCreated("informesCliente/{id}", async (event) => {
   const data = event.data?.data();
@@ -299,10 +300,10 @@ export const notificarReporteListo = onDocumentCreated("informesCliente/{id}", a
   // campaña activa y no sabría a cuál se refiere el push.
   const contratoNombre = String(data.contratoNombre || "").trim();
   const body = contratoNombre
-    ? `Ya está listo el reporte de "${contratoNombre}" (${mesLabel}) en tu portal.`
-    : `Ya puedes ver tu reporte de ${mesLabel} en el portal.`;
+    ? `Ya puedes revisar el reporte de "${contratoNombre}" correspondiente a ${mesLabel} en tu portal Vista360.`
+    : `Ya puedes revisar tu reporte de ${mesLabel} en tu portal Vista360.`;
   await enviarPushACliente(clienteId, {
-    title: "Tu reporte ya está listo",
+    title: "Tu reporte está listo",
     body,
     url: "/",
   }).catch(() => undefined);
@@ -329,10 +330,19 @@ export const notificarFacturaNueva = onDocumentCreated("facturas/{id}", async (e
   }
   if (!clienteId) return;
 
-  const numero = String(data.numero_fmt || "una factura nueva");
+  // Pedido explícito: en vez del número de factura (numero_fmt), el
+  // aviso ahora dice el MES de la factura (a partir de fecha_emision),
+  // en un tono más premium -- si por algún motivo no llega la fecha de
+  // emisión, cae de respaldo a un texto genérico en vez de romper.
+  const fechaEmision = String(data.fecha_emision || "").slice(0, 7); // "2026-07"
+  const mesLabel = /^\d{4}-\d{2}$/.test(fechaEmision) ? nombreMesLargo(fechaEmision) : "";
+  const body = mesLabel
+    ? `Tu factura de ${mesLabel} ya está disponible en tu portal Vista360.`
+    : "Tu factura ya está disponible en tu portal Vista360.";
+
   await enviarPushACliente(clienteId, {
-    title: "Tienes una factura nueva",
-    body: `${numero} ya está disponible en tu portal Vista360.`,
+    title: "Tu factura está lista",
+    body,
     url: "/",
   }).catch(() => undefined);
 });
