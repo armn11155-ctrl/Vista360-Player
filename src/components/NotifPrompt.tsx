@@ -103,7 +103,10 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
 
   const espacioAbajo = window.innerHeight - (rect.top + rect.height);
   const tooltipAbajo = espacioAbajo > 170;
-  const tooltipAncho = 250;
+  // Un poco más ancho cuando está bloqueado -- el mensaje con los
+  // pasos de Ajustes (lista numerada) necesita más espacio que el
+  // texto corto normal.
+  const tooltipAncho = estadoPush === "bloqueado" ? 280 : 250;
   const tooltipRight = Math.max(12, window.innerWidth - (rect.left + rect.width));
 
   return (
@@ -194,8 +197,20 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             permiso ya bloqueado de antes (ahí "intentado" arranca en
             false porque todavía no tocó nada en ESTE ingreso). */}
         {estadoPush === "bloqueado" && (
-          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600, lineHeight: 1.5 }}>
-            Bloqueaste el permiso, así que no podemos avanzar. Ve a los ajustes de notificaciones de tu teléfono, actívalo para Vista360 Player, y vuelve a entrar a la app.
+          <div>
+            <div style={{ fontSize: 12.5, color: "#FCA5A5", fontWeight: 800, marginBottom: 8 }}>
+              Bloqueaste el permiso -- actívalo así:
+            </div>
+            <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
+              <li>Abre <strong style={{ color: "#fff" }}>Ajustes</strong> en tu teléfono.</li>
+              <li>Entra a <strong style={{ color: "#fff" }}>Notificaciones</strong>.</li>
+              <li>Busca y toca <strong style={{ color: "#fff" }}>Vista360 Player</strong> en la lista.</li>
+              <li>Activa <strong style={{ color: "#fff" }}>Permitir notificaciones</strong>.</li>
+              <li>Vuelve a abrir esta app.</li>
+            </ol>
+            <div style={{ fontSize: 11.5, color: "rgba(226,232,240,.6)", marginTop: 8, lineHeight: 1.4 }}>
+              Apenas lo actives, te llega un aviso confirmando que quedó listo y ya puedes usar la app con normalidad.
+            </div>
           </div>
         )}
       </div>
