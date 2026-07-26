@@ -1,6 +1,5 @@
-import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import { app, cloudFunctions, db } from "../config/firebase";
+import { app, cloudFunctions } from "../config/firebase";
 import { env } from "../config/env";
 
 export type ActivarPushResultado = { ok: true } | { ok: false; error: string };
@@ -54,8 +53,16 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
       return { ok: false, error: "No se pudo generar el token de notificaciones." };
     }
 
-    if (db) {
-      await updateDoc(doc(db, "portalUsers", uid), { fcmTokens: arrayUnion(token) });
+    // Guardar el token vía Cloud Function (Admin SDK), NO con una
+    // escritura directa de Firestore -- esa escritura directa fallaba
+    // con "Missing or insufficient permissions" porque las reglas de
+    // seguridad (fuera de este repo, en la consola de Firebase) no
+    // dejan a una cuenta de portal escribir su propio documento. Mismo
+    // problema ya documentado y resuelto igual en otras partes de este
+    // proyecto (ver administrarClienteAdmin.ts).
+    if (cloudFunctions) {
+      const guardarToken = httpsCallable<{ token: string }, { ok: boolean }>(cloudFunctions, "guardarTokenPush");
+      await guardarToken({ token });
     }
 
     // Confirmación de que quedó activado, mandada como push de verdad

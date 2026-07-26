@@ -47,9 +47,22 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
     medir();
     const t = window.setTimeout(medir, 60); // por si el layout todavía se está acomodando
     window.addEventListener("resize", medir);
+    // El botón real cambia de ancho según el texto ("Activar" ->
+    // "Activando…" -> "Bloqueado") -- antes solo se remedía en el
+    // resize de la VENTANA, así que el foco de luz se quedaba con las
+    // medidas viejas apenas cambiaba el texto y el aro/botón invisible
+    // quedaban desalineados del botón real ("se sale del cuadro").
+    // ResizeObserver detecta cualquier cambio de tamaño del propio
+    // elemento, no solo de la ventana.
+    let observer: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== "undefined" && targetRef.current) {
+      observer = new ResizeObserver(medir);
+      observer.observe(targetRef.current);
+    }
     return () => {
       window.clearTimeout(t);
       window.removeEventListener("resize", medir);
+      observer?.disconnect();
     };
   }, [targetRef]);
 
