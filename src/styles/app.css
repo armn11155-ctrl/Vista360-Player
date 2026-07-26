@@ -5954,6 +5954,23 @@
     color: #1E293B;
     line-height: 1.3;
   }
+  /* Botón "Solicitar disponibilidad/renovación" -- se pidió que desde
+     el pin mismo se pueda pedir un panel que no es del cliente, o
+     renovar el que sí es suyo si está por vencer. Va después de la
+     dirección/vigencia, mismo ancho que la tarjeta del popup. */
+  .coverage-popup-action {
+    width: 100%;
+    margin-top: 11px;
+    background: #0877FF;
+    color: #fff;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .coverage-popup-action:hover { background: #2C6FE0; }
   /* Brillo animado premium (el mismo de los headers y la version
      anterior de esta tarjeta) -- ahora a todo el ancho, abajo del
      todo, ya que la foto no ocupa mas todo el ancho arriba. */

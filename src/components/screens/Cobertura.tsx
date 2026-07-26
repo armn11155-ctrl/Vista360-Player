@@ -5,12 +5,17 @@ import type { Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
 import { cargarLeaflet } from "../../utils/leaflet";
 import { campaignCityImage } from "../../utils/campaignCity";
+import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
 interface Props {
-  paneles: Record<string, Panel>;
   contratos: Contrato[];
   onBack?: () => void;
   onMenuClick?: () => void;
+  /** Se dispara cuando la persona toca "Solicitar disponibilidad" o
+   *  "Solicitar renovación" en el popup de un pin -- App.tsx la usa
+   *  para precargar y abrir el formulario de Nueva campaña con el
+   *  panel ya mencionado, en vez de hacer que lo escriba de cero. */
+  onSolicitarPanel?: (panel: PanelConUso, tipo: "disponibilidad" | "renovacion") => void;
 }
 
 type PanelConUso = Panel & {
@@ -33,21 +38,46 @@ function tieneCoordenadas(panel: PanelConUso): panel is PanelConCoordenadas {
   return typeof panel.lat === "number" && typeof panel.lng === "number";
 }
 
-function estadoTexto(contrato?: Contrato) {
-  if (!contrato) return "Panel asignado";
-  const hoy = new Date();
-  const inicio = new Date(contrato.inicio);
-  const fin = new Date(contrato.fin);
-  if (hoy < inicio) return "Programado";
-  if (hoy > fin) return "Finalizado";
-  return "Activo";
+/** Ahora Cobertura muestra TODO el inventario de paneles, no solo los
+ *  que este cliente ya tiene contratados -- así que "contrato" puede
+ *  no existir aunque el panel sí. Antes, sin contrato, se mostraba
+ *  "Panel asignado" (tenía sentido cuando SOLO llegaban paneles ya
+ *  asignados a este cliente); ahora sin contrato se muestra el estado
+ *  propio del panel (Disponible/Ocupado/Mantenimiento, el mismo campo
+ *  que administra el admin en Paneles), que sí describe la realidad. */
+function estadoTexto(panel: PanelConUso) {
+  const contrato = panel.contrato;
+  if (contrato) {
+    const hoy = new Date();
+    const inicio = new Date(contrato.inicio);
+    const fin = new Date(contrato.fin);
+    if (hoy < inicio) return "Programado";
+    if (hoy > fin) return "Finalizado";
+    return "Activo";
+  }
+  return panel.estado === "Ocupado" ? "Ocupado" : panel.estado === "Mantenimiento" ? "Mantenimiento" : "Disponible";
 }
 
 function estadoColor(label: string) {
   if (label === "Activo") return "#22C55E";
   if (label === "Programado") return "#0877FF"; // antes naranja -- se pidió que no haya naranjas, todo en la paleta azul de la marca
   if (label === "Finalizado") return "#94A3B8";
+  if (label === "Disponible") return "#16A34A";
+  if (label === "Ocupado") return "#0877FF";
+  if (label === "Mantenimiento") return "#7C3AED";
   return "#60A5FA";
+}
+
+// Mismo umbral que usa recordatorioVencimientoCampanas (Cloud
+// Function) para avisarle al cliente que su campaña vence pronto --
+// acá se usa para mostrar el botón "Solicitar renovación" en el popup.
+const DIAS_AVISO_RENOVACION = 10;
+
+function diasParaVencer(fin: string): number {
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  const finDate = new Date(`${fin.slice(0, 10)}T00:00:00`);
+  return Math.round((finDate.getTime() - hoy.getTime()) / 86400000);
 }
 
 const MESES_LARGOS = [
@@ -86,15 +116,25 @@ function escapeHtml(value: string) {
  *  contrato, igual que en Mis Campañas) -- si el panel no tiene
  *  campaña asignada, se usa el id del panel como reemplazo, para que
  *  siempre se vea una foto en vez de un cuadro vacio. */
-function popupHtml(panel: PanelConUso) {
+function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   const nombre = escapeHtml(panel.nombre);
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
-  const label = estadoTexto(panel.contrato);
+  const label = estadoTexto(panel);
   const color = estadoColor(label);
   const contrato = panel.contrato;
   const fotoUrl = campaignCityImage(contrato?.id ?? panel.id);
-  // Fila de vigencia (fecha "hasta cuando") -- solo si el panel tiene
-  // una campaña/contrato asignado; si no, no hay fecha que mostrar.
+
+  // Sin contrato de ESTE cliente en este panel -- se pidió que se
+  // pueda "Solicitar disponibilidad" directo desde el pin, en vez de
+  // solo mostrar el estado sin poder hacer nada.
+  //
+  // Con contrato Activo y cerca de vencer -- se pidió que también
+  // aparezca "Solicitar renovación", además de la fecha de vigencia
+  // (no en reemplazo).
+  const enRenovacion = Boolean(
+    contrato && label === "Activo" && diasParaVencer(contrato.fin) <= DIAS_AVISO_RENOVACION
+  );
+
   const vigenciaHtml = contrato
     ? `
         <div class="coverage-popup-divider"></div>
@@ -107,6 +147,23 @@ function popupHtml(panel: PanelConUso) {
         </div>
       `
     : "";
+
+  const accionHtml = !permitirSolicitar
+    ? ""
+    : !contrato
+    ? `
+        <button type="button" class="coverage-popup-action" data-cobertura-accion="disponibilidad" data-panel-id="${panel.id}">
+          Solicitar disponibilidad
+        </button>
+      `
+    : enRenovacion
+    ? `
+        <button type="button" class="coverage-popup-action" data-cobertura-accion="renovacion" data-panel-id="${panel.id}">
+          Solicitar renovación
+        </button>
+      `
+    : "";
+
   return `
     <div class="coverage-popup-card">
       <div class="coverage-popup-media" style="background-image:url('${fotoUrl}')">
@@ -128,17 +185,27 @@ function popupHtml(panel: PanelConUso) {
           <span>${direccion}</span>
         </div>
         ${vigenciaHtml}
+        ${accionHtml}
       </div>
     </div>
   `;
 }
 
-export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: Props) {
+export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarPanel }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
+
+  // Se pidió que en Cobertura se vea TODO el inventario de paneles (no
+  // solo los que este cliente ya tiene contratados), para que pueda
+  // descubrir y pedir disponibilidad de otros puntos. Antes acá
+  // llegaba un "paneles" ya filtrado por los contratos del cliente
+  // (prop, ahora eliminada); ahora se trae la lista completa igual
+  // que hace el admin en la pantalla Paneles.
+  const panelesState = usePanelesDisponibles(true);
+  const todosPaneles = panelesState.status === "ready" ? panelesState.paneles : [];
 
   const lista = useMemo<PanelConUso[]>(() => {
     // Un contrato multi-panel ocupa TODOS sus paneles en el mapa, no
@@ -147,7 +214,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
     contratos.forEach((contrato) => {
       panelesDeContrato(contrato).forEach((panelId) => usados.set(panelId, contrato));
     });
-    return Object.values(paneles)
+    return todosPaneles
       .map((panel) => ({
         ...panel,
         lat: numeroCoordenada((panel as unknown as Record<string, unknown>).lat),
@@ -155,7 +222,7 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         contrato: usados.get(panel.id),
       }))
       .sort((a, b) => (a.ciudad || "").localeCompare(b.ciudad || "") || a.nombre.localeCompare(b.nombre));
-  }, [contratos, paneles]);
+  }, [contratos, todosPaneles]);
 
   const conCoordenadas = useMemo(() => lista.filter(tieneCoordenadas), [lista]);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
@@ -211,7 +278,27 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
-          marker.bindPopup(popupHtml(panel), { className: "coverage-popup", maxWidth: 320, minWidth: 296, offset: [0, -6] });
+          marker.bindPopup(popupHtml(panel, Boolean(onSolicitarPanel)), {
+            className: "coverage-popup",
+            maxWidth: 320,
+            minWidth: 296,
+            offset: [0, -6],
+          });
+          // El popup es HTML plano (Leaflet no acepta JSX), así que el
+          // botón "Solicitar disponibilidad/renovación" de adentro no
+          // tiene forma de disparar React directo -- se engancha a
+          // mano apenas Leaflet abre el popup y mete su contenido en
+          // el DOM real.
+          if (onSolicitarPanel) {
+            marker.on("popupopen", (evento: any) => {
+              const el: HTMLElement | undefined = evento?.popup?.getElement?.();
+              const boton = el?.querySelector<HTMLButtonElement>("[data-cobertura-accion]");
+              boton?.addEventListener("click", () => {
+                const tipo = boton.dataset.coberturaAccion === "renovacion" ? "renovacion" : "disponibilidad";
+                onSolicitarPanel(panel, tipo);
+              });
+            });
+          }
         });
 
         const seleccionadoConCoords = seleccionado && tieneCoordenadas(seleccionado) ? seleccionado : conCoordenadas[0];
@@ -265,9 +352,9 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
         <div className="coverage-hero">
           <div>
             <div className="coverage-kicker">Mapa de campaña</div>
-            <div className="coverage-title">Paneles del cliente</div>
+            <div className="coverage-title">Cobertura de paneles</div>
             <div className="coverage-sub">
-              Ubicación de las pantallas contratadas y estado de cada punto.
+              Ubicación de todos los paneles disponibles y el estado de los tuyos.
             </div>
           </div>
           <div className="coverage-count">
@@ -294,11 +381,11 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
                 <circle cx="12" cy="10" r="2.2" />
               </svg>
               <div>
-                <strong>{lista.length === 0 ? "Tu mapa está listo" : "Ubicaciones por registrar"}</strong>
+                <strong>{lista.length === 0 ? "Sin paneles registrados" : "Ubicaciones por registrar"}</strong>
                 <span>
                   {lista.length === 0
-                    ? "Cuando tengas un panel, su ubicación aparecerá aquí."
-                    : "Tus paneles aparecerán aquí cuando tengan una ubicación registrada."}
+                    ? "Cuando se registre un panel, su ubicación aparecerá aquí."
+                    : "Los paneles aparecerán aquí cuando tengan una ubicación registrada."}
                 </span>
               </div>
             </div>
@@ -314,9 +401,9 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
               </div>
             </div>
             <div className="coverage-selected-actions">
-              <div className="coverage-selected-status" style={{ color: estadoColor(estadoTexto(seleccionado.contrato)) }}>
-                <span style={{ background: estadoColor(estadoTexto(seleccionado.contrato)) }} />
-                {estadoTexto(seleccionado.contrato)}
+              <div className="coverage-selected-status" style={{ color: estadoColor(estadoTexto(seleccionado)) }}>
+                <span style={{ background: estadoColor(estadoTexto(seleccionado)) }} />
+                {estadoTexto(seleccionado)}
               </div>
               {tieneCoordenadas(seleccionado) && (
                 <a
@@ -336,11 +423,11 @@ export default function Cobertura({ paneles, contratos, onBack, onMenuClick }: P
           <div className="section-title">Paneles ubicados</div>
           {lista.length === 0 ? (
             <div className="state-sub" style={{ maxWidth: "none" }}>
-              Este cliente todavía no tiene paneles asignados.
+              Todavía no hay paneles registrados.
             </div>
           ) : (
             lista.map((panel) => {
-              const label = estadoTexto(panel.contrato);
+              const label = estadoTexto(panel);
               const color = estadoColor(label);
               return (
                 <button

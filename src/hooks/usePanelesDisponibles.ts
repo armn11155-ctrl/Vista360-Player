@@ -8,20 +8,26 @@ export type PanelesDisponiblesState =
   | { status: "ready"; paneles: Panel[] }
   | { status: "error"; message: string };
 
-/** Solo lo usa el admin — lista TODOS los paneles (no solo los de un
- *  contrato específico), para poder elegir uno al crear un contrato
- *  nuevo directo desde el Player.
+/** Lista TODOS los paneles (no solo los de un contrato/cliente
+ *  específico). La usa el admin para elegir un panel al crear un
+ *  contrato nuevo directo desde el Player, y también Cobertura -- ahí
+ *  la usan TANTO el admin COMO el cliente, para que en el mapa se vea
+ *  todo el inventario de paneles (no solo los que el cliente ya tiene
+ *  contratados), y así pueda pedir disponibilidad de un panel nuevo o
+ *  renovación del que ya tiene. El parámetro ya no es "isAdmin" -- es
+ *  solo un flag para no disparar la consulta hasta tener lo necesario
+ *  (ej. esperar a saber si es admin/cliente antes de pedir esto).
  *
  *  Ojo: NO se usa orderBy("nombre") en la consulta -- Firestore excluye
  *  en silencio los documentos que no tengan ese campo (paneles viejos
  *  creados desde el sistema Vista360 externo, por ejemplo), y eso hacia
  *  que algunos paneles reales no aparecieran para elegir. Se trae todo
  *  y se ordena del lado del cliente, con nombre vacio como respaldo. */
-export function usePanelesDisponibles(isAdmin: boolean): PanelesDisponiblesState {
+export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesState {
   const [state, setState] = useState<PanelesDisponiblesState>({ status: "loading" });
 
   useEffect(() => {
-    if (!db || !isAdmin) return;
+    if (!db || !habilitado) return;
     const q = collection(db, "paneles");
     const unsub = onSnapshot(
       q,
@@ -34,7 +40,7 @@ export function usePanelesDisponibles(isAdmin: boolean): PanelesDisponiblesState
       (err) => setState({ status: "error", message: err.message })
     );
     return unsub;
-  }, [isAdmin]);
+  }, [habilitado]);
 
   return state;
 }

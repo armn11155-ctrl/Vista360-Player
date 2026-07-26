@@ -344,6 +344,10 @@ function AuthenticatedApp({
   }, []);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Precarga del formulario de Nueva campaña cuando se pide desde un
+  // pin de Cobertura ("Solicitar disponibilidad"/"Solicitar
+  // renovación") -- así la persona no escribe todo de cero.
+  const [prefillNueva, setPrefillNueva] = useState<{ nombre?: string; ciudad?: string; comentarios?: string } | null>(null);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
   const pushEstadoGlobal = usePushEstado(uid);
   // Foco de luz para activar push -- a propósito NO se guarda "ya lo vi"
@@ -492,9 +496,10 @@ function AuthenticatedApp({
         content = (
           <NuevaCampana
             clienteId={clienteId}
-            onBack={() => setView("campanas")}
-            onEnviada={() => setView("campanas")}
+            onBack={() => { setPrefillNueva(null); setView("campanas"); }}
+            onEnviada={() => { setPrefillNueva(null); setView("campanas"); }}
             isAdmin={isAdmin}
+            prefill={prefillNueva ?? undefined}
           />
         );
         break;
@@ -502,7 +507,23 @@ function AuthenticatedApp({
         content = <Portafolio onBack={() => setView("inicio")} onContactar={() => setView("contactanos")} />;
         break;
       case "cobertura":
-        content = <Cobertura paneles={paneles} contratos={contratos} onMenuClick={() => setSidebarOpen(true)} />;
+        content = (
+          <Cobertura
+            contratos={contratos}
+            onMenuClick={() => setSidebarOpen(true)}
+            onSolicitarPanel={(panel, tipo) => {
+              setPrefillNueva({
+                nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : `Consulta - ${panel.nombre}`,
+                ciudad: panel.ciudad,
+                comentarios:
+                  tipo === "renovacion"
+                    ? `Quiero renovar mi campaña en el panel "${panel.nombre}" (${panel.ciudad}).`
+                    : `Consulta de disponibilidad para el panel "${panel.nombre}" (${panel.ciudad}).`,
+              });
+              setView("nueva");
+            }}
+          />
+        );
         break;
       case "mispantallas":
         content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} onMenuClick={() => setSidebarOpen(true)} />;

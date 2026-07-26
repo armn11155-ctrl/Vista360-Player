@@ -11,6 +11,10 @@ interface Props {
   onBack: () => void;
   onEnviada: () => void;
   isAdmin?: boolean;
+  /** Precarga el formulario del CLIENTE -- lo usa Cobertura cuando la
+   *  persona pide disponibilidad o renovación de un panel puntual
+   *  desde el mapa, para no hacerla escribir todo de cero. */
+  prefill?: { nombre?: string; ciudad?: string; comentarios?: string };
 }
 
 const CIUDADES = ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Huánuco", "Otra"];
@@ -36,13 +40,13 @@ const selectStyle: React.CSSProperties = {
   backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center",
 };
 
-export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: Props) {
+export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, prefill }: Props) {
   // ── Formulario del CLIENTE: pedir una campaña nueva (queda como
   //    solicitud pendiente, la revisa el admin) ──────────────────────
-  const [nombre, setNombre] = useState("");
+  const [nombre, setNombre] = useState(() => prefill?.nombre ?? "");
   const [objetivo, setObjetivo] = useState("");
-  const [ciudad, setCiudad] = useState("");
-  const [comentarios, setComentarios] = useState("");
+  const [ciudad, setCiudad] = useState(() => prefill?.ciudad ?? "");
+  const [comentarios, setComentarios] = useState(() => prefill?.comentarios ?? "");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
 
