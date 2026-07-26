@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useClientesAdmin } from "../hooks/useClientesAdmin";
-import { useContratosAdmin } from "../hooks/useContratosAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
 import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
@@ -10,7 +9,6 @@ import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes } from "../utils/clientPicker";
-import { rankingClientes } from "../utils/clienteRanking";
 import { ClientAvatar } from "./ClientAvatar";
 
 interface Props {
@@ -44,14 +42,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // viendo (o si no está viendo ninguno).
   const { estado: estadoPush, activar: activarPush } = usePushEstado(uid);
   const state = useClientesAdmin();
-  // Ranking combinado (gasto + antigüedad + campañas) -- solo para el
-  // admin, nunca lo ve el cliente. Se calcula acá mismo porque este es
-  // el único lugar donde el admin ve "todos sus clientes" juntos.
-  const contratosState = useContratosAdmin(true);
-  const contratosAdmin = contratosState.status === "ready" ? contratosState.contratos : [];
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
-  const [orden, setOrden] = useState<"nombre" | "ranking">("nombre");
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
   const [accionandoId, setAccionandoId] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState("");
@@ -79,15 +71,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const activos = clientes.filter((c) => !c.archived);
   const archivados = clientes.filter((c) => !!c.archived);
   const visibles = tab === "activos" ? activos : archivados;
-  const ranking = useMemo(
-    () => rankingClientes(activos.map((c) => c.id), contratosAdmin),
-    [activos, contratosAdmin]
-  );
   const filtrados = filtrarClientes(visibles, busqueda);
-  const enOrdenRanking = tab === "activos" && orden === "ranking";
-  const filtradosOrdenados = enOrdenRanking
-    ? [...filtrados].sort((a, b) => (ranking.get(a.id) ?? 999) - (ranking.get(b.id) ?? 999))
-    : filtrados;
 
   // avatarUrl en realidad es una KEY de R2 (no una URL directa) para
   // los clientes migrados desde Cloudinary a R2 — hay que firmarla
@@ -289,17 +273,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </button>
         </div>
 
-        {tab === "activos" && (
-          <div className="admin-picker-orden" role="tablist" aria-label="Ordenar clientes">
-            <button type="button" className={orden === "nombre" ? "active" : ""} onClick={() => setOrden("nombre")}>
-              Nombre
-            </button>
-            <button type="button" className={orden === "ranking" ? "active" : ""} onClick={() => setOrden("ranking")} title="Ranking por gasto, antigüedad y campañas -- solo lo ves tú">
-              Ranking
-            </button>
-          </div>
-        )}
-
         <div className="admin-picker-search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2" className="admin-picker-search-icon">
             <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
@@ -328,10 +301,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         {errorAccion && <div className="admin-picker-empty admin-picker-empty-error">{errorAccion}</div>}
 
         <div className="admin-picker-grid">
-          {filtradosOrdenados.map((c) => {
+          {filtrados.map((c) => {
             const { bg } = brandColor(c.empresa ?? "?");
             const busy = accionandoId === c.id;
-            const puesto = enOrdenRanking ? ranking.get(c.id) : undefined;
             return (
               <div
                 key={c.id}
@@ -348,11 +320,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 aria-label={!c.archived ? `Entrar a la cuenta de ${c.empresa}` : undefined}
               >
                 <div className="admin-picker-tile-avatar-wrap">
-                  {puesto && (
-                    <span className="admin-picker-tile-rank" title="Ranking combinado (gasto + antigüedad + campañas)">
-                      #{puesto}
-                    </span>
-                  )}
                   <button
                     type="button"
                     className="admin-picker-tile-main"

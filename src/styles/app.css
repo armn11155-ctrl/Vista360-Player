@@ -4718,52 +4718,6 @@
     opacity: .78;
   }
 
-  .admin-picker-orden {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px;
-    border-radius: 10px;
-    background: rgba(0,0,0,.7);
-    border: 1px solid rgba(255,255,255,.12);
-    margin: 0 auto 16px;
-  }
-  .admin-picker-orden button {
-    min-height: 28px;
-    border: 0;
-    border-radius: 7px;
-    background: transparent;
-    color: rgba(255,255,255,.65);
-    padding: 0 11px;
-    font: inherit;
-    font-size: 11px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .admin-picker-orden button.active {
-    background: rgba(255,255,255,.14);
-    color: #FFFFFF;
-  }
-  .admin-picker-tile-rank {
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    z-index: 2;
-    min-width: 24px;
-    height: 22px;
-    padding: 0 6px;
-    border-radius: 11px;
-    background: linear-gradient(135deg, #FBBF24, #D97706);
-    color: #1F1300;
-    font-size: 11px;
-    font-weight: 900;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,.35);
-  }
-
   .admin-picker-search-wrap { position: relative; max-width: 360px; margin: 0 auto; }
   .admin-picker-search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); }
   .admin-picker-search {
