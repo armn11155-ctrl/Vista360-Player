@@ -4130,12 +4130,19 @@
   /* El nombre de la factura viene del nombre del PDF que se sube --
      puede ser mucho mas largo que "Julio 2026", asi que achica un
      poco la letra y deja que pase a una segunda linea en vez de
-     salirse de la tarjeta. */
+     salirse de la tarjeta.
+     OJO: "word-break: break-word" (a diferencia de "overflow-wrap:
+     break-word") deja que el navegador corte una palabra A LA MITAD
+     con tal de no desbordar -- eso era lo que partia "Vista360" dejando
+     el "0" solo en la siguiente linea, se veia como "Vista36" arriba y
+     "0 Digital" abajo. Con SOLO overflow-wrap:break-word, primero
+     intenta pasar la palabra ENTERA a la siguiente linea, y recien si
+     una sola palabra es mas ancha que toda la tarjeta (rarisimo) la
+     corte -- así ya no se ven palabras partidas a la mitad. */
   .factura-card .report-title {
     font-size: 19px;
     line-height: 1.15;
     overflow-wrap: break-word;
-    word-break: break-word;
   }
   /* Sin menu de 3 puntitos en esta tarjeta -- no hace falta dejarle
      espacio de sobra a la derecha. El lapicito de editar el nombre
