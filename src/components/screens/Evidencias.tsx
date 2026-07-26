@@ -119,7 +119,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div className="evidencias-header">
+      <div className="evidencias-header reports-header">
         <div className="ev-logo-row">
           <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>Evidencias</div>
         </div>

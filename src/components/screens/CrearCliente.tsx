@@ -119,14 +119,12 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8FAFD" }}>
-      <div style={{ background: "#0B1220", padding: "calc(18px + env(safe-area-inset-top)) 20px 16px", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
-            <BackChevron />
-          </button>
-          <div style={{ color: "#fff", fontWeight: 800, fontSize: 16 }}>Crear usuario</div>
-          <div style={{ width: 34 }} />
+      <div className="detail-header">
+        <div className="back-btn" onClick={onBack}>
+          <BackChevron />
         </div>
+        <div className="simple-title">Crear usuario</div>
+        <div style={{ width: 32 }} />
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16, WebkitOverflowScrolling: "touch" as any }}>

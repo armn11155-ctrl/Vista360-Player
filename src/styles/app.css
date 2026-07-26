@@ -5310,7 +5310,8 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .simple-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  /* .simple-title vive SIEMPRE dentro de un header oscuro (.detail-header y variantes) -- nunca sobre fondo claro, asi que blanco/negrita es el default correcto en todos los casos (antes esto se parcheaba pantalla por pantalla, ver git history). */
+  .simple-title { font-size: 18px; font-weight: 900; color: #FFFFFF; line-height: 1.1; }
 
   /* ===== Menú lateral (sidebar) — independiente de la barra inferior =====
      Solo lo que REALMENTE difiere entre móvil y escritorio va dentro de
@@ -5646,34 +5647,6 @@
     padding-bottom: 12px;
     min-height: 46px;
     position: relative;
-  }
-  .coverage-header-compact .simple-title {
-    color: #FFFFFF;
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1.1;
-  }
-  /* Notificaciones usa el mismo .detail-header oscuro (con su linea
-     azul animada de abajo) que Cobertura y Mis campanas, pero como
-     .simple-title por defecto usa var(--text) (oscuro, pensado para
-     tarjetas blancas), el titulo se perdia casi invisible sobre el
-     fondo oscuro del header. Mismo arreglo: texto blanco y en negrita
-     para que se vea igual de "premium" que las otras pantallas. */
-  .notif-header .simple-title {
-    color: #FFFFFF;
-    font-weight: 900;
-  }
-  /* Mismo problema, mismo arreglo: Usuarios, Solicitudes, Analítica y
-     Paneles (todos con el wrapper .admin-tool-screen) comparten el
-     mismo .detail-header oscuro -- sin esto, el título quedaba con
-     var(--text) (oscuro) casi invisible sobre ese fondo. Un solo
-     selector alcanza para las cuatro pantallas a la vez, así quedan
-     consistentes entre sí sin tocar cada .tsx por separado. */
-  .admin-tool-screen .simple-title {
-    color: #FFFFFF;
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1.1;
   }
   .coverage-map-box {
     background: #0B1220;

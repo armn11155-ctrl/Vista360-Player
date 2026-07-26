@@ -4,6 +4,7 @@ import { httpsCallable } from "firebase/functions";
 import { db, cloudFunctions } from "../../config/firebase";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { formatCampaignName } from "../../utils/campaignName";
+import BackChevron from "../BackChevron";
 
 interface Props {
   clienteId: string;
@@ -124,11 +125,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
     const paneles = panelesState.status === "ready" ? panelesState.paneles : [];
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-        <div style={{ background: "#0B1220", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nuevo contrato</div>
+        <div className="detail-header">
+          <div className="back-btn" onClick={onBack}>
+            <BackChevron />
+          </div>
+          <div className="simple-title">Nuevo contrato</div>
+          <div style={{ width: 32 }} />
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
@@ -214,11 +216,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin }: 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
-      <div style={{ background: "#0B1220", padding: "calc(26px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: 6, marginLeft: -6 }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
-        </button>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Nueva campaña</div>
+      <div className="detail-header">
+        <div className="back-btn" onClick={onBack}>
+          <BackChevron />
+        </div>
+        <div className="simple-title">Nueva campaña</div>
+        <div style={{ width: 32 }} />
       </div>
 
       {/* Form */}
