@@ -5671,7 +5671,9 @@
      consistentes entre sí sin tocar cada .tsx por separado. */
   .admin-tool-screen .simple-title {
     color: #FFFFFF;
+    font-size: 18px;
     font-weight: 900;
+    line-height: 1.1;
   }
   .coverage-map-box {
     background: #0B1220;
