@@ -52,6 +52,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // nativo, sin necesidad de armar un calendario propio.
   const hoyStr = new Date().toISOString().slice(0, 10);
   const [fechaInicio, setFechaInicio] = useState(hoyStr);
+  // Opcional a propósito -- muchas veces el cliente todavía no sabe
+  // cuántos meses quiere (eso se termina de conversar con el equipo),
+  // así que no tiene sentido obligarlo a poner una fecha de fin.
+  const [fechaFin, setFechaFin] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   // Se muestra después de enviar en vez de saltar directo a "Mis
@@ -75,6 +79,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
         fechaInicioDeseada: fechaInicio,
+        fechaFinDeseada: fechaFin || null,
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
@@ -304,6 +309,15 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               min={hoyStr}
               value={fechaInicio}
               onChange={(e) => setFechaInicio(e.target.value)}
+            />
+          </Field>
+          <Field label="Fecha de fin (opcional)">
+            <input
+              style={inputStyle}
+              type="date"
+              min={fechaInicio || hoyStr}
+              value={fechaFin}
+              onChange={(e) => setFechaFin(e.target.value)}
             />
           </Field>
           <div style={{ fontSize: 11.5, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.4 }}>

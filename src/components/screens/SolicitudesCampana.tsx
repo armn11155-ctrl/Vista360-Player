@@ -372,6 +372,10 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 <span>Inicio deseado</span>
                 <strong>{seleccionada.fechaInicioDeseada ? fechaCorta(seleccionada.fechaInicioDeseada) : "Sin especificar"}</strong>
               </div>
+              <div>
+                <span>Fin deseado</span>
+                <strong>{seleccionada.fechaFinDeseada ? fechaCorta(seleccionada.fechaFinDeseada) : "Sin especificar"}</strong>
+              </div>
             </div>
 
             {seleccionada.objetivo && (

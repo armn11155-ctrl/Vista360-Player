@@ -202,6 +202,9 @@ export interface SolicitudCampana {
    *  nunca antes de hoy, el formulario ya lo bloquea con min= en el
    *  input de fecha. */
   fechaInicioDeseada?: string;
+  /** Opcional -- el cliente muchas veces no sabe cuántos meses quiere
+   *  todavía, se termina de conversar con el equipo. */
+  fechaFinDeseada?: string | null;
   createdAt?: Timestamp | null;
 }
 

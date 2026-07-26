@@ -498,7 +498,15 @@ function AuthenticatedApp({
             clienteId={clienteId}
             onBack={() => { setPrefillNueva(null); setView("campanas"); }}
             onEnviada={() => { setPrefillNueva(null); setView("campanas"); }}
-            isAdmin={isAdmin}
+            // Si venimos de "Solicitar disponibilidad/renovación" en
+            // Cobertura (prefillNueva viene cargado), siempre es el
+            // formulario simple de SOLICITUD -- aunque quien esté
+            // viendo el cliente sea el admin, acá no correspondía
+            // abrir el formulario completo de "Nuevo contrato" (eso
+            // crea el contrato real de una, con selector de paneles y
+            // fechas obligatorias). Este botón es para pedir, no para
+            // crear directo.
+            isAdmin={isAdmin && !prefillNueva}
             prefill={prefillNueva ?? undefined}
           />
         );
