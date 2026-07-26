@@ -1,32 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { EstadoPush } from "../hooks/usePushEstado";
 
-const STORAGE_KEY = "vista360_notif_prompt_visto";
-
-// Mismo criterio que OnboardingTour.tsx: la llave se guarda por uid,
-// no global, para que probar varias cuentas de cliente en el mismo
-// celular no "gaste" el aviso de la primera cuenta para todas las
-// demas.
-function clave(uid?: string) {
-  return uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
-}
-
-export function debeVerNotifPrompt(uid?: string): boolean {
-  try {
-    return localStorage.getItem(clave(uid)) !== "1";
-  } catch {
-    return false; // si localStorage falla (modo privado, etc.), no molestamos con esto
-  }
-}
-
-function marcarVisto(uid?: string) {
-  try {
-    localStorage.setItem(clave(uid), "1");
-  } catch {
-    // sin problema si no se pudo guardar -- simplemente se puede repetir
-  }
-}
-
 interface Rect {
   top: number;
   left: number;
@@ -52,10 +26,12 @@ interface Props {
  * el botón "Activar" del header (que ya dice eso, ver Inicio.tsx), y
  * un globo de texto cerca explica que hay que tocar ahí.
  *
- * Se muestra una sola vez (se guarda en localStorage apenas se toca
- * el botón real o "Ahora no") y solo si el navegador soporta push y
- * todavía no se le preguntó permiso -- si ya está activado o
- * bloqueado, ni se monta (ver Inicio.tsx / App.tsx).
+ * A propósito NO se guarda ningún "ya lo vi" en localStorage: se pidió
+ * que aparezca SIEMPRE que la cuenta entre sin notificaciones activadas
+ * todavía (celular nuevo, reinstaló la app, etc.), no solo una vez.
+ * App.tsx decide cuándo abrirlo (estado "ofrecer") y este componente
+ * solo avisa cuándo cerrarlo (onClose), una vez que se intentó activar
+ * y el resultado ya se pudo leer en pantalla.
  */
 export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, activarPush, onClose }: Props) {
   const [intentado, setIntentado] = useState(false);
@@ -78,21 +54,15 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
   }, [targetRef]);
 
   // Una vez que se pidió el permiso (aceptado, rechazado, o error), se
-  // marca como visto y se cierra solo -- con una pequeña pausa para
-  // que se alcance a leer el resultado antes de que desaparezca.
+  // cierra solo -- con una pequeña pausa para que se alcance a leer el
+  // resultado antes de que desaparezca.
   useEffect(() => {
     if (!intentado) return;
     if (estadoPush === "activado" || estadoPush === "error" || estadoPush === "bloqueado") {
-      marcarVisto(uid);
       const t = window.setTimeout(onClose, estadoPush === "activado" ? 900 : 1800);
       return () => window.clearTimeout(t);
     }
   }, [intentado, estadoPush, onClose]);
-
-  function cerrar() {
-    marcarVisto(uid);
-    onClose();
-  }
 
   function iniciarActivar() {
     setIntentado(true);

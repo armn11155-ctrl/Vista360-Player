@@ -21,7 +21,6 @@ import Evidencias from "./components/screens/Evidencias";
 import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
-import { debeVerNotifPrompt } from "./components/NotifPrompt";
 import { usePushEstado } from "./hooks/usePushEstado";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
@@ -339,10 +338,25 @@ function AuthenticatedApp({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
   const pushEstadoGlobal = usePushEstado(uid);
-  const [notifPromptVisto, setNotifPromptVisto] = useState(() => !debeVerNotifPrompt(uid));
+  // Foco de luz para activar push -- a propósito NO se guarda "ya lo vi"
+  // en ningún lado: se pidió que aparezca SIEMPRE que la cuenta entra sin
+  // notificaciones activadas todavía (celular nuevo, reinstaló la app,
+  // etc.), no solo la primera vez. Por eso "abierto" no depende de un
+  // flag persistido -- solo se prende cuando el push pasa a "ofrecer" (se
+  // puede ofrecer y todavía no se decidió) y se apaga cuando el propio
+  // NotifPrompt llama a onClose (ya sea porque se activó, lo bloquearon,
+  // o hubo un error). Se mantiene "enganchado" (abierto) una vez que se
+  // prende para que no desaparezca de golpe apenas se toca el botón y el
+  // estado pasa de "ofrecer" a "activando" a mitad de camino.
+  const [notifPromptAbierto, setNotifPromptAbierto] = useState(false);
+  useEffect(() => {
+    if (!isAdmin && !mostrarOnboarding && pushEstadoGlobal.estado === "ofrecer") {
+      setNotifPromptAbierto(true);
+    }
+  }, [isAdmin, mostrarOnboarding, pushEstadoGlobal.estado]);
   // Solo para clientes (igual que el tour de bienvenida) -- el admin ya
   // sabe dónde está el botón de activar, no necesita el foco de luz.
-  const mostrarNotifPrompt = !isAdmin && !mostrarOnboarding && !notifPromptVisto && pushEstadoGlobal.estado === "ofrecer";
+  const mostrarNotifPrompt = !isAdmin && notifPromptAbierto;
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
@@ -388,7 +402,7 @@ function AuthenticatedApp({
             adminNombre={adminNombre}
             uid={uid}
             mostrarNotifSpotlight={mostrarNotifPrompt}
-            onCerrarNotifSpotlight={() => setNotifPromptVisto(true)}
+            onCerrarNotifSpotlight={() => setNotifPromptAbierto(false)}
           />
         );
         break;

@@ -430,7 +430,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         </section>
 
       </div>
-      {mostrarNotifSpotlight && estadoPush === "ofrecer" && onCerrarNotifSpotlight && (
+      {mostrarNotifSpotlight && onCerrarNotifSpotlight && (
         <NotifPrompt
           uid={uid}
           targetRef={notifBtnRef}
