@@ -98,11 +98,6 @@ export interface Contrato {
   fotos_campania?: FotoCampania[];
   imagenCampaniaUrl?: string;
   imagenCampaniaFecha?: string;
-  /** Encuesta de satisfacción — el cliente califica su campaña una vez
-   *  finalizada (1-5 estrellas), opcional. */
-  calificacion?: number;
-  calificacionComentario?: string;
-  calificacionFecha?: string;
   deleted?: boolean;
   createdAt?: Timestamp | null;
   /** true despues de mandar el push de "tu campaña está por vencer" --

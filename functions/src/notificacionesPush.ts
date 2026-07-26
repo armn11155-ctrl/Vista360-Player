@@ -132,6 +132,35 @@ function nombreMesLargo(mes: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+/** "Hoy", pero como se ve de verdad en Lima -- Cloud Functions corre
+ *  en UTC por defecto, así que un simple new Date().toISOString()
+ *  puede estar hasta 5 horas adelantado (Lima es UTC-5), corriéndose
+ *  de día entero cerca de la medianoche. Esto usa el timezone real en
+ *  vez de asumir la hora del servidor, así los recordatorios no
+ *  dependen de a qué hora exacta del día corra la función. */
+function hoyEnLima(): { anio: number; mes: number; dia: number; str: string } {
+  const partes = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Lima",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const valor = (tipo: string) => Number(partes.find((p) => p.type === tipo)?.value ?? 0);
+  const anio = valor("year");
+  const mes = valor("month");
+  const dia = valor("day");
+  return { anio, mes, dia, str: `${anio}-${String(mes).padStart(2, "0")}-${String(dia).padStart(2, "0")}` };
+}
+
+/** Suma (o resta, con un número negativo) días de calendario a una
+ *  fecha Y/M/D y devuelve "YYYY-MM-DD" -- se apoya en Date.UTC para
+ *  que el acarreo de mes/año (fin de mes, fin de año) lo resuelva el
+ *  propio motor de JS en vez de calcularlo a mano. */
+function sumarDias(base: { anio: number; mes: number; dia: number }, dias: number): string {
+  const d = new Date(Date.UTC(base.anio, base.mes - 1, base.dia + dias));
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}
+
 /** Nombre de campaña para el mensaje -- el que puso el admin a mano, o
  *  si no tiene, cae al nombre del panel principal. */
 async function nombreDeCampana(db: FirebaseFirestore.Firestore, data: FirebaseFirestore.DocumentData): Promise<string> {
@@ -181,11 +210,11 @@ export const recordatorioReportesMensuales = onSchedule(
   { schedule: "30 11 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
-    const hoy = new Date();
-    const hoyStr = hoy.toISOString().slice(0, 10);
+    const hoy = hoyEnLima();
+    const hoyStr = hoy.str;
     const mesActual = hoyStr.slice(0, 7);
-    const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
-    const diaHoy = hoy.getDate();
+    const diasEnMes = new Date(Date.UTC(hoy.anio, hoy.mes, 0)).getUTCDate();
+    const diaHoy = hoy.dia;
 
     // Solo en los últimos 7 días del mes (día >= diasEnMes - 6).
     if (diaHoy < diasEnMes - 6) return;
@@ -254,8 +283,9 @@ export const recordatorioVencimientoCampanas = onSchedule(
   { schedule: "0 15 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
-    const hoy = new Date().toISOString().slice(0, 10);
-    const limite = new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10);
+    const hoyInfo = hoyEnLima();
+    const hoy = hoyInfo.str;
+    const limite = sumarDias(hoyInfo, 10);
 
     const contratosSnap = await db
       .collection("contratos")

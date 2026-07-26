@@ -68,8 +68,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
-  const [calificando, setCalificando] = useState<string | null>(null);
-  const [hoverEstrella, setHoverEstrella] = useState<{ id: string; n: number } | null>(null);
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
   const [editando, setEditando] = useState<{
@@ -80,9 +78,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     guardando: boolean;
     error: string;
   } | null>(null);
-  // Desactivado temporalmente (a pedido del cliente) -- no borra la
-  // funcionalidad, solo la oculta hasta que se pida reactivarla.
-  const mostrarCalificacion = false;
   const comprobanteRef = useRef<HTMLInputElement>(null);
   // Siempre en el mismo orden sin importar como vengan del origen:
   // primero las Activas (lo mas urgente/relevante ahora), despues las
@@ -228,21 +223,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     }
   }
 
-  async function calificar(c: Contrato, estrellas: number, e: React.MouseEvent) {
-    e.stopPropagation();
-    if (!db) return;
-    setCalificando(c.id);
-    try {
-      await updateDoc(doc(db, "contratos", c.id), {
-        calificacion: estrellas,
-        calificacionFecha: new Date().toISOString(),
-      });
-    } catch {
-      // si falla, las estrellas siguen disponibles para reintentar
-    }
-    setCalificando(null);
-  }
-
   const whatsappHref = modal
     ? `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(
         `Hola, acabo de solicitar la renovación de "${modal.panelNombre}" desde Vista360 Player. ¿Podemos coordinar el pago?`
@@ -373,45 +353,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     </div>
                     <div className="premium-campaign-progress-label">{pct}% completado</div>
                   </div>
-                )}
-                {/* Desactivado (a pedido del cliente) -- al terminar una
-                    campaña no debe aparecer ningun mensaje pidiendo
-                    calificarla. No se borra la funcionalidad, solo se
-                    oculta hasta que se pida reactivarla. */}
-                {!isAdmin && estado === "Finalizada" && mostrarCalificacion && (
-                  c.calificacion ? (
-                    <div style={{ fontSize: 13, marginTop: 4 }}>
-                      {"★".repeat(c.calificacion)}{"☆".repeat(5 - c.calificacion)}
-                      <span style={{ fontSize: 12, color: "#6B7280", marginLeft: 6 }}>¡Gracias por calificar!</span>
-                    </div>
-                  ) : (
-                    <div style={{ marginTop: 6 }}>
-                      <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 4 }}>¿Cómo te fue con esta campaña?</div>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        {[1, 2, 3, 4, 5].map((n) => {
-                          const activa = hoverEstrella?.id === c.id ? n <= hoverEstrella.n : false;
-                          return (
-                            <button
-                              key={n}
-                              onClick={(e) => calificar(c, n, e)}
-                              onMouseEnter={() => setHoverEstrella({ id: c.id, n })}
-                              onMouseLeave={() => setHoverEstrella(null)}
-                              disabled={calificando === c.id}
-                              style={{
-                                background: "none", border: "none", fontSize: 22, lineHeight: 1,
-                                cursor: calificando === c.id ? "not-allowed" : "pointer", padding: 2,
-                                color: "#F59E0B", opacity: calificando === c.id ? 0.5 : 1,
-                                transition: "transform 0.1s ease",
-                                transform: activa ? "scale(1.15)" : "scale(1)",
-                              }}
-                            >
-                              {activa ? "★" : "☆"}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )
                 )}
                 {!isAdmin && estado === "Activa" && diasParaVencer(c) <= 14 && diasParaVencer(c) >= 0 && (
                   renovadas.has(c.id) ? (
