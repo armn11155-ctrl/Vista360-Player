@@ -129,12 +129,18 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </svg>
               <span>Perfil</span>
             </button>
-            {estadoPush === "ofrecer" || estadoPush === "activando" ? (
+            {estadoPush !== "activado" && estadoPush !== "oculto" ? (
+              // A propósito, el botón se queda como "Activar" (nunca se
+              // convierte en la campanita normal) en CUALQUIER estado
+              // que no sea "activado" -- ofrecer, activando, bloqueado
+              // o error. Pedido explícito: la campana solo puede
+              // aparecer una vez que las notificaciones de verdad ya
+              // quedaron permitidas, nunca antes.
               <button
                 ref={notifBtnRef}
                 type="button"
                 onClick={() => activarPush(uid)}
-                disabled={estadoPush === "activando"}
+                disabled={estadoPush === "activando" || estadoPush === "bloqueado"}
                 className="inicio-activar-push-btn"
                 aria-label="Activar notificaciones"
               >
@@ -142,7 +148,9 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                <span>{estadoPush === "activando" ? "Activando…" : "Activar"}</span>
+                <span>
+                  {estadoPush === "activando" ? "Activando…" : estadoPush === "bloqueado" ? "Bloqueado" : "Activar"}
+                </span>
               </button>
             ) : (
               <div
