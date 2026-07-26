@@ -132,6 +132,30 @@ function nombreMesLargo(mes: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+/** Nombre de campaña para el mensaje -- el que puso el admin a mano, o
+ *  si no tiene, cae al nombre del panel principal. */
+async function nombreDeCampana(db: FirebaseFirestore.Firestore, data: FirebaseFirestore.DocumentData): Promise<string> {
+  if (typeof data.nombre === "string" && data.nombre.trim()) return data.nombre.trim();
+  const panelIds: string[] = Array.isArray(data.panel_ids) && data.panel_ids.length > 0
+    ? data.panel_ids
+    : (data.panel_id ? [data.panel_id] : []);
+  const nombresPaneles = await Promise.all(
+    panelIds.map(async (panelId) => {
+      const panelSnap = await db.doc(`paneles/${panelId}`).get();
+      return panelSnap.exists ? String(panelSnap.data()?.nombre || "") : "";
+    })
+  );
+  return nombresPaneles.filter(Boolean).join(" + ") || "una campaña";
+}
+
+/** Nombre de la empresa del cliente dueño de una campaña. */
+async function nombreDeCliente(db: FirebaseFirestore.Firestore, clienteId: string): Promise<string> {
+  if (!clienteId) return "Un cliente";
+  const snap = await db.doc(`clientes/${clienteId}`).get();
+  const empresa = snap.exists ? String(snap.data()?.empresa || "") : "";
+  return empresa || "Un cliente";
+}
+
 /**
  * Recordatorio de reportes mensuales -- el admin pidió que la app le
  * avise en los ÚLTIMOS 5 DÍAS de cada mes (calculado según cuántos
@@ -146,6 +170,12 @@ function nombreMesLargo(mes: string) {
  * faltar uno (por ejemplo agrega una campaña nueva a último momento),
  * el aviso vuelve a salir al día siguiente hasta que también quede
  * listo.
+ *
+ * Pedido explícito: en vez de UN solo push agrupando todas las
+ * campañas pendientes ("Faltan 3 reportes mensuales: A, B, C"), ahora
+ * manda UN push POR CADA campaña pendiente, y cada uno indica de qué
+ * CLIENTE es (antes solo decía el nombre de la campaña, sin aclarar
+ * la empresa) -- más fácil de actuar sobre cada uno por separado.
  */
 export const recordatorioReportesMensuales = onSchedule(
   { schedule: "30 11 * * *", timeZone: "America/Lima" },
@@ -183,43 +213,33 @@ export const recordatorioReportesMensuales = onSchedule(
     const pendientes = activos.filter(({ id }) => !contratosConReporte.has(id));
     if (pendientes.length === 0) return;
 
-    // Nombres para el mensaje (el que puso el admin a mano, o si no
-    // tiene, cae al nombre del panel principal).
-    const nombresPendientes = await Promise.all(
-      pendientes.slice(0, 4).map(async ({ data }) => {
-        if (typeof data.nombre === "string" && data.nombre.trim()) return data.nombre.trim();
-        const panelIds: string[] = Array.isArray(data.panel_ids) && data.panel_ids.length > 0
-          ? data.panel_ids
-          : (data.panel_id ? [data.panel_id] : []);
-        const nombresPaneles = await Promise.all(
-          panelIds.map(async (panelId) => {
-            const panelSnap = await db.doc(`paneles/${panelId}`).get();
-            return panelSnap.exists ? String(panelSnap.data()?.nombre || "") : "";
-          })
-        );
-        return nombresPaneles.filter(Boolean).join(" + ") || "una campaña";
-      })
-    );
-    const listado = nombresPendientes.join(", ") + (pendientes.length > 4 ? ` y ${pendientes.length - 4} más` : "");
     const diasRestantes = diasEnMes - diaHoy + 1;
     const mesLabel = nombreMesLargo(mesActual);
 
-    await enviarPushAAdmin({
-      title: pendientes.length === 1 ? "Falta 1 reporte mensual" : `Faltan ${pendientes.length} reportes mensuales`,
-      body: `Quedan ${diasRestantes} día${diasRestantes === 1 ? "" : "s"} de ${mesLabel}. Todavía falta el informe de: ${listado}.`,
-      url: "/",
-    }).catch(() => undefined);
+    for (const { data } of pendientes) {
+      const [nombreCampana, nombreCliente] = await Promise.all([
+        nombreDeCampana(db, data),
+        nombreDeCliente(db, String(data.cliente_id || "")),
+      ]);
+      await enviarPushAAdmin({
+        title: "Falta 1 reporte mensual",
+        body: `${nombreCliente} — ${nombreCampana}. Quedan ${diasRestantes} día${diasRestantes === 1 ? "" : "s"} de ${mesLabel}.`,
+        url: "/",
+      }).catch(() => undefined);
+    }
   }
 );
 
 /**
- * Corre una vez al día -- revisa qué campañas activas están por vencer
- * (fin dentro de los próximos 7 días) y todavía no se avisaron, y
- * manda un push por cada una. Se marca notificadoVencimiento:true para
- * no volver a mandar el mismo aviso al día siguiente.
+ * Corre una vez al día, a las 3pm -- revisa qué campañas activas están
+ * por vencer (fin dentro de los próximos 7 días) y todavía no se
+ * avisaron, y manda un push por cada una. Se marca
+ * notificadoVencimiento:true para no volver a mandar el mismo aviso al
+ * día siguiente -- o sea, una sola vez dentro de esos 7 días, nunca
+ * insiste día tras día por la misma campaña.
  */
 export const recordatorioVencimientoCampanas = onSchedule(
-  { schedule: "0 9 * * *", timeZone: "America/Lima" },
+  { schedule: "0 15 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
     const hoy = new Date().toISOString().slice(0, 10);
@@ -313,6 +333,37 @@ export const notificarFacturaNueva = onDocumentCreated("facturas/{id}", async (e
   await enviarPushACliente(clienteId, {
     title: "Tienes una factura nueva",
     body: `${numero} ya está disponible en tu portal Vista360.`,
+    url: "/",
+  }).catch(() => undefined);
+});
+
+/**
+ * Se dispara con cualquier solicitud nueva en solicitudesCampana --
+ * tanto pedidos de campaña NUEVA (desde NuevaCampana.tsx) como pedidos
+ * de RENOVACIÓN de una campaña existente (desde MisCampanas.tsx, que
+ * escribe a esta misma colección con nombre "Renovación — <panel>").
+ * Antes esto solo se veía como notificación DENTRO de la app (la
+ * campanita, tipo "solicitud_pendiente") -- si el admin no entraba, no
+ * se enteraba de que un cliente quería una campaña nueva o renovar.
+ * Pedido explícito: avisar también por push, indicando de qué CLIENTE
+ * es la solicitud.
+ */
+export const notificarSolicitudCampana = onDocumentCreated("solicitudesCampana/{id}", async (event) => {
+  const data = event.data?.data();
+  if (!data) return;
+
+  const db = getFirestore();
+  const clienteId = String(data.cliente_id || "");
+  const nombreCliente = await nombreDeCliente(db, clienteId);
+
+  const nombreSolicitud = String(data.nombre || "").trim();
+  const esRenovacion = nombreSolicitud.startsWith("Renovación");
+
+  await enviarPushAAdmin({
+    title: esRenovacion ? "Solicitud de renovación" : "Nueva solicitud de campaña",
+    body: esRenovacion
+      ? `${nombreCliente} quiere renovar: ${nombreSolicitud.replace(/^Renovación\s*—\s*/, "")}.`
+      : `${nombreCliente} solicitó una campaña nueva: ${nombreSolicitud || "sin nombre"}.`,
     url: "/",
   }).catch(() => undefined);
 });
