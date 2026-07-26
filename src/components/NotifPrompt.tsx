@@ -43,16 +43,17 @@ function pasosDesbloqueoEscritorio(): string[] {
   const navegador = navegadorEscritorio();
   if (navegador === "safari") {
     return [
-      "Abre el menú Safari (arriba a la izquierda) y entra a \"Ajustes para este sitio web\".",
-      "Cambia \"Notificaciones\" a \"Permitir\".",
-      "Recarga esta página.",
+      "Abre el menú Safari (arriba a la izquierda) y entra a \"Ajustes\" (o \"Preferencias\").",
+      "Ve a la pestaña \"Sitios web\" y elige \"Notificaciones\" en la lista de la izquierda.",
+      "Busca este sitio en la lista de la derecha y cambia su menú a \"Permitir\".",
+      "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
     ];
   }
   if (navegador === "firefox") {
     return [
       "Haz clic en el candado junto a la dirección de esta página.",
       "Abre \"Más información\" > \"Permisos\" y cambia Notificaciones a \"Permitir\".",
-      "Recarga esta página.",
+      "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
     ];
   }
   // Chrome, Edge y el resto de navegadores basados en Chromium usan el
@@ -60,7 +61,7 @@ function pasosDesbloqueoEscritorio(): string[] {
   return [
     "Haz clic en el candado (o el ícono junto a la dirección) de esta página.",
     "Busca \"Notificaciones\" y cámbialo a \"Permitir\".",
-    "Recarga esta página.",
+    "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
   ];
 }
 
