@@ -158,12 +158,12 @@ async function nombreDeCliente(db: FirebaseFirestore.Firestore, clienteId: strin
 
 /**
  * Recordatorio de reportes mensuales -- el admin pidió que la app le
- * avise en los ÚLTIMOS 5 DÍAS de cada mes (calculado según cuántos
- * días tiene ese mes, no un número de día fijo) si todavía le falta
- * generar el informe mensual de alguna campaña activa. Corre todos
- * los días junto con el resto de recordatorios, pero solo manda el
- * push si:
- *   1. Hoy cae dentro de los últimos 5 días del mes, Y
+ * avise en los ÚLTIMOS 7 DÍAS de cada mes (calculado según cuántos
+ * días tiene ese mes, no un número de día fijo -- antes eran 5 días)
+ * si todavía le falta generar el informe mensual de alguna campaña
+ * activa. Corre todos los días junto con el resto de recordatorios,
+ * pero solo manda el push si:
+ *   1. Hoy cae dentro de los últimos 7 días del mes, Y
  *   2. Hay al menos una campaña activa sin informe de este mes.
  * En cuanto ya generó el informe de TODAS sus campañas activas, deja
  * de mandarse solo (no hay que marcar nada a mano) -- y si vuelve a
@@ -187,8 +187,8 @@ export const recordatorioReportesMensuales = onSchedule(
     const diasEnMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
     const diaHoy = hoy.getDate();
 
-    // Solo en los últimos 5 días del mes (día >= diasEnMes - 4).
-    if (diaHoy < diasEnMes - 4) return;
+    // Solo en los últimos 7 días del mes (día >= diasEnMes - 6).
+    if (diaHoy < diasEnMes - 6) return;
 
     // Campañas activas: mismo criterio que estadoCampana() en el
     // frontend (inicio <= hoy <= fin), sin contar las eliminadas.
@@ -232,18 +232,30 @@ export const recordatorioReportesMensuales = onSchedule(
 
 /**
  * Corre una vez al día, a las 3pm -- revisa qué campañas activas están
- * por vencer (fin dentro de los próximos 7 días) y todavía no se
- * avisaron, y manda un push por cada una. Se marca
- * notificadoVencimiento:true para no volver a mandar el mismo aviso al
- * día siguiente -- o sea, una sola vez dentro de esos 7 días, nunca
- * insiste día tras día por la misma campaña.
+ * por vencer y manda DOS avisos por campaña (pedido explícito, antes
+ * era uno solo dentro de una ventana de 7 días):
+ *   1. A los 10 días antes de que termine.
+ *   2. A los 5 días antes de que termine (el último aviso).
+ * Cada uno se manda una sola vez -- se guardan por separado
+ * (notificadoVencimiento10 / notificadoVencimiento5) para no repetir.
+ * Si por algún motivo la función no corrió justo el día exacto (por
+ * ejemplo estuvo caída), igual se pone al día apenas vuelve a correr:
+ * revisa "¿ya pasó ese umbral y todavía no se avisó?", no "¿es HOY
+ * exactamente ese día?" -- así nunca se salta un aviso por un problema
+ * técnico puntual.
+ *
+ * Compatibilidad: contratos viejos que ya tenían el flag anterior
+ * (notificadoVencimiento, sin número, de antes de este cambio) se
+ * tratan como si ya hubieran recibido AMBOS avisos -- para no
+ * bombardear con avisos nuevos de golpe a campañas que ya habían sido
+ * notificadas con el sistema viejo.
  */
 export const recordatorioVencimientoCampanas = onSchedule(
   { schedule: "0 15 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
     const hoy = new Date().toISOString().slice(0, 10);
-    const limite = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    const limite = new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10);
 
     const contratosSnap = await db
       .collection("contratos")
@@ -253,9 +265,22 @@ export const recordatorioVencimientoCampanas = onSchedule(
 
     for (const docSnap of contratosSnap.docs) {
       const contrato = docSnap.data();
-      if (contrato.notificadoVencimiento) continue;
+      if (contrato.deleted) continue;
       // Solo si ya empezó (si no, esta por INICIAR, no por vencer).
       if (typeof contrato.inicio === "string" && contrato.inicio > hoy) continue;
+
+      const diasRestantes = Math.round(
+        (new Date(`${contrato.fin}T00:00:00Z`).getTime() - new Date(`${hoy}T00:00:00Z`).getTime()) / 86400000
+      );
+
+      const yaNotificadoAntes = contrato.notificadoVencimiento === true; // flag viejo, sin número
+      const tiene10 = yaNotificadoAntes || contrato.notificadoVencimiento10 === true;
+      const tiene5 = yaNotificadoAntes || contrato.notificadoVencimiento5 === true;
+
+      const necesita5 = diasRestantes <= 5 && !tiene5;
+      const necesita10 = !necesita5 && diasRestantes <= 10 && !tiene10;
+      if (!necesita5 && !necesita10) continue;
+
       const clienteId = String(contrato.cliente_id || "");
       if (!clienteId) continue;
 
@@ -274,11 +299,16 @@ export const recordatorioVencimientoCampanas = onSchedule(
 
       await enviarPushACliente(clienteId, {
         title: "Tu campaña está por vencer",
-        body: `La campaña en ${nombrePanel} termina el ${contrato.fin}. Programa tu renovación desde el portal.`,
+        body: `La campaña en ${nombrePanel} termina el ${contrato.fin} (quedan ${diasRestantes} día${diasRestantes === 1 ? "" : "s"}). Programa tu renovación desde el portal.`,
         url: "/",
       }).catch(() => undefined);
 
-      await docSnap.ref.set({ notificadoVencimiento: true }, { merge: true }).catch(() => undefined);
+      // El aviso de 5 días cubre también el de 10 (si se saltó el
+      // primero por algún motivo, no hace falta mandar los dos).
+      const actualizacion: Record<string, boolean> = necesita5
+        ? { notificadoVencimiento10: true, notificadoVencimiento5: true }
+        : { notificadoVencimiento10: true };
+      await docSnap.ref.set(actualizacion, { merge: true }).catch(() => undefined);
     }
   }
 );
