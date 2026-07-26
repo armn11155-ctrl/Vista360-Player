@@ -4,6 +4,7 @@ import { useClientesAdmin } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
 import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
+import { usePushEstado } from "../hooks/usePushEstado";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
@@ -31,6 +32,14 @@ interface Props {
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente }: Props) {
+  // El botón de activar notificaciones vive acá (al costado del perfil
+  // del admin), no solo dentro de la vista de un cliente -- antes,
+  // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
+  // que el admin entraba a ver un cliente distinto se volvía a montar
+  // ese componente y se repetía el registro. Ahora es un solo lugar
+  // fijo, ligado a la cuenta del admin, sin importar qué cliente esté
+  // viendo (o si no está viendo ninguno).
+  const { estado: estadoPush, activar: activarPush } = usePushEstado(uid);
   const state = useClientesAdmin();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
@@ -194,6 +203,23 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </button>
         )}
       </div>
+      {(estadoPush === "ofrecer" || estadoPush === "activando" || estadoPush === "bloqueado") && (
+        <button
+          type="button"
+          className="admin-picker-push-btn"
+          onClick={() => activarPush(uid)}
+          disabled={estadoPush === "activando"}
+          aria-label="Activar notificaciones"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span>
+            {estadoPush === "activando" ? "Activando…" : estadoPush === "bloqueado" ? "Bloqueado" : "Activar"}
+          </span>
+        </button>
+      )}
       {onOpenPerfil && (
         <button type="button" className="admin-picker-perfil-btn" onClick={onOpenPerfil} title="Mi perfil" aria-label="Mi perfil">
           {miAvatarSrc && !miAvatarFallo ? (

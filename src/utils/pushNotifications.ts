@@ -32,6 +32,33 @@ export function pushDisponible(): Promise<boolean> {
   return soportadoCache;
 }
 
+const CLAVE_TOKEN_REGISTRADO = "vista360_push_token_registrado";
+
+/** true si YA se registró el token de push para esta cuenta en este
+ *  mismo navegador -- evita repetir el registro (y el push de
+ *  confirmación "Notificaciones activadas") en cada re-montaje del
+ *  componente. Esto pasaba, por ejemplo, en modo administrador: cada
+ *  vez que se entraba a ver un cliente distinto, el árbol de
+ *  componentes se volvía a montar, así que el registro "silencioso"
+ *  (permiso ya concedido de antes) se repetía de cero y mandaba el
+ *  push de bienvenida una y otra vez, aunque ya estuviera todo
+ *  activado hace rato. */
+export function yaRegistradoEnEsteNavegador(uid: string): boolean {
+  try {
+    return localStorage.getItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function marcarRegistradoEnEsteNavegador(uid: string) {
+  try {
+    localStorage.setItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`, "1");
+  } catch {
+    // sin problema si no se pudo guardar -- en el peor caso se repite
+  }
+}
+
 export async function activarNotificacionesPush(uid: string): Promise<ActivarPushResultado> {
   if (!app) return { ok: false, error: "Firebase no está configurado." };
   if (!env.vapidKey) return { ok: false, error: "Las notificaciones push aún no están configuradas." };
@@ -75,6 +102,7 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
       void confirmar().catch(() => undefined);
     }
 
+    marcarRegistradoEnEsteNavegador(uid);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "No se pudo activar las notificaciones." };

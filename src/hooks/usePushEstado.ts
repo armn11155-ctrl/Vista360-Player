@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { activarNotificacionesPush, diagnosticoPush, estadoPermisoNotificaciones, pushDisponible } from "../utils/pushNotifications";
+import { activarNotificacionesPush, diagnosticoPush, estadoPermisoNotificaciones, pushDisponible, yaRegistradoEnEsteNavegador } from "../utils/pushNotifications";
 
 export type EstadoPush = "oculto" | "ofrecer" | "activando" | "activado" | "error" | "bloqueado";
 
@@ -35,7 +35,12 @@ export function usePushEstado(uid?: string) {
     const permiso = estadoPermisoNotificaciones();
     if (permiso === "granted") {
       setEstado("activado");
-      if (uid) void activarNotificacionesPush(uid);
+      // Solo se registra/reconfirma UNA vez por cuenta+navegador -- si
+      // no, cada vez que este componente se vuelve a montar (por
+      // ejemplo, admin entrando a ver un cliente distinto) se repetía
+      // el registro silencioso y el push de "Notificaciones activadas"
+      // se mandaba de nuevo cada vez, aunque ya estuviera todo activo.
+      if (uid && !yaRegistradoEnEsteNavegador(uid)) void activarNotificacionesPush(uid);
       return;
     }
     if (permiso === "denied") { setEstado("bloqueado"); return; }
