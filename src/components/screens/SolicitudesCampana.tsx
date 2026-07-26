@@ -1,7 +1,8 @@
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
-import { db } from "../../config/firebase";
+import { db, cloudFunctions } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
@@ -78,6 +79,10 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const clientePorId = (clienteId: string) => clientes.find((c) => c.id === clienteId);
   const nombreCliente = (clienteId: string) => clientePorId(clienteId)?.empresa ?? "Cliente";
 
+  // El filtro por "oculta" queda por compatibilidad: mientras estuvo
+  // desplegado el intento anterior (marcar oculta en vez de borrar),
+  // pudieron quedar documentos así -- ahora el borrado es real (ver
+  // eliminarSolicitud), pero estos viejos no deben reaparecer.
   const solicitudes = (state.status === "ready" ? state.solicitudes : []).filter((s) => !s.oculta);
   const pendientes = solicitudes.filter((s) => s.estado === "Pendiente");
   const resueltas = solicitudes.filter((s) => s.estado !== "Pendiente");
@@ -101,18 +106,20 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   }
 
   async function eliminarSolicitud(id: string, nombre: string) {
-    if (!db || eliminandoId) return;
+    if (!cloudFunctions || eliminandoId) return;
     const confirmado = window.confirm(`¿Eliminar la solicitud "${nombre}"? No se puede deshacer.`);
     if (!confirmado) return;
     setMenuAbiertoId(null);
     setEliminandoId(id);
     try {
-      // No se usa deleteDoc: las reglas de Firestore de esta
-      // colección no permiten borrar documentos de verdad (se
-      // conserva como historial/auditoría). En vez de eso se marca
-      // "oculta" -- desaparece de la lista igual que un borrado real,
-      // pero el documento sigue existiendo en la base.
-      await updateDoc(doc(db, "solicitudesCampana", id), { oculta: true, ocultaEn: serverTimestamp() });
+      // Borrado real, no un flag: deleteDoc desde el cliente chocaba
+      // con las reglas de Firestore de esta colección (guardan
+      // historial, no dejan borrar). Esta Cloud Function corre con el
+      // Admin SDK -- no depende de esas reglas -- y de paso limpia de
+      // R2 la imagen referencial/comprobante si tenía, para liberar
+      // espacio de verdad.
+      const fn = httpsCallable<{ solicitudId: string }, { ok: boolean }>(cloudFunctions, "eliminarSolicitudCampana");
+      await fn({ solicitudId: id });
       setSeleccionada((actual) => (actual?.id === id ? null : actual));
     } catch {
       // si falla, el item se queda visible y se puede reintentar

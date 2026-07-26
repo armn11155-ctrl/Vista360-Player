@@ -19,6 +19,7 @@ export { actualizarContrato } from "./actualizarContrato.js";
 export { actualizarPanel } from "./actualizarPanel.js";
 export { actualizarClienteInfo } from "./actualizarClienteInfo.js";
 export { eliminarContrato } from "./eliminarContrato.js";
+export { eliminarSolicitudCampana } from "./eliminarSolicitudCampana.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
 export { firmarDescargaFactura } from "./firmarDescargaFactura.js";
 export { actualizarNombreFactura } from "./actualizarNombreFactura.js";
