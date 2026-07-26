@@ -72,6 +72,20 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const visibles = tab === "activos" ? activos : archivados;
   const filtrados = filtrarClientes(visibles, busqueda);
 
+  // Con muchos clientes la grilla se hacía interminable -- ahora se
+  // muestran de a 8 tiles a la vez (pedido explícito) y el último
+  // espacio se usa para un tile "Ver más" que carga 8 más por toque,
+  // en vez de mostrar los cientos de clientes de una sola vez. Se
+  // reinicia a 8 cada vez que cambia la pestaña o la búsqueda, para
+  // no arrastrar un conteo expandido de una búsqueda anterior.
+  const [cantidadVisible, setCantidadVisible] = useState(8);
+  useEffect(() => {
+    setCantidadVisible(8);
+  }, [tab, busqueda]);
+  const hayMasClientes = filtrados.length > cantidadVisible;
+  const clientesMostrados = hayMasClientes ? filtrados.slice(0, cantidadVisible - 1) : filtrados;
+  const clientesRestantes = filtrados.length - clientesMostrados.length;
+
   // avatarUrl en realidad es una KEY de R2 (no una URL directa) para
   // los clientes migrados desde Cloudinary a R2 — hay que firmarla
   // antes de poder usarla en un <img>, igual que hace BrandThumb en el
@@ -296,7 +310,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         {errorAccion && <div className="admin-picker-empty admin-picker-empty-error">{errorAccion}</div>}
 
         <div className="admin-picker-grid">
-          {filtrados.map((c) => {
+          {clientesMostrados.map((c) => {
             const { bg } = brandColor(c.empresa ?? "?");
             const busy = accionandoId === c.id;
             return (
@@ -368,6 +382,30 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               </div>
             );
           })}
+          {hayMasClientes && (
+            <div
+              className="admin-picker-tile admin-picker-tile-vermas"
+              onClick={() => setCantidadVisible((v) => v + 8)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setCantidadVisible((v) => v + 8);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Ver ${clientesRestantes} clientes más`}
+            >
+              <div className="admin-picker-tile-avatar-wrap">
+                <span className="admin-picker-tile-avatar admin-picker-tile-avatar-vermas">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+              </div>
+              <span className="admin-picker-tile-name">Ver más ({clientesRestantes})</span>
+            </div>
+          )}
         </div>
       </div>
 

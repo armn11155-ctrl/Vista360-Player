@@ -4863,6 +4863,34 @@
     object-fit: cover;
     display: block;
   }
+  .admin-picker-tile-vermas {
+    cursor: pointer;
+  }
+  .admin-picker-tile-vermas:hover {
+    transform: translateY(-4px);
+    border-color: #000000;
+    background:
+      radial-gradient(circle at 50% -18%, rgba(255, 255, 255, .12), transparent 58%),
+      linear-gradient(155deg, #0B0F16, #010203);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, .08),
+      0 30px 62px -26px rgba(0, 0, 0, 1),
+      inset 0 1px 0 rgba(255, 255, 255, .15);
+  }
+  .admin-picker-tile-vermas:focus-visible {
+    outline: 2px solid rgba(255,255,255,.6);
+    outline-offset: 3px;
+    border-radius: 17px;
+  }
+  .admin-picker-tile-avatar-vermas {
+    background: rgba(255,255,255,0.08) !important;
+    border: 1.5px dashed rgba(255,255,255,0.32) !important;
+    transition: background 0.16s ease, border-color 0.16s ease;
+  }
+  .admin-picker-tile-vermas:hover .admin-picker-tile-avatar-vermas {
+    background: rgba(255,255,255,0.14) !important;
+    border-color: rgba(255,255,255,0.5) !important;
+  }
   .admin-picker-tile-shine {
     position: absolute;
     inset: 0;
