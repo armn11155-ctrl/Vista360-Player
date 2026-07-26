@@ -1,5 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { EstadoPush } from "../hooks/usePushEstado";
+import { esMovil, navegadorEscritorio } from "../utils/dispositivo";
 
 interface Rect {
   top: number;
@@ -33,6 +34,36 @@ interface Props {
  * solo avisa cuándo cerrarlo (onClose), una vez que se intentó activar
  * y el resultado ya se pudo leer en pantalla.
  */
+/** Pasos para desbloquear el permiso desde una COMPUTADORA -- distinto
+ *  de un celular: acá no hay "Ajustes del sistema", el permiso se
+ *  cambia desde la configuración del propio navegador (candado/ícono
+ *  junto a la dirección de la página). Varía un poco el nombre exacto
+ *  según el navegador, así que se ajusta el texto al detectado. */
+function pasosDesbloqueoEscritorio(): string[] {
+  const navegador = navegadorEscritorio();
+  if (navegador === "safari") {
+    return [
+      "Abre el menú Safari (arriba a la izquierda) y entra a \"Ajustes para este sitio web\".",
+      "Cambia \"Notificaciones\" a \"Permitir\".",
+      "Recarga esta página.",
+    ];
+  }
+  if (navegador === "firefox") {
+    return [
+      "Haz clic en el candado junto a la dirección de esta página.",
+      "Abre \"Más información\" > \"Permisos\" y cambia Notificaciones a \"Permitir\".",
+      "Recarga esta página.",
+    ];
+  }
+  // Chrome, Edge y el resto de navegadores basados en Chromium usan el
+  // mismo ícono y flujo -- se deja como caso general.
+  return [
+    "Haz clic en el candado (o el ícono junto a la dirección) de esta página.",
+    "Busca \"Notificaciones\" y cámbialo a \"Permitir\".",
+    "Recarga esta página.",
+  ];
+}
+
 export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, activarPush, onClose }: Props) {
   const [intentado, setIntentado] = useState(false);
   const [rect, setRect] = useState<Rect | null>(null);
@@ -201,15 +232,23 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             <div style={{ fontSize: 12.5, color: "#FCA5A5", fontWeight: 800, marginBottom: 8 }}>
               Bloqueaste el permiso -- actívalo así:
             </div>
-            <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
-              <li>Abre <strong style={{ color: "#fff" }}>Ajustes</strong> en tu teléfono.</li>
-              <li>Entra a <strong style={{ color: "#fff" }}>Notificaciones</strong>.</li>
-              <li>Busca y toca <strong style={{ color: "#fff" }}>Vista360 Player</strong> en la lista.</li>
-              <li>Activa <strong style={{ color: "#fff" }}>Permitir notificaciones</strong>.</li>
-              <li>Vuelve a abrir esta app.</li>
-            </ol>
+            {esMovil() ? (
+              <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
+                <li>Abre <strong style={{ color: "#fff" }}>Ajustes</strong> en tu teléfono.</li>
+                <li>Entra a <strong style={{ color: "#fff" }}>Notificaciones</strong>.</li>
+                <li>Busca y toca <strong style={{ color: "#fff" }}>Vista360 Player</strong> en la lista.</li>
+                <li>Activa <strong style={{ color: "#fff" }}>Permitir notificaciones</strong>.</li>
+                <li>Vuelve a abrir esta app.</li>
+              </ol>
+            ) : (
+              <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
+                {pasosDesbloqueoEscritorio().map((paso, i) => (
+                  <li key={i}>{paso}</li>
+                ))}
+              </ol>
+            )}
             <div style={{ fontSize: 11.5, color: "rgba(226,232,240,.6)", marginTop: 8, lineHeight: 1.4 }}>
-              Apenas lo actives, te llega un aviso confirmando que quedó listo y ya puedes usar la app con normalidad.
+              Apenas lo actives, se detecta solo (no hace falta recargar más de una vez) y te llega un aviso confirmando que quedó listo.
             </div>
           </div>
         )}
