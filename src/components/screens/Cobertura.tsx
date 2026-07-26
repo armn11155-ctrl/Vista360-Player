@@ -358,7 +358,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             </div>
           </div>
           <div className="coverage-count">
-            <span>{lista.length}</span>
+            <span>{panelesState.status === "loading" ? "…" : lista.length}</span>
             <small>paneles</small>
           </div>
         </div>
@@ -374,7 +374,24 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           {mapError && (
             <div className="coverage-map-loading is-error">No se pudo cargar el mapa. Revisa tu conexión.</div>
           )}
-          {mapReady && conCoordenadas.length === 0 && (
+          {/* Antes, mientras los paneles todavía estaban cargando desde
+             Firestore (onSnapshot tarda un instante en la primera
+             respuesta), conCoordenadas.length === 0 era indistinguible
+             de "de verdad no hay paneles" -- por eso se veía, por un
+             segundo, "Sin paneles registrados" antes de que aparecieran
+             los pines de golpe. Se ve poco elegante/poco pulido. Ahora
+             se distingue el estado "cargando" del estado "ready pero
+             vacío" para no mostrar ese mensaje hasta estar seguros. */}
+          {mapReady && !mapError && panelesState.status === "loading" && (
+            <div className="coverage-map-loading">
+              <span aria-hidden="true" />
+              Cargando paneles
+            </div>
+          )}
+          {mapReady && !mapError && panelesState.status === "error" && (
+            <div className="coverage-map-loading is-error">No se pudieron cargar los paneles. Revisa tu conexión.</div>
+          )}
+          {mapReady && !mapError && panelesState.status === "ready" && conCoordenadas.length === 0 && (
             <div className="coverage-no-coords">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
@@ -421,7 +438,11 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         <div className="coverage-panel-card">
           <div className="section-title">Paneles ubicados</div>
-          {lista.length === 0 ? (
+          {panelesState.status === "loading" ? (
+            <div className="state-sub" style={{ maxWidth: "none" }}>
+              Cargando paneles…
+            </div>
+          ) : lista.length === 0 ? (
             <div className="state-sub" style={{ maxWidth: "none" }}>
               Todavía no hay paneles registrados.
             </div>
