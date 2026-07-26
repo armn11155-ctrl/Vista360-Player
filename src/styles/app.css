@@ -5605,6 +5605,16 @@
     font-weight: 900;
     line-height: 1.1;
   }
+  /* Notificaciones usa el mismo .detail-header oscuro (con su linea
+     azul animada de abajo) que Cobertura y Mis campanas, pero como
+     .simple-title por defecto usa var(--text) (oscuro, pensado para
+     tarjetas blancas), el titulo se perdia casi invisible sobre el
+     fondo oscuro del header. Mismo arreglo: texto blanco y en negrita
+     para que se vea igual de "premium" que las otras pantallas. */
+  .notif-header .simple-title {
+    color: #FFFFFF;
+    font-weight: 900;
+  }
   .coverage-map-box {
     background: #0B1220;
     border-radius: 16px; padding: 26px 16px; margin-bottom: 16px; text-align: center;

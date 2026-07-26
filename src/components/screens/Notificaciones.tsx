@@ -65,7 +65,7 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
 
   return (
     <div>
-      <div className="detail-header">
+      <div className="detail-header notif-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
         </div>
