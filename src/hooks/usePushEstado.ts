@@ -58,6 +58,16 @@ export function usePushEstado(uid?: string) {
     const res = await activarNotificacionesPush(uidParam);
     if (res.ok) {
       setEstado("activado");
+    } else if (estadoPermisoNotificaciones() === "denied") {
+      // El navegador quedó en "denied" justo en ESTE intento (le dio
+      // "No permitir" recién) -- esto es distinto de un error técnico
+      // (getToken falló, red, etc.): acá el navegador SÍ preguntó y la
+      // persona SÍ eligió no permitir. Tiene que quedar igual de
+      // bloqueado que si ya lo hubiera rechazado antes -- antes esto
+      // caía en "error", que sí se cerraba solo y dejaba entrar a la
+      // app sin haber aceptado nunca.
+      setEstado("bloqueado");
+      setError(res.error);
     } else {
       setEstado("error");
       setError(res.error);

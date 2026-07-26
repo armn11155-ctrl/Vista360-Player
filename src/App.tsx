@@ -342,20 +342,25 @@ function AuthenticatedApp({
   // en ningún lado: se pidió que aparezca SIEMPRE que la cuenta entra sin
   // notificaciones activadas todavía (celular nuevo, reinstaló la app,
   // etc.), no solo la primera vez. Por eso "abierto" no depende de un
-  // flag persistido -- solo se prende cuando el push pasa a "ofrecer" (se
-  // puede ofrecer y todavía no se decidió) y se apaga cuando el propio
-  // NotifPrompt llama a onClose (ya sea porque se activó, lo bloquearon,
-  // o hubo un error). Se mantiene "enganchado" (abierto) una vez que se
-  // prende para que no desaparezca de golpe apenas se toca el botón y el
-  // estado pasa de "ofrecer" a "activando" a mitad de camino.
+  // flag persistido -- se prende cuando el push pasa a "ofrecer" (se
+  // puede ofrecer y todavía no se decidió) O "bloqueado" (el navegador
+  // ya lo tiene rechazado) -- en ambos casos hay que seguir mostrando
+  // el aviso; solo se apaga cuando el propio NotifPrompt llama a
+  // onClose (esto ahora solo pasa si de verdad quedó "activado", ver
+  // NotifPrompt.tsx). Se mantiene "enganchado" (abierto) una vez que se
+  // prende para que no desaparezca de golpe apenas se toca el botón y
+  // el estado pasa de "ofrecer" a "activando" a mitad de camino.
   //
-  // Pedido explícito: esto aplica a TODAS las cuentas, incluido el admin
-  // -- antes el admin quedaba afuera a propósito, pero se pidió que
-  // también quede bloqueado hasta activar notificaciones, igual que
-  // cualquier cliente.
+  // Pedido explícito: esto aplica a TODAS las cuentas, incluido el
+  // admin -- y si rechaza el permiso ("No permitir"), la app tiene que
+  // seguir bloqueada -- antes, si eso pasaba a mitad de la MISMA
+  // sesión (sin recargar la página), el aviso se cerraba solo y dejaba
+  // entrar a la app sin haber aceptado nunca; y si volvía a entrar más
+  // tarde (celular ya bloqueado desde antes), tampoco se volvía a
+  // mostrar nada porque el efecto de abajo solo miraba "ofrecer".
   const [notifPromptAbierto, setNotifPromptAbierto] = useState(false);
   useEffect(() => {
-    if (!mostrarOnboarding && pushEstadoGlobal.estado === "ofrecer") {
+    if (!mostrarOnboarding && (pushEstadoGlobal.estado === "ofrecer" || pushEstadoGlobal.estado === "bloqueado")) {
       setNotifPromptAbierto(true);
     }
   }, [mostrarOnboarding, pushEstadoGlobal.estado]);

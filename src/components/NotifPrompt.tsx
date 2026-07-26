@@ -151,7 +151,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
           boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
         }}
       >
-        {!intentado && (
+        {!intentado && estadoPush !== "bloqueado" && (
           <>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
               Activa tus notificaciones
@@ -175,7 +175,12 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
         {intentado && estadoPush === "error" && (
           <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>{errorPush}</div>
         )}
-        {intentado && estadoPush === "bloqueado" && (
+        {/* Sin "intentado &&" a propósito -- este mensaje tiene que
+            verse tanto si acaba de rechazarlo recién (dentro de la
+            misma sesión) como si vuelve a entrar más tarde con el
+            permiso ya bloqueado de antes (ahí "intentado" arranca en
+            false porque todavía no tocó nada en ESTE ingreso). */}
+        {estadoPush === "bloqueado" && (
           <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600, lineHeight: 1.5 }}>
             Bloqueaste el permiso, así que no podemos avanzar. Ve a los ajustes de notificaciones de tu teléfono, actívalo para Vista360 Player, y vuelve a entrar a la app.
           </div>
