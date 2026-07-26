@@ -151,3 +151,16 @@ export function IconPaneles({ size = 20 }: Props) {
     </svg>
   );
 }
+
+export function IconCalendario({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.2" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M3.5 9.5h17" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M8 3v3.4M16 3v3.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="8.2" cy="13.3" r="1.15" fill="currentColor" />
+      <circle cx="12" cy="13.3" r="1.15" fill="currentColor" />
+      <circle cx="8.2" cy="17" r="1.15" fill="currentColor" />
+    </svg>
+  );
+}

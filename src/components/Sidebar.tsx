@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
+  IconCalendario,
 } from "./SidebarIcons";
 
 type SidebarView =
@@ -16,7 +17,8 @@ type SidebarView =
   | "analitica"
   | "solicitudes"
   | "accesos"
-  | "paneles";
+  | "paneles"
+  | "calendario";
 
 interface Props {
   open: boolean;
@@ -47,6 +49,7 @@ const ITEMS: {
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
+  { id: "calendario",   icon: <IconCalendario />,   label: "Calendario" },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
   // Paneles NO va en este menú -- solo se abre desde el selector de
   // cliente del admin (AdminClientPicker), a pedido explícito.

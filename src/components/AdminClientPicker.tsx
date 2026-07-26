@@ -18,6 +18,7 @@ interface Props {
   onOpenAnalitica?: () => void;
   onOpenPerfil?: () => void;
   onOpenPaneles?: () => void;
+  onOpenCalendario?: () => void;
   adminIniciales?: string;
   /** Para mostrar la foto real (no solo iniciales) en el ícono "Mi perfil". */
   uid?: string;
@@ -31,7 +32,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenCalendario, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente }: Props) {
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -257,6 +258,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
             <span><strong>Paneles</strong><small>Inventario digital</small></span>
           </button>
+          <button type="button" onClick={onOpenCalendario} className="admin-picker-action">
+            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v3.4M16 3v3.4"/></svg></span>
+            <span><strong>Calendario</strong><small>Todas las campañas</small></span>
+          </button>
         </div>
 
         <div className="admin-picker-tabs" role="tablist" aria-label="Perfiles">
@@ -426,6 +431,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
               <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
               <span><strong>Paneles</strong><small>Inventario digital</small></span>
+              <i>›</i>
+            </button>
+            <button type="button" onClick={onOpenCalendario} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v3.4M16 3v3.4"/></svg></span>
+              <span><strong>Calendario</strong><small>Todas las campañas</small></span>
               <i>›</i>
             </button>
           </div>
