@@ -1,5 +1,6 @@
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
-import { app, db } from "../config/firebase";
+import { httpsCallable } from "firebase/functions";
+import { app, cloudFunctions, db } from "../config/firebase";
 import { env } from "../config/env";
 
 export type ActivarPushResultado = { ok: true } | { ok: false; error: string };
@@ -56,6 +57,17 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
     if (db) {
       await updateDoc(doc(db, "portalUsers", uid), { fcmTokens: arrayUnion(token) });
     }
+
+    // Confirmación de que quedó activado, mandada como push de verdad
+    // (no solo texto en pantalla) -- prueba que todo el camino
+    // funciona de punta a punta. Si falla (red, etc.) no revierte la
+    // activación -- el token ya quedó guardado, solo no llegó el
+    // aviso de bienvenida esta vez.
+    if (cloudFunctions) {
+      const confirmar = httpsCallable<void, { ok: boolean }>(cloudFunctions, "confirmarActivacionPush");
+      void confirmar().catch(() => undefined);
+    }
+
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "No se pudo activar las notificaciones." };
