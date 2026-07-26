@@ -149,7 +149,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
               Activa tus notificaciones
             </div>
             <div style={{ fontSize: 12.5, color: "rgba(226,232,240,.78)", lineHeight: 1.5 }}>
-              Toca el botón iluminado para recibir avisos de reportes, campañas por vencer y facturas nuevas.
+              Toca el botón iluminado y dale <strong style={{ color: "#fff" }}>Permitir</strong> en el aviso del teléfono para continuar. Así te avisamos apenas tengas un reporte nuevo, una campaña por vencer o una factura.
             </div>
           </>
         )}
