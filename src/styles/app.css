@@ -690,6 +690,22 @@
     position: relative;
     z-index: 1;
   }
+  /* .content-area sube -24px con esquinas redondeadas para "montarse"
+     sobre el header -- pero eso tapa los 3px de la raya azul animada
+     del fondo de .detail-header (mismo bug que ya se encontró y
+     arregló puntualmente para Usuarios/Solicitudes/Analítica/Paneles
+     vía .admin-tool-screen). En vez de seguir parchando pantalla por
+     pantalla cada vez que aparece en una nueva (Notificaciones,
+     Portafolio, Contáctanos, Mis Pantallas, etc.), esta regla general
+     lo resuelve para CUALQUIER .content-area que venga justo después
+     de un .detail-header: se pidió que la raya se vea en todas las
+     pantallas (menos Inicio), así que ya no debería taparse en
+     ninguna. Cobertura ya anulaba esto con .coverage-premium-area --
+     queda redundante pero inofensivo, no se toca por las dudas. */
+  .detail-header + .content-area {
+    margin-top: 0;
+    border-radius: 0;
+  }
 
   .card {
     background: #FFFFFF;
