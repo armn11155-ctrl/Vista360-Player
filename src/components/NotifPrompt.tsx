@@ -110,9 +110,25 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
   // entrar habiendo cambiado el permiso a mano en los ajustes del
   // teléfono (ahí sí se detecta "granted" y ya ni se monta este aviso).
   useEffect(() => {
-    if (!intentado) return;
-    if (estadoPush === "activado" || estadoPush === "error") {
-      const t = window.setTimeout(onClose, estadoPush === "activado" ? 900 : 1800);
+    // "activado" se cierra solo SIN importar si el tap pasó en esta
+    // sesión ("intentado") -- antes esto exigía "intentado", pero
+    // desde que usePushEstado también detecta el permiso concedido
+    // desde afuera (cambiado a mano en los ajustes del navegador,
+    // detectado al volver a la pestaña -- ver usePushEstado.ts), el
+    // estado puede pasar a "activado" sin que nadie haya tocado el
+    // botón invisible en este montaje. Con el "intentado" de antes,
+    // ese caso dejaba el foco de luz trabado para siempre aunque las
+    // notificaciones ya estuvieran realmente activadas.
+    if (estadoPush === "activado") {
+      const t = window.setTimeout(onClose, intentado ? 900 : 300);
+      return () => window.clearTimeout(t);
+    }
+    // "error" sí depende de haber tocado el botón en esta sesión --
+    // ese estado solo lo puede generar activar() (nunca la detección
+    // pasiva de usePushEstado), así que si estadoPush es "error" acá
+    // "intentado" siempre va a ser true de todos modos.
+    if (intentado && estadoPush === "error") {
+      const t = window.setTimeout(onClose, 1800);
       return () => window.clearTimeout(t);
     }
   }, [intentado, estadoPush, onClose]);
@@ -199,7 +215,23 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
           boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
         }}
       >
-        {!intentado && estadoPush !== "bloqueado" && (
+        {/* "activado" se muestra SIEMPRE que el estado ya sea ese,
+            sin importar "intentado" -- puede haber llegado por tocar
+            el botón en esta sesión, o por detectarse solo al volver a
+            la pestaña con el permiso ya arreglado desde los ajustes
+            del navegador (ver usePushEstado.ts). */}
+        {estadoPush === "activado" ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#4ADE80", fontWeight: 700 }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Notificaciones activadas
+          </div>
+        ) : intentado && estadoPush === "activando" ? (
+          <div style={{ fontSize: 13, color: "rgba(226,232,240,.85)", fontWeight: 700 }}>Activando…</div>
+        ) : intentado && estadoPush === "error" ? (
+          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>{errorPush}</div>
+        ) : estadoPush !== "bloqueado" && (
           <>
             <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
               Activa tus notificaciones
@@ -208,20 +240,6 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
               Toca el botón iluminado y dale <strong style={{ color: "#fff" }}>Permitir</strong> en el aviso del teléfono para continuar. Así te avisamos apenas tengas un reporte nuevo, una campaña por vencer o una factura.
             </div>
           </>
-        )}
-        {intentado && estadoPush === "activando" && (
-          <div style={{ fontSize: 13, color: "rgba(226,232,240,.85)", fontWeight: 700 }}>Activando…</div>
-        )}
-        {intentado && estadoPush === "activado" && (
-          <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 13, color: "#4ADE80", fontWeight: 700 }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Notificaciones activadas
-          </div>
-        )}
-        {intentado && estadoPush === "error" && (
-          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>{errorPush}</div>
         )}
         {/* Sin "intentado &&" a propósito -- este mensaje tiene que
             verse tanto si acaba de rechazarlo recién (dentro de la
