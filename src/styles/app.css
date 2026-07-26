@@ -5162,12 +5162,20 @@
     flex-direction: column;
     background: var(--bg);
   }
+  /* .content-area (base, mas arriba) sube -24px con border-radius
+     redondeado para "montarse" sobre el header -- eso tapaba los 3px
+     de la raya azul animada del fondo del .detail-header en estas
+     pantallas (Usuarios/Solicitudes/Analitica/Paneles/Mi perfil). En
+     Cobertura esto se anula con .coverage-premium-area; acá se anula
+     igual para que la raya se vea, igual que en Cobertura y Campañas. */
   .admin-tool-screen > .content-area {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    margin-top: 0;
+    border-radius: 0;
   }
   .solicitudes-screen {
     height: 100%;
