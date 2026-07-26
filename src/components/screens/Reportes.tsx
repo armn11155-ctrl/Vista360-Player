@@ -105,33 +105,6 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const [mensajeAdmin, setMensajeAdmin] = useState<string | null>(null);
   const [mensajeAdminTipo, setMensajeAdminTipo] = useState<"ok" | "error">("ok");
 
-  // Descarga combinada: junta en un solo PDF los reportes de un mes
-  // cuando el cliente tiene 3 o más campañas (uno por campaña ese
-  // mes) -- así no tiene que entrar campaña por campaña. Solo tiene
-  // sentido del lado del cliente (el admin ya entra reporte por
-  // reporte para revisar/enviar cada uno).
-  const [combinandoMes, setCombinandoMes] = useState<string | null>(null);
-  const [errorCombinado, setErrorCombinado] = useState<{ mes: string; texto: string } | null>(null);
-
-  async function descargarCombinado(mesGrupo: string) {
-    if (!cloudFunctions || combinandoMes) return;
-    setCombinandoMes(mesGrupo);
-    setErrorCombinado(null);
-    try {
-      const exportarReportesCombinados = httpsCallable<
-        { clienteId: string; mes: string },
-        { ok: boolean; url: string; numReportes: number }
-      >(cloudFunctions, "exportarReportesCombinados");
-      const resultado = await exportarReportesCombinados({ clienteId, mes: mesGrupo });
-      const url = resultado.data?.url;
-      if (url) window.open(url, "_blank", "noopener,noreferrer");
-    } catch (error) {
-      setErrorCombinado({ mes: mesGrupo, texto: mensajeErrorReporte(error) });
-    } finally {
-      setCombinandoMes(null);
-    }
-  }
-
   // El reporte se genera SIEMPRE por campaña (ya no por panel suelto)
   // -- se elige la campaña de este cliente y, si tiene 2+ paneles, se
   // pide una foto por cada uno (en vez de una sola bandeja de fotos
@@ -506,22 +479,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
         {informesFiltrados.length > 0 &&
           agruparPorMes(informesFiltrados).map((grupo) => (
             <div key={grupo.mes}>
-              <div className="reports-month-header">
-                {etiquetaMes(grupo.mes)}
-                {!isAdmin && grupo.items.length >= 3 && (
-                  <button
-                    type="button"
-                    className="reports-combinado-btn"
-                    onClick={() => descargarCombinado(grupo.mes)}
-                    disabled={combinandoMes === grupo.mes}
-                  >
-                    {combinandoMes === grupo.mes ? "Preparando…" : "Descargar resumen del mes"}
-                  </button>
-                )}
-              </div>
-              {!isAdmin && errorCombinado?.mes === grupo.mes && (
-                <div className="report-admin-status error" style={{ marginBottom: 10 }}>{errorCombinado.texto}</div>
-              )}
+              <div className="reports-month-header">{etiquetaMes(grupo.mes)}</div>
               <div className={`reports-list${isAdmin ? "" : " reports-list-client"}`}>
                 {grupo.items.map((informe) => (
                   <ReportCard

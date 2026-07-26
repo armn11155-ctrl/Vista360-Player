@@ -72,21 +72,6 @@ export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nom
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
 }
 
-/** Descarga un objeto de R2 completo a memoria (Buffer) — para
- *  procesarlo del lado del servidor (ej. combinar varios PDFs en uno
- *  solo). Los reportes son PDFs livianos (ver FOTO_CONFIG en
- *  generarReporteCliente.ts), así que traer el archivo completo a
- *  memoria es seguro para ese caso. */
-export async function descargarObjetoR2(key: string): Promise<Buffer> {
-  const respuesta = await r2Client().send(new GetObjectCommand({ Bucket: r2Bucket(), Key: key }));
-  const stream = respuesta.Body as NodeJS.ReadableStream;
-  const chunks: Buffer[] = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks);
-}
-
 /**
  * Borra un objeto de R2 "a mejor esfuerzo" — nunca lanza, solo avisa
  * en el log si falla o si ya no existía. Se usa para no dejar archivos
