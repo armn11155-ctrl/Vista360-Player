@@ -1,4 +1,4 @@
-import { deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
 import { db } from "../../config/firebase";
@@ -78,7 +78,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const clientePorId = (clienteId: string) => clientes.find((c) => c.id === clienteId);
   const nombreCliente = (clienteId: string) => clientePorId(clienteId)?.empresa ?? "Cliente";
 
-  const solicitudes = state.status === "ready" ? state.solicitudes : [];
+  const solicitudes = (state.status === "ready" ? state.solicitudes : []).filter((s) => !s.oculta);
   const pendientes = solicitudes.filter((s) => s.estado === "Pendiente");
   const resueltas = solicitudes.filter((s) => s.estado !== "Pendiente");
 
@@ -107,7 +107,12 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
     setMenuAbiertoId(null);
     setEliminandoId(id);
     try {
-      await deleteDoc(doc(db, "solicitudesCampana", id));
+      // No se usa deleteDoc: las reglas de Firestore de esta
+      // colección no permiten borrar documentos de verdad (se
+      // conserva como historial/auditoría). En vez de eso se marca
+      // "oculta" -- desaparece de la lista igual que un borrado real,
+      // pero el documento sigue existiendo en la base.
+      await updateDoc(doc(db, "solicitudesCampana", id), { oculta: true, ocultaEn: serverTimestamp() });
       setSeleccionada((actual) => (actual?.id === id ? null : actual));
     } catch {
       // si falla, el item se queda visible y se puede reintentar

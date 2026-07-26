@@ -190,6 +190,13 @@ export interface SolicitudCampana {
   comprobantePagoFecha?: string;
   /** null = sin revisar, true = confirmado, false = rechazado */
   pagoConfirmado?: boolean | null;
+  /** Eliminar de verdad (deleteDoc) choca con las reglas de Firestore
+   *  para esta colección -- se guarda historial y no se permite borrar
+   *  documentos. "Eliminar" en la UI del admin en realidad oculta el
+   *  registro (sigue en la base para auditoría, pero desaparece de
+   *  la lista de solicitudes/historial). */
+  oculta?: boolean;
+  ocultaEn?: Timestamp | null;
   createdAt?: Timestamp | null;
 }
 
