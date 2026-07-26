@@ -53,12 +53,20 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
     };
   }, [targetRef]);
 
-  // Una vez que se pidió el permiso (aceptado, rechazado, o error), se
-  // cierra solo -- con una pequeña pausa para que se alcance a leer el
-  // resultado antes de que desaparezca.
+  // Una vez que se activó de verdad, se cierra solo (con una pequeña
+  // pausa para que se alcance a leer el "Notificaciones activadas").
+  // Si hubo un error técnico también se cierra -- el permiso ya quedó
+  // concedido en el navegador aunque haya fallado el guardado del
+  // token, así que la próxima vez que entre ya se detecta como
+  // "activado" (ver usePushEstado). Pero si el navegador BLOQUEÓ el
+  // permiso (le dieron "No permitir"), a propósito NO se cierra solo
+  // -- pedido explícito: mientras no esté realmente activado, la app
+  // se queda en el foco de luz. Recién se libera solo cuando vuelva a
+  // entrar habiendo cambiado el permiso a mano en los ajustes del
+  // teléfono (ahí sí se detecta "granted" y ya ni se monta este aviso).
   useEffect(() => {
     if (!intentado) return;
-    if (estadoPush === "activado" || estadoPush === "error" || estadoPush === "bloqueado") {
+    if (estadoPush === "activado" || estadoPush === "error") {
       const t = window.setTimeout(onClose, estadoPush === "activado" ? 900 : 1800);
       return () => window.clearTimeout(t);
     }
@@ -168,8 +176,8 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
           <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>{errorPush}</div>
         )}
         {intentado && estadoPush === "bloqueado" && (
-          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600 }}>
-            El navegador bloqueó el permiso. Puedes activarlo luego desde los ajustes del sitio.
+          <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 600, lineHeight: 1.5 }}>
+            Bloqueaste el permiso, así que no podemos avanzar. Ve a los ajustes de notificaciones de tu teléfono, actívalo para Vista360 Player, y vuelve a entrar a la app.
           </div>
         )}
       </div>
