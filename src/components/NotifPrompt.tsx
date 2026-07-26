@@ -131,6 +131,16 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
       const t = window.setTimeout(onClose, 1800);
       return () => window.clearTimeout(t);
     }
+    // "bloqueado" en COMPUTADORA ya no es obligatorio (pedido
+    // explícito) -- si el bloqueo pasa a mitad de esta misma sesión
+    // (tocó el botón y le dio "No permitir"), igual se deja seguir
+    // usando la app después de leer el mensaje. En celular NO se
+    // cierra -- ahí sigue siendo obligatorio hasta activarlo de
+    // verdad.
+    if (estadoPush === "bloqueado" && !esMovil()) {
+      const t = window.setTimeout(onClose, intentado ? 2500 : 300);
+      return () => window.clearTimeout(t);
+    }
   }, [intentado, estadoPush, onClose]);
 
   function iniciarActivar() {

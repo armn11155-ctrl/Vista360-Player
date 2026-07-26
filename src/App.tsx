@@ -22,6 +22,7 @@ import Reportes from "./components/screens/Reportes";
 import Perfil from "./components/screens/Perfil";
 import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
 import { usePushEstado } from "./hooks/usePushEstado";
+import { esMovil } from "./utils/dispositivo";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
@@ -358,9 +359,19 @@ function AuthenticatedApp({
   // entrar a la app sin haber aceptado nunca; y si volvía a entrar más
   // tarde (celular ya bloqueado desde antes), tampoco se volvía a
   // mostrar nada porque el efecto de abajo solo miraba "ofrecer".
+  // "bloqueado" en COMPUTADORA ya no es obligatorio -- pedido
+  // explícito: los pasos para desbloquear varían mucho entre
+  // navegadores/versiones de escritorio (ya hubo un caso real con
+  // instrucciones de Safari que no aplicaban), y si salen mal la
+  // persona se queda sin poder ni entrar a la app. En celular sí
+  // sigue siendo obligatorio -- ahí los pasos son siempre los mismos
+  // (Ajustes del sistema) y son confiables.
   const [notifPromptAbierto, setNotifPromptAbierto] = useState(false);
   useEffect(() => {
-    if (!mostrarOnboarding && (pushEstadoGlobal.estado === "ofrecer" || pushEstadoGlobal.estado === "bloqueado")) {
+    if (mostrarOnboarding) return;
+    if (pushEstadoGlobal.estado === "ofrecer") {
+      setNotifPromptAbierto(true);
+    } else if (pushEstadoGlobal.estado === "bloqueado" && esMovil()) {
       setNotifPromptAbierto(true);
     }
   }, [mostrarOnboarding, pushEstadoGlobal.estado]);
