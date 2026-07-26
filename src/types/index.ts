@@ -198,6 +198,10 @@ export interface SolicitudCampana {
    *  quedó algún registro viejo marcado así. */
   oculta?: boolean;
   ocultaEn?: Timestamp | null;
+  /** Fecha desde la que el cliente querría empezar (o renovar) --
+   *  nunca antes de hoy, el formulario ya lo bloquea con min= en el
+   *  input de fecha. */
+  fechaInicioDeseada?: string;
   createdAt?: Timestamp | null;
 }
 

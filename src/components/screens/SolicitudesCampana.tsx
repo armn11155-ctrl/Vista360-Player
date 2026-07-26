@@ -9,6 +9,16 @@ import { BrandThumb } from "../BrandThumb";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { SolicitudCampana } from "../../types";
 
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+/** "26 jul 2026" -- para mostrarle al admin la fecha de inicio que
+ *  pidió el cliente al solicitar disponibilidad o renovación. */
+function fechaCorta(fecha: string) {
+  const d = new Date(`${fecha.slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return fecha;
+  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 // Iconos en vez de emojis (se pidió que no queden emojis en la
 // pantalla de solicitudes) -- Target y Pin son los SVG que mandó el
 // admin, recoloreados a fill="currentColor" para heredar el color del
@@ -357,6 +367,10 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
               <div>
                 <span>Pago</span>
                 <strong>{seleccionada.pagoConfirmado ? "Confirmado" : seleccionada.comprobantePagoUrl ? "Por confirmar" : "Sin comprobante"}</strong>
+              </div>
+              <div>
+                <span>Inicio deseado</span>
+                <strong>{seleccionada.fechaInicioDeseada ? fechaCorta(seleccionada.fechaInicioDeseada) : "Sin especificar"}</strong>
               </div>
             </div>
 

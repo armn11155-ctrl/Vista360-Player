@@ -47,14 +47,27 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   const [objetivo, setObjetivo] = useState("");
   const [ciudad, setCiudad] = useState(() => prefill?.ciudad ?? "");
   const [comentarios, setComentarios] = useState(() => prefill?.comentarios ?? "");
+  // Fecha desde la que le gustaría empezar -- no se puede pedir una
+  // campaña con fecha de antes de hoy, por eso el min del input ya
+  // bloquea (en gris) cualquier día pasado directo en el calendario
+  // nativo, sin necesidad de armar un calendario propio.
+  const hoyStr = new Date().toISOString().slice(0, 10);
+  const [fechaInicio, setFechaInicio] = useState(hoyStr);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
+  // Se muestra después de enviar en vez de saltar directo a "Mis
+  // campañas" en silencio -- se pidió un mensaje claro de que el
+  // equipo se va a comunicar para confirmar viabilidad/fechas (por
+  // ahora es manual; automatizar la disponibilidad real queda para
+  // más adelante).
+  const [enviado, setEnviado] = useState(false);
 
   async function enviar() {
     setError("");
     if (!nombre.trim()) { setError("Ponle un nombre a tu campaña."); return; }
     if (!clienteId) { setError("Error: no se identificó tu cuenta. Cierra sesión y vuelve a entrar."); return; }
     if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
+    if (fechaInicio < hoyStr) { setError("La fecha de inicio no puede ser anterior a hoy."); return; }
     setEnviando(true);
     try {
       await addDoc(collection(db, "solicitudesCampana"), {
@@ -63,10 +76,11 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         objetivo: objetivo.trim(),
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
+        fechaInicioDeseada: fechaInicio,
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
-      onEnviada();
+      setEnviado(true);
     } catch {
       setError("No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo.");
     } finally {
@@ -217,6 +231,44 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     );
   }
 
+  if (enviado) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
+        <div className="detail-header">
+          <div className="back-btn" onClick={onEnviada}>
+            <BackChevron />
+          </div>
+          <div className="simple-title">Nueva campaña</div>
+          <div style={{ width: 32 }} />
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: "28px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", textAlign: "center", maxWidth: 340 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
+              display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
+            }}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>Solicitud enviada</div>
+            <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
+              Alguien del equipo se comunicará contigo para confirmar disponibilidad y coordinar los detalles.
+            </div>
+          </div>
+        </div>
+        <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
+          <button onClick={onEnviada} style={{
+            width: "100%", padding: "14px", background: "#0877FF", color: "#fff",
+            fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: "pointer",
+          }}>
+            Listo
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
@@ -251,6 +303,18 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
+          <Field label="Fecha de inicio deseada">
+            <input
+              style={inputStyle}
+              type="date"
+              min={hoyStr}
+              value={fechaInicio}
+              onChange={(e) => setFechaInicio(e.target.value)}
+            />
+          </Field>
+          <div style={{ fontSize: 11.5, color: "#94A3B8", marginTop: -10, marginBottom: 16, lineHeight: 1.4 }}>
+            El contrato mínimo es de 3 meses (también hay opciones de 5, 6 y 12 meses).
+          </div>
           <Field label="Comentarios adicionales">
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
           </Field>
