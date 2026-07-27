@@ -5445,7 +5445,7 @@
       padding-left: 16px;
       padding-right: 14px;
     }
-    .sidebar-head .sidebar-logo-img { width: 96px !important; }
+    .sidebar-head .sidebar-logo-img { width: 124px !important; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
