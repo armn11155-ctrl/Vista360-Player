@@ -6706,3 +6706,21 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
+
+/* input[type="date"] -- en Safari/iOS el control nativo de fecha a
+   veces pide mas ancho del que le corresponde (el layout interno de
+   dia/mes/año + icono de calendario no siempre se encoge con
+   width:100%), y el cuadrado terminaba sobresaliendo del borde de la
+   tarjeta blanca en vez de quedarse contenido adentro. Estas reglas
+   fuerzan que respete el ancho del contenedor en cualquier navegador. */
+input[type="date"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  max-width: calc(100% - 22px);
+  overflow: hidden;
+}

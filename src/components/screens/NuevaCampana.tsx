@@ -32,6 +32,11 @@ const inputStyle: React.CSSProperties = {
   width: "100%", background: "#fff", border: "1.5px solid #E5E7EB",
   borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#0B1220",
   outline: "none", boxSizing: "border-box",
+  // minWidth/maxWidth explícitos -- un <input type="date"> a veces pide
+  // más ancho del que le corresponde (el reloj/calendario nativo de
+  // Safari/iOS no siempre respeta width:100% solo), y sin esto se salía
+  // del borde redondeado de la tarjeta blanca en vez de quedarse adentro.
+  minWidth: 0, maxWidth: "100%",
 };
 
 const selectStyle: React.CSSProperties = {
@@ -50,7 +55,14 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // campaña con fecha de antes de hoy, por eso el min del input ya
   // bloquea (en gris) cualquier día pasado directo en el calendario
   // nativo, sin necesidad de armar un calendario propio.
-  const hoyStr = new Date().toISOString().slice(0, 10);
+  // "Hoy" en base a la hora de Peru (America/Lima), no la hora UTC ni
+  // la del dispositivo -- con toISOString().slice(0,10) crudo, cualquier
+  // cliente que abra el formulario entre las 7pm y la medianoche en Lima
+  // ya cae en el dia UTC siguiente, y el min del calendario terminaba
+  // bloqueando el dia de HOY (o dejando pasar fechas que ya deberian estar
+  // vencidas). Mismo criterio que ya usa notificacionesPush.ts del lado
+  // del servidor (hoyEnLima()).
+  const hoyStr = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
   const [fechaInicio, setFechaInicio] = useState(hoyStr);
   // Opcional a propósito -- muchas veces el cliente todavía no sabe
   // cuántos meses quiere (eso se termina de conversar con el equipo),
@@ -207,12 +219,17 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               </div>
             </Field>
             <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
+              {/* minWidth: 0 en cada columna -- sin esto, un <input type="date">
+                  adentro de un hijo flex puede pedir mas ancho del que le toca
+                  (el minimo por defecto de un item flex es el de su contenido,
+                  no 0) y se sale del borde de la tarjeta blanca en vez de
+                  encogerse a la mitad disponible. */}
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <Field label="Fecha de inicio">
                   <input style={inputStyle} type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
                 </Field>
               </div>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <Field label="Fecha de fin">
                   <input style={inputStyle} type="date" value={fin} onChange={(e) => setFin(e.target.value)} />
                 </Field>
