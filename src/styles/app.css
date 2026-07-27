@@ -5719,7 +5719,7 @@
   .coverage-count small { color: rgba(226,232,240,.68); font-size: 10px; margin-top: 4px; }
   .coverage-map-real {
     position: relative;
-    min-height: 380px;
+    min-height: 430px;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -6068,14 +6068,14 @@
     left: 10px;
     bottom: 36px;
     z-index: 700;
-    width: min(286px, calc(100% - 72px));
-    padding: 9px 11px;
+    width: min(330px, calc(100% - 72px));
+    padding: 10px 12px;
     display: grid;
     gap: 7px;
     border: 1px solid rgba(255,255,255,.14);
-    border-radius: 12px;
+    border-radius: 14px;
     color: #FFFFFF;
-    background: rgba(5,10,18,.86);
+    background: linear-gradient(135deg, rgba(5,10,18,.92), rgba(15,27,46,.86));
     box-shadow: 0 14px 30px rgba(2,6,23,.26);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -6098,8 +6098,8 @@
     min-width: 0;
     overflow: hidden;
     color: rgba(255,255,255,.84);
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 11.5px;
+    font-weight: 750;
     line-height: 1.2;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -6110,6 +6110,11 @@
     font-size: 12px;
     font-weight: 900;
     text-align: right;
+  }
+  @media (min-width: 900px) {
+    .coverage-map-real {
+      min-height: 470px;
+    }
   }
   .coverage-maplibre-map {
     position: absolute;

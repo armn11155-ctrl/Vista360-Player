@@ -406,17 +406,17 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
-          {mapReady && !mapError && panelesState.status === "ready" && conCoordenadas.length > 0 && (
+          {mapReady && !mapError && panelesState.status === "ready" && (
             <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
-                <img src="/vista360-map-marker-v4.png" alt="" aria-hidden="true" />
-                <span>Paneles activos</span>
-                <strong>{panelesActivos}</strong>
+                <img src="/vista360-map-marker-available.png" alt="" aria-hidden="true" />
+                <span>Pantallas que podrías contratar</span>
+                <strong>{panelesContratables}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-available.png" alt="" aria-hidden="true" />
-                <span>Disponibles para contratar</span>
-                <strong>{panelesContratables}</strong>
+                <img src="/vista360-map-marker-v4.png" alt="" aria-hidden="true" />
+                <span>Pantallas contratadas</span>
+                <strong>{panelesActivos}</strong>
               </div>
             </div>
           )}
