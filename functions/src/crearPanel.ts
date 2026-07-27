@@ -9,6 +9,7 @@ if (getApps().length === 0) {
 interface CrearPanelData {
   nombre?: string;
   tipo?: string;
+  modalidad?: string;
   ciudad?: string;
   direccion?: string;
   lat?: number | string;
@@ -52,6 +53,10 @@ export const crearPanel = onCall<CrearPanelData>(async (request) => {
 
   const nombre = limpiar(request.data.nombre);
   const tipo = limpiar(request.data.tipo);
+  // Solo se aceptan los dos valores conocidos: cualquier otra cosa queda
+  // sin definir y modalidadDePanel() la deduce del texto de `tipo`.
+  const modalidadRaw = limpiar(request.data.modalidad);
+  const modalidad = modalidadRaw === "led" || modalidadRaw === "lona" ? modalidadRaw : null;
   const ciudad = limpiar(request.data.ciudad);
   const direccion = limpiar(request.data.direccion);
   const icono = limpiar(request.data.icono);
@@ -72,6 +77,7 @@ export const crearPanel = onCall<CrearPanelData>(async (request) => {
   await panelRef.set({
     nombre,
     tipo: tipo || "Panel",
+    ...(modalidad ? { modalidad } : {}),
     ciudad,
     estado,
     ...(direccion ? { direccion } : {}),

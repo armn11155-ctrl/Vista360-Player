@@ -17,6 +17,7 @@ export interface PanelOcupacion {
   ciudad: string;
   estado: string;
   enMantenimiento: boolean;
+  modalidad: "led" | "lona";
   impactoDiario: number;
   anunciantesActivos: number;
   anunciantesProgramados: number;
@@ -52,6 +53,9 @@ export interface ResumenOcupacion {
     anunciantesActivos: number;
     ingresoActivo: number;
     seLiberanEnVentana: number;
+    lonas: number;
+    lonasLibres: number;
+    ledConEspacio: number;
   };
   paneles: PanelOcupacion[];
   porVencer: PorVencer[];

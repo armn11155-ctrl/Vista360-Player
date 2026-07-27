@@ -10,6 +10,7 @@ interface ActualizarPanelData {
   panelId?: string;
   nombre?: string;
   tipo?: string;
+  modalidad?: string;
   ciudad?: string;
   direccion?: string;
   lat?: number | string;
@@ -63,6 +64,8 @@ export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
 
   const nombre = limpiar(request.data.nombre);
   const tipo = limpiar(request.data.tipo);
+  const modalidadRaw = limpiar(request.data.modalidad);
+  const modalidad = modalidadRaw === "led" || modalidadRaw === "lona" ? modalidadRaw : null;
   const ciudad = limpiar(request.data.ciudad);
   const direccion = limpiar(request.data.direccion);
   const icono = limpiar(request.data.icono);
@@ -83,6 +86,7 @@ export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
     {
       nombre,
       tipo: tipo || "Panel",
+      ...(modalidad ? { modalidad } : {}),
       ciudad,
       ...(estado ? { estado } : {}),
       direccion: direccion || FieldValue.delete(),

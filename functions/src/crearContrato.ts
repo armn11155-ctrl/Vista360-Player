@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { esPanelExclusivo } from "./modalidadPanel.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -78,13 +79,17 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       throw new HttpsError("invalid-argument", "Pon un monto válido.");
     }
 
-    // Un mismo cliente no puede tener dos campañas activas a la vez en
-    // el mismo panel -- se revisa para CADA panel elegido si este
-    // cliente ya tiene otro contrato en ese panel (como panel principal
-    // o como parte de una campaña multi-panel) cuyas fechas se crucen
-    // con las que se está por crear. Otro cliente distinto SÍ puede
-    // tener una campaña activa en el mismo panel al mismo tiempo -- el
-    // bloqueo es por cliente+panel, no por panel solo.
+    // Cruce de fechas. La regla depende de QUÉ tipo de soporte es:
+    //
+    //  - Pantalla LED: rota anuncios en bucle, así que varios clientes
+    //    pueden estar al aire a la vez. Solo se bloquea que el MISMO
+    //    cliente tenga dos campañas cruzadas en el mismo panel.
+    //
+    //  - Lona / mural / valla impresa: es UNA pieza física instalada.
+    //    Mientras esté puesta la de un cliente no puede haber otra, así
+    //    que se bloquea el cruce con CUALQUIER cliente. Antes esto no se
+    //    revisaba (todo se trataba como LED) y se podía vender dos veces
+    //    la misma lona en las mismas fechas.
     //
     // Esto va dentro de una TRANSACCION a proposito: antes se leia
     // "los contratos de este cliente", se revisaba en memoria, y RECIEN
@@ -100,27 +105,53 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
     // como corresponde.
     const contratoRef = db.collection("contratos").doc();
     await db.runTransaction(async (tx) => {
-      const contratosClienteSnap = await tx.get(
-        db.collection("contratos").where("cliente_id", "==", clienteId)
-      );
-      const contratosCliente = contratosClienteSnap.docs.map(
-        (d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean }
-      );
+      type ContratoFila = {
+        cliente_id?: string;
+        panel_id?: string;
+        panel_ids?: string[];
+        inicio?: string;
+        fin?: string;
+        deleted?: boolean;
+      };
+
+      // Para poder aplicar la regla de exclusividad hay que mirar los
+      // contratos de TODOS los clientes, no solo los de este -- después
+      // se filtra según la modalidad de cada panel.
+      const todosSnap = await tx.get(db.collection("contratos"));
+      const todos = todosSnap.docs.map((d) => d.data() as ContratoFila);
 
       for (const panelId of panelIds) {
-        const cruces = contratosCliente.filter((c) => {
+        const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
+        const datosPanel = panelSnap.exists ? panelSnap.data() ?? {} : {};
+        const exclusivo = esPanelExclusivo(datosPanel);
+        const nombrePanel = String(datosPanel.nombre || "ese panel");
+
+        const cruces = todos.filter((c) => {
           if (c.deleted || !c.inicio || !c.fin) return false;
+          // En LED solo importa el propio cliente; en lona, cualquiera.
+          if (!exclusivo && String(c.cliente_id ?? "") !== clienteId) return false;
           if (!(c.inicio <= fin && inicio <= c.fin)) return false;
           const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
           return idsDeC.includes(panelId);
         });
+
         if (cruces.length > 0) {
-          const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
-          const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
           const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+          const ajeno = cruces.some((c) => String(c.cliente_id ?? "") !== clienteId);
+          let quien = "Este cliente ya tiene una campaña";
+          if (exclusivo && ajeno) {
+            const otroId = String(cruces.find((c) => String(c.cliente_id ?? "") !== clienteId)?.cliente_id ?? "");
+            const otroSnap = otroId ? await tx.get(db.doc(`clientes/${otroId}`)) : null;
+            const otroNombre = otroSnap?.exists ? String(otroSnap.data()?.empresa || "otro cliente") : "otro cliente";
+            quien = `${otroNombre} ya tiene una lona instalada`;
+          }
           throw new HttpsError(
             "failed-precondition",
-            `Este cliente ya tiene una campaña programada en ${nombrePanel} hasta el ${finMasLejano}. No puede tener dos campañas activas a la vez en el mismo panel -- puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
+            `${quien} en ${nombrePanel} hasta el ${finMasLejano}. ${
+              exclusivo
+                ? "Es un soporte impreso: solo puede haber una campaña a la vez."
+                : "No puede tener dos campañas activas a la vez en el mismo panel."
+            } Puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
           );
         }
       }

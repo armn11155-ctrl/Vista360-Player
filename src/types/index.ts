@@ -108,10 +108,30 @@ export interface Contrato {
 
 export type PanelEstado = "Disponible" | "Ocupado" | "Mantenimiento" | "Libre";
 
+/**
+ * Cómo se comercializa un soporte -- cambia la regla de negocio, no solo
+ * la etiqueta:
+ *
+ *  - "led": pantalla digital. Rota varios anuncios en bucle, así que
+ *    puede tener VARIOS clientes al aire a la vez.
+ *  - "lona": lona, mural o valla impresa. Es una sola pieza física
+ *    instalada: mientras esté puesta la de un cliente, no puede haber
+ *    otra. Es EXCLUSIVA por rango de fechas.
+ *
+ * Por eso no alcanza con el campo `tipo` (texto libre, "ej. Valla,
+ * LED"): de él no se puede derivar una regla con confianza, porque
+ * depende de cómo lo haya escrito quien cargó el panel.
+ */
+export type PanelModalidad = "led" | "lona";
+
 export interface Panel {
   id: string;
   nombre: string;
   tipo: string;
+  /** Ver PanelModalidad. Opcional porque los paneles cargados antes de
+   *  este campo no lo tienen -- usar siempre modalidadDePanel(), que
+   *  cae a una deducción por `tipo` en ese caso. */
+  modalidad?: PanelModalidad;
   ciudad: string;
   estado: PanelEstado;
   lat?: number;
@@ -123,6 +143,34 @@ export interface Panel {
    *  real) -- se usa para calcular el "Impacto aproximado" de cada
    *  campaña en ese panel. */
   impactoDiario?: number;
+}
+
+/** Palabras que delatan un soporte impreso cuando `modalidad` no está
+ *  cargada todavía (paneles creados antes de que existiera el campo). */
+const PISTAS_LONA = ["lona", "mural", "banner", "impres", "valla", "gigantograf", "panel tradicional"];
+
+/**
+ * Modalidad efectiva de un panel. Si el admin ya la eligió a mano, manda
+ * esa. Si no, se deduce del texto libre de `tipo` -- imperfecto a
+ * propósito, pero mejor que asumir: al deducir "lona" el sistema es MÁS
+ * restrictivo (exige exclusividad), así que el peor caso de una
+ * deducción equivocada es que avise de un cruce que en realidad se
+ * podía permitir, y no que se venda dos veces una lona.
+ */
+export function modalidadDePanel(panel: Pick<Panel, "modalidad" | "tipo">): PanelModalidad {
+  if (panel.modalidad === "led" || panel.modalidad === "lona") return panel.modalidad;
+  const t = (panel.tipo ?? "").toLowerCase();
+  if (t.includes("led") || t.includes("digital") || t.includes("pantalla")) return "led";
+  if (PISTAS_LONA.some((pista) => t.includes(pista))) return "lona";
+  // Sin pistas: se asume LED, que es el comportamiento que ya tenía el
+  // sistema hasta ahora (varios anunciantes permitidos). Cambiarlo a
+  // "lona" por defecto bloquearía campañas que hoy se crean sin problema.
+  return "led";
+}
+
+/** true si el soporte admite un solo cliente a la vez (lona/mural). */
+export function esPanelExclusivo(panel: Pick<Panel, "modalidad" | "tipo">): boolean {
+  return modalidadDePanel(panel) === "lona";
 }
 
 /**

@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { esPanelExclusivo } from "./modalidadPanel.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -66,27 +67,45 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
     const clienteId = String(contratoActual.cliente_id ?? "");
 
     if (clienteId && panelIds.length > 0) {
-      const contratosClienteSnap = await tx.get(
-        db.collection("contratos").where("cliente_id", "==", clienteId)
-      );
-      const contratosCliente = contratosClienteSnap.docs
+      type ContratoFila = {
+        cliente_id?: string;
+        panel_id?: string;
+        panel_ids?: string[];
+        inicio?: string;
+        fin?: string;
+        deleted?: boolean;
+      };
+
+      // Misma regla que al crear (ver crearContrato.ts): en pantallas LED
+      // solo se revisa contra el propio cliente, porque rotan anuncios;
+      // en lonas/murales se revisa contra CUALQUIER cliente, porque es
+      // una sola pieza física y no puede haber dos a la vez.
+      const todosSnap = await tx.get(db.collection("contratos"));
+      const todos = todosSnap.docs
         .filter((d) => d.id !== contratoId)
-        .map((d) => d.data() as { panel_id?: string; panel_ids?: string[]; inicio?: string; fin?: string; deleted?: boolean });
+        .map((d) => d.data() as ContratoFila);
 
       for (const panelId of panelIds) {
-        const cruces = contratosCliente.filter((c) => {
+        const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
+        const datosPanel = panelSnap.exists ? panelSnap.data() ?? {} : {};
+        const exclusivo = esPanelExclusivo(datosPanel);
+        const nombrePanel = String(datosPanel.nombre || "ese panel");
+
+        const cruces = todos.filter((c) => {
           if (c.deleted || !c.inicio || !c.fin) return false;
+          if (!exclusivo && String(c.cliente_id ?? "") !== clienteId) return false;
           if (!(c.inicio <= fin && inicio <= c.fin)) return false;
           const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
           return idsDeC.includes(panelId);
         });
+
         if (cruces.length > 0) {
-          const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
-          const nombrePanel = panelSnap.exists ? String(panelSnap.data()?.nombre || "ese panel") : "ese panel";
           const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
+          const ajeno = cruces.some((c) => String(c.cliente_id ?? "") !== clienteId);
+          const quien = exclusivo && ajeno ? "Otro cliente ya tiene una lona instalada" : "Este cliente ya tiene otra campaña";
           throw new HttpsError(
             "failed-precondition",
-            `Este cliente ya tiene otra campaña en ${nombrePanel} hasta el ${finMasLejano}. Las fechas nuevas se cruzan con esa -- puedes poner esta a partir del ${siguienteDia(finMasLejano)}.`
+            `${quien} en ${nombrePanel} hasta el ${finMasLejano}. Las fechas nuevas se cruzan con esa -- puedes poner esta a partir del ${siguienteDia(finMasLejano)}.`
           );
         }
       }

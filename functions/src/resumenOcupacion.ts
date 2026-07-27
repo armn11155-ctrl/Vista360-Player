@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { modalidadDePanel } from "./modalidadPanel.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -145,6 +146,11 @@ export const resumenOcupacion = onCall(async (request) => {
       ciudad: String(p.ciudad ?? ""),
       estado: String(p.estado ?? ""),
       enMantenimiento: p.estado === "Mantenimiento",
+      // "led" rota anuncios (varios clientes a la vez); "lona" es una
+      // pieza física y solo admite uno. Cambia cómo se lee la ocupación:
+      // en una lona, 1 anunciante ya significa LLENA; en una LED,
+      // significa que todavía queda espacio para vender.
+      modalidad: modalidadDePanel(p),
       impactoDiario: Number(p.impactoDiario ?? 0) || 0,
       anunciantesActivos: activos.length,
       anunciantesProgramados: programados.length,
@@ -198,6 +204,12 @@ export const resumenOcupacion = onCall(async (request) => {
 
   const operativos = paneles.filter((p) => !p.enMantenimiento);
   const conAnunciante = operativos.filter((p) => p.anunciantesActivos > 0);
+  // Una LED con un solo anunciante sigue teniendo hueco que vender; una
+  // lona con uno ya está tomada. Por eso "con espacio libre" no es lo
+  // mismo que "sin anunciante", y conviene verlo aparte.
+  const ledConEspacio = operativos.filter((p) => p.modalidad === "led" && p.anunciantesActivos > 0);
+  const lonas = operativos.filter((p) => p.modalidad === "lona");
+  const lonasLibres = lonas.filter((p) => p.anunciantesActivos === 0);
 
   return {
     hoy,
@@ -215,6 +227,9 @@ export const resumenOcupacion = onCall(async (request) => {
       anunciantesActivos: paneles.reduce((t, p) => t + p.anunciantesActivos, 0),
       ingresoActivo: paneles.reduce((t, p) => t + p.ingresoActivo, 0),
       seLiberanEnVentana: porVencer.length,
+      lonas: lonas.length,
+      lonasLibres: lonasLibres.length,
+      ledConEspacio: ledConEspacio.length,
     },
     paneles,
     porVencer,

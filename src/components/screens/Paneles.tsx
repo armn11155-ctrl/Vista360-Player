@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
+import { modalidadDePanel } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
 import { cargarLeaflet } from "../../utils/leaflet";
 import type { Panel, PanelEstado } from "../../types";
@@ -54,6 +55,9 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
   const [nombre, setNombre] = useState("");
   const [tipo, setTipo] = useState("");
+  // Modalidad comercial: define si el soporte admite varios clientes a
+  // la vez (LED, rota anuncios) o uno solo (lona/mural, pieza física).
+  const [modalidad, setModalidad] = useState<"led" | "lona">("led");
   const [ciudad, setCiudad] = useState("");
   const [direccion, setDireccion] = useState("");
   const [lat, setLat] = useState("");
@@ -145,6 +149,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
   }, []);
 
   function limpiarForm() {
+    setModalidad("led");
     setPanelEditando(null);
     setNombre("");
     setTipo("");
@@ -166,6 +171,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
     setPanelEditando(p);
     setNombre(p.nombre ?? "");
     setTipo(p.tipo ?? "");
+    setModalidad(modalidadDePanel(p));
     setCiudad(p.ciudad ?? "");
     setDireccion(p.direccion ?? "");
     setLat(p.lat !== undefined ? String(p.lat) : "");
@@ -207,13 +213,14 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
       const impactoNum = numeroCoordenada(impactoDiario);
       if (panelEditando) {
         const fn = httpsCallable<
-          { panelId: string; nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
+          { panelId: string; nombre: string; tipo: string; modalidad: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
           { ok: boolean }
         >(cloudFunctions, "actualizarPanel");
         await fn({
           panelId: panelEditando.id,
           nombre: nombre.trim(),
           tipo: tipo.trim(),
+          modalidad,
           ciudad: ciudad.trim(),
           direccion: direccion.trim(),
           lat: numeroCoordenada(lat),
@@ -224,12 +231,13 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         setMensajeOk("Panel actualizado.");
       } else {
         const fn = httpsCallable<
-          { nombre: string; tipo: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
+          { nombre: string; tipo: string; modalidad: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
           { id: string }
         >(cloudFunctions, "crearPanel");
         await fn({
           nombre: nombre.trim(),
           tipo: tipo.trim(),
+          modalidad,
           ciudad: ciudad.trim(),
           direccion: direccion.trim(),
           lat: numeroCoordenada(lat),
@@ -290,6 +298,44 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <input value={tipo} onChange={(e) => setTipo(e.target.value)} placeholder="Tipo (ej. Valla, LED)" style={inputStyle} />
                 <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Ciudad" style={inputStyle} />
+              </div>
+
+              {/* Esto NO es una etiqueta: decide si el sistema deja que
+                  dos clientes coincidan en fechas en este soporte. */}
+              <div>
+                <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>
+                  ¿Cómo se vende este soporte?
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {([
+                    ["led", "Pantalla LED", "Rota anuncios: varios clientes a la vez"],
+                    ["lona", "Lona o mural", "Pieza impresa: un solo cliente a la vez"],
+                  ] as const).map(([valor, titulo, detalle]) => (
+                    <button
+                      key={valor}
+                      type="button"
+                      onClick={() => setModalidad(valor)}
+                      style={{
+                        textAlign: "left",
+                        padding: "10px 12px",
+                        borderRadius: 10,
+                        cursor: "pointer",
+                        border: modalidad === valor ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
+                        background: modalidad === valor ? "rgba(8,119,255,0.07)" : "#fff",
+                      }}
+                    >
+                      <span style={{
+                        display: "block", fontSize: 13, fontWeight: 800,
+                        color: modalidad === valor ? "#0877FF" : "#0B1220",
+                      }}>
+                        {titulo}
+                      </span>
+                      <span style={{ display: "block", fontSize: 10.5, color: "#64748B", marginTop: 3, lineHeight: 1.35 }}>
+                        {detalle}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
               <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Dirección (opcional)" style={inputStyle} />
 

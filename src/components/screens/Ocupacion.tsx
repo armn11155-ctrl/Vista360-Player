@@ -77,6 +77,9 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
   const [abierto, setAbierto] = useState(false);
   const vacio = panel.anunciantesActivos === 0;
 
+  const esLona = panel.modalidad === "lona";
+  // En una lona, tener 1 anunciante ya es estar LLENA (es una pieza
+  // física); en una LED, con 1 todavía queda espacio para vender.
   const subtitulo = panel.enMantenimiento
     ? " · En mantenimiento"
     : vacio
@@ -85,7 +88,9 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
         : panel.diasLibre !== null
           ? ` · Libre hace ${panel.diasLibre} día${panel.diasLibre === 1 ? "" : "s"}`
           : " · Libre"
-      : ` · ${panel.anunciantesActivos} anunciante${panel.anunciantesActivos === 1 ? "" : "s"}`;
+      : esLona
+        ? " · Ocupada"
+        : ` · ${panel.anunciantesActivos} anunciante${panel.anunciantesActivos === 1 ? "" : "s"}`;
 
   return (
     <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
@@ -99,11 +104,25 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
       >
         <span aria-hidden="true" style={{
           width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
-          background: panel.enMantenimiento ? "#7C3AED" : vacio ? "#CBD5E1" : "#16A34A",
+          background: panel.enMantenimiento
+            ? "#7C3AED"
+            : vacio
+              ? "#CBD5E1"
+              : esLona
+                ? "#F59E0B"
+                : "#16A34A",
         }} />
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
             {panel.nombre}
+            <span style={{
+              marginLeft: 7, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3,
+              verticalAlign: "middle", padding: "2px 6px", borderRadius: 999,
+              color: esLona ? "#B45309" : "#0877FF",
+              background: esLona ? "rgba(245,158,11,0.13)" : "rgba(8,119,255,0.10)",
+            }}>
+              {esLona ? "LONA" : "LED"}
+            </span>
           </span>
           <span style={{ display: "block", fontSize: 11.5, color: "#64748B", marginTop: 2 }}>
             {panel.ciudad || "Sin ciudad"}{subtitulo}
@@ -207,6 +226,14 @@ export default function Ocupacion({ onBack }: Props) {
                    tono={state.datos.totales.seLiberanEnVentana > 0 ? "alerta" : undefined} />
               <Kpi valor={state.datos.totales.enMantenimiento} etiqueta="En mantenimiento" />
             </div>
+            {state.datos.totales.lonas > 0 && (
+              <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
+                <Kpi valor={state.datos.totales.lonas} etiqueta="Lonas y murales" />
+                <Kpi valor={state.datos.totales.lonasLibres} etiqueta="Lonas libres"
+                     tono={state.datos.totales.lonasLibres > 0 ? "alerta" : undefined} />
+                <Kpi valor={state.datos.totales.ledConEspacio} etiqueta="LED con anunciantes" />
+              </div>
+            )}
 
             <section style={{ marginTop: 26 }}>
               <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>A quién llamar</h2>
