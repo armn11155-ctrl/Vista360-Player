@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { mensajeDeError } from "../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 
@@ -112,13 +113,11 @@ export function useOcupacion(): OcupacionState {
       })
       .catch((error: unknown) => {
         if (cancelado) return;
-        const raw = error instanceof Error ? error.message : "";
-        const limpio = raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "").trim();
         setState({
           status: "error",
           // El caso más probable la primera vez es que la función todavía
           // no esté desplegada (el despliegue de Functions es manual).
-          message: limpio || "No se pudo cargar. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions.",
+          message: mensajeDeError(error, "No se pudo cargar. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions."),
           recargar,
         });
       });

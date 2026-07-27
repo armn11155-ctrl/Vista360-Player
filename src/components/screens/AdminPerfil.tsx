@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
@@ -117,12 +118,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
           : { fase: "contado", contratos: data.contratosConFotos, archivos: data.archivos }
       );
     } catch (error) {
-      const raw = error instanceof Error ? error.message : "";
-      setEvidencias({
-        fase: "error",
-        mensaje: raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "")
-          || "No se pudo consultar. Puede que falte desplegar la función en GitHub Actions.",
-      });
+      setEvidencias({ fase: "error", mensaje: mensajeDeError(error, "No se pudo consultar. Puede que falte desplegar la función en GitHub Actions.") });
     }
   }
 
@@ -140,12 +136,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
       const { data } = await fn({ confirmar: false });
       setLimpieza({ fase: "revisado", datos: data });
     } catch (error) {
-      const raw = error instanceof Error ? error.message : "";
-      setLimpieza({
-        fase: "error",
-        mensaje: raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "")
-          || "No se pudo revisar. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions.",
-      });
+      setLimpieza({ fase: "error", mensaje: mensajeDeError(error, "No se pudo revisar. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions.") });
     }
   }
 
@@ -161,8 +152,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
       const { data } = await fn({ confirmar: true });
       setLimpieza({ fase: "listo", datos: data });
     } catch (error) {
-      const raw = error instanceof Error ? error.message : "";
-      setLimpieza({ fase: "error", mensaje: raw.replace("FirebaseError: ", "") || "No se pudo completar la limpieza." });
+      setLimpieza({ fase: "error", mensaje: mensajeDeError(error, "No se pudo completar la limpieza.") });
     }
   }
 

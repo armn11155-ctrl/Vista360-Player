@@ -1,4 +1,6 @@
 import { useState, useId, isValidElement, cloneElement } from "react";
+import { campoBase } from "../../styles/campos";
+import { mensajeDeError } from "../../utils/errores";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, cloudFunctions } from "../../config/firebase";
@@ -58,16 +60,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%", background: "#fff", border: "1.5px solid #E5E7EB",
-  borderRadius: 12, padding: "12px 14px", fontSize: 14, color: "#0B1220",
-  outline: "none", boxSizing: "border-box",
-  // minWidth/maxWidth explícitos -- un <input type="date"> a veces pide
-  // más ancho del que le corresponde (el reloj/calendario nativo de
-  // Safari/iOS no siempre respeta width:100% solo), y sin esto se salía
-  // del borde redondeado de la tarjeta blanca en vez de quedarse adentro.
-  minWidth: 0, maxWidth: "100%",
-};
+const inputStyle = campoBase;
 
 const selectStyle: React.CSSProperties = {
   ...inputStyle, appearance: "none",
@@ -185,8 +178,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       });
       onEnviada();
     } catch (error) {
-      const raw = error instanceof Error ? error.message : String(error || "");
-      setErrorAdmin(raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "") || "No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo.");
+      setErrorAdmin(mensajeDeError(error, "No se pudo crear el contrato. Revisa tu conexión e intenta de nuevo."));
     } finally {
       setCreando(false);
     }

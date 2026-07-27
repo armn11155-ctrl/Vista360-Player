@@ -272,7 +272,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             ) : (
               <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
                 {pasosDesbloqueoEscritorio().map((paso, i) => (
-                  <li key={i}>{paso}</li>
+                  <li key={paso}>{paso}</li>
                 ))}
               </ol>
             )}

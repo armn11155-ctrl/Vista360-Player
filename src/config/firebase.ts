@@ -44,9 +44,40 @@ export function login(email: string, password: string): Promise<void> {
   return signInWithEmailAndPassword(auth, email, password).then(() => undefined);
 }
 
-export function logout(): Promise<void> {
-  if (!auth) return Promise.resolve();
-  return firebaseSignOut(auth);
+/**
+ * Vacía todo lo que el navegador dejó guardado de esta sesión.
+ *
+ * El Service Worker ya no cachea archivos privados, pero lo que quedó
+ * guardado ANTES de ese arreglo sigue ahí: en un equipo compartido, quien
+ * entre después podría recuperar facturas o fotos del cliente anterior
+ * desde el CacheStorage. Cambiar la política no borra el pasado, así que
+ * se limpia explícitamente al salir.
+ *
+ * Nunca hace fallar el cierre de sesión: si algo de esto no se puede
+ * hacer, sigue siendo mucho más importante cerrar la sesión igual.
+ */
+async function limpiarRastroLocal(): Promise<void> {
+  try {
+    const registro = await navigator.serviceWorker?.ready;
+    registro?.active?.postMessage({ tipo: "limpiar-cache" });
+  } catch {
+    // sin Service Worker (o bloqueado): se sigue con el borrado directo
+  }
+  try {
+    if (typeof caches !== "undefined") {
+      const claves = await caches.keys();
+      await Promise.all(claves.map((k) => caches.delete(k)));
+    }
+  } catch {
+    // en modo privado caches puede no existir -- no es motivo para fallar
+  }
+}
+
+export async function logout(): Promise<void> {
+  if (!auth) return;
+  // Primero cerrar sesión (lo esencial), después limpiar (lo deseable).
+  await firebaseSignOut(auth);
+  await limpiarRastroLocal();
 }
 
 export function onUserChange(cb: (user: User | null) => void): () => void {

@@ -107,8 +107,8 @@ export default function Portafolio({ onBack, onContactar }: Props) {
       <div className="content-area">
         <div className="card">
           <div className="section-title">Catálogo de productos y ofertas</div>
-          {PRODUCTOS.map((p, i) => (
-            <div className="product-card" key={i}>
+          {PRODUCTOS.map((p) => (
+            <div className="product-card" key={p.nombre}>
               <div className="product-icon">
                 <ProductIcon id={p.icon} />
               </div>

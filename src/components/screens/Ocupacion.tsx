@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import BackChevron from "../BackChevron";
+import { fechaCorta } from "../../utils/fechas";
 import { useOcupacion, type FacturaPendiente, type PanelOcupacion, type PorVencer } from "../../hooks/useOcupacion";
 
 interface Props {
@@ -18,14 +19,6 @@ function textoDias(dias: number) {
   if (dias === 0) return "vence hoy";
   if (dias === 1) return "vence mañana";
   return `en ${dias} días`;
-}
-
-const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"];
-
-function fechaCorta(fecha: string) {
-  const [a, m, d] = fecha.split("-").map(Number);
-  if (!a || !m || !d) return fecha;
-  return `${d} ${MESES[m - 1]} ${a}`;
 }
 
 /** Importes en soles con separador de miles -- sin decimales, que en una

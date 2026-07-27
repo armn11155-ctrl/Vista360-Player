@@ -3,7 +3,7 @@ import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
-import { diasHasta } from "../../utils/fechas";
+import { diasHasta, fechaLarga } from "../../utils/fechas";
 import { cargarLeaflet } from "../../utils/leaflet";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
@@ -96,22 +96,6 @@ const DIAS_AVISO_RENOVACION = 10;
 
 
 
-const MESES_LARGOS = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
-
-/** "15 de agosto de 2026" -- para la fecha de vigencia del popup del
- *  pin. Distinto al formato corto que usa Mis Campañas porque acá hay
- *  espacio de sobra (la tarjeta es mas chica) y se pidió que se vea
- *  elegante, no apretado. */
-function fechaLarga(fecha: string) {
-  if (!fecha) return "";
-  const d = new Date(`${fecha.slice(0, 10)}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return "";
-  return `${d.getDate()} de ${MESES_LARGOS[d.getMonth()]} de ${d.getFullYear()}`;
-}
-
 /** El popup del pin se arma como HTML plano (Leaflet no acepta JSX) --
  *  escapamos nombre/direccion/ciudad porque vienen de datos cargados
  *  por el admin, no queremos que un "<" o "&" suelto rompa el markup. */
@@ -120,7 +104,12 @@ function escapeHtml(value: string) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/"/g, "&quot;")
+    // La comilla simple también: el popup se arma como HTML crudo y hay
+    // atributos con comillas simples (style="...url('X')"). Hoy ningún
+    // dato del usuario cae ahí, pero el día que caiga sería inyección
+    // directa y nadie lo notaría.
+    .replace(/'/g, "&#39;");
 }
 
 /** Mini tarjeta premium que se abre al hacer click en un pin del mapa
@@ -344,6 +333,14 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
               const el: HTMLElement | undefined = evento?.popup?.getElement?.();
               const boton = el?.querySelector<HTMLButtonElement>("[data-cobertura-accion]");
               if (!boton) return;
+              // Leaflet hoy recrea el contenido del popup en cada apertura,
+              // así que las escuchas viejas mueren con el elemento viejo.
+              // Pero eso es un detalle interno suyo que podría cambiar al
+              // actualizar la librería, y si dejara de recrearlo se irían
+              // acumulando escuchas y un solo toque dispararía la acción
+              // varias veces. Esta marca lo vuelve inmune a ese cambio.
+              if (boton.dataset.enganchado === "1") return;
+              boton.dataset.enganchado = "1";
               // En móvil el "click" sintético adentro de un popup de Leaflet
               // a veces no llega a disparar (el mapa se queda con el toque
               // por el gesto táctil, o el popup se cierra solo antes de que

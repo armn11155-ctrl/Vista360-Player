@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Panel } from "../types";
 
@@ -7,6 +7,12 @@ export type PanelesDisponiblesState =
   | { status: "loading" }
   | { status: "ready"; paneles: Panel[] }
   | { status: "error"; message: string };
+
+/** El estado, más una forma de volver a pedir la lista. Hace falta porque
+ *  ya no hay tiempo real: quien CREA o EDITA paneles (la pantalla de
+ *  administración) tiene que poder refrescar después de guardar, o su
+ *  propio cambio no aparecería. */
+export type PanelesDisponiblesResult = PanelesDisponiblesState & { recargar: () => void };
 
 /** Lista TODOS los paneles (no solo los de un contrato/cliente
  *  específico). La usa el admin para elegir un panel al crear un
@@ -23,8 +29,10 @@ export type PanelesDisponiblesState =
  *  creados desde el sistema Vista360 externo, por ejemplo), y eso hacia
  *  que algunos paneles reales no aparecieran para elegir. Se trae todo
  *  y se ordena del lado del cliente, con nombre vacio como respaldo. */
-export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesState {
+export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesResult {
   const [state, setState] = useState<PanelesDisponiblesState>({ status: "loading" });
+  const [nonce, setNonce] = useState(0);
+  const recargar = useCallback(() => setNonce((n) => n + 1), []);
 
   useEffect(() => {
     // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
@@ -32,19 +40,27 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesSt
     // algo. Cuando no hay nada que consultar, el resultado correcto es
     // "listo y vacío", no "cargando".
     if (!db || !habilitado) { setState({ status: "ready", paneles: [] }); return; }
-    const q = collection(db, "paneles");
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
+    // Lectura ÚNICA, no onSnapshot. Antes cada cliente que abría Cobertura
+    // dejaba abierta una suscripción en tiempo real a TODO el inventario:
+    // una conexión viva consumiendo batería y datos para vigilar algo que
+    // no cambia mientras se mira el mapa (el nombre y la ubicación de un
+    // panel los edita el admin, no ocurre a mitad de sesión). Con muchos
+    // clientes a la vez, eran muchas conexiones abiertas para nada.
+    let cancelado = false;
+    getDocs(collection(db, "paneles"))
+      .then((snap) => {
+        if (cancelado) return;
         const paneles = snap.docs
           .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
           .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
         setState({ status: "ready", paneles });
-      },
-      (err) => setState({ status: "error", message: err.message })
-    );
-    return unsub;
-  }, [habilitado]);
+      })
+      .catch((err: unknown) => {
+        if (cancelado) return;
+        setState({ status: "error", message: err instanceof Error ? err.message : "No se pudieron cargar los paneles." });
+      });
+    return () => { cancelado = true; };
+  }, [habilitado, nonce]);
 
-  return state;
+  return { ...state, recargar };
 }

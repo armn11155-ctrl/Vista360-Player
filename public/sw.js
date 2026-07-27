@@ -1,4 +1,4 @@
-const CACHE = "v360player-shell-v7";
+const CACHE = "v360player-shell-v8";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -37,8 +37,29 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
-  const esAssetConHash = url.origin === self.location.origin && url.pathname.startsWith("/assets/");
+  const mismoOrigen = url.origin === self.location.origin;
 
+  // REGLA DE ORO: solo se guarda lo que es PUBLICO y de NUESTRO origen.
+  //
+  // Antes esta rama cacheaba toda peticion GET que saliera bien, sin
+  // mirar de donde venia. Eso incluia las URLs firmadas de R2: PDFs de
+  // facturas, fotos de campana, comprobantes de pago. Quedaban guardados
+  // en el CacheStorage del navegador y ahi seguian despues de cerrar
+  // sesion, asi que en una computadora compartida el siguiente usuario
+  // podia recuperar archivos privados del cliente anterior.
+  //
+  // Ahora nada de otro origen se cachea nunca, y del propio origen solo
+  // se guardan los archivos estaticos de la app.
+  if (!mismoOrigen) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  const esAssetConHash = url.pathname.startsWith("/assets/");
+
+  // /assets/* son los JS/CSS que Vite nombra con un hash de contenido: un
+  // mismo nombre SIEMPRE tiene el mismo contenido, asi que es seguro (y
+  // mucho mas rapido) servirlos desde el cache sin tocar la red.
   if (esAssetConHash) {
     event.respondWith(
       caches.match(event.request).then((cacheado) => {
@@ -53,15 +74,40 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    fetch(event.request)
-      .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
-        return res;
-      })
-      .catch(() => caches.match(event.request))
-  );
+  // El shell (HTML, manifest, iconos): red primero para que siempre llegue
+  // la version mas nueva, con el cache solo como respaldo si se corta la
+  // conexion. Se cachea unicamente esta lista corta y publica.
+  const esShellPublico =
+    SHELL.includes(url.pathname) ||
+    /\.(png|svg|ico|webmanifest|webp|woff2?)$/i.test(url.pathname);
+
+  if (esShellPublico) {
+    event.respondWith(
+      fetch(event.request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+          return res;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Todo lo demas del propio origen (llamadas a datos, etc): red directa,
+  // sin guardar nada.
+  event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+});
+
+// Permite que la app pida vaciar el cache al cerrar sesion (ver
+// logout() en src/config/firebase.ts). Cambiar la POLITICA de cache no
+// borra lo que ya quedo guardado de antes, asi que hace falta esto.
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.tipo === "limpiar-cache") {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
+  }
 });
 
 // ── Notificaciones push (FCM) ──────────────────────────────────────

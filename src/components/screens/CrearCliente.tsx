@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { campoBase } from "../../styles/campos";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente } from "../../types";
@@ -20,17 +21,7 @@ interface CrearClienteResponse {
   password: string;
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  background: "#fff",
-  border: "1.5px solid #E5E7EB",
-  borderRadius: 12,
-  padding: "12px 13px",
-  fontSize: 14,
-  color: "#0B1220",
-  boxSizing: "border-box",
-  outline: "none",
-};
+const inputStyle = campoBase;
 
 function portalUrl() {
   return window.location.origin;

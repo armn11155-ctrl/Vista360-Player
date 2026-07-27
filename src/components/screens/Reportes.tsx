@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
@@ -124,19 +125,18 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
     return `${c.nombre || nombres || "Campaña"} (${c.inicio} – ${c.fin})`;
   }
 
+  /** Casos propios de la generación de PDF, que merecen un texto más
+   *  concreto que el genérico. Todo lo demás cae en mensajeDeError, que ya
+   *  sabe traducir permisos, sesión vencida y falta de red. */
   function mensajeErrorReporte(error: unknown) {
-    const raw = error instanceof Error ? error.message : String(error || "");
-    if (raw.toLowerCase().includes("internal")) {
-      return raw.replace("FirebaseError: ", "").replace(/^functions\/internal:\s*/i, "")
-        || "No se pudo generar el PDF. Revisa la configuración de almacenamiento.";
-    }
-    if (raw.toLowerCase().includes("not-found")) {
+    const raw = error instanceof Error ? error.message.toLowerCase() : "";
+    if (raw.includes("not-found")) {
       return "No encuentro la función para generar PDFs. Falta desplegar las Functions.";
     }
-    if (raw.toLowerCase().includes("failed-precondition")) {
-      return raw.replace("FirebaseError: ", "");
+    if (raw.includes("internal")) {
+      return mensajeDeError(error, "No se pudo generar el PDF. Revisa la configuración de almacenamiento.");
     }
-    return raw.replace("FirebaseError: ", "") || "No se pudo generar el reporte.";
+    return mensajeDeError(error, "No se pudo generar el reporte.");
   }
 
   function agregarFotos(files: FileList | null, panelId: string) {

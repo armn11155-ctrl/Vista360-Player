@@ -1,7 +1,9 @@
 import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
+import { fechaCorta } from "../../utils/fechas";
 import { db, cloudFunctions } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
@@ -9,16 +11,8 @@ import { BrandThumb } from "../BrandThumb";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { SolicitudCampana } from "../../types";
 
-const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-
 /** "26 jul 2026" -- para mostrarle al admin la fecha de inicio que
  *  pidió el cliente al solicitar disponibilidad o renovación. */
-function fechaCorta(fecha: string) {
-  const d = new Date(`${fecha.slice(0, 10)}T00:00:00`);
-  if (Number.isNaN(d.getTime())) return fecha;
-  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]} ${d.getFullYear()}`;
-}
-
 // Iconos en vez de emojis (se pidió que no queden emojis en la
 // pantalla de solicitudes) -- Target y Pin son los SVG que mandó el
 // admin, recoloreados a fill="currentColor" para heredar el color del
@@ -108,16 +102,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
     .filter((v): v is string => Boolean(v) && !v!.startsWith("http"));
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
-
-  /** Texto legible de un error de Firestore/Functions, sin el prefijo técnico. */
-  function mensajeDeError(error: unknown, fallback: string) {
-    const raw = error instanceof Error ? error.message : "";
-    const limpio = raw
-      .replace("FirebaseError: ", "")
-      .replace(/^functions\/[a-z-]+:\s*/i, "")
-      .trim();
-    return limpio || fallback;
-  }
 
   async function resolver(id: string, estado: "Revisada" | "Rechazada") {
     if (!db) { setAccionError("Sin conexión. Intenta de nuevo."); return; }

@@ -6916,3 +6916,22 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   white-space: nowrap;
   border: 0;
 }
+
+/* Movimiento reducido. Quien activa esta preferencia en su sistema suele
+   hacerlo por mareo, migraña o vértigo: para esas personas las
+   animaciones no son un detalle estético, son un síntoma.
+
+   Había 9 animaciones definidas y solo 2 lugares que la respetaban. Esta
+   regla las cubre todas de una vez, incluidas las que se agreguen después.
+   No se apagan del todo (duration:0 puede romper transiciones que
+   dependen de su evento de fin), se reducen a un valor imperceptible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

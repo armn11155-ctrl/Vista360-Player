@@ -93,3 +93,31 @@ export function sumarMeses(fecha: string, meses: number): string {
   fin.setUTCDate(fin.getUTCDate() - 1);
   return fin.toISOString().slice(0, 10);
 }
+
+/**
+ * Meses abreviados en español de Perú. Existían DOS listas distintas en
+ * el proyecto -- una decía "sep" y la otra "set" -- así que septiembre se
+ * abreviaba distinto según en qué pantalla estuvieras.
+ */
+const MESES_CORTOS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "set", "oct", "nov", "dic"];
+
+const MESES_LARGOS = [
+  "enero", "febrero", "marzo", "abril", "mayo", "junio",
+  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+];
+
+/** "31 jul 2026". Para listas y tarjetas, donde el espacio manda. */
+export function fechaCorta(fecha: string | undefined | null): string {
+  const base = soloFecha(fecha);
+  const [a, m, d] = base.split("-").map(Number);
+  if (!a || !m || !d || m < 1 || m > 12) return base || "—";
+  return `${d} ${MESES_CORTOS[m - 1]} ${a}`;
+}
+
+/** "31 de julio de 2026". Para detalles, donde hay aire de sobra. */
+export function fechaLarga(fecha: string | undefined | null): string {
+  const base = soloFecha(fecha);
+  const [a, m, d] = base.split("-").map(Number);
+  if (!a || !m || !d || m < 1 || m > 12) return base || "—";
+  return `${d} de ${MESES_LARGOS[m - 1]} de ${a}`;
+}

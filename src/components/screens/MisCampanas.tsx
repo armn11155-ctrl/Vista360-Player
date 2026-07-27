@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties } from "react";
+import { mensajeDeError } from "../../utils/errores";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
@@ -179,8 +180,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       });
       setEditando(null);
     } catch (error) {
-      const mensaje = error instanceof Error ? error.message : "No se pudo actualizar la campaña.";
-      setEditando({ ...editando, guardando: false, error: mensaje.replace("FirebaseError: ", "") });
+      setEditando({ ...editando, guardando: false, error: mensajeDeError(error, "No se pudo actualizar la campaña.") });
     }
   }
 

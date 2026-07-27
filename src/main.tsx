@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import ErrorBoundary from "./components/ErrorBoundary";
 import "./styles/app.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 
@@ -8,7 +9,11 @@ setupRealViewportHeight();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    {/* Envuelve TODA la app: cualquier error de render que se escape queda
+        atrapado acá en vez de dejar la pantalla en blanco. */}
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>
 );
 

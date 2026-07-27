@@ -75,9 +75,21 @@ export const resumenOcupacion = onCall(async (request) => {
   const hoy = hoyEnLima();
   const limitePorVencer = sumarDias(hoy, DIAS_POR_VENCER);
 
+  // Se acotan las dos colecciones que crecen sin techo (contratos y
+  // facturas): leerlas enteras hacía que el coste y la latencia de esta
+  // pantalla subieran en línea recta con los años de historial, y se
+  // pagaba completo en cada apertura.
+  //
+  // Un año hacia atrás alcanza de sobra: para la ocupación solo importa
+  // lo vigente, y "hace cuánto está libre un panel" con un tope de un año
+  // dice lo mismo en la práctica ("más de un año" y "hace 3 años" llevan
+  // a la misma decisión). Las facturas viejas ya cobradas tampoco
+  // aportan nada a la cobranza.
+  const desde = sumarDias(hoy, -365);
+
   const [panelesSnap, contratosSnap, clientesSnap, facturasSnap] = await Promise.all([
     db.collection("paneles").get(),
-    db.collection("contratos").get(),
+    db.collection("contratos").where("fin", ">=", desde).get(),
     db.collection("clientes").get(),
     db.collection("facturas").get(),
   ]);

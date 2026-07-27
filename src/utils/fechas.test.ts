@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias, sumarMeses } from "./fechas";
+import { diasHasta, fechaCorta, fechaLarga, hoyEnPeru, progresoCampana, soloFecha, sumarDias, sumarMeses } from "./fechas";
 import { estadoCampana } from "../types";
 import type { Contrato } from "../types";
 
@@ -176,5 +176,28 @@ describe("sumarMeses — fecha de fin de un contrato", () => {
         expect(sumarMeses(inicio, meses) > inicio).toBe(true);
       }
     }
+  });
+});
+
+describe("fechaCorta / fechaLarga", () => {
+  it("formatean bien una fecha normal", () => {
+    expect(fechaCorta("2026-07-31")).toBe("31 jul 2026");
+    expect(fechaLarga("2026-07-31")).toBe("31 de julio de 2026");
+  });
+
+  it("septiembre se abrevia igual en toda la app", () => {
+    // Había dos listas de meses distintas: una decía "sep" y otra "set".
+    expect(fechaCorta("2026-09-15")).toBe("15 set 2026");
+  });
+
+  it("recortan un timestamp completo", () => {
+    expect(fechaCorta("2026-01-05T18:30:00.000Z")).toBe("5 ene 2026");
+  });
+
+  it("no explotan con datos malos", () => {
+    expect(fechaCorta("")).toBe("—");
+    expect(fechaCorta(undefined)).toBe("—");
+    expect(fechaCorta("no-es-fecha")).toBe("no-es-fech"); // soloFecha recorta a 10
+    expect(fechaLarga("2026-13-01")).toBe("2026-13-01");
   });
 });

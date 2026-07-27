@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { campoBase } from "../../styles/campos";
 import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
 import CampoBusqueda from "../CampoBusqueda";
@@ -26,14 +27,7 @@ const ESTADO_BADGE: Record<PanelEstado, { bg: string; color: string }> = {
 // Centro por defecto del mapa: Lima, Peru (donde opera el negocio).
 const CENTRO_DEFECTO: [number, number] = [-12.0464, -77.0428];
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid var(--border)",
-  borderRadius: 12,
-  padding: "11px",
-  boxSizing: "border-box",
-  fontSize: 13,
-};
+const inputStyle = campoBase;
 
 /** Convierte lo que haya escrito el admin en un numero valido o
  *  undefined -- nunca NaN. Acepta coma decimal (12,345) ademas de
@@ -260,6 +254,10 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         });
         setMensajeOk("Panel creado.");
       }
+      // Sin esto el panel recién guardado no aparecería: la lista ya no
+      // es en tiempo real (ver usePanelesDisponibles), así que hay que
+      // pedirla de nuevo a mano después de escribir.
+      state.recargar();
       limpiarForm();
       setMostrarForm(false);
     } catch (err) {
