@@ -6109,15 +6109,27 @@
   .coverage-map-legend > div {
     min-width: 0;
     display: grid;
-    grid-template-columns: 18px minmax(0, 1fr) auto;
+    grid-template-columns: 26px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 10px;
+    background: linear-gradient(100deg, rgba(255,255,255,.08), rgba(255,255,255,.015) 72%);
+  }
+  .coverage-map-legend > div:last-child {
+    border-color: rgba(130,174,235,.16);
+    background:
+      radial-gradient(circle at 13px 50%, rgba(203,222,247,.28), transparent 34px),
+      linear-gradient(100deg, rgba(58,91,139,.3), rgba(13,25,43,.08) 76%);
   }
   .coverage-map-legend img {
-    width: 16px;
-    height: 24px;
+    width: 18px;
+    height: 27px;
+    justify-self: center;
     object-fit: contain;
     display: block;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,.38));
   }
   .coverage-map-legend span {
     min-width: 0;
