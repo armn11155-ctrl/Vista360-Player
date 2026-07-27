@@ -58,14 +58,6 @@ function MoneyIcon({ size = 13 }: { size?: number }) {
   );
 }
 
-function PaperclipIcon({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-    </svg>
-  );
-}
-
 interface Props {
   onBack: () => void;
   onCrearCampana?: (clienteId: string) => void;
@@ -98,7 +90,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const resueltas = solicitudes.filter((s) => s.estado !== "Pendiente");
 
   const keysAFirmar = solicitudes
-    .flatMap((s) => [s.imagenReferencialUrl, s.comprobantePagoUrl])
+    .flatMap((s) => [s.imagenReferencialUrl])
     .filter((v): v is string => Boolean(v) && !v!.startsWith("http"));
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
@@ -143,18 +135,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
       );
     }
     setEliminandoId(null);
-  }
-
-  async function confirmarPago(id: string, confirmado: boolean) {
-    if (!db) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
-    setAccionError(null);
-    setResolviendo(id);
-    try {
-      await updateDoc(doc(db, "solicitudesCampana", id), { pagoConfirmado: confirmado });
-    } catch (error) {
-      setAccionError(mensajeDeError(error, "No se pudo confirmar el pago. Revisa tu conexión e intenta de nuevo."));
-    }
-    setResolviendo(null);
   }
 
   return (
@@ -250,20 +230,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                         {s.comentarios}
                       </div>
                     )}
-                    {s.comprobantePagoUrl && (
-                      <a
-                        href={resolverUrl(s.comprobantePagoUrl)}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: 6, marginTop: 8,
-                          fontSize: 12, fontWeight: 600,
-                          color: s.pagoConfirmado ? "var(--green)" : "#7C3AED",
-                        }}
-                      >
-                        <PaperclipIcon /> Ver comprobante de pago {s.pagoConfirmado ? "· Confirmado ✓" : "· Sin confirmar"}
-                      </a>
-                    )}
                   </div>
                 </div>
                 {s.imagenReferencialUrl && (
@@ -274,21 +240,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     decoding="async"
                     style={{ width: "100%", height: 128, objectFit: "cover", borderRadius: 12, marginBottom: 10, display: "block" }}
                   />
-                )}
-                {s.comprobantePagoUrl && !s.pagoConfirmado && (
-                  <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-                    <button
-                      onClick={(event) => { event.stopPropagation(); confirmarPago(s.id, true); }}
-                      disabled={resolviendo === s.id}
-                      style={{
-                        flex: 1, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
-                        borderRadius: 12, padding: "9px 12px", color: "var(--green)", fontSize: 12,
-                        fontWeight: 700, cursor: resolviendo === s.id ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><MoneyIcon /> Confirmar pago recibido</span>
-                    </button>
-                  </div>
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
@@ -405,10 +356,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 <strong>{seleccionada.ciudades?.length ? seleccionada.ciudades.join(", ") : "Sin ciudad"}</strong>
               </div>
               <div>
-                <span>Pago</span>
-                <strong>{seleccionada.pagoConfirmado ? "Confirmado" : seleccionada.comprobantePagoUrl ? "Por confirmar" : "Sin comprobante"}</strong>
-              </div>
-              <div>
                 <span>Inicio deseado</span>
                 <strong>{seleccionada.fechaInicioDeseada ? fechaCorta(seleccionada.fechaInicioDeseada) : "Sin especificar"}</strong>
               </div>
@@ -453,11 +400,6 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
             )}
 
             <div className="solicitud-detail-actions">
-              {seleccionada.comprobantePagoUrl && (
-                <a href={resolverUrl(seleccionada.comprobantePagoUrl)} target="_blank" rel="noreferrer" className="solicitud-action secondary">
-                  Ver comprobante
-                </a>
-              )}
               {clientePorId(seleccionada.cliente_id)?.celular && (
                 <a
                   href={`https://wa.me/${clientePorId(seleccionada.cliente_id)?.celular?.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola, revisé tu solicitud de campaña "${seleccionada.nombre}" en Vista360 Player. Te escribo para coordinar los detalles.`)}`}
