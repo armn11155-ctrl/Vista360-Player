@@ -254,10 +254,8 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         });
         setMensajeOk("Panel creado.");
       }
-      // Sin esto el panel recién guardado no aparecería: la lista ya no
-      // es en tiempo real (ver usePanelesDisponibles), así que hay que
-      // pedirla de nuevo a mano después de escribir.
-      state.recargar();
+      // No hace falta recargar a mano: la lista escucha en tiempo real,
+      // así que el panel recién guardado aparece solo.
       limpiarForm();
       setMostrarForm(false);
     } catch (err) {

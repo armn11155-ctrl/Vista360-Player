@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Panel } from "../types";
 
@@ -8,10 +8,9 @@ export type PanelesDisponiblesState =
   | { status: "ready"; paneles: Panel[] }
   | { status: "error"; message: string };
 
-/** El estado, más una forma de volver a pedir la lista. Hace falta porque
- *  ya no hay tiempo real: quien CREA o EDITA paneles (la pantalla de
- *  administración) tiene que poder refrescar después de guardar, o su
- *  propio cambio no aparecería. */
+/** Se conserva `recargar` aunque con tiempo real los cambios lleguen
+ *  solos: sirve para reintentar a mano si la escucha falló (por ejemplo,
+ *  tras quedarse sin señal). */
 export type PanelesDisponiblesResult = PanelesDisponiblesState & { recargar: () => void };
 
 /** Lista TODOS los paneles (no solo los de un contrato/cliente
@@ -40,26 +39,32 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
     // algo. Cuando no hay nada que consultar, el resultado correcto es
     // "listo y vacío", no "cargando".
     if (!db || !habilitado) { setState({ status: "ready", paneles: [] }); return; }
-    // Lectura ÚNICA, no onSnapshot. Antes cada cliente que abría Cobertura
-    // dejaba abierta una suscripción en tiempo real a TODO el inventario:
-    // una conexión viva consumiendo batería y datos para vigilar algo que
-    // no cambia mientras se mira el mapa (el nombre y la ubicación de un
-    // panel los edita el admin, no ocurre a mitad de sesión). Con muchos
-    // clientes a la vez, eran muchas conexiones abiertas para nada.
-    let cancelado = false;
-    getDocs(collection(db, "paneles"))
-      .then((snap) => {
-        if (cancelado) return;
+    // En TIEMPO REAL a propósito. Se probó con una lectura única para
+    // ahorrar conexiones, pero a esta escala no compensa: el inventario
+    // son decenas de soportes físicos, no miles, así que la escucha
+    // cuesta prácticamente nada -- y a cambio el mapa siempre está
+    // correcto.
+    //
+    // Y el estado de un panel SÍ cambia solo mientras alguien mira:
+    // crearContrato lo marca "Ocupado", eliminarContrato lo libera, y la
+    // tarea diaria sincronizarEstadoPaneles ajusta estado y libreDesde.
+    // Con lectura única, quien tuviera Cobertura abierta no vería nada de
+    // eso hasta salir y volver a entrar.
+    //
+    // Esto empezaría a pesar recién con cientos de paneles o muchos
+    // clientes mirando el mapa a la vez; ahí convendría volver a lectura
+    // única con caché.
+    const unsub = onSnapshot(
+      collection(db, "paneles"),
+      (snap) => {
         const paneles = snap.docs
           .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
           .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
         setState({ status: "ready", paneles });
-      })
-      .catch((err: unknown) => {
-        if (cancelado) return;
-        setState({ status: "error", message: err instanceof Error ? err.message : "No se pudieron cargar los paneles." });
-      });
-    return () => { cancelado = true; };
+      },
+      (err) => setState({ status: "error", message: err.message })
+    );
+    return unsub;
   }, [habilitado, nonce]);
 
   return { ...state, recargar };
