@@ -1,4 +1,5 @@
 import { dirname, join } from "node:path";
+import { enviarPushACliente } from "./notificacionesPush.js";
 import { fileURLToPath } from "node:url";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
@@ -953,6 +954,25 @@ export const generarReporteCliente = onCall(
         },
         { merge: true }
       );
+
+      // Avisar al cliente que ya tiene su reporte. Reemplaza a la vieja
+      // notificación de "nueva evidencia": esa dependía de la pantalla de
+      // Evidencias, que dejó de usarse -- ahora las fotos se suben como
+      // parte del reporte mensual, así que este es el momento real en que
+      // el cliente tiene algo nuevo que ver.
+      //
+      // No se deja que un fallo del push tumbe la generación: el PDF ya
+      // está creado y guardado, y quedarse sin avisar es mucho menos grave
+      // que devolver un error después de haber hecho todo el trabajo.
+      try {
+        await enviarPushACliente(clienteId, {
+          title: "Tu reporte ya está listo",
+          body: `Ya puedes ver el reporte de ${nombreFechaCorta(fecha)}.`,
+          url: "/",
+        });
+      } catch (error) {
+        console.error("El reporte se generó pero no se pudo avisar al cliente.", error);
+      }
 
       return {
         ok: true,

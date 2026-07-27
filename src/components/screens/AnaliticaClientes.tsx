@@ -6,6 +6,9 @@ const NOMBRES_PANTALLA: Record<string, string> = {
   inicio: "Inicio",
   campanas: "Mis Campañas",
   detalle: "Detalle de campaña",
+  // La pantalla de Evidencias se retiró, pero el nombre se conserva: las
+  // visitas históricas ya registradas seguirían apareciendo, y sin esta
+  // línea se mostrarían como "evidencias" en crudo.
   evidencias: "Evidencias",
   reportes: "Reportes",
   perfil: "Perfil",

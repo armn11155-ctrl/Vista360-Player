@@ -56,7 +56,6 @@ const Ocupacion = lazy(() => import("./components/screens/Ocupacion"));
 const AdminClientPicker = lazy(() => import("./components/AdminClientPicker"));
 const AdminPerfil = lazy(() => import("./components/screens/AdminPerfil"));
 const MisCampanas = lazy(() => import("./components/screens/MisCampanas"));
-const Evidencias = lazy(() => import("./components/screens/Evidencias"));
 const Reportes = lazy(() => import("./components/screens/Reportes"));
 const Perfil = lazy(() => import("./components/screens/Perfil"));
 const OnboardingTour = lazy(() => import("./components/OnboardingTour"));
@@ -87,7 +86,6 @@ function precargarPantallas() {
   void import("./components/AdminClientPicker");
   void import("./components/screens/AdminPerfil");
   void import("./components/screens/MisCampanas");
-  void import("./components/screens/Evidencias");
   void import("./components/screens/Reportes");
   void import("./components/screens/Perfil");
 }
@@ -95,7 +93,6 @@ function precargarPantallas() {
 type View =
   | Tab
   | "detalle"
-  | "evidencias"
   | "nueva"
   | "portafolio"
   | "mispantallas"
@@ -117,7 +114,6 @@ const VIEW_COLORS: Record<View, string> = {
   inicio: "#050A12",
   campanas: "#0B1220",
   detalle: "#0B1220",
-  evidencias: "#0B1220",
   reportes: "#0B1220",
   perfil: "#050A12",
   nueva: "#0B1220",
@@ -420,7 +416,7 @@ function AuthenticatedApp({
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
   const activeTab: Tab =
-    view === "detalle" || view === "evidencias" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
+    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
 
   function abrirContrato(c: Contrato) {
     setContratoAbierto(c);
@@ -491,9 +487,6 @@ function AuthenticatedApp({
             isAdmin={isAdmin}
           />
         ) : null;
-        break;
-      case "evidencias":
-        content = <Evidencias contratos={contratos} paneles={paneles} isAdmin={isAdmin} />;
         break;
       case "reportes":
         content = (

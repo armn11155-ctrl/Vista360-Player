@@ -6,7 +6,7 @@ import { diasHasta, soloFecha } from "../utils/fechas";
 
 export interface Notificacion {
   id: string;
-  tipo: "solicitud_pendiente" | "contrato_por_vencer" | "evidencia_nueva";
+  tipo: "solicitud_pendiente" | "contrato_por_vencer";
   titulo: string;
   detalle: string;
   fecha: string; // ISO string
@@ -52,7 +52,6 @@ export function eliminarNotificacion(clienteId: string, id: string) {
  * - Solicitudes de campaña en estado "Pendiente" (el cliente las mandó y
  *   aún no recibieron respuesta)
  * - Contratos que vencen en los próximos 30 días
- * - Evidencias subidas en los últimos 7 días (fotos nuevas en sus campañas)
  */
 export function useNotificaciones(clienteId: string): NotifState {
   const [state, setState] = useState<NotifState>({ status: "loading" });
@@ -137,7 +136,7 @@ export function useNotificaciones(clienteId: string): NotifState {
     );
     const unsubCon = onSnapshot(qCon, (snap) => {
       for (const k of notifs.keys()) {
-        if (k.startsWith("con-") || k.startsWith("evi-")) notifs.delete(k);
+        if (k.startsWith("con-")) notifs.delete(k);
       }
       snap.docs.forEach((d) => {
         const data = d.data() as Contrato & Record<string, any>;
@@ -164,21 +163,6 @@ export function useNotificaciones(clienteId: string): NotifState {
             });
           }
         }
-
-        // Evidencias nuevas (últimos 7 días)
-        const hace7 = new Date(hoy.getTime() - 7 * 86400000);
-        (data.fotos_campania ?? []).forEach((f: { url: string; fecha: string }, i: number) => {
-          const fechaFoto = new Date(f.fecha);
-          if (fechaFoto >= hace7) {
-            notifs.set(`evi-${d.id}-${i}`, {
-              id: `evi-${d.id}-${i}`,
-              tipo: "evidencia_nueva",
-              titulo: "Nueva evidencia disponible",
-              detalle: "Se subió una nueva foto de tu anuncio.",
-              fecha: f.fecha,
-            });
-          }
-        });
       });
       contratosDone = true;
       emitir();

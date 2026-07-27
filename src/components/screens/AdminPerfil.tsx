@@ -90,6 +90,41 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
   const [limpieza, setLimpieza] = useState<LimpiezaEstado>({ fase: "idle" });
+  // Fotos de la vieja pantalla de Evidencias: siguen referenciadas desde
+  // el contrato, así que la limpieza de huérfanos NO las ve -- pero ya no
+  // hay forma de mirarlas en la app, porque esa pantalla se retiró.
+  const [evidencias, setEvidencias] = useState<
+    | { fase: "idle" }
+    | { fase: "contando" }
+    | { fase: "contado"; contratos: number; archivos: number }
+    | { fase: "borrando" }
+    | { fase: "listo"; borradas: number }
+    | { fase: "error"; mensaje: string }
+  >({ fase: "idle" });
+
+  async function llamarEvidencias(confirmar: boolean) {
+    if (!cloudFunctions) { setEvidencias({ fase: "error", mensaje: "Sin conexión." }); return; }
+    setEvidencias({ fase: confirmar ? "borrando" : "contando" });
+    try {
+      const fn = httpsCallable<
+        { confirmar: boolean },
+        { contratosConFotos: number; archivos: number; borradas: number }
+      >(cloudFunctions, "contarEvidenciasHuerfanas");
+      const { data } = await fn({ confirmar });
+      setEvidencias(
+        confirmar
+          ? { fase: "listo", borradas: data.borradas }
+          : { fase: "contado", contratos: data.contratosConFotos, archivos: data.archivos }
+      );
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : "";
+      setEvidencias({
+        fase: "error",
+        mensaje: raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "")
+          || "No se pudo consultar. Puede que falte desplegar la función en GitHub Actions.",
+      });
+    }
+  }
 
   /**
    * Busca archivos en R2 que ya no están citados por ningún documento --
@@ -326,6 +361,85 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                       }}
                     >
                       {limpieza.fase === "borrando" ? "Borrando…" : `Borrar y liberar ${limpieza.datos.mbHuerfanos} MB`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="profile-metric-card" style={{ marginTop: 10 }}>
+              <div style={{ padding: "4px 2px 0" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 4 }}>
+                  Fotos de Evidencias (pantalla retirada)
+                </div>
+                <div style={{ fontSize: 12, color: "#64748B", lineHeight: 1.5, marginBottom: 12 }}>
+                  Las fotos que se subían en la antigua pantalla de Evidencias siguen
+                  ocupando espacio, pero ya no hay dónde verlas: ahora las fotos van
+                  dentro del reporte mensual. La limpieza de arriba no las detecta
+                  porque siguen enlazadas al contrato.
+                </div>
+
+                {evidencias.fase === "error" && (
+                  <div style={{
+                    background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
+                    color: "#DC2626", fontSize: 12, padding: "9px 12px", borderRadius: 12,
+                    marginBottom: 10, lineHeight: 1.5,
+                  }}>
+                    {evidencias.mensaje}
+                  </div>
+                )}
+
+                {evidencias.fase === "contado" && (
+                  <div style={{
+                    background: evidencias.archivos === 0 ? "rgba(34,197,94,0.10)" : "rgba(8,119,255,0.08)",
+                    border: `1px solid ${evidencias.archivos === 0 ? "rgba(34,197,94,0.25)" : "rgba(8,119,255,0.2)"}`,
+                    borderRadius: 12, padding: "10px 12px", marginBottom: 10,
+                    fontSize: 12, lineHeight: 1.6, color: "#0B1220",
+                  }}>
+                    {evidencias.archivos === 0
+                      ? "No quedó ninguna foto de la pantalla vieja."
+                      : <>Hay <strong>{evidencias.archivos}</strong> foto{evidencias.archivos === 1 ? "" : "s"} en <strong>{evidencias.contratos}</strong> campaña{evidencias.contratos === 1 ? "" : "s"}.</>}
+                  </div>
+                )}
+
+                {evidencias.fase === "listo" && (
+                  <div style={{
+                    background: "rgba(34,197,94,0.10)", border: "1px solid rgba(34,197,94,0.25)",
+                    borderRadius: 12, padding: "10px 12px", marginBottom: 10, fontSize: 12, color: "#0B1220",
+                  }}>
+                    Se liberaron <strong>{evidencias.borradas}</strong> foto{evidencias.borradas === 1 ? "" : "s"}.
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingBottom: 4 }}>
+                  <button
+                    type="button"
+                    onClick={() => llamarEvidencias(false)}
+                    disabled={evidencias.fase === "contando" || evidencias.fase === "borrando"}
+                    style={{
+                      flex: "1 1 auto", minWidth: 130, padding: "14px", borderRadius: 12,
+                      border: "1.5px solid #E5E7EB", background: "#fff", color: "#0B1220",
+                      fontSize: 13, fontWeight: 700, cursor: "pointer",
+                    }}
+                  >
+                    {evidencias.fase === "contando" ? "Contando…" : "Contar"}
+                  </button>
+
+                  {evidencias.fase === "contado" && evidencias.archivos > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm(`¿Borrar ${evidencias.archivos} fotos de la pantalla retirada? No se puede deshacer.`)) {
+                          void llamarEvidencias(true);
+                        }
+                      }}
+                      style={{
+                        flex: "1 1 auto", minWidth: 130, padding: "14px", borderRadius: 12,
+                        border: "none", background: "#DC2626", color: "#fff",
+                        fontSize: 13, fontWeight: 700, cursor: "pointer",
+                      }}
+                    >
+                      Borrar y liberar
                     </button>
                   )}
                 </div>
