@@ -7,12 +7,10 @@ import {
 type SidebarView =
   | "inicio"
   | "campanas"
-  | "portafolio"
   | "cobertura"
   | "mispantallas"
   | "reportes"
   | "facturas"
-  | "contactanos"
   | "analitica"
   | "solicitudes"
   | "accesos"

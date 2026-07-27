@@ -37,10 +37,8 @@ import { panelesDeContrato, rucCliente } from "./types";
 // para ver "Inicio".
 const DetalleCampana = lazy(() => import("./components/screens/DetalleCampana"));
 const NuevaCampana = lazy(() => import("./components/screens/NuevaCampana"));
-const Portafolio = lazy(() => import("./components/screens/Portafolio"));
 const Cobertura = lazy(() => import("./components/screens/Cobertura"));
 const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
-const Contactanos = lazy(() => import("./components/screens/Contactanos"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
 const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
 const Accesos = lazy(() => import("./components/screens/Accesos"));
@@ -71,10 +69,8 @@ const OnboardingTour = lazy(() => import("./components/OnboardingTour"));
 function precargarPantallas() {
   void import("./components/screens/DetalleCampana");
   void import("./components/screens/NuevaCampana");
-  void import("./components/screens/Portafolio");
   void import("./components/screens/Cobertura");
   void import("./components/screens/MisPantallas");
-  void import("./components/screens/Contactanos");
   void import("./components/screens/AnaliticaClientes");
   void import("./components/screens/SolicitudesCampana");
   void import("./components/screens/Accesos");
@@ -94,9 +90,7 @@ type View =
   | Tab
   | "detalle"
   | "nueva"
-  | "portafolio"
   | "mispantallas"
-  | "contactanos"
   | "analitica"
   | "solicitudes"
   | "accesos"
@@ -117,10 +111,8 @@ const VIEW_COLORS: Record<View, string> = {
   reportes: "#0B1220",
   perfil: "#050A12",
   nueva: "#0B1220",
-  portafolio: "#0B1220",
   cobertura: "#0B1220",
   mispantallas: "#0B1220",
-  contactanos: "#0B1220",
   analitica: "#0B1220",
   solicitudes: "#0B1220",
   accesos: "#0B1220",
@@ -136,9 +128,7 @@ const VIEW_COLORS: Record<View, string> = {
 // inferior — se navegan igual que "detalle"/"nueva": pantalla completa,
 // con su propio botón de regreso, sin la barra inferior compitiendo.
 const SIDEBAR_VIEWS = new Set<View>([
-  "portafolio",
   "mispantallas",
-  "contactanos",
   "analitica",
   "solicitudes",
   "accesos",
@@ -509,7 +499,6 @@ function AuthenticatedApp({
             email={email}
             isAdmin={isAdmin}
             onCambiarCliente={onCambiarCliente}
-            onContactanos={() => setView("contactanos")}
             onNotifClick={() => setView("notificaciones")}
             totalNotifs={totalNotifs}
           />
@@ -534,9 +523,6 @@ function AuthenticatedApp({
           />
         );
         break;
-      case "portafolio":
-        content = <Portafolio onBack={() => setView("inicio")} onContactar={() => setView("contactanos")} />;
-        break;
       case "cobertura":
         content = (
           <Cobertura
@@ -560,9 +546,6 @@ function AuthenticatedApp({
         break;
       case "mispantallas":
         content = <MisPantallas paneles={paneles} onBack={() => setView("inicio")} onMenuClick={() => setSidebarOpen(true)} />;
-        break;
-      case "contactanos":
-        content = <Contactanos cliente={cliente} onBack={() => setView("inicio")} />;
         break;
       case "analitica":
         content = isAdmin ? <AnaliticaClientes onBack={() => setView("inicio")} /> : null;

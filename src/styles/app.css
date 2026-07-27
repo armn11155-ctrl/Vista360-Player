@@ -5695,19 +5695,6 @@
   }
 
 
-  /* ===== Portafolio ===== */
-  .product-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--border); }
-  .product-card:last-child { border-bottom: none; }
-  .product-icon {
-    width: 46px; height: 46px; border-radius: 12px;
-    background: rgba(8,119,255,0.16);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 19px; flex-shrink: 0;
-  }
-  .product-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; line-height: 1.3; }
-  .product-desc { font-size: 12px; color: var(--muted); line-height: 1.45; margin-bottom: 6px; }
-  .product-price { font-size: 12px; font-weight: 700; color: #0877FF; }
-
   /* ===== Cobertura ===== */
   .coverage-screen {
     background: #050A12;
@@ -6580,78 +6567,6 @@
   .impact-bar-col { display: flex; flex-direction: column-reverse; align-items: center; gap: 6px; flex: 1; }
   .impact-bar { width: 16px; border-radius: 4px 4px 0 0; background: var(--accent); }
   .impact-bar-label { font-size: 11px; color: var(--muted); font-weight: 600; }
-
-  /* ===== Contáctanos ===== */
-  .contact-screen {
-    height: 100%;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    background: #FFFFFF;
-  }
-  .contact-area {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    background: #FFFFFF;
-  }
-  .contact-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(226,232,240,.9);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 14px 30px rgba(15,23,42,.045);
-  }
-  .contact-name {
-    color: #050A12;
-    font-size: 14px;
-    font-weight: 900;
-  }
-  .contact-copy {
-    color: #64748B;
-    font-size: 13px;
-    line-height: 1.55;
-    margin-top: 4px;
-  }
-  .contact-copy.strong {
-    color: #050A12;
-    font-weight: 700;
-  }
-  .contact-btn {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 13px 0;
-    border-radius: 0;
-    border-bottom: 1px solid #EEF2F7;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .contact-btn:last-child { border-bottom: 0; }
-  .contact-btn-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    background: rgba(8,119,255,.08);
-    color: #0877FF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 900;
-    flex-shrink: 0;
-  }
-  .contact-btn-title {
-    font-weight: 850;
-    font-size: 13px;
-    color: #050A12;
-  }
-  .contact-btn-sub {
-    font-size: 12px;
-    color: #64748B;
-    margin-top: 2px;
-  }
 
   /* Esta regla debe permanecer después del estilo móvil base: garantiza
      que Cambiar cliente use siempre la panorámica ancha en escritorio. */

@@ -30,9 +30,10 @@ function ClipIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-// TODO: reemplazar por el número real de WhatsApp del negocio (mismo
-// placeholder que usa Contactanos.tsx — hay que corregirlo en los dos
-// lugares a la vez).
+// TODO: reemplazar por el número real de WhatsApp del negocio -- sigue
+// siendo un placeholder (era compartido con Contactanos.tsx, que se
+// eliminó por estar inalcanzable desde cualquier menú; este es ahora
+// el único lugar que usa este número).
 const WHATSAPP_NUMERO = "51999999999";
 
 interface Props {

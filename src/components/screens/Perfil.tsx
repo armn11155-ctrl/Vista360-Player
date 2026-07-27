@@ -16,7 +16,6 @@ interface Props {
   email: string;
   isAdmin?: boolean;
   onCambiarCliente?: () => void;
-  onContactanos?: () => void;
   onNotifClick?: () => void;
   totalNotifs?: number;
 }
@@ -110,7 +109,7 @@ function ProfileMetricRow({ icon, label, value, tone }: {
   );
 }
 
-export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onContactanos, onNotifClick, totalNotifs = 0 }: Props) {
+export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc);

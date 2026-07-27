@@ -13,6 +13,11 @@ const NOMBRES_PANTALLA: Record<string, string> = {
   reportes: "Reportes",
   perfil: "Perfil",
   nueva: "Nueva campaña",
+  // Portafolio y Contáctanos se retiraron (ninguna de las dos tenía
+  // ya un botón real que llevara ahí) -- se conservan los nombres
+  // por el mismo motivo que "evidencias" arriba: si hay visitas
+  // históricas registradas de cuando sí existían, se siguen viendo
+  // con su nombre en vez de la llave en crudo.
   portafolio: "Portafolio",
   cobertura: "Cobertura",
   mispantallas: "Mis Publicidades",
