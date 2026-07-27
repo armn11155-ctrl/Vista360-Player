@@ -6,7 +6,7 @@ import sharp from "sharp";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { R2_SECRETS, firmarLecturaR2, subirBufferR2 } from "./r2Storage.js";
+import { R2_SECRETS, borrarObjetoR2, firmarLecturaR2, leerObjetoR2, subirBufferR2 } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -138,11 +138,24 @@ function fechaCorta(iso?: string) {
   return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" }).format(d);
 }
 
+/** Las claves de R2 del proyecto siempre empiezan así, y nunca son URLs. */
+function esClaveR2(valor: string) {
+  return valor.startsWith("vista360/") && !valor.startsWith("http");
+}
+
 async function imageBuffer(url: string) {
   if (url.startsWith("data:image/")) {
     const base64 = url.split(",")[1];
     if (!base64) throw new Error("Imagen inválida.");
     return Buffer.from(base64, "base64");
+  }
+  // Clave de R2: es el camino nuevo. Las fotos del reporte se suben a R2
+  // desde el navegador y acá solo llega la clave, así la llamada pesa unos
+  // pocos KB en vez de arrastrar las imágenes enteras -- que era lo que
+  // topaba con el límite de 10 MB de Cloud Functions.
+  // Se sigue aceptando data:image/ para no romper nada que aún lo mande.
+  if (esClaveR2(url)) {
+    return leerObjetoR2(url);
   }
   const response = await fetch(url);
   if (!response.ok) {
@@ -759,7 +772,7 @@ function cargarElementosSubidos(data: unknown, ubicacion: string): ReporteElemen
   if (!Array.isArray(data)) return [];
   const fotos = data
     .map(normalizeFoto)
-    .filter((foto) => typeof foto.url === "string" && foto.url.startsWith("data:image/"))
+    .filter((foto) => typeof foto.url === "string" && (foto.url.startsWith("data:image/") || esClaveR2(foto.url)))
     .slice(0, 12);
   return [{
     titulo: "Evidencia de campaña",
@@ -790,7 +803,7 @@ async function cargarElementosSubidosPorPanel(
     const panelId = String(entradaRaw.panelId ?? "").trim();
     const fotos = (Array.isArray(entradaRaw.fotos) ? entradaRaw.fotos : [])
       .map(normalizeFoto)
-      .filter((foto) => typeof foto.url === "string" && foto.url.startsWith("data:image/"))
+      .filter((foto) => typeof foto.url === "string" && (foto.url.startsWith("data:image/") || esClaveR2(foto.url)))
       .slice(0, 12);
     if (fotos.length === 0) continue;
 
@@ -954,6 +967,26 @@ export const generarReporteCliente = onCall(
         },
         { merge: true }
       );
+
+      // Las fotos ya están dentro del PDF: las copias sueltas en R2 no
+      // sirven para nada más y solo ocuparían espacio. Se borran acá para
+      // no depender de una limpieza posterior.
+      const clavesTemporales: string[] = [];
+      const listaPaneles = request.data?.panelesFotos;
+      if (Array.isArray(listaPaneles)) {
+        listaPaneles.forEach((p: unknown) => {
+          const fotos = (p as { fotos?: unknown })?.fotos;
+          if (!Array.isArray(fotos)) return;
+          fotos.forEach((f: unknown) => {
+            const u = (f as { url?: unknown })?.url;
+            if (typeof u === "string" && esClaveR2(u)) clavesTemporales.push(u);
+          });
+        });
+      }
+      // borrarObjetoR2 no lanza: si alguna no se puede borrar, queda en el
+      // log y la limpieza de huérfanos la recogerá después. No vale la
+      // pena tumbar un reporte ya generado por esto.
+      await Promise.all(clavesTemporales.map((k) => borrarObjetoR2(k)));
 
       // Avisar al cliente que ya tiene su reporte. Reemplaza a la vieja
       // notificación de "nueva evidencia": esa dependía de la pantalla de

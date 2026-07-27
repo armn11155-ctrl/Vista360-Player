@@ -53,7 +53,14 @@ export async function subirBufferR2(key: string, buffer: Buffer, contentType: st
  *  se puede usar FUERA de la app, y sin límite alguien podía subir varios
  *  GB y llenar el bucket (que se paga). Los PDFs de factura son lo más
  *  pesado que pasa por acá de verdad. */
-export const MAX_SUBIDA_BYTES = 25 * 1024 * 1024; // 25 MB
+export const MAX_SUBIDA_BYTES = 32 * 1024 * 1024; // 32 MB
+
+// Por qué 32: la factura más pesada que la app acepta son 24 MB (ver
+// MAX_FACTURA_PDF_BYTES en src/utils/prepararFacturaPdf.ts), y conviene
+// dejar holgura por encima en vez de quedar al filo. Las fotos llegan
+// comprimidas a 1280px, así que ni se acercan. Si algún día se vuelve a
+// permitir subir VIDEO sin comprimir, esto se queda corto: un video de
+// celular pasa de 100 MB sin esfuerzo.
 
 export async function firmarSubidaR2(
   key: string,
@@ -81,6 +88,26 @@ export async function firmarSubidaR2(
  *  header Content-Disposition, así que funciona con un simple <a href>,
  *  sin depender de CORS ni de que el navegador soporte el atributo
  *  `download` para links de otro dominio. */
+/**
+ * Descarga un objeto de R2 y lo devuelve como Buffer.
+ *
+ * Lo usa la generación de reportes: las fotos ahora se suben a R2 desde el
+ * navegador y al servidor solo le llega la clave, en vez de la imagen
+ * entera metida en la llamada. Así se esquiva el tope de 10 MB que tiene
+ * cualquier llamada a Cloud Functions, que era lo que impedía hacer
+ * reportes con muchos paneles.
+ */
+export async function leerObjetoR2(key: string): Promise<Buffer> {
+  const respuesta = await r2Client().send(
+    new GetObjectCommand({ Bucket: r2Bucket(), Key: key })
+  );
+  const cuerpo = respuesta.Body as { transformToByteArray?: () => Promise<Uint8Array> } | undefined;
+  if (!cuerpo?.transformToByteArray) {
+    throw new Error(`No se pudo leer ${key} de R2.`);
+  }
+  return Buffer.from(await cuerpo.transformToByteArray());
+}
+
 export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nombreDescarga?: string) {
   const command = new GetObjectCommand({
     Bucket: r2Bucket(),

@@ -197,6 +197,32 @@ export async function subirAvatarR2(file: File): Promise<SubidaR2> {
   }
 }
 
+/**
+ * Sube una foto de reporte (que viene como dataUrl del recortador) y
+ * devuelve solo su clave en R2.
+ *
+ * Antes estas fotos viajaban enteras, en base64, dentro de la llamada a
+ * generarReporteCliente. Como una llamada a Cloud Functions no puede pasar
+ * de 10 MB y base64 infla el peso un tercio, un reporte con muchos paneles
+ * simplemente fallaba. Subiéndolas primero, a la función solo le llegan
+ * las claves: unos pocos KB, sin techo práctico de cantidad.
+ *
+ * No genera miniatura: son temporales, el servidor las borra en cuanto
+ * quedan dentro del PDF.
+ */
+export async function subirFotoReporteR2(dataUrl: string): Promise<string> {
+  const blob = await (await fetch(dataUrl)).blob();
+  const contentType = blob.type || "image/jpeg";
+  const { key, uploadUrl } = await pedirUrlFirmada(
+    "vista360/campanas",
+    contentType === "image/png" ? "png" : "jpg",
+    contentType,
+    blob.size
+  );
+  await subirBlob(uploadUrl, blob, contentType);
+  return key;
+}
+
 export async function subirFacturaR2(file: File): Promise<{ key: string }> {
   const auth = getAuth(app ?? undefined);
   if (!auth.currentUser) {

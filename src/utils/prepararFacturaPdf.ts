@@ -1,7 +1,7 @@
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 
-const MAX_FACTURA_PDF_BYTES = 12 * 1024 * 1024;
+const MAX_FACTURA_PDF_BYTES = 24 * 1024 * 1024;
 
 interface ComprimirFacturaPdfResponse {
   nombre: string;

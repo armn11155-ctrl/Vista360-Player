@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { mensajeDeError } from "../../utils/errores";
+import { subirFotoReporteR2 } from "../../config/r2";
 import { httpsCallable } from "firebase/functions";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
@@ -68,11 +69,6 @@ function nombreCliente(cliente: Cliente | null) {
 }
 
 
-
-/** Una llamada a Cloud Functions no puede pasar de 10 MB, y las fotos del
- *  reporte viajan como base64 dentro de ella. Se deja margen para el resto
- *  del contenido (ids, nombres, fechas). */
-const LIMITE_ENVIO_BYTES = 9 * 1024 * 1024;
 
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
@@ -207,29 +203,48 @@ function mensajeErrorReporte(error: unknown) {
       // fecha del reporte. Ahora usan la misma fecha seleccionada.
       const fecha = `${mes}-${dia}`;
 
-      // Las fotos viajan como texto base64 DENTRO de la llamada, y una
-      // llamada a Cloud Functions no puede pasar de 10 MB. Base64 infla
-      // el peso un tercio, así que el tope real son ~7.5 MB de fotos.
+      // Las fotos se suben PRIMERO a R2 y a la función solo le van las
+      // claves. Antes viajaban enteras en base64 dentro de la llamada, y
+      // como una llamada a Cloud Functions no puede pasar de 10 MB, un
+      // reporte con muchos paneles fallaba sin explicación posible.
+      // Ahora el peso de la llamada no depende de cuántas fotos haya.
       //
-      // Sin esta revisión, pasarse no daba un aviso entendible: la
-      // llamada fallaba con un error técnico y el admin no tenía forma de
-      // saber que el problema era la cantidad de fotos. Con ~20 paneles a
-      // 3 fotos cada uno ya se cruza el límite.
-      const pesoAproximado = panelIdsCampana.reduce(
-        (total, id) => total + (fotosPorPanel[id] ?? []).reduce((t, f) => t + f.dataUrl.length, 0),
-        0
-      );
-      if (pesoAproximado > LIMITE_ENVIO_BYTES) {
-        const totalFotos = panelIdsCampana.reduce((t, id) => t + (fotosPorPanel[id] ?? []).length, 0);
-        setMensajeAdminTipo("error");
-        setMensajeAdmin(
-          `Son demasiadas fotos para un solo reporte (${totalFotos}). ` +
-          `Genera el reporte por partes: elige menos paneles ahora y repite con el resto. ` +
-          `Es un tope del servidor, no de la app.`
+      // El servidor borra estas copias en cuanto quedan dentro del PDF.
+      // Se suben de a 4 en paralelo. Una por una, 40 fotos serían casi un
+      // minuto de espera; todas de golpe saturan la conexión del celular y
+      // empiezan a fallar por timeout. Cuatro es un punto intermedio que
+      // aprovecha la conexión sin ahogarla.
+      const pendientes: { panelId: string; indice: number; dataUrl: string }[] = [];
+      panelIdsCampana.forEach((id) => {
+        (fotosPorPanel[id] ?? []).forEach((foto, indice) => {
+          pendientes.push({ panelId: id, indice, dataUrl: foto.dataUrl });
+        });
+      });
+
+      const claves = new Map<string, string>();
+      let subidas = 0;
+      const EN_PARALELO = 4;
+      for (let i = 0; i < pendientes.length; i += EN_PARALELO) {
+        const lote = pendientes.slice(i, i + EN_PARALELO);
+        await Promise.all(
+          lote.map(async (item) => {
+            claves.set(`${item.panelId}:${item.indice}`, await subirFotoReporteR2(item.dataUrl));
+          })
         );
-        setGenerando(false);
-        return;
+        subidas += lote.length;
+        setMensajeAdminTipo("ok");
+        setMensajeAdmin(`Subiendo fotos… ${subidas} de ${pendientes.length}`);
       }
+      setMensajeAdmin("Armando el PDF…");
+
+      const panelesConClaves = panelIdsCampana.map((id) => ({
+        panelId: id,
+        panelNombre: paneles[id]?.nombre,
+        fotos: (fotosPorPanel[id] ?? [])
+          .map((_, indice) => claves.get(`${id}:${indice}`))
+          .filter((k): k is string => Boolean(k))
+          .map((url) => ({ url, fecha })),
+      }));
 
       await generarReporteCliente({
         clienteId,
@@ -237,11 +252,7 @@ function mensajeErrorReporte(error: unknown) {
         dia,
         contratoId: contratoSeleccionado.id,
         panelId: panelIdsCampana[0] || undefined,
-        panelesFotos: panelIdsCampana.map((id) => ({
-          panelId: id,
-          panelNombre: paneles[id]?.nombre,
-          fotos: (fotosPorPanel[id] ?? []).map((foto) => ({ url: foto.dataUrl, fecha })),
-        })),
+        panelesFotos: panelesConClaves,
       });
       setMensajeAdminTipo("ok");
       setMensajeAdmin("Reporte generado. Ya puedes verlo y enviarlo desde la lista.");
