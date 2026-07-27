@@ -256,9 +256,19 @@ export interface SolicitudCampana {
    *  nunca antes de hoy, el formulario ya lo bloquea con min= en el
    *  input de fecha. */
   fechaInicioDeseada?: string;
-  /** Opcional -- el cliente muchas veces no sabe cuántos meses quiere
-   *  todavía, se termina de conversar con el equipo. */
+  /** Se calcula a partir de fechaInicioDeseada + mesesDeseados. Se sigue
+   *  guardando (en vez de solo los meses) para no romper las solicitudes
+   *  viejas ni la pantalla del admin, que ya la muestra. */
   fechaFinDeseada?: string | null;
+  /** Duración que pidió el cliente, en meses. Reemplaza al calendario de
+   *  "fecha de fin": es un dato que el cliente sí sabe de entrada y que
+   *  se puede cotizar, y encaja con el mínimo de 3 meses. */
+  mesesDeseados?: number;
+  /** Panel puntual sobre el que se pide (cuando la solicitud sale del
+   *  mapa de Cobertura). Con esto el admin sabe exactamente de qué
+   *  soporte se trata, sin deducirlo del texto de los comentarios. */
+  panelSolicitadoId?: string;
+  panelSolicitadoNombre?: string;
   createdAt?: Timestamp | null;
 }
 

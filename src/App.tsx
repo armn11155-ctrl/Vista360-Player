@@ -355,7 +355,7 @@ function AuthenticatedApp({
   // Precarga del formulario de Nueva campaña cuando se pide desde un
   // pin de Cobertura ("Solicitar disponibilidad"/"Solicitar
   // renovación") -- así la persona no escribe todo de cero.
-  const [prefillNueva, setPrefillNueva] = useState<{ nombre?: string; ciudad?: string; comentarios?: string } | null>(null);
+  const [prefillNueva, setPrefillNueva] = useState<{ nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null>(null);
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
   const pushEstadoGlobal = usePushEstado(uid);
   // Foco de luz para activar push -- a propósito NO se guarda "ya lo vi"
@@ -531,6 +531,8 @@ function AuthenticatedApp({
               setPrefillNueva({
                 nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : `Consulta - ${panel.nombre}`,
                 ciudad: panel.ciudad,
+                panelId: panel.id,
+                panelNombre: panel.nombre,
                 comentarios:
                   tipo === "renovacion"
                     ? `Quiero renovar mi campaña en el panel "${panel.nombre}" (${panel.ciudad}).`

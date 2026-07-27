@@ -71,3 +71,25 @@ export function sumarDias(fecha: string, dias: number): string {
   const d = new Date(Date.UTC(anio, mes - 1, dia + dias));
   return d.toISOString().slice(0, 10);
 }
+
+/**
+ * Suma meses a una "YYYY-MM-DD" y devuelve el día ANTERIOR al mismo día
+ * del mes resultante -- que es como se cuenta un contrato: del 1 de
+ * julio por 3 meses se termina el 30 de septiembre, no el 1 de octubre.
+ *
+ * Si el día no existe en el mes destino (31 de enero + 1 mes), cae al
+ * último día real de ese mes en vez de desbordarse a marzo, que es lo
+ * que haría Date por su cuenta.
+ */
+export function sumarMeses(fecha: string, meses: number): string {
+  const base = soloFecha(fecha);
+  const [anio, mes, dia] = base.split("-").map(Number);
+  if (!anio || !mes || !dia) return base;
+  const destino = new Date(Date.UTC(anio, mes - 1 + meses, 1));
+  const ultimoDiaDestino = new Date(Date.UTC(destino.getUTCFullYear(), destino.getUTCMonth() + 1, 0)).getUTCDate();
+  const diaAjustado = Math.min(dia, ultimoDiaDestino);
+  const fin = new Date(Date.UTC(destino.getUTCFullYear(), destino.getUTCMonth(), diaAjustado));
+  // Un día antes: el contrato cubre meses completos.
+  fin.setUTCDate(fin.getUTCDate() - 1);
+  return fin.toISOString().slice(0, 10);
+}

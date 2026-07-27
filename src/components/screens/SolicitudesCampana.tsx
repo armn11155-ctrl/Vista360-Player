@@ -432,6 +432,21 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 <span>Fin deseado</span>
                 <strong>{seleccionada.fechaFinDeseada ? fechaCorta(seleccionada.fechaFinDeseada) : "Sin especificar"}</strong>
               </div>
+              {/* Duración y panel puntual: los manda el formulario nuevo.
+                  Las solicitudes viejas no los tienen, por eso solo se
+                  muestran cuando existen, en vez de una fila vacía. */}
+              {seleccionada.mesesDeseados ? (
+                <div>
+                  <span>Duración</span>
+                  <strong>{seleccionada.mesesDeseados} meses</strong>
+                </div>
+              ) : null}
+              {seleccionada.panelSolicitadoNombre ? (
+                <div>
+                  <span>Panel solicitado</span>
+                  <strong>{seleccionada.panelSolicitadoNombre}</strong>
+                </div>
+              ) : null}
             </div>
 
             {seleccionada.objetivo && (

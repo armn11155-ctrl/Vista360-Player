@@ -4,6 +4,7 @@ import { httpsCallable } from "firebase/functions";
 import { db, cloudFunctions } from "../../config/firebase";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { formatCampaignName } from "../../utils/campaignName";
+import { sumarMeses } from "../../utils/fechas";
 import BackChevron from "../BackChevron";
 
 interface Props {
@@ -14,7 +15,15 @@ interface Props {
   /** Precarga el formulario del CLIENTE -- lo usa Cobertura cuando la
    *  persona pide disponibilidad o renovación de un panel puntual
    *  desde el mapa, para no hacerla escribir todo de cero. */
-  prefill?: { nombre?: string; ciudad?: string; comentarios?: string };
+  prefill?: {
+    nombre?: string;
+    ciudad?: string;
+    comentarios?: string;
+    /** Cuando la solicitud sale del mapa, el panel ya está elegido -- se
+     *  muestra como dato fijo en vez de volver a preguntar la ciudad. */
+    panelId?: string;
+    panelNombre?: string;
+  };
 }
 
 const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Otra"];
@@ -50,6 +59,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   //    solicitud pendiente, la revisa el admin) ──────────────────────
   const [nombre, setNombre] = useState(() => prefill?.nombre ?? "");
   const [ciudad, setCiudad] = useState(() => prefill?.ciudad ?? "Huánuco");
+  // Si venimos del mapa con un panel concreto, preguntar la ciudad otra
+  // vez sobra -- y peor, si eligiera una distinta contradiría al panel.
+  const panelFijo = prefill?.panelNombre ? { id: prefill.panelId ?? "", nombre: prefill.panelNombre } : null;
   const [comentarios, setComentarios] = useState(() => prefill?.comentarios ?? "");
   // Fecha desde la que le gustaría empezar -- no se puede pedir una
   // campaña con fecha de antes de hoy, por eso el min del input ya
@@ -64,10 +76,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // del servidor (hoyEnLima()).
   const hoyStr = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
   const [fechaInicio, setFechaInicio] = useState(hoyStr);
-  // Opcional a propósito -- muchas veces el cliente todavía no sabe
-  // cuántos meses quiere (eso se termina de conversar con el equipo),
-  // así que no tiene sentido obligarlo a poner una fecha de fin.
-  const [fechaFin, setFechaFin] = useState("");
+  // Duración en meses en vez de un calendario de "fecha de fin": es lo
+  // que el cliente sí sabe de entrada ("quiero 3 meses"), es un solo
+  // toque en el celular en vez de pelear con el date picker, y encaja
+  // con el mínimo de 3 meses que ya se le anuncia debajo. La fecha de
+  // fin se calcula sola a partir del inicio.
+  const [meses, setMeses] = useState(3);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   // Se muestra después de enviar en vez de saltar directo a "Mis
@@ -91,7 +105,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
         fechaInicioDeseada: fechaInicio,
-        fechaFinDeseada: fechaFin || null,
+        fechaFinDeseada: sumarMeses(fechaInicio, meses),
+        mesesDeseados: meses,
+        ...(panelFijo ? { panelSolicitadoId: panelFijo.id, panelSolicitadoNombre: panelFijo.nombre } : {}),
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
@@ -320,11 +336,33 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           <Field label="Nombre de la campaña">
             <input style={inputStyle} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Campaña Invierno 2024" />
           </Field>
-          <Field label="Ciudad">
-            <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
-              {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
+          {panelFijo ? (
+            <Field label="Panel solicitado">
+              <div style={{
+                ...inputStyle,
+                background: "#F8FAFC",
+                display: "flex",
+                alignItems: "center",
+                gap: 9,
+                color: "#0B1220",
+                fontWeight: 600,
+              }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" style={{ flexShrink: 0 }}>
+                  <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
+                  <circle cx="12" cy="10" r="1.8" />
+                </svg>
+                <span style={{ minWidth: 0, overflowWrap: "break-word" }}>
+                  {panelFijo.nombre}{ciudad ? ` · ${ciudad}` : ""}
+                </span>
+              </div>
+            </Field>
+          ) : (
+            <Field label="Ciudad">
+              <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
+                {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </Field>
+          )}
           <Field label="Fecha de inicio deseada">
             <input
               style={inputStyle}
@@ -334,17 +372,35 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               onChange={(e) => setFechaInicio(e.target.value)}
             />
           </Field>
-          <Field label="Fecha de fin (opcional)">
-            <input
-              style={inputStyle}
-              type="date"
-              min={fechaInicio || hoyStr}
-              value={fechaFin}
-              onChange={(e) => setFechaFin(e.target.value)}
-            />
+          <Field label="¿Por cuánto tiempo?">
+            <div style={{ display: "flex", gap: 8 }}>
+              {[3, 6, 12].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setMeses(n)}
+                  style={{
+                    flex: 1,
+                    padding: "12px 6px",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    border: meses === n ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
+                    background: meses === n ? "rgba(8,119,255,0.08)" : "#fff",
+                    color: meses === n ? "#0877FF" : "#0B1220",
+                  }}
+                >
+                  {n} meses
+                </button>
+              ))}
+            </div>
           </Field>
-          <div style={{ fontSize: 11.5, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.4 }}>
+          <div style={{ fontSize: 11.5, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.45 }}>
             El contrato mínimo es de 3 meses.
+            {fechaInicio && (
+              <> Terminaría el <strong>{sumarMeses(fechaInicio, meses)}</strong>.</>
+            )}
           </div>
           <Field label="Comentarios adicionales">
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />

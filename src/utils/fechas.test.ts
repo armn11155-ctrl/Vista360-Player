@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "./fechas";
+import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias, sumarMeses } from "./fechas";
 import { estadoCampana } from "../types";
 import type { Contrato } from "../types";
 
@@ -138,5 +138,43 @@ describe("soloFecha", () => {
   it("tolera vacío", () => {
     expect(soloFecha(undefined)).toBe("");
     expect(soloFecha(null)).toBe("");
+  });
+});
+
+describe("sumarMeses — fecha de fin de un contrato", () => {
+  it("3 meses desde el 1 de julio termina el 30 de septiembre", () => {
+    // Meses COMPLETOS: no el 1 de octubre.
+    expect(sumarMeses("2026-07-01", 3)).toBe("2026-09-30");
+  });
+
+  it("6 y 12 meses desde el 1 de enero", () => {
+    expect(sumarMeses("2026-01-01", 6)).toBe("2026-06-30");
+    expect(sumarMeses("2026-01-01", 12)).toBe("2026-12-31");
+  });
+
+  it("no se desborda cuando el día no existe en el mes destino", () => {
+    // 31 de enero + 1 mes: febrero no tiene 31, así que cae al último
+    // día real de febrero (28) y luego resta uno -> 27.
+    expect(sumarMeses("2026-01-31", 1)).toBe("2026-02-27");
+  });
+
+  it("cruza el fin de año", () => {
+    expect(sumarMeses("2026-11-15", 3)).toBe("2027-02-14");
+  });
+
+  it("respeta los años bisiestos", () => {
+    expect(sumarMeses("2028-01-29", 1)).toBe("2028-02-28");
+  });
+
+  it("empieza a mitad de mes y termina el día anterior", () => {
+    expect(sumarMeses("2026-07-26", 3)).toBe("2026-10-25");
+  });
+
+  it("la fecha de fin siempre es posterior al inicio", () => {
+    for (const meses of [3, 6, 12]) {
+      for (const inicio of ["2026-01-31", "2026-02-28", "2026-07-26", "2026-12-01"]) {
+        expect(sumarMeses(inicio, meses) > inicio).toBe(true);
+      }
+    }
   });
 });
