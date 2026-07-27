@@ -69,6 +69,11 @@ function nombreCliente(cliente: Cliente | null) {
 
 
 
+/** Una llamada a Cloud Functions no puede pasar de 10 MB, y las fotos del
+ *  reporte viajan como base64 dentro de ella. Se deja margen para el resto
+ *  del contenido (ids, nombres, fechas). */
+const LIMITE_ENVIO_BYTES = 9 * 1024 * 1024;
+
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
@@ -128,7 +133,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   /** Casos propios de la generación de PDF, que merecen un texto más
    *  concreto que el genérico. Todo lo demás cae en mensajeDeError, que ya
    *  sabe traducir permisos, sesión vencida y falta de red. */
-  function mensajeErrorReporte(error: unknown) {
+function mensajeErrorReporte(error: unknown) {
     const raw = error instanceof Error ? error.message.toLowerCase() : "";
     if (raw.includes("not-found")) {
       return "No encuentro la función para generar PDFs. Falta desplegar las Functions.";
@@ -201,6 +206,30 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
       // paginas de evidencia mostraban la fecha de hoy en vez de la
       // fecha del reporte. Ahora usan la misma fecha seleccionada.
       const fecha = `${mes}-${dia}`;
+
+      // Las fotos viajan como texto base64 DENTRO de la llamada, y una
+      // llamada a Cloud Functions no puede pasar de 10 MB. Base64 infla
+      // el peso un tercio, así que el tope real son ~7.5 MB de fotos.
+      //
+      // Sin esta revisión, pasarse no daba un aviso entendible: la
+      // llamada fallaba con un error técnico y el admin no tenía forma de
+      // saber que el problema era la cantidad de fotos. Con ~20 paneles a
+      // 3 fotos cada uno ya se cruza el límite.
+      const pesoAproximado = panelIdsCampana.reduce(
+        (total, id) => total + (fotosPorPanel[id] ?? []).reduce((t, f) => t + f.dataUrl.length, 0),
+        0
+      );
+      if (pesoAproximado > LIMITE_ENVIO_BYTES) {
+        const totalFotos = panelIdsCampana.reduce((t, id) => t + (fotosPorPanel[id] ?? []).length, 0);
+        setMensajeAdminTipo("error");
+        setMensajeAdmin(
+          `Son demasiadas fotos para un solo reporte (${totalFotos}). ` +
+          `Genera el reporte por partes: elige menos paneles ahora y repite con el resto. ` +
+          `Es un tope del servidor, no de la app.`
+        );
+        setGenerando(false);
+        return;
+      }
 
       await generarReporteCliente({
         clienteId,
