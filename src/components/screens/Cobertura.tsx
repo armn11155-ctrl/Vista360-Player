@@ -313,6 +313,16 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            // Por defecto Leaflet solo mantiene cargados 2 mosaicos mas
+            // alla del borde visible. Un arrastre normal en el celular se
+            // sale de ese margen facil, y en una conexion mas lenta (datos
+            // moviles, no la conexion rapida de una oficina) eso se ve
+            // como una franja gris que recien ahi empieza a cargar. Con
+            // mas margen (4) se precargan mosaicos mas alla de lo que se
+            // ve, en segundo plano, asi que un arrastre tipico ya
+            // encuentra el mosaico listo en vez de pedirlo recien al
+            // moverse.
+            keepBuffer: 4,
           }).addTo(mapRef.current);
         }
 

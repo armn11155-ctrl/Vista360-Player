@@ -128,6 +128,10 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
             maxZoom: 19,
             attribution: "&copy; OpenStreetMap &copy; CARTO",
+            // Mismo motivo que en Cobertura.tsx: mas margen de mosaicos
+            // precargados alrededor de lo visible, para que un arrastre
+            // normal no se tope con una franja gris recien cargando.
+            keepBuffer: 4,
           }).addTo(mapRef.current);
           mapRef.current.on("click", (ev: any) => colocarMarcador(L, ev.latlng));
 
