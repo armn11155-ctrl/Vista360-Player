@@ -78,6 +78,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
 
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
+  const observadorRef = useRef<ResizeObserver | null>(null);
   const markerRef = useRef<any>(null);
   const latRef = useRef(lat);
   const lngRef = useRef(lng);
@@ -131,7 +132,19 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           }
         }
 
-        window.setTimeout(() => mapRef.current?.invalidateSize(), 80);
+        // Mismo problema que en Cobertura: el contenedor todavía no tiene
+        // su tamaño final cuando Leaflet lo mide, y el mapa queda gris.
+        // Se observa el contenedor en vez de adivinar un retraso.
+        mapRef.current.invalidateSize();
+        if (mapEl.current && typeof ResizeObserver !== "undefined") {
+          observadorRef.current?.disconnect();
+          observadorRef.current = new ResizeObserver(() => {
+            mapRef.current?.invalidateSize();
+          });
+          observadorRef.current.observe(mapEl.current);
+        } else {
+          window.setTimeout(() => mapRef.current?.invalidateSize(), 300);
+        }
       })
       .catch(() => {
         if (!cancelado) setMapError(true);
@@ -139,6 +152,8 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
 
     return () => {
       cancelado = true;
+      observadorRef.current?.disconnect();
+      observadorRef.current = null;
     };
   }, [mostrarForm]);
 

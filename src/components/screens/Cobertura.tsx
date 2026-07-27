@@ -226,6 +226,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
+  const observadorRef = useRef<ResizeObserver | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
 
@@ -376,7 +377,31 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           );
         }
 
-        window.setTimeout(() => mapRef.current?.invalidateSize(), 80);
+        // El mapa nacía GRIS: Leaflet calcula el tamaño del contenedor al
+        // crearse, pero para entonces la pantalla todavía está entrando
+        // (.screens tiene una animación de 300ms) y el contenedor aún no
+        // tiene su alto final. Los mosaicos se descargaban bien -- se ve en
+        // la red, todos 200 -- pero quedaban colocados fuera de vista, así
+        // que el usuario veía un recuadro vacío. Solo se arreglaba si
+        // cambiabas el tamaño de la ventana, cosa que en un celular no
+        // pasa nunca.
+        //
+        // Adivinar un retraso fijo es frágil (depende de la animación, de
+        // la fuente, de lo rápido que sea el equipo). En vez de eso se
+        // OBSERVA el contenedor y se recalcula cada vez que su tamaño
+        // cambia de verdad: cubre la entrada de la pantalla, el giro del
+        // teléfono, el teclado que se abre y el cambio de ventana.
+        mapRef.current.invalidateSize();
+        if (mapEl.current && typeof ResizeObserver !== "undefined") {
+          observadorRef.current?.disconnect();
+          observadorRef.current = new ResizeObserver(() => {
+            mapRef.current?.invalidateSize();
+          });
+          observadorRef.current.observe(mapEl.current);
+        } else {
+          // Navegador sin ResizeObserver: se vuelve al empujón por tiempo.
+          window.setTimeout(() => mapRef.current?.invalidateSize(), 300);
+        }
       })
       .catch(() => {
         if (!cancelado) {
@@ -387,6 +412,8 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
     return () => {
       cancelado = true;
+      observadorRef.current?.disconnect();
+      observadorRef.current = null;
     };
   }, [conCoordenadas, seleccionado, seleccionadoId]);
 
