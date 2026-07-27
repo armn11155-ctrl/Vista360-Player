@@ -14,7 +14,7 @@ const PASOS = [
   },
   {
     icono: "reportes",
-    titulo: "Evidencias y Reportes",
+    titulo: "Reportes de tu campaña",
     texto: "Cada vez que subimos una foto de tu campaña en vivo, te avisamos. Y el día 1 de cada mes te llega tu reporte automático por correo.",
   },
   {
