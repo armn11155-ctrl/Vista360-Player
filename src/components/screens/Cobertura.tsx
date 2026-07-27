@@ -4,7 +4,7 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { diasHasta, fechaLarga } from "../../utils/fechas";
-import { cargarLeaflet } from "../../utils/leaflet";
+import { cargarLeaflet, zoomMinimoSinGris } from "../../utils/leaflet";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
@@ -293,10 +293,17 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             // sin tiles cerca de los polos) y arrastrando el mapa a los
             // lados se podia seguir de largo viendo el mismo mapa repetido
             // sin fin. maxBounds + viscosity "frena" el arrastre justo en
-            // el borde del mundo, minZoom no deja alejarse tanto como para
-            // que aparezca esa zona gris, y worldCopyJump:false evita que
-            // Leaflet dibuje copias repetidas del mapa al cruzar los 180°.
-            minZoom: 3,
+            // el borde del mundo, worldCopyJump:false evita que Leaflet
+            // dibuje copias repetidas del mapa al cruzar los 180°.
+            //
+            // minZoom fijo (antes 3) era un numero adivinado: en un
+            // recuadro angosto de celular sobraba gris arriba/abajo, y en
+            // uno ancho de escritorio no dejaba alejarse tanto como se
+            // podia sin que apareciera gris. Se calcula abajo, con
+            // zoomMinimoSinGris(), a partir del tamaño real del recuadro,
+            // y se reajusta cada vez que ese tamaño cambia (mismo
+            // observador que ya corrige el mapa que nacia gris).
+            minZoom: zoomMinimoSinGris(mapEl.current.clientWidth, mapEl.current.clientHeight),
             maxBounds: [[-85, -180], [85, 180]],
             maxBoundsViscosity: 1.0,
             worldCopyJump: false,
@@ -402,8 +409,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         mapRef.current.invalidateSize();
         if (mapEl.current && typeof ResizeObserver !== "undefined") {
           observadorRef.current?.disconnect();
-          observadorRef.current = new ResizeObserver(() => {
+          observadorRef.current = new ResizeObserver((entradas) => {
             mapRef.current?.invalidateSize();
+            const recuadro = entradas[0]?.target as HTMLElement | undefined;
+            if (recuadro && mapRef.current) {
+              mapRef.current.setMinZoom(zoomMinimoSinGris(recuadro.clientWidth, recuadro.clientHeight));
+            }
           });
           observadorRef.current.observe(mapEl.current);
         } else {

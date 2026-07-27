@@ -41,3 +41,26 @@ export function cargarLeaflet(): Promise<any> {
     document.body.appendChild(script);
   });
 }
+
+/**
+ * El zoom más alejado que se puede mostrar sin que aparezcan franjas
+ * grises (zonas del mapa donde no hay mundo que dibujar).
+ *
+ * El mapa del mundo en Leaflet/Web Mercator es siempre CUADRADO en
+ * píxeles a cualquier zoom: 256 * 2^zoom de lado, tanto de ancho como
+ * de alto. Un recuadro de mapa que no sea cuadrado (un celular es más
+ * alto que ancho; una pantalla ancha es más ancha que alta) sólo se
+ * llena por completo, sin gris en ningún lado, cuando ese cuadrado de
+ * mundo es al menos tan grande como el lado MÁS LARGO del recuadro.
+ * Si se llenara solo por el lado corto, sobraría gris en el otro.
+ *
+ * Por eso la cuenta usa el lado más largo (Math.max(ancho, alto)) y
+ * redondea hacia arriba: el zoom entero más chico (o sea, el más
+ * alejado posible) para el que el mundo ya no deja ver gris en ese
+ * recuadro exacto.
+ */
+export function zoomMinimoSinGris(anchoPx: number, altoPx: number): number {
+  const lado = Math.max(anchoPx, altoPx);
+  if (!Number.isFinite(lado) || lado <= 0) return 2;
+  return Math.max(0, Math.ceil(Math.log2(lado / 256)));
+}
