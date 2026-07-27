@@ -2,6 +2,7 @@ import { useRef, useState, type CSSProperties } from "react";
 import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
+import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { db } from "../../config/firebase";
@@ -50,14 +51,15 @@ const BADGE: Record<string, { bg: string; color: string }> = {
   Finalizada:{ bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
 };
 
+// Ambas delegan en utils/fechas -- antes usaban new Date(c.fin), que
+// interpreta "2026-07-31" como medianoche UTC y adelantaba el cálculo
+// casi un día entero en Perú (ver el comentario de utils/fechas.ts).
 function progreso(c: Contrato): number {
-  const s = new Date(c.inicio).getTime(), e = new Date(c.fin).getTime(), n = Date.now();
-  if (n <= s) return 0; if (n >= e) return 100;
-  return Math.round(((n - s) / (e - s)) * 100);
+  return progresoCampana(c.inicio, c.fin);
 }
 
 function diasParaVencer(c: Contrato): number {
-  return Math.ceil((new Date(c.fin).getTime() - Date.now()) / 86400000);
+  return diasHasta(c.fin);
 }
 
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
@@ -65,7 +67,7 @@ type ComprobanteEstado = "idle" | "subiendo" | "subido" | "error";
 
 export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
-  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
+  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
@@ -182,20 +184,34 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     }
   }
 
-  function abrirConfirmacion(c: Contrato, panelNombre: string, e: React.MouseEvent) {
+  function abrirConfirmacion(c: Contrato, panelNombre: string, ciudad: string, e: React.MouseEvent) {
     e.stopPropagation();
     setComprobante("idle");
-    setModal({ contrato: c, panelNombre, estado: "confirmando" });
+    setModal({ contrato: c, panelNombre, ciudad, estado: "confirmando" });
   }
 
   async function confirmarRenovacion() {
     if (!modal || !db || !clienteId) return;
     setModal({ ...modal, estado: "enviando" });
     try {
+      // Mismos campos que crea Nueva campaña (y Cobertura, que pasa por
+      // ahí): antes esta era la única ruta que seguía escribiendo
+      // "objetivo" -- un campo que ya se quitó del formulario -- y que
+      // NO guardaba ciudad ni fechas, así que en la pantalla de
+      // Solicitudes el admin veía "Inicio deseado" y "Fin deseado" en
+      // blanco y no tenía forma de saber desde cuándo la quería el
+      // cliente. Ahora las tres rutas guardan la misma forma.
+      const finActual = soloFecha(modal.contrato.fin);
+      const inicioSugerido = finActual ? sumarDias(finActual, 1) : hoyEnPeru();
       const ref = await addDoc(collection(db, "solicitudesCampana"), {
         cliente_id: clienteId,
         nombre: `Renovación — ${modal.panelNombre}`,
-        objetivo: "Renovar campaña antes de que venza",
+        ciudades: modal.ciudad ? [modal.ciudad] : [],
+        comentarios: `Renovación de la campaña en el panel "${modal.panelNombre}"${modal.ciudad ? ` (${modal.ciudad})` : ""}, que vence el ${finActual}.`,
+        // Arranca justo al día siguiente de que vence la actual, que es
+        // lo que se quiere al renovar: que no quede un hueco sin salir.
+        fechaInicioDeseada: inicioSugerido,
+        fechaFinDeseada: null,
         estado: "Pendiente",
         createdAt: serverTimestamp(),
       });
@@ -312,6 +328,10 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           // la tarjeta -- si no, se sigue mostrando el nombre del/los
           // panel(es), como antes.
           const tituloCampana = formatCampaignName(c.nombre || panelNombre);
+          // La ciudad del primer panel de la campaña -- va en la
+          // solicitud de renovación para que llegue con la misma forma
+          // que las que se crean desde Nueva campaña / Cobertura.
+          const ciudadCampana = paneles[idsPanelesCampana[0]]?.ciudad ?? "";
           const cityStyle = {
             "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
           } as CSSProperties;
@@ -367,7 +387,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     <button
                       type="button"
                       className="campaign-renewal-button"
-                      onClick={(e) => abrirConfirmacion(c, panelNombre, e)}
+                      onClick={(e) => abrirConfirmacion(c, panelNombre, ciudadCampana, e)}
                     >
                       <img
                         className="campaign-renewal-icon"

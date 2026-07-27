@@ -15,7 +15,11 @@ export function useSolicitudesCampana(isAdmin: boolean): SolicitudesCampanaState
   const [state, setState] = useState<SolicitudesCampanaState>({ status: "loading" });
 
   useEffect(() => {
-    if (!db || !isAdmin) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!db || !isAdmin) { setState({ status: "ready", solicitudes: [] }); return; }
     const q = query(collection(db, "solicitudesCampana"));
     const unsub = onSnapshot(
       q,

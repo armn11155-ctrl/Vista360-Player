@@ -27,7 +27,11 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesSt
   const [state, setState] = useState<PanelesDisponiblesState>({ status: "loading" });
 
   useEffect(() => {
-    if (!db || !habilitado) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!db || !habilitado) { setState({ status: "ready", paneles: [] }); return; }
     const q = collection(db, "paneles");
     const unsub = onSnapshot(
       q,

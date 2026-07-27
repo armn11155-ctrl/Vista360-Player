@@ -18,7 +18,11 @@ export function useContratos(clienteId: string): ContratosState {
   const [retryNonce, setRetryNonce] = useState(0);
 
   useEffect(() => {
-    if (!clienteId || !db) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!clienteId || !db) { setState({ status: "ready", contratos: [] }); return; }
     setState({ status: "loading" });
     const q = query(
       collection(db, "contratos"),

@@ -21,14 +21,25 @@ export function usePaneles(panelIds: string[]): Record<string, Panel> {
         const snap = await getDoc(doc(db!, "paneles", id));
         return snap.exists() ? ({ id: snap.id, ...(snap.data() as Omit<Panel, "id">) } as Panel) : null;
       })
-    ).then((results) => {
-      if (cancelled) return;
-      const map: Record<string, Panel> = {};
-      results.forEach((p) => {
-        if (p) map[p.id] = p;
+    )
+      .then((results) => {
+        if (cancelled) return;
+        const map: Record<string, Panel> = {};
+        results.forEach((p) => {
+          if (p) map[p.id] = p;
+        });
+        setPaneles(map);
+      })
+      // Sin este catch, una sola lectura fallida (sin conexión, permisos)
+      // se convertía en un error de promesa no capturado y el mapa se
+      // quedaba vacío en silencio -- los nombres de los paneles
+      // desaparecían de la pantalla sin ningún aviso ni forma de saber
+      // por qué. No se corta la pantalla por esto (el resto de la
+      // campaña se sigue viendo bien), pero al menos queda registrado.
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("No se pudieron cargar los datos de los paneles.", error);
       });
-      setPaneles(map);
-    });
     return () => {
       cancelled = true;
     };

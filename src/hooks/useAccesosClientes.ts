@@ -30,7 +30,11 @@ export function useAccesosClientes(isAdmin: boolean): AccesosState {
   const [state, setState] = useState<AccesosState>({ status: "loading" });
 
   useEffect(() => {
-    if (!isAdmin || !db) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!isAdmin || !db) { setState({ status: "ready", accesos: [] }); return; }
     let cancelled = false;
 
     async function cargar() {

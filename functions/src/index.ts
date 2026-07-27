@@ -20,6 +20,7 @@ export { actualizarPanel } from "./actualizarPanel.js";
 export { actualizarClienteInfo } from "./actualizarClienteInfo.js";
 export { eliminarContrato } from "./eliminarContrato.js";
 export { eliminarSolicitudCampana } from "./eliminarSolicitudCampana.js";
+export { sincronizarEstadoPaneles, sincronizarEstadoPanelesAhora } from "./sincronizarEstadoPaneles.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
 export { firmarDescargaFactura } from "./firmarDescargaFactura.js";
 export { actualizarNombreFactura } from "./actualizarNombreFactura.js";

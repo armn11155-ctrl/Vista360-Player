@@ -13,7 +13,11 @@ export function useClientesAdmin(): ClientesAdminState {
   const [state, setState] = useState<ClientesAdminState>({ status: "loading" });
 
   useEffect(() => {
-    if (!db) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!db) { setState({ status: "ready", clientes: [] }); return; }
     const q = query(collection(db, "clientes"), orderBy("empresa", "asc"));
     const unsub = onSnapshot(
       q,

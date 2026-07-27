@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { collection, onSnapshot, query, where, Timestamp } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Contrato } from "../types";
+import { diasHasta, soloFecha } from "../utils/fechas";
 
 export interface Notificacion {
   id: string;
@@ -129,7 +130,6 @@ export function useNotificaciones(clienteId: string): NotifState {
 
     // ── Contratos por vencer (próximos 30 días) ───────────────────────────
     const hoy = hoyBase;
-    const en30 = new Date(hoy.getTime() + 30 * 86400000);
 
     const qCon = query(
       collection(db, "contratos"),
@@ -143,17 +143,26 @@ export function useNotificaciones(clienteId: string): NotifState {
         const data = d.data() as Contrato & Record<string, any>;
         if (data.deleted) return;
 
-        // Contrato por vencer
-        const fin = data.fin ? new Date(data.fin) : null;
-        if (fin && fin >= hoy && fin <= en30) {
-          const dias = Math.ceil((fin.getTime() - hoy.getTime()) / 86400000);
-          notifs.set(`con-${d.id}`, {
-            id: `con-${d.id}`,
-            tipo: "contrato_por_vencer",
-            titulo: "Campaña por vencer",
-            detalle: `Tu campaña vence ${dias === 1 ? "mañana" : `en ${dias} días`}.`,
-            fecha: fin.toISOString(),
-          });
+        // Contrato por vencer -- se compara por día calendario en Perú
+        // (utils/fechas), no con objetos Date: "2026-07-31" se
+        // interpretaba como medianoche UTC y el aviso salía con un día
+        // de desfase, además de desaparecer mientras la campaña todavía
+        // estaba corriendo su último día.
+        const fin = soloFecha(data.fin);
+        if (fin) {
+          const dias = diasHasta(fin);
+          if (dias >= 0 && dias <= 30) {
+            notifs.set(`con-${d.id}`, {
+              id: `con-${d.id}`,
+              tipo: "contrato_por_vencer",
+              titulo: "Campaña por vencer",
+              detalle:
+                dias === 0
+                  ? "Tu campaña vence hoy."
+                  : `Tu campaña vence ${dias === 1 ? "mañana" : `en ${dias} días`}.`,
+              fecha: `${fin}T00:00:00.000Z`,
+            });
+          }
         }
 
         // Evidencias nuevas (últimos 7 días)

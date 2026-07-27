@@ -1,3 +1,4 @@
+import { hoyEnPeru, soloFecha } from "../utils/fechas";
 import type { Timestamp } from "firebase/firestore";
 
 /**
@@ -152,11 +153,16 @@ export interface PortalUser {
 /** Estado derivado en el cliente a partir de inicio/fin — no se guarda. */
 export type CampanaEstado = "Activa" | "Programada" | "Finalizada";
 
-export function estadoCampana(contrato: Contrato, hoy: Date = new Date()): CampanaEstado {
-  const inicio = new Date(contrato.inicio);
-  const fin = new Date(contrato.fin);
-  if (hoy < inicio) return "Programada";
-  if (hoy > fin) return "Finalizada";
+export function estadoCampana(contrato: Contrato, hoy: string = hoyEnPeru()): CampanaEstado {
+  // Comparación como TEXTO ("2026-07-31"), no como Date -- ver el
+  // comentario de src/utils/fechas.ts. Con `new Date(contrato.fin)` la
+  // campaña se marcaba Finalizada desde la tarde del día ANTERIOR a su
+  // último día, porque ese formato se interpreta como medianoche UTC.
+  const inicio = soloFecha(contrato.inicio);
+  const fin = soloFecha(contrato.fin);
+  const dia = soloFecha(hoy);
+  if (dia < inicio) return "Programada";
+  if (dia > fin) return "Finalizada";
   return "Activa";
 }
 

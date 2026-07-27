@@ -84,6 +84,12 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const [seleccionada, setSeleccionada] = useState<SolicitudCampana | null>(null);
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  // Antes las tres acciones de abajo (marcar revisada/rechazada,
+  // eliminar, confirmar pago) atrapaban el error y no mostraban NADA:
+  // el admin hacía clic, no pasaba nada, y no había forma de saber si
+  // había fallado o si el botón estaba muerto. Ahora cualquier fallo
+  // sube a este banner con el motivo real.
+  const [accionError, setAccionError] = useState<string | null>(null);
 
   const clientes = clientesState.status === "ready" ? clientesState.clientes : [];
   const clientePorId = (clienteId: string) => clientes.find((c) => c.id === clienteId);
@@ -103,20 +109,33 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
 
+  /** Texto legible de un error de Firestore/Functions, sin el prefijo técnico. */
+  function mensajeDeError(error: unknown, fallback: string) {
+    const raw = error instanceof Error ? error.message : "";
+    const limpio = raw
+      .replace("FirebaseError: ", "")
+      .replace(/^functions\/[a-z-]+:\s*/i, "")
+      .trim();
+    return limpio || fallback;
+  }
+
   async function resolver(id: string, estado: "Revisada" | "Rechazada") {
-    if (!db) return;
+    if (!db) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
+    setAccionError(null);
     setResolviendo(id);
     try {
       await updateDoc(doc(db, "solicitudesCampana", id), { estado, estadoActualizadoEn: serverTimestamp() });
       setSeleccionada((actual) => actual?.id === id ? { ...actual, estado } : actual);
-    } catch {
-      // el estado vuelve a Pendiente solo si falla, no hace falta más feedback aquí
+    } catch (error) {
+      setAccionError(mensajeDeError(error, "No se pudo actualizar la solicitud. Revisa tu conexión e intenta de nuevo."));
     }
     setResolviendo(null);
   }
 
   async function eliminarSolicitud(id: string, nombre: string) {
-    if (!cloudFunctions || eliminandoId) return;
+    if (eliminandoId) return;
+    if (!cloudFunctions) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
+    setAccionError(null);
     const confirmado = window.confirm(`¿Eliminar la solicitud "${nombre}"? No se puede deshacer.`);
     if (!confirmado) return;
     setMenuAbiertoId(null);
@@ -131,19 +150,25 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
       const fn = httpsCallable<{ solicitudId: string }, { ok: boolean }>(cloudFunctions, "eliminarSolicitudCampana");
       await fn({ solicitudId: id });
       setSeleccionada((actual) => (actual?.id === id ? null : actual));
-    } catch {
-      // si falla, el item se queda visible y se puede reintentar
+    } catch (error) {
+      // El caso más probable acá es que la Cloud Function todavía no
+      // esté desplegada (se despliega a mano desde GitHub Actions) --
+      // conviene que el mensaje lo diga en vez de quedarse callado.
+      setAccionError(
+        mensajeDeError(error, "No se pudo eliminar la solicitud. Si acaba de actualizarse la app, puede que falte desplegar la función en GitHub Actions.")
+      );
     }
     setEliminandoId(null);
   }
 
   async function confirmarPago(id: string, confirmado: boolean) {
-    if (!db) return;
+    if (!db) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
+    setAccionError(null);
     setResolviendo(id);
     try {
       await updateDoc(doc(db, "solicitudesCampana", id), { pagoConfirmado: confirmado });
-    } catch {
-      // sin feedback extra, el botón queda disponible para reintentar
+    } catch (error) {
+      setAccionError(mensajeDeError(error, "No se pudo confirmar el pago. Revisa tu conexión e intenta de nuevo."));
     }
     setResolviendo(null);
   }
@@ -164,6 +189,37 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
             Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
           </div>
         </div>
+
+        {accionError && (
+          <div
+            style={{
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              color: "#DC2626",
+              fontSize: 12.5,
+              lineHeight: 1.5,
+              padding: "10px 14px",
+              borderRadius: 12,
+              margin: "10px 0",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}
+          >
+            <span style={{ flex: 1 }}>{accionError}</span>
+            <button
+              type="button"
+              onClick={() => setAccionError(null)}
+              aria-label="Cerrar aviso"
+              style={{
+                background: "none", border: "none", color: "#DC2626",
+                fontSize: 16, lineHeight: 1, cursor: "pointer", padding: 0, flexShrink: 0,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {state.status === "loading" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>

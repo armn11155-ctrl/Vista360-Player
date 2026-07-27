@@ -30,7 +30,11 @@ export function useInvitaciones(isAdmin: boolean): InvitacionesState {
   const [state, setState] = useState<InvitacionesState>({ status: "loading" });
 
   useEffect(() => {
-    if (!db || !isAdmin) return;
+    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
+    // la pantalla se quedaba con el spinner girando en vez de mostrar
+    // algo. Cuando no hay nada que consultar, el resultado correcto es
+    // "listo y vacío", no "cargando".
+    if (!db || !isAdmin) { setState({ status: "ready", invitaciones: [] }); return; }
     // Sin orderBy("createdAt") a propósito: Firestore excluye de un
     // orderBy cualquier documento al que le falte ese campo -- varios
     // usuarios creados antes (o por el script viejo) no lo tienen, y

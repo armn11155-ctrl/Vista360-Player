@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import BackChevron from "../BackChevron";
 import MobileSidebarButton from "../MobileSidebarButton";
 import type { Contrato, Panel } from "../../types";
-import { panelesDeContrato } from "../../types";
+import { estadoCampana, panelesDeContrato } from "../../types";
+import { diasHasta } from "../../utils/fechas";
 import { cargarLeaflet } from "../../utils/leaflet";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
@@ -48,11 +49,13 @@ function tieneCoordenadas(panel: PanelConUso): panel is PanelConCoordenadas {
 function estadoTexto(panel: PanelConUso) {
   const contrato = panel.contrato;
   if (contrato) {
-    const hoy = new Date();
-    const inicio = new Date(contrato.inicio);
-    const fin = new Date(contrato.fin);
-    if (hoy < inicio) return "Programado";
-    if (hoy > fin) return "Finalizado";
+    // Se delega en estadoCampana (types/index.ts) para no tener una
+    // cuarta copia de esta regla -- antes acá se comparaban objetos
+    // Date construidos desde "YYYY-MM-DD", que en Perú adelantaban el
+    // cambio de estado casi un día (ver utils/fechas.ts).
+    const estado = estadoCampana(contrato);
+    if (estado === "Programada") return "Programado";
+    if (estado === "Finalizada") return "Finalizado";
     return "Activo";
   }
   return panel.estado === "Ocupado" ? "Ocupado" : panel.estado === "Mantenimiento" ? "Mantenimiento" : "Disponible";
@@ -73,12 +76,7 @@ function estadoColor(label: string) {
 // acá se usa para mostrar el botón "Solicitar renovación" en el popup.
 const DIAS_AVISO_RENOVACION = 10;
 
-function diasParaVencer(fin: string): number {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
-  const finDate = new Date(`${fin.slice(0, 10)}T00:00:00`);
-  return Math.round((finDate.getTime() - hoy.getTime()) / 86400000);
-}
+
 
 const MESES_LARGOS = [
   "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -131,8 +129,16 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   // Con contrato Activo y cerca de vencer -- se pidió que también
   // aparezca "Solicitar renovación", además de la fecha de vigencia
   // (no en reemplazo).
+  //
+  // Y con contrato YA FINALIZADO también: antes ese caso se quedaba sin
+  // ningún botón (no entraba en "sin contrato" porque el contrato existe,
+  // ni en "por vencer" porque ya no estaba activo), así que un cliente
+  // cuya campaña acababa de terminar no tenía forma de volver a
+  // contratar desde el mapa -- justo cuando más sentido tiene ofrecérselo.
   const enRenovacion = Boolean(
-    contrato && label === "Activo" && diasParaVencer(contrato.fin) <= DIAS_AVISO_RENOVACION
+    contrato &&
+      (label === "Finalizado" ||
+        (label === "Activo" && diasHasta(contrato.fin) <= DIAS_AVISO_RENOVACION))
   );
 
   const vigenciaHtml = contrato
@@ -159,7 +165,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
     : enRenovacion
     ? `
         <button type="button" class="coverage-popup-action" data-cobertura-accion="renovacion" data-panel-id="${panel.id}">
-          Solicitar renovación
+          ${label === "Finalizado" ? "Volver a contratar" : "Solicitar renovación"}
         </button>
       `
     : "";
