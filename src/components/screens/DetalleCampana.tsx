@@ -27,7 +27,7 @@ function Badge({ estado }: { estado: string }) {
   const map: Record<string, { bg: string; color: string }> = {
     Activa:     { bg: "rgba(34,197,94,0.15)",  color: "#16A34A" },
     Programada: { bg: "rgba(8,119,255,0.15)", color: "#0877FF" },
-    Finalizada: { bg: "rgba(107,114,128,0.12)",color: "#6B7280" },
+    Finalizada: { bg: "rgba(107,114,128,0.12)",color: "#64748B" },
   };
   const s = map[estado] ?? map.Finalizada;
   return (
@@ -40,8 +40,8 @@ function Badge({ estado }: { estado: string }) {
 function StatBox({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12 }}>
-      <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 18, fontWeight: 700, color: "#0B1220" }}>{value}</div>
+      <div style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontSize: 19, fontWeight: 700, color: "#0B1220" }}>{value}</div>
     </div>
   );
 }
@@ -169,8 +169,8 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {TABS.map((t) => (
           <div key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: "16px 0 14px", fontSize: 15, fontWeight: tab === t.id ? 800 : 500,
-            color: tab === t.id ? "#0877FF" : "#6B7280",
+            padding: "16px 0 14px", fontSize: 14, fontWeight: tab === t.id ? 800 : 500,
+            color: tab === t.id ? "#0877FF" : "#64748B",
             borderBottom: tab === t.id ? "3px solid #0877FF" : "3px solid transparent",
             cursor: "pointer", textAlign: "center",
           }}>
@@ -186,12 +186,12 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
         {tab === "resumen" && (
           <>
             {/* Estado general */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+            <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Estado general</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                  background: estado === "Activa" ? "#22C55E" : estado === "Programada" ? "#0877FF" : "#6B7280",
+                  background: estado === "Activa" ? "#22C55E" : estado === "Programada" ? "#0877FF" : "#64748B",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
@@ -202,7 +202,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0B1220" }}>
                     {estado === "Activa" ? "Todo funcionando" : estado === "Programada" ? "Por iniciar" : "Campaña finalizada"}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6B7280" }}>Sin incidencias reportadas</div>
+                  <div style={{ fontSize: 12, color: "#64748B" }}>Sin incidencias reportadas</div>
                 </div>
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                 (antes solo mostraba el primero, aunque hubiera 2+),
                 cada uno con su nombre arriba para saber cual es cual. */}
             {panelesContrato.length > 0 && (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+              <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>
                   {panelesContrato.length > 1 ? "Ubicación de las pantallas" : "Ubicación de pantalla"}
                 </div>
@@ -219,7 +219,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                   {panelesContrato.map((p) => (
                     <div key={p.id}>
                       {panelesContrato.length > 1 && (
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#0B1220", marginBottom: 6 }}>{p.nombre}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#0B1220", marginBottom: 6 }}>{p.nombre}</div>
                       )}
                       {p.lat && p.lng ? (
                         <div className="campaign-location-map">
@@ -233,7 +233,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                           />
                         </div>
                       ) : (
-                        <div style={{ fontSize: 13, color: "#6B7280" }}>{p.direccion ?? "Sin coordenadas registradas"}</div>
+                        <div style={{ fontSize: 13, color: "#64748B" }}>{p.direccion ?? "Sin coordenadas registradas"}</div>
                       )}
                     </div>
                   ))}
@@ -242,9 +242,9 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
             )}
 
             {/* Próxima reproducción placeholder */}
-            <div style={{ background: "#fff", borderRadius: 14, padding: 14, marginBottom: 12 }}>
+            <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
-              <div style={{ fontSize: 13, color: "#6B7280", display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ fontSize: 13, color: "#64748B", display: "flex", flexDirection: "column", gap: 6 }}>
                 <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara ?? "—"}</strong></div>
                 <div>Monto: <strong style={{ color: "#0B1220" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
                 <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
@@ -258,21 +258,21 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
         {tab === "reportes" && (
           <div>
             {informesState.status === "loading" && (
-              <div style={{ fontSize: 13, color: "#6B7280", textAlign: "center", padding: "24px 0" }}>Cargando…</div>
+              <div style={{ fontSize: 13, color: "#64748B", textAlign: "center", padding: "24px 0" }}>Cargando…</div>
             )}
 
             {informesState.status === "error" && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12 }}>
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 12, fontSize: 12 }}>
                 No se pudo cargar la lista de reportes: {informesState.message}
               </div>
             )}
 
             {informesState.status === "ready" && informes.length === 0 && (
-              <div style={{ background: "#fff", borderRadius: 14, padding: 16, textAlign: "center" }}>
+              <div style={{ background: "#fff", borderRadius: 16, padding: 16, textAlign: "center" }}>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
                   <EmptyReportsIcon />
                 </div>
-                <div style={{ fontSize: 13, color: "#6B7280" }}>Aún no hay un reporte PDF generado para esta campaña.</div>
+                <div style={{ fontSize: 13, color: "#64748B" }}>Aún no hay un reporte PDF generado para esta campaña.</div>
               </div>
             )}
 

@@ -77,7 +77,7 @@ function Ilustracion({ tipo }: { tipo: string }) {
   }
 
   return (
-    <div style={{ width: 112, height: 112, margin: "0 auto 16px", borderRadius: 28, background: "linear-gradient(145deg, rgba(8,119,255,.2), rgba(255,255,255,.04))", border: "1px solid rgba(147,197,253,.18)", display: "grid", placeItems: "center" }}>
+    <div style={{ width: 112, height: 112, margin: "0 auto 16px", borderRadius: 20, background: "linear-gradient(145deg, rgba(8,119,255,.2), rgba(255,255,255,.04))", border: "1px solid rgba(147,197,253,.18)", display: "grid", placeItems: "center" }}>
       <svg width="78" height="78" viewBox="0 0 96 96" fill="none" aria-hidden="true">
         {tipo === "campanas" && (
           <>
@@ -128,7 +128,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
     >
       <div
         style={{
-          background: "linear-gradient(155deg, #07111F 0%, #03070D 100%)", borderRadius: 24, padding: "28px 24px 22px",
+          background: "linear-gradient(155deg, #07111F 0%, #03070D 100%)", borderRadius: 20, padding: "28px 24px 22px",
           width: "100%", maxWidth: 360, boxShadow: "0 28px 70px rgba(0,0,0,0.48)", border: "1px solid rgba(147,197,253,.16)",
           textAlign: "center",
         }}
@@ -137,7 +137,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
         <div style={{ fontSize: 19, fontWeight: 850, color: "#FFFFFF", marginBottom: 10 }}>
           {actual.titulo}
         </div>
-        <div style={{ fontSize: 13.5, color: "rgba(226,232,240,.72)", lineHeight: 1.6, marginBottom: 22 }}>
+        <div style={{ fontSize: 13, color: "rgba(226,232,240,.72)", lineHeight: 1.6, marginBottom: 22 }}>
           {actual.texto}
         </div>
 
@@ -159,7 +159,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
             <button
               onClick={cerrar}
               style={{
-                flex: 1, padding: "13px", background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12,
+                flex: 1, padding: "14px", background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12,
                 color: "#E2E8F0", fontWeight: 700, fontSize: 14, cursor: "pointer",
               }}
             >

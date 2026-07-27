@@ -246,7 +246,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
               Activa tus notificaciones
             </div>
-            <div style={{ fontSize: 12.5, color: "rgba(226,232,240,.78)", lineHeight: 1.5 }}>
+            <div style={{ fontSize: 12, color: "rgba(226,232,240,.78)", lineHeight: 1.5 }}>
               Toca el botón iluminado y dale <strong style={{ color: "#fff" }}>Permitir</strong> en el aviso del teléfono para continuar. Así te avisamos apenas tengas un reporte nuevo, una campaña por vencer o una factura.
             </div>
           </>
@@ -258,7 +258,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             false porque todavía no tocó nada en ESTE ingreso). */}
         {estadoPush === "bloqueado" && (
           <div>
-            <div style={{ fontSize: 12.5, color: "#FCA5A5", fontWeight: 800, marginBottom: 8 }}>
+            <div style={{ fontSize: 12, color: "#FCA5A5", fontWeight: 800, marginBottom: 8 }}>
               Bloqueaste el permiso -- actívalo así:
             </div>
             {esMovil() ? (
@@ -276,7 +276,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
                 ))}
               </ol>
             )}
-            <div style={{ fontSize: 11.5, color: "rgba(226,232,240,.6)", marginTop: 8, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 11, color: "rgba(226,232,240,.6)", marginTop: 8, lineHeight: 1.4 }}>
               Apenas lo actives, se detecta solo (no hace falta recargar más de una vez) y te llega un aviso confirmando que quedó listo.
             </div>
           </div>

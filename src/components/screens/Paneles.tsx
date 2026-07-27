@@ -28,10 +28,10 @@ const CENTRO_DEFECTO: [number, number] = [-12.0464, -77.0428];
 const inputStyle: React.CSSProperties = {
   width: "100%",
   border: "1px solid var(--border)",
-  borderRadius: 10,
+  borderRadius: 12,
   padding: "11px",
   boxSizing: "border-box",
-  fontSize: 13.5,
+  fontSize: 13,
 };
 
 /** Convierte lo que haya escrito el admin en un numero valido o
@@ -318,7 +318,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                       style={{
                         textAlign: "left",
                         padding: "10px 12px",
-                        borderRadius: 10,
+                        borderRadius: 12,
                         cursor: "pointer",
                         border: modalidad === valor ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
                         background: modalidad === valor ? "rgba(8,119,255,0.07)" : "#fff",
@@ -330,7 +330,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                       }}>
                         {titulo}
                       </span>
-                      <span style={{ display: "block", fontSize: 10.5, color: "#64748B", marginTop: 3, lineHeight: 1.35 }}>
+                      <span style={{ display: "block", fontSize: 11, color: "#64748B", marginTop: 3, lineHeight: 1.35 }}>
                         {detalle}
                       </span>
                     </button>
@@ -378,7 +378,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
             <button
               onClick={guardarPanel}
               disabled={creando}
-              style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
+              style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
             >
               {creando
                 ? (panelEditando ? "Guardando..." : "Creando...")
@@ -388,7 +388,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         )}
 
         {mensajeOk && (
-          <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", color: "#16A34A", borderRadius: 10, padding: "10px 12px", fontSize: 12.5, fontWeight: 700, marginBottom: 12 }}>
+          <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", color: "#16A34A", borderRadius: 12, padding: "10px 12px", fontSize: 12, fontWeight: 700, marginBottom: 12 }}>
             {mensajeOk}
           </div>
         )}
@@ -422,7 +422,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{p.nombre}</div>
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{p.tipo} · {p.ciudad}</div>
                     {p.direccion && (
-                      <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{p.direccion}</div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{p.direccion}</div>
                     )}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -432,7 +432,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                     }}>
                       {p.estado}
                     </span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
                   </div>

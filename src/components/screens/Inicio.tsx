@@ -159,7 +159,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
                   position:"relative",
                   width:38,
                   height:38,
-                  borderRadius:19,
+                  borderRadius:20,
                   display:"flex",
                   alignItems:"center",
                   justifyContent:"center",
@@ -200,7 +200,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         </div>
         {/* Pill */}
         {!isAdmin && (
-          <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:22, padding:"5px 11px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
+          <div className="inicio-status-pill" style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(255,255,255,0.13)", border:"1px solid rgba(255,255,255,0.12)", borderRadius:20, padding:"5px 11px", boxShadow:"0 12px 28px rgba(0,0,0,0.18)" }}>
             <div style={{ width:7, height:7, borderRadius:"50%", background:"#22C55E" }} />
             <span style={{ fontSize:11.5, color:"#fff", fontWeight:650 }}>{todoOk ? "Todo funcionando" : "Revisa tus campañas"}</span>
           </div>
@@ -215,7 +215,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
             <button
               type="button"
               onClick={onCambiarCliente}
-              style={{ background:"#0B1220", color:"#fff", border:"none", borderRadius:13, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(15,23,42,0.12)" }}
+              style={{ background:"#0B1220", color:"#fff", border:"none", borderRadius:12, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(15,23,42,0.12)" }}
             >
               <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>Admin</div>
               <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Cambiar cliente</div>
@@ -251,7 +251,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               onClick={item.onClick}
               style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor:item.onClick ? "pointer" : "default" }}
             >
-              <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:19, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+              <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:20, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {item.icon}
               </div>
               <div className="inicio-kpi-body" style={{ minWidth:0, flex:1 }}>
@@ -310,10 +310,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
           <div className="inicio-report-title" style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
           {informesState.status === "loading" ? (
-            <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Cargando…</div>
+            <div style={{ color:"#64748B", fontSize:14, padding:"4px 0" }}>Cargando…</div>
           ) : ultimoInforme ? (
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
-              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:10, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:10 }}>
+              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:12, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:10 }}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
                   <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
@@ -333,7 +333,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               </div>
             </div>
           ) : (
-            <div style={{ color:"#9CA3AF", fontSize:14, padding:"4px 0" }}>Aún no hay reportes registrados.</div>
+            <div style={{ color:"#64748B", fontSize:14, padding:"4px 0" }}>Aún no hay reportes registrados.</div>
           )}
         </div>
         </div>

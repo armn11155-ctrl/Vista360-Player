@@ -19,7 +19,7 @@ function CameraIcon({ size = 18 }: { size?: number }) {
 
 function GalleryIcon({ size = 30 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <path d="M21 15l-5-5L5 21" />
@@ -121,7 +121,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div className="evidencias-header reports-header">
         <div className="ev-logo-row">
-          <div style={{ fontSize: 17, fontWeight: 700, color: "#fff" }}>Evidencias</div>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Evidencias</div>
         </div>
       </div>
 
@@ -129,7 +129,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
 
         {/* Zona de subida — solo admin */}
         {isAdmin && (
-          <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
+          <div style={{ background: "#fff", borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.07)" }}>
             <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 12, display: "flex", alignItems: "center", gap: 7 }}>
               <CameraIcon size={16} /> Subir evidencia
             </div>
@@ -137,13 +137,13 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
             {/* Selector de campaña si hay más de una */}
             {contratos.length > 1 && (
               <div style={{ marginBottom: 12 }}>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", display: "block", marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6 }}>
                   Campaña / Panel
                 </label>
                 <select
                   value={contratoSeleccionado}
                   onChange={(e) => setContratoSeleccionado(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #E5E7EB", fontSize: 14, color: "#0B1220", background: "#fff", boxSizing: "border-box" as const }}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 12, border: "1.5px solid #E5E7EB", fontSize: 14, color: "#0B1220", background: "#fff", boxSizing: "border-box" as const }}
                 >
                   <option value="">Selecciona una campaña…</option>
                   {contratos.map((c) => (
@@ -156,12 +156,12 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
             )}
 
             {error && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 12, fontSize: 12, marginBottom: 10 }}>
                 {error}
               </div>
             )}
             {exito && (
-              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid #BBF7D0", color: "#16A34A", padding: "10px 12px", borderRadius: 10, fontSize: 12, marginBottom: 10 }}>
+              <div style={{ background: "rgba(34,197,94,0.1)", border: "1px solid #BBF7D0", color: "#16A34A", padding: "10px 12px", borderRadius: 12, fontSize: 12, marginBottom: 10 }}>
                 {exito}
               </div>
             )}
@@ -170,7 +170,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
             <div
               onClick={() => !subiendo && fileRef.current?.click()}
               style={{
-                border: "2px dashed #BFDBFE", borderRadius: 14, padding: "20px 16px",
+                border: "2px dashed #BFDBFE", borderRadius: 16, padding: "20px 16px",
                 textAlign: "center", cursor: subiendo ? "default" : "pointer",
                 background: subiendo ? "#F0F9FF" : "#EFF6FF",
               }}
@@ -184,7 +184,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
                 <>
                   <div style={{ marginBottom: 8, display: "flex", justifyContent: "center" }}><CameraIcon size={30} /></div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0877FF" }}>Toca para agregar foto o video</div>
-                  <div style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
+                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>JPG, PNG, MP4 · Máx. 20MB</div>
                 </>
               )}
             </div>
@@ -193,7 +193,7 @@ export default function Evidencias({ contratos, paneles, isAdmin }: Props) {
 
         {/* Galería */}
         {fotos.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px 24px", color: "#9CA3AF" }}>
+          <div style={{ textAlign: "center", padding: "48px 24px", color: "#64748B" }}>
             <div style={{ marginBottom: 12, display: "flex", justifyContent: "center" }}><GalleryIcon /></div>
             <div style={{ fontSize: 14, fontWeight: 600, color: "#374151", marginBottom: 6 }}>Sin evidencias aún</div>
             <div style={{ fontSize: 13, lineHeight: 1.6 }}>

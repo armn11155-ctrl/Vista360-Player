@@ -128,7 +128,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               <span className="sidebar-item-label">{it.label}</span>
               {it.id === "solicitudes" && !!solicitudesPendientes && (
                 <span style={{
-                  background: "#EF4444", color: "#fff", fontSize: 10.5, fontWeight: 700,
+                  background: "#EF4444", color: "#fff", fontSize: 11, fontWeight: 700,
                   borderRadius: 20, padding: "1px 7px", marginRight: 4,
                 }}>
                   {solicitudesPendientes}

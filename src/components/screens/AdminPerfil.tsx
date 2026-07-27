@@ -208,7 +208,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                 <span className="profile-metric-label">
                   Espacio usado en R2
                   {espacio.status === "ready" && espacio.objetos !== undefined && (
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#94A3B8", marginTop: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#64748B", marginTop: 2 }}>
                       {espacio.objetos} archivo{espacio.objetos === 1 ? "" : "s"} en total
                     </div>
                   )}
@@ -246,10 +246,10 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
 
             <div className="profile-metric-card" style={{ marginTop: 10 }}>
               <div style={{ padding: "4px 2px 0" }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0B1220", marginBottom: 4 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#0B1220", marginBottom: 4 }}>
                   Archivos sin usar
                 </div>
-                <div style={{ fontSize: 11.5, color: "#64748B", lineHeight: 1.5, marginBottom: 12 }}>
+                <div style={{ fontSize: 11, color: "#64748B", lineHeight: 1.5, marginBottom: 12 }}>
                   Restos de subidas que se cortaron a la mitad: ocupan espacio pero ya no
                   aparecen en ninguna campaña, factura ni solicitud. Primero se revisan;
                   no se borra nada hasta que lo confirmes.
@@ -258,7 +258,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                 {limpieza.fase === "error" && (
                   <div style={{
                     background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
-                    color: "#DC2626", fontSize: 12, padding: "9px 12px", borderRadius: 10, marginBottom: 10, lineHeight: 1.5,
+                    color: "#DC2626", fontSize: 12, padding: "9px 12px", borderRadius: 12, marginBottom: 10, lineHeight: 1.5,
                   }}>
                     {limpieza.mensaje}
                   </div>
@@ -268,7 +268,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                   <div style={{
                     background: limpieza.datos.huerfanos === 0 ? "rgba(34,197,94,0.10)" : "rgba(8,119,255,0.08)",
                     border: `1px solid ${limpieza.datos.huerfanos === 0 ? "rgba(34,197,94,0.25)" : "rgba(8,119,255,0.2)"}`,
-                    borderRadius: 10, padding: "10px 12px", marginBottom: 10, fontSize: 12.5, lineHeight: 1.6,
+                    borderRadius: 12, padding: "10px 12px", marginBottom: 10, fontSize: 12, lineHeight: 1.6,
                     color: "#0B1220",
                   }}>
                     {limpieza.fase === "listo" ? (
@@ -281,7 +281,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                         de {limpieza.datos.totalObjetos} en total. Se recuperarían <strong>{limpieza.datos.mbHuerfanos} MB</strong>.
                         {limpieza.datos.muestra.length > 0 && (
                           <details style={{ marginTop: 6 }}>
-                            <summary style={{ cursor: "pointer", fontSize: 11.5, color: "#0877FF", fontWeight: 600 }}>
+                            <summary style={{ cursor: "pointer", fontSize: 11, color: "#0877FF", fontWeight: 600 }}>
                               Ver los más pesados
                             </summary>
                             <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 11, color: "#64748B", lineHeight: 1.7 }}>
@@ -304,7 +304,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                     onClick={revisarHuerfanos}
                     disabled={limpieza.fase === "revisando" || limpieza.fase === "borrando"}
                     style={{
-                      flex: "1 1 auto", minWidth: 130, padding: "10px 14px", borderRadius: 10,
+                      flex: "1 1 auto", minWidth: 130, padding: "14px 14px", borderRadius: 12,
                       border: "1.5px solid #E5E7EB", background: "#fff", color: "#0B1220",
                       fontSize: 13, fontWeight: 700,
                       cursor: limpieza.fase === "revisando" || limpieza.fase === "borrando" ? "default" : "pointer",
@@ -319,7 +319,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                       onClick={() => borrarHuerfanos(limpieza.datos)}
                       disabled={limpieza.fase === "borrando"}
                       style={{
-                        flex: "1 1 auto", minWidth: 130, padding: "10px 14px", borderRadius: 10,
+                        flex: "1 1 auto", minWidth: 130, padding: "10px 14px", borderRadius: 12,
                         border: "none", background: limpieza.fase === "borrando" ? "#FCA5A5" : "#DC2626",
                         color: "#fff", fontSize: 13, fontWeight: 700,
                         cursor: limpieza.fase === "borrando" ? "default" : "pointer",

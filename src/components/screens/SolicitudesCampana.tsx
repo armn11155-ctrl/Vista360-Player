@@ -185,7 +185,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
 
       <div className="content-area solicitudes-area">
         <div className="card" style={{ background: "rgba(8,119,255,0.12)" }}>
-          <div style={{ fontSize: 12.5, color: "#6D28D9", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12, color: "#6D28D9", lineHeight: 1.5 }}>
             Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
               background: "rgba(239,68,68,0.08)",
               border: "1px solid rgba(239,68,68,0.25)",
               color: "#DC2626",
-              fontSize: 12.5,
+              fontSize: 12,
               lineHeight: 1.5,
               padding: "10px 14px",
               borderRadius: 12,
@@ -298,7 +298,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                       disabled={resolviendo === s.id}
                       style={{
                         flex: 1, background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
-                        borderRadius: 10, padding: "9px 12px", color: "var(--green)", fontSize: 12.5,
+                        borderRadius: 12, padding: "9px 12px", color: "var(--green)", fontSize: 12,
                         fontWeight: 700, cursor: resolviendo === s.id ? "not-allowed" : "pointer",
                       }}
                     >
@@ -311,8 +311,8 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     onClick={(event) => { event.stopPropagation(); resolver(s.id, "Revisada"); }}
                     disabled={resolviendo === s.id}
                     style={{
-                      flex: 1, background: "var(--accent)", border: "none", borderRadius: 10,
-                      padding: "10px 12px", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                      flex: 1, background: "var(--accent)", border: "none", borderRadius: 12,
+                      padding: "10px 12px", color: "#fff", fontSize: 12, fontWeight: 700,
                       cursor: resolviendo === s.id ? "not-allowed" : "pointer",
                     }}
                   >
@@ -323,7 +323,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     disabled={resolviendo === s.id}
                     style={{
                       background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
-                      borderRadius: 10, padding: "10px 14px", color: "var(--red)", fontSize: 12.5,
+                      borderRadius: 12, padding: "10px 14px", color: "var(--red)", fontSize: 12,
                       fontWeight: 700, cursor: "pointer",
                     }}
                   >

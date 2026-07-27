@@ -64,7 +64,7 @@ function estadoTexto(panel: PanelConUso) {
 function estadoColor(label: string) {
   if (label === "Activo") return "#22C55E";
   if (label === "Programado") return "#0877FF"; // antes naranja -- se pidió que no haya naranjas, todo en la paleta azul de la marca
-  if (label === "Finalizado") return "#94A3B8";
+  if (label === "Finalizado") return "#64748B";
   if (label === "Disponible") return "#16A34A";
   if (label === "Ocupado") return "#0877FF";
   if (label === "Mantenimiento") return "#7C3AED";
@@ -158,7 +158,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
     ? `
         <div class="coverage-popup-divider"></div>
         <div class="coverage-popup-until">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#94A3B8" stroke-width="1.6"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#94A3B8" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#64748B" stroke-width="1.6"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#64748B" stroke-width="1.6" stroke-linecap="round"/></svg>
           <div class="coverage-popup-until-body">
             <span class="coverage-popup-until-label">${label === "Finalizado" ? "Finalizó" : "Vigente hasta"}</span>
             <span class="coverage-popup-until-value">${escapeHtml(fechaLarga(contrato.fin))}</span>
@@ -200,7 +200,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
       <div class="coverage-popup-body">
         <div class="coverage-popup-name">${nombre}</div>
         <div class="coverage-popup-address">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" stroke="#94A3B8" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" stroke="#94A3B8" stroke-width="1.6"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" stroke="#64748B" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" stroke="#64748B" stroke-width="1.6"/></svg>
           <span>${direccion}</span>
         </div>
         ${vigenciaHtml}

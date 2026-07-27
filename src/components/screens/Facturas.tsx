@@ -164,7 +164,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
             <div>
               <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Agregar PDF</div>
-              <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.35 }}>
+              <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.35 }}>
                 Se optimiza en versión digital antes de enviarla al cliente.
               </div>
             </div>

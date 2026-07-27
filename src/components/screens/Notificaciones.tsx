@@ -77,7 +77,7 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
         {(estadoPush === "ofrecer" || estadoPush === "activando" || estadoPush === "error") && (
           <div className="card" style={{ marginBottom: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
             <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
               background: "#EEF4FF", display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,17 +87,17 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#0D1629" }}>Activar notificaciones</div>
-              <div style={{ fontSize: 12, color: "#6B7A99", marginTop: 3, lineHeight: 1.4 }}>
+              <div style={{ fontSize: 12, color: "#64748B", marginTop: 3, lineHeight: 1.4 }}>
                 Te avisamos cuando tu campaña esté por vencer, tengas un reporte nuevo o te llegue una factura — aunque no tengas la app abierta.
               </div>
-              {errorPush && <div style={{ fontSize: 11.5, color: "#DC2626", marginTop: 6, fontWeight: 700 }}>{errorPush}</div>}
+              {errorPush && <div style={{ fontSize: 11, color: "#DC2626", marginTop: 6, fontWeight: 700 }}>{errorPush}</div>}
               <button
                 type="button"
                 onClick={() => void activarPush()}
                 disabled={estadoPush === "activando" || !uid}
                 style={{
                   marginTop: 10, background: estadoPush === "activando" ? "#93C5FD" : "#0877FF", color: "#fff",
-                  border: "none", borderRadius: 10, padding: "9px 14px", fontSize: 12.5, fontWeight: 800,
+                  border: "none", borderRadius: 12, padding: "9px 14px", fontSize: 12, fontWeight: 800,
                   cursor: estadoPush === "activando" ? "not-allowed" : "pointer",
                 }}
               >
@@ -109,8 +109,8 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
 
         {estadoPush === "oculto" && diagnostico && (
           <div style={{
-            marginBottom: 12, padding: "8px 10px", borderRadius: 10, background: "#F3F4F6",
-            fontSize: 10.5, color: "#8A93A6", lineHeight: 1.5, wordBreak: "break-word",
+            marginBottom: 12, padding: "8px 10px", borderRadius: 12, background: "#F3F4F6",
+            fontSize: 11, color: "#64748B", lineHeight: 1.5, wordBreak: "break-word",
           }}>
             Notificaciones push no disponibles en este dispositivo.<br />
             Info para soporte: {diagnostico}
@@ -143,8 +143,8 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
             </div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#0D1629" }}>Todo al día</div>
-            <div style={{ fontSize: 13, color: "#6B7A99", marginTop: 6 }}>No tienes notificaciones nuevas</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#0D1629" }}>Todo al día</div>
+            <div style={{ fontSize: 13, color: "#64748B", marginTop: 6 }}>No tienes notificaciones nuevas</div>
           </div>
         )}
 
@@ -155,7 +155,7 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
             style={{ marginBottom: 8, display: "flex", gap: 12, alignItems: "flex-start" }}
           >
             <div style={{
-              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
               background: COLORES_BG[n.tipo],
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
@@ -163,8 +163,8 @@ export default function Notificaciones({ clienteId, uid, onBack }: Props) {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#0D1629" }}>{n.titulo}</div>
-              <div style={{ fontSize: 12, color: "#6B7A99", marginTop: 3, lineHeight: 1.4 }}>{n.detalle}</div>
-              <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
+              <div style={{ fontSize: 12, color: "#64748B", marginTop: 3, lineHeight: 1.4 }}>{n.detalle}</div>
+              <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
             </div>
             <button
               type="button"

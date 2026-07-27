@@ -32,10 +32,10 @@ function Kpi({ valor, etiqueta, tono }: { valor: string | number; etiqueta: stri
   const color = tono === "alerta" ? "#DC2626" : tono === "ok" ? "#16A34A" : "#0B1220";
   return (
     <div style={{
-      flex: "1 1 96px", minWidth: 96, background: "#fff", borderRadius: 14,
+      flex: "1 1 96px", minWidth: 96, background: "#fff", borderRadius: 16,
       padding: "13px 12px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
     }}>
-      <div style={{ fontSize: 23, fontWeight: 800, color, lineHeight: 1.1 }}>{valor}</div>
+      <div style={{ fontSize: 24, fontWeight: 800, color, lineHeight: 1.1 }}>{valor}</div>
       <div style={{ fontSize: 11, color: "#64748B", marginTop: 4, lineHeight: 1.35 }}>{etiqueta}</div>
     </div>
   );
@@ -50,21 +50,21 @@ function FilaPorVencer({ item }: { item: PorVencer }) {
       padding: "11px 13px", display: "flex", alignItems: "center", gap: 12,
     }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
           {item.clienteNombre}
         </div>
-        <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 2, overflowWrap: "break-word" }}>
+        <div style={{ fontSize: 11, color: "#64748B", marginTop: 2, overflowWrap: "break-word" }}>
           {item.panelNombre}{item.ciudad ? ` · ${item.ciudad}` : ""}
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{
-          fontSize: 11.5, fontWeight: 800, color: c.texto, background: c.fondo,
+          fontSize: 11, fontWeight: 800, color: c.texto, background: c.fondo,
           borderRadius: 999, padding: "3px 9px", whiteSpace: "nowrap",
         }}>
           {textoDias(item.diasRestantes)}
         </div>
-        <div style={{ fontSize: 10.5, color: "#94A3B8", marginTop: 4, whiteSpace: "nowrap" }}>
+        <div style={{ fontSize: 11, color: "#64748B", marginTop: 4, whiteSpace: "nowrap" }}>
           {fechaCorta(item.fin)}
         </div>
       </div>
@@ -107,16 +107,16 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
           background: panel.enMantenimiento
             ? "#7C3AED"
             : vacio
-              ? "#CBD5E1"
+              ? "#94A3B8"
               : esLona
                 ? "#F59E0B"
                 : "#16A34A",
         }} />
         <span style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
+          <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
             {panel.nombre}
             <span style={{
-              marginLeft: 7, fontSize: 9.5, fontWeight: 800, letterSpacing: 0.3,
+              marginLeft: 7, fontSize: 11, fontWeight: 800, letterSpacing: 0.3,
               verticalAlign: "middle", padding: "2px 6px", borderRadius: 999,
               color: esLona ? "#B45309" : "#0877FF",
               background: esLona ? "rgba(245,158,11,0.13)" : "rgba(8,119,255,0.10)",
@@ -124,7 +124,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
               {esLona ? "LONA" : "LED"}
             </span>
           </span>
-          <span style={{ display: "block", fontSize: 11.5, color: "#64748B", marginTop: 2 }}>
+          <span style={{ display: "block", fontSize: 11, color: "#64748B", marginTop: 2 }}>
             {panel.ciudad || "Sin ciudad"}{subtitulo}
             {panel.anunciantesProgramados > 0 &&
               ` · ${panel.anunciantesProgramados} programado${panel.anunciantesProgramados === 1 ? "" : "s"}`}
@@ -132,7 +132,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
         </span>
         {panel.ocupantes.length > 0 && (
           <span aria-hidden="true" style={{
-            color: "#94A3B8", fontSize: 15, flexShrink: 0,
+            color: "#64748B", fontSize: 14, flexShrink: 0,
             transform: abierto ? "rotate(90deg)" : "none", transition: "transform .15s",
           }}>›</span>
         )}
@@ -146,7 +146,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
               fontSize: 12, padding: "4px 0", color: "#334155",
             }}>
               <span style={{ minWidth: 0, overflowWrap: "break-word" }}>{o.clienteNombre}</span>
-              <span style={{ color: "#94A3B8", whiteSpace: "nowrap", flexShrink: 0 }}>hasta {fechaCorta(o.fin)}</span>
+              <span style={{ color: "#64748B", whiteSpace: "nowrap", flexShrink: 0 }}>hasta {fechaCorta(o.fin)}</span>
             </div>
           ))}
         </div>
@@ -197,13 +197,13 @@ export default function Ocupacion({ onBack }: Props) {
           <div style={{ marginTop: 20 }}>
             <div style={{
               background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
-              color: "#DC2626", fontSize: 12.5, lineHeight: 1.55, padding: "12px 14px", borderRadius: 12,
+              color: "#DC2626", fontSize: 12, lineHeight: 1.55, padding: "12px 14px", borderRadius: 12,
             }}>
               {state.message}
             </div>
             <button type="button" onClick={state.recargar} style={{
-              marginTop: 12, width: "100%", padding: "12px", borderRadius: 12,
-              border: "1.5px solid #E5E7EB", background: "#fff", fontSize: 13.5,
+              marginTop: 12, width: "100%", padding: "14px", borderRadius: 12,
+              border: "1.5px solid #E5E7EB", background: "#fff", fontSize: 13,
               fontWeight: 700, color: "#0B1220", cursor: "pointer",
             }}>
               Reintentar
@@ -236,15 +236,15 @@ export default function Ocupacion({ onBack }: Props) {
             )}
 
             <section style={{ marginTop: 26 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>A quién llamar</h2>
-              <p style={{ fontSize: 11.5, color: "#64748B", margin: "0 0 12px", lineHeight: 1.5 }}>
+              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>A quién llamar</h2>
+              <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 12px", lineHeight: 1.5 }}>
                 Campañas que terminan en los próximos {state.datos.ventanaDias} días. Renovar antes de que
                 venza evita que la pantalla quede parada.
               </p>
               {state.datos.porVencer.length === 0 ? (
                 <div style={{
                   background: "rgba(34,197,94,0.09)", border: "1px solid rgba(34,197,94,0.25)",
-                  borderRadius: 12, padding: "12px 14px", fontSize: 12.5, color: "#0B1220",
+                  borderRadius: 12, padding: "12px 14px", fontSize: 12, color: "#0B1220",
                 }}>
                   Nada vence en los próximos {state.datos.ventanaDias} días.
                 </div>
@@ -258,7 +258,7 @@ export default function Ocupacion({ onBack }: Props) {
             </section>
 
             <section style={{ marginTop: 28 }}>
-              <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0B1220", margin: "0 0 10px" }}>Inventario</h2>
+              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 10px" }}>Inventario</h2>
               <div style={{ display: "flex", gap: 7, marginBottom: 12, flexWrap: "wrap" }}>
                 {([
                   ["todas", `Todas (${state.datos.totales.paneles})`],
@@ -289,7 +289,7 @@ export default function Ocupacion({ onBack }: Props) {
             </section>
 
             <button type="button" onClick={state.recargar} style={{
-              marginTop: 22, width: "100%", padding: "12px", borderRadius: 12,
+              marginTop: 22, width: "100%", padding: "14px", borderRadius: 12,
               border: "1.5px solid #E5E7EB", background: "#fff", fontSize: 13,
               fontWeight: 700, color: "#64748B", cursor: "pointer",
             }}>

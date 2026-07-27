@@ -31,7 +31,7 @@ const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "#6B7280", display: "block", marginBottom: 6, letterSpacing: 0.3 }}>{label}</label>
+      <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6, letterSpacing: 0.3 }}>{label}</label>
       {children}
     </div>
   );
@@ -39,7 +39,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "#fff", border: "1.5px solid #E5E7EB",
-  borderRadius: 10, padding: "12px 14px", fontSize: 14, color: "#0B1220",
+  borderRadius: 12, padding: "12px 14px", fontSize: 14, color: "#0B1220",
   outline: "none", boxSizing: "border-box",
   // minWidth/maxWidth explícitos -- un <input type="date"> a veces pide
   // más ancho del que le corresponde (el reloj/calendario nativo de
@@ -190,12 +190,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               contra el borde redondeado en vez de salirse visualmente
               de la tarjeta blanca. */}
           <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>
               Crear campaña para este cliente
             </div>
 
             {errorAdmin && (
-              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>
+              <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 12, marginBottom: 16 }}>
                 {errorAdmin}
               </div>
             )}
@@ -209,16 +209,16 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               />
             </Field>
             <Field label={`Paneles${panelIds.length > 0 ? ` (${panelIds.length} elegido${panelIds.length > 1 ? "s" : ""})` : ""}`}>
-              <div style={{ fontSize: 11.5, color: "#6B7280", marginBottom: 8, lineHeight: 1.4 }}>
+              <div style={{ fontSize: 11, color: "#64748B", marginBottom: 8, lineHeight: 1.4 }}>
                 Elige uno o varios paneles -- si eliges más de uno, esta campaña queda como una
                 sola con todos esos paneles (útil cuando el cliente cotiza 2+ ubicaciones juntas).
               </div>
-              <div style={{ border: "1.5px solid #E5E7EB", borderRadius: 10, maxHeight: 220, overflowY: "auto", background: "#fff" }}>
+              <div style={{ border: "1.5px solid #E5E7EB", borderRadius: 12, maxHeight: 220, overflowY: "auto", background: "#fff" }}>
                 {panelesState.status === "loading" && (
-                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#6B7280" }}>Cargando paneles…</div>
+                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#64748B" }}>Cargando paneles…</div>
                 )}
                 {panelesState.status === "ready" && paneles.length === 0 && (
-                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#6B7280" }}>No hay paneles registrados.</div>
+                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#64748B" }}>No hay paneles registrados.</div>
                 )}
                 {paneles.map((p, i) => {
                   const elegido = panelIds.includes(p.id);
@@ -232,7 +232,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                       }}
                     >
                       <input type="checkbox" checked={elegido} onChange={() => togglePanel(p.id)} style={{ width: 16, height: 16, accentColor: "#0877FF", flexShrink: 0 }} />
-                      <span style={{ fontSize: 13.5, color: "#0B1220", flex: 1 }}>
+                      <span style={{ fontSize: 13, color: "#0B1220", flex: 1 }}>
                         {p.nombre} — {p.ciudad} {p.estado === "Ocupado" ? "(Ocupado)" : ""}
                       </span>
                     </label>
@@ -264,7 +264,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
           <button onClick={crearContrato} disabled={creando} style={{
             width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#0877FF", color: "#fff",
-            fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: creando ? "default" : "pointer",
+            fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: creando ? "default" : "pointer",
           }}>
             {creando ? "Creando…" : "Crear contrato"}
           </button>
@@ -293,7 +293,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
-            <div style={{ fontSize: 15.5, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>Solicitud enviada</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>Solicitud enviada</div>
             <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
               Alguien del equipo se comunicará contigo para confirmar disponibilidad y coordinar los detalles.
             </div>
@@ -302,7 +302,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
           <button onClick={onEnviada} style={{
             width: "100%", padding: "14px", background: "#0877FF", color: "#fff",
-            fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: "pointer",
+            fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: "pointer",
           }}>
             Listo
           </button>
@@ -325,10 +325,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       {/* Form */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
         <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
 
           {error && (
-            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 10, marginBottom: 16 }}>
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 12, marginBottom: 16 }}>
               {error}
             </div>
           )}
@@ -382,7 +382,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                   style={{
                     flex: 1,
                     padding: "12px 6px",
-                    borderRadius: 10,
+                    borderRadius: 12,
                     cursor: "pointer",
                     fontSize: 14,
                     fontWeight: 800,
@@ -396,7 +396,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               ))}
             </div>
           </Field>
-          <div style={{ fontSize: 11.5, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.45 }}>
+          <div style={{ fontSize: 11, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.45 }}>
             El contrato mínimo es de 3 meses.
             {fechaInicio && (
               <> Terminaría el <strong>{sumarMeses(fechaInicio, meses)}</strong>.</>
@@ -413,7 +413,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
         <button onClick={enviar} disabled={enviando} style={{
           width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#0877FF", color: "#fff",
-          fontWeight: 700, fontSize: 15, border: "none", borderRadius: 14, cursor: enviando ? "default" : "pointer",
+          fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: enviando ? "default" : "pointer",
         }}>
           {enviando ? "Enviando…" : "Enviar solicitud"}
         </button>

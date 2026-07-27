@@ -129,8 +129,8 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16, WebkitOverflowScrolling: "touch" as any }}>
         <div style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
-          <div style={{ fontSize: 12.5, color: "#6B7280", marginBottom: 16 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
+          <div style={{ fontSize: 12, color: "#64748B", marginBottom: 16 }}>
             Cliente seleccionado: <strong style={{ color: "#0B1220" }}>{cliente?.empresa ?? "Cliente actual"}</strong>. Aquí sólo se crea el acceso al portal.
           </div>
 
@@ -178,7 +178,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           </div>
 
           {error && (
-            <div style={{ marginTop: 14, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 10, fontSize: 12 }}>
+            <div style={{ marginTop: 14, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", padding: "10px 12px", borderRadius: 12, fontSize: 12 }}>
               {error}
             </div>
           )}
@@ -196,11 +196,11 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
 
         {resultado && (
           <div style={{ background: "#0B1220", border: "1px solid rgba(147,197,253,0.18)", borderRadius: 16, padding: 16, marginTop: 14, color: "#fff" }}>
-            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>Acceso listo</div>
-            <div style={{ fontSize: 12.5, color: "rgba(226,232,240,0.72)", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 6 }}>Acceso listo</div>
+            <div style={{ fontSize: 12, color: "rgba(226,232,240,0.72)", marginBottom: 12 }}>
               Copia o envía este acceso al usuario del cliente.
             </div>
-            <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 12, fontSize: 12.5, lineHeight: 1.55, whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.88)" }}>
+            <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 12, padding: 12, fontSize: 12, lineHeight: 1.55, whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.88)" }}>
               {mensaje}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12 }}>
@@ -211,7 +211,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
                 Enviar correo
               </a>
             </div>
-            <button onClick={onBack} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, cursor: "pointer" }}>
+            <button onClick={onBack} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: "pointer" }}>
               Volver al cliente
             </button>
           </div>

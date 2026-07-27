@@ -29,8 +29,8 @@ function MenuButton({ label, onClick, danger, disabled }: { label: string; onCli
       onClick={onClick}
       disabled={disabled}
       style={{
-        width: "100%", border: "none", background: "transparent", borderRadius: 9,
-        padding: "10px 11px", textAlign: "left", fontSize: 12.5, fontWeight: 800,
+        width: "100%", border: "none", background: "transparent", borderRadius: 8,
+        padding: "14px 11px", textAlign: "left", fontSize: 12, fontWeight: 800,
         color: disabled ? "#CBD5E1" : danger ? "#DC2626" : "#0F172A",
         cursor: disabled ? "not-allowed" : "pointer",
       }}
@@ -50,8 +50,8 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
       target="_blank"
       rel="noreferrer"
       style={{
-        display: "block", borderRadius: 9, padding: "10px 11px", textAlign: "left",
-        fontSize: 12.5, fontWeight: 800, color: "#0F172A", textDecoration: "none",
+        display: "block", borderRadius: 8, padding: "10px 11px", textAlign: "left",
+        fontSize: 12, fontWeight: 800, color: "#0F172A", textDecoration: "none",
       }}
     >
       {label}
@@ -373,12 +373,12 @@ export default function Accesos({ onBack }: Props) {
                   color: active ? "#0877FF" : "#64748B",
                   borderRadius: 12,
                   minHeight: 42,
-                  fontSize: 12.5,
+                  fontSize: 12,
                   fontWeight: 800,
                   cursor: "pointer",
                 }}
               >
-                {item.label} <span style={{ color: active ? "#0B3F8A" : "#94A3B8" }}>{item.count}</span>
+                {item.label} <span style={{ color: active ? "#0B3F8A" : "#64748B" }}>{item.count}</span>
               </button>
             );
           })}
@@ -390,7 +390,7 @@ export default function Accesos({ onBack }: Props) {
             onClick={toggleFormNuevo}
             style={{
               background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
-              border: "none", borderRadius: 12, padding: "13px", fontSize: 12.5,
+              border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
               fontWeight: 800, cursor: "pointer",
             }}
           >
@@ -409,28 +409,28 @@ export default function Accesos({ onBack }: Props) {
             <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>
               {clienteEditandoId ? "Editar cliente" : "Cliente nuevo"}
             </div>
-            <div style={{ fontSize: 11.5, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
               {clienteEditandoId ? "Actualiza la información de la empresa." : "Crea la empresa y su acceso al portal en un solo paso."}
             </div>
             {cargandoEdicion && (
               <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>Cargando datos del cliente...</div>
             )}
             <div style={{ display: "grid", gap: 10 }}>
-              <input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={nuevoRuc} onChange={(e) => setNuevoRuc(e.target.value)} placeholder="RUC (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-                <input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+                <input value={nuevoRuc} onChange={(e) => setNuevoRuc(e.target.value)} placeholder="RUC (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                <input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
               </div>
-              <input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
               {!clienteEditandoId && (
                 <>
                   <div style={{ height: 1, background: "var(--border)", margin: "2px 0" }} />
-                  <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-                  <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+                  <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                  <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
                 </>
               )}
-              <input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
-              <input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
                 <ClientAvatarPicker
@@ -452,7 +452,7 @@ export default function Accesos({ onBack }: Props) {
             <button
               onClick={guardarClienteNuevo}
               disabled={nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion}
-              style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "not-allowed" : "pointer" }}
+              style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "not-allowed" : "pointer" }}
             >
               {nuevoCreando
                 ? (clienteEditandoId ? "Guardando..." : "Creando...")
@@ -469,8 +469,8 @@ export default function Accesos({ onBack }: Props) {
                 <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Cliente creado</div>
                 <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAccesoNuevo}</div>
                 <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                  <a href={`https://wa.me/${nuevoCelular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAccesoNuevo)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
-                  <a href={`mailto:${nuevoResultado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoNuevo)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 10, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                  <a href={`https://wa.me/${nuevoCelular.replace(/\D/g, "")}?text=${encodeURIComponent(mensajeAccesoNuevo)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
+                  <a href={`mailto:${nuevoResultado.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoNuevo)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
                 </div>
               </div>
             )}
@@ -510,7 +510,7 @@ export default function Accesos({ onBack }: Props) {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
                       {inv.clienteNombre || inv.email}
                       {inv.esAdmin && (
-                        <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, color: "#0B3F8A", background: "rgba(8,119,255,0.12)", padding: "2px 6px", borderRadius: 20 }}>
+                        <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#0B3F8A", background: "rgba(8,119,255,0.12)", padding: "2px 6px", borderRadius: 20 }}>
                           ADMIN
                         </span>
                       )}
@@ -519,7 +519,7 @@ export default function Accesos({ onBack }: Props) {
                     <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1 }}>{fmtFecha(inv)}</div>
                   </div>
                   {inv.clienteId && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
                   )}
@@ -527,8 +527,8 @@ export default function Accesos({ onBack }: Props) {
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setMenuAbierto((id) => id === inv.id ? null : inv.id); }}
                     style={{
-                      width: 34, height: 34, borderRadius: 17, border: "1px solid #E5E7EB",
-                      background: "#fff", color: "#64748B", fontSize: 18, fontWeight: 900,
+                      width: 34, height: 34, borderRadius: 16, border: "1px solid #E5E7EB",
+                      background: "#fff", color: "#64748B", fontSize: 19, fontWeight: 900,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       cursor: "pointer", flexShrink: 0, lineHeight: 1,
                     }}
@@ -538,17 +538,17 @@ export default function Accesos({ onBack }: Props) {
                   </button>
                 </div>
                 {accionandoId === inv.id && (
-                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>
+                  <div style={{ marginTop: 9, fontSize: 11, color: "#64748B", fontWeight: 700 }}>
                     Actualizando...
                   </div>
                 )}
                 {reseteandoId === inv.id && (
-                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#64748B", fontWeight: 700 }}>
+                  <div style={{ marginTop: 9, fontSize: 11, color: "#64748B", fontWeight: 700 }}>
                     Generando contraseña nueva...
                   </div>
                 )}
                 {yaCopiado && (
-                  <div style={{ marginTop: 9, fontSize: 11.5, color: "#16A34A", fontWeight: 800 }}>
+                  <div style={{ marginTop: 9, fontSize: 11, color: "#16A34A", fontWeight: 800 }}>
                     Link copiado
                   </div>
                 )}
@@ -626,14 +626,14 @@ export default function Accesos({ onBack }: Props) {
             <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
               Contraseña restablecida
             </div>
-            <div style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 14 }}>
               La contraseña anterior de <strong style={{ color: "#0B1220" }}>{resultadoReset.nombre}</strong> ya no funciona. Comparte esta nueva con el cliente.
             </div>
             <div style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12, marginBottom: 14 }}>
               <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 2 }}>Correo</div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{resultadoReset.email}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{resultadoReset.email}</div>
               <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 2 }}>Contraseña nueva</div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: "var(--text)" }}>{resultadoReset.password}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>{resultadoReset.password}</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <a
@@ -647,13 +647,13 @@ Por seguridad, te recomendamos cambiarla después de entrar (Perfil > Cambiar co
                 )}`}
                 target="_blank"
                 rel="noreferrer"
-                style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13, textDecoration: "none" }}
+                style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13, textDecoration: "none" }}
               >
                 WhatsApp
               </a>
               <button
                 onClick={() => setResultadoReset(null)}
-                style={{ flex: 1, background: "#0B1220", color: "#fff", border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}
+                style={{ flex: 1, background: "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}
               >
                 Listo
               </button>

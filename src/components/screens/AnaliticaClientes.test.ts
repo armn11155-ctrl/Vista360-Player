@@ -29,7 +29,7 @@ describe("tiempoRelativo", () => {
 
 describe("colorEstado", () => {
   it("gris si nunca entró", () => {
-    expect(colorEstado(null)).toBe("#9CA3AF");
+    expect(colorEstado(null)).toBe("#64748B");
   });
 
   it("verde si entró hace menos de 3 días", () => {
@@ -41,7 +41,7 @@ describe("colorEstado", () => {
   });
 
   it("gris si entró hace más de 14 días", () => {
-    expect(colorEstado(Date.now() - 30 * 86_400_000)).toBe("#9CA3AF");
+    expect(colorEstado(Date.now() - 30 * 86_400_000)).toBe("#64748B");
   });
 });
 

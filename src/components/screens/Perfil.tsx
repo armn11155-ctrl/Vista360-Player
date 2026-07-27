@@ -311,14 +311,14 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6, textAlign: "center" }}>
                     Contraseña actualizada
                   </div>
-                  <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 20, textAlign: "center" }}>
                     Tu contraseña se cambió correctamente. La próxima vez que inicies sesión, usa la nueva.
                   </div>
                 </div>
                 <button
                   onClick={cerrarModalPassword}
                   style={{
-                    width: "100%", padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,
+                    width: "100%", padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,
                     color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
                   }}
                 >
@@ -330,7 +330,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                 <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
                   Cambiar contraseña
                 </div>
-                <div style={{ fontSize: 13.5, color: "#6B7280", lineHeight: 1.5, marginBottom: 16 }}>
+                <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 16 }}>
                   Por seguridad, primero confirma tu contraseña actual.
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: passwordError ? 10 : 18 }}>
@@ -341,7 +341,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                     placeholder="Contraseña actual"
                     autoComplete="current-password"
                     disabled={cambiandoPassword}
-                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
                   <input
                     type="password"
@@ -350,7 +350,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                     placeholder="Nueva contraseña (mín. 8, letras y números)"
                     autoComplete="new-password"
                     disabled={cambiandoPassword}
-                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
                   <input
                     type="password"
@@ -359,7 +359,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                     placeholder="Confirmar nueva contraseña"
                     autoComplete="new-password"
                     disabled={cambiandoPassword}
-                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 10, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
                 </div>
                 {passwordError && (
@@ -370,7 +370,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                     onClick={cerrarModalPassword}
                     disabled={cambiandoPassword}
                     style={{
-                      flex: 1, padding: "13px", background: "#F3F4F6", border: "none", borderRadius: 12,
+                      flex: 1, padding: "14px", background: "#F3F4F6", border: "none", borderRadius: 12,
                       color: "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer",
                     }}
                   >
@@ -380,7 +380,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                     onClick={cambiarPassword}
                     disabled={cambiandoPassword}
                     style={{
-                      flex: 1, padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,
+                      flex: 1, padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,
                       color: "#fff", fontWeight: 700, fontSize: 14,
                       cursor: cambiandoPassword ? "not-allowed" : "pointer",
                     }}

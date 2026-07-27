@@ -51,11 +51,11 @@ export function tiempoRelativo(ms: number | null): string {
 
 /** Verde si entró hace poco, ámbar si hace un tiempo, gris si nunca/hace mucho. */
 export function colorEstado(ms: number | null): string {
-  if (ms === null) return "#9CA3AF";
+  if (ms === null) return "#64748B";
   const dias = (Date.now() - ms) / 86400000;
   if (dias < 3) return "#16A34A";
   if (dias < 14) return "#7C3AED";
-  return "#9CA3AF";
+  return "#64748B";
 }
 
 export default function AnaliticaClientes({ onBack }: Props) {
@@ -73,7 +73,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
 
       <div className="content-area">
         <div className="card" style={{ background: "rgba(8,119,255,0.14)", marginBottom: 14 }}>
-          <div style={{ fontSize: 12.5, color: "#1D4ED8", lineHeight: 1.5 }}>
+          <div style={{ fontSize: 12, color: "#1D4ED8", lineHeight: 1.5 }}>
             Última vez que cada cliente entró a su portal. Solo tú puedes ver esta pantalla.
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
 
         {state.status === "ready" && state.accesos.length === 0 && (
           <div className="card">
-            <div style={{ fontSize: 13, color: "#6B7A99" }}>
+            <div style={{ fontSize: 13, color: "#64748B" }}>
               Todavía no hay clientes con cuenta en el portal.
             </div>
           </div>
@@ -126,11 +126,11 @@ export default function AnaliticaClientes({ onBack }: Props) {
                   >
                     {a.empresa}
                   </div>
-                  <div style={{ fontSize: 11.5, color: "#6B7A99", marginTop: 2 }}>
+                  <div style={{ fontSize: 11, color: "#64748B", marginTop: 2 }}>
                     {a.lastLoginCount} {a.lastLoginCount === 1 ? "acceso" : "accesos"} en total
                   </div>
                   {favorita && (
-                    <div style={{ fontSize: 11.5, color: "#6B7A99", marginTop: 1 }}>
+                    <div style={{ fontSize: 11, color: "#64748B", marginTop: 1 }}>
                       Mira más: {favorita.nombre} ({favorita.count})
                     </div>
                   )}

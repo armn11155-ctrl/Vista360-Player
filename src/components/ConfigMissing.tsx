@@ -13,7 +13,7 @@ export default function ConfigMissing({ missing }: Props) {
       <ul
         style={{
           background: "rgba(255,255,255,0.08)",
-          borderRadius: 10,
+          borderRadius: 12,
           padding: "12px 18px",
           fontFamily: "monospace",
           fontSize: 13,
