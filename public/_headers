@@ -27,11 +27,17 @@
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
 
-# Iconos/imagenes estaticas sueltas (no llevan hash, pero cambian poco)
-# -- cache moderado en vez de immutable, por si algun dia se
-# reemplazan.
+# Iconos/imagenes estaticas sueltas (no llevan hash de contenido, a
+# diferencia de /assets/*) -- antes esto cacheaba 24h fijas, y cada vez
+# que se reemplazaba un PNG (icono, logo, pin del mapa) la gente seguia
+# viendo el archivo viejo hasta que pasaran esas 24h o hicieran un
+# refresh forzado a mano. must-revalidate le dice al navegador que
+# SIEMPRE confirme con el servidor si el archivo sigue igual (Cloudflare
+# responde con un ETag basado en el contenido -- si no cambio, la
+# respuesta es un 304 rapido sin re-descargar nada; si cambio, se trae
+# la version nueva de una, sin esperar ningun plazo).
 /*.png
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate
 
 /*.svg
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=0, must-revalidate
