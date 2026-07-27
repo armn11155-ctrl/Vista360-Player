@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import type { User } from "firebase/auth";
 import { auth, db, logout, onUserChange } from "../config/firebase";
 import type { PortalRole, PortalUser } from "../types";
@@ -21,8 +21,16 @@ export function usePortalAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
   useEffect(() => {
+    // Suscripción al documento del usuario. Vive fuera del callback para
+    // poder cortarla cuando cambia la sesión (o al desmontar): si no, al
+    // cerrar sesión seguiría escuchando un documento que ya no se puede
+    // leer, y Firestore lanzaría un error de permisos.
+    let desuscribirDoc: (() => void) | undefined;
+
     const unsub = onUserChange(async (user) => {
       if (!user) {
+        desuscribirDoc?.();
+        desuscribirDoc = undefined;
         setState({ status: "out" });
         return;
       }
@@ -30,38 +38,52 @@ export function usePortalAuth(): AuthState {
         setState({ status: "error", message: "Firebase no configurado." });
         return;
       }
-      try {
-        const snap = await getDoc(doc(db, "portalUsers", user.uid));
-        if (!snap.exists()) {
+      // onSnapshot y no getDoc: antes el rol se leía UNA sola vez al
+      // iniciar sesión, así que archivar a alguien o cambiarle el rol no
+      // tenía ningún efecto hasta que esa persona recargara la app -- y
+      // en una PWA que se deja abierta, eso puede ser días. El servidor
+      // igual la frenaba (las Cloud Functions revalidan), pero seguía
+      // viendo pantallas que ya no le correspondían. Ahora el cambio se
+      // aplica en el momento.
+      desuscribirDoc?.();
+      desuscribirDoc = onSnapshot(
+        doc(db, "portalUsers", user.uid),
+        async (snap) => {
+          if (!snap.exists()) {
+            setState({
+              status: "error",
+              message:
+                "Tu cuenta existe pero no está vinculada a ningún cliente. Pide al administrador que la configure.",
+            });
+            return;
+          }
+          const data = snap.data() as Omit<PortalUser, "uid">;
+          if (data.archived) {
+            await logout();
+            setState({
+              status: "error",
+              message: "Tu usuario está archivado. Pide al administrador que lo restaure.",
+            });
+            return;
+          }
+          const role: PortalRole = data.role ?? "cliente";
           setState({
-            status: "error",
-            message:
-              "Tu cuenta existe pero no está vinculada a ningún cliente. Pide al administrador que la configure.",
+            status: "in",
+            user,
+            role,
+            clienteId: role === "cliente" ? data.clienteId ?? null : null,
+            nombre: data.nombre ?? null,
           });
-          return;
+        },
+        () => {
+          setState({ status: "error", message: "No se pudo verificar tu cuenta. Intenta de nuevo." });
         }
-        const data = snap.data() as Omit<PortalUser, "uid">;
-        if (data.archived) {
-          await logout();
-          setState({
-            status: "error",
-            message: "Tu usuario está archivado. Pide al administrador que lo restaure.",
-          });
-          return;
-        }
-        const role: PortalRole = data.role ?? "cliente";
-        setState({
-          status: "in",
-          user,
-          role,
-          clienteId: role === "cliente" ? data.clienteId ?? null : null,
-          nombre: data.nombre ?? null,
-        });
-      } catch {
-        setState({ status: "error", message: "No se pudo verificar tu cuenta. Intenta de nuevo." });
-      }
+      );
     });
-    return unsub;
+    return () => {
+      desuscribirDoc?.();
+      unsub();
+    };
   }, []);
 
   return state;

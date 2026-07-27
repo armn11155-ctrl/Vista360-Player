@@ -61,8 +61,9 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         {error && <div className="login-error">{error}</div>}
         <form onSubmit={submit}>
           <div className="form-group">
-            <label className="form-label">Usuario</label>
+            <label className="form-label" htmlFor="login-email">Usuario</label>
             <input
+              id="login-email"
               className="form-input"
               type="email"
               autoComplete="email"
@@ -72,9 +73,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Contraseña</label>
+            <label className="form-label" htmlFor="login-password">Contraseña</label>
             <div className="login-password-wrap">
               <input
+                id="login-password"
                 className="form-input"
                 type={mostrarPassword ? "text" : "password"}
                 autoComplete="current-password"

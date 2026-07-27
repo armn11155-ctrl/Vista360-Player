@@ -5,7 +5,7 @@ interface Props {
 export default function ConfigMissing({ missing }: Props) {
   return (
     <div className="state-screen config-missing-screen">
-      <img src="/logo-player.png" alt="Vista360 Player" className="config-missing-logo" draggable={false} />
+      <img src="/logo-player.png" decoding="async" alt="Vista360 Player" className="config-missing-logo" draggable={false} />
       <div className="state-title" style={{ color: "#fff" }}>Falta configuración de Firebase</div>
       <div className="state-sub" style={{ color: "rgba(255,255,255,0.65)" }}>
         Faltan estas variables de entorno en el deploy:

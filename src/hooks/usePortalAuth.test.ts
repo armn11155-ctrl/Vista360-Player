@@ -5,16 +5,22 @@ import { renderHook, waitFor } from "@testing-library/react";
 // `mockUserChangeCallback` para disparar el callback con este usuario.
 const fakeUser = { uid: "uid-123", email: "cliente@empresa.com" } as any;
 
-// getDoc/doc de firebase/firestore se mockean para no tocar Firestore real.
+// doc/onSnapshot de firebase/firestore se mockean para no tocar Firestore
+// real. Se guarda el callback del listener para poder simular, además de
+// la carga inicial, un cambio POSTERIOR del documento (que es justamente
+// lo que antes no funcionaba: el rol se leía una sola vez).
 let firestoreDocData: Record<string, unknown> | null = null;
 let firestoreDocExists = true;
+let emitirSnapshot: (() => void) | null = null;
 
 vi.mock("firebase/firestore", () => ({
   doc: vi.fn(),
-  getDoc: vi.fn(async () => ({
-    exists: () => firestoreDocExists,
-    data: () => firestoreDocData,
-  })),
+  onSnapshot: vi.fn((_ref: unknown, onNext: (snap: unknown) => void) => {
+    emitirSnapshot = () =>
+      onNext({ exists: () => firestoreDocExists, data: () => firestoreDocData });
+    emitirSnapshot();
+    return () => { emitirSnapshot = null; };
+  }),
 }));
 
 // onUserChange/db/auth de nuestro propio config/firebase se mockean para
@@ -25,6 +31,7 @@ let userChangeCb: ((user: unknown) => void) | null = null;
 vi.mock("../config/firebase", () => ({
   db: {},
   auth: {},
+  logout: vi.fn(async () => {}),
   onUserChange: (cb: (user: unknown) => void) => {
     userChangeCb = cb;
     return () => {};
@@ -38,6 +45,7 @@ describe("usePortalAuth — flujo de roles", () => {
     userChangeCb = null;
     firestoreDocExists = true;
     firestoreDocData = null;
+    emitirSnapshot = null;
   });
 
   it("rol 'cliente': recibe su clienteId fijo y no puede elegir otro", async () => {
@@ -89,5 +97,42 @@ describe("usePortalAuth — flujo de roles", () => {
     userChangeCb!(null);
 
     await waitFor(() => expect(result.current.status).toBe("out"));
+  });
+
+  it("el rol se actualiza EN VIVO, sin recargar", async () => {
+    // Este es el bug que se arregló: antes el documento se leía una sola
+    // vez con getDoc, así que cambiar el rol o archivar al usuario no
+    // tenía efecto hasta que la persona recargara la app.
+    firestoreDocData = { role: "cliente", clienteId: "cliente-abc", nombre: "Alan" };
+
+    const { result } = renderHook(() => usePortalAuth());
+    userChangeCb!(fakeUser);
+    await waitFor(() => expect(result.current.status).toBe("in"));
+
+    // El admin lo asciende mientras la sesión sigue abierta.
+    firestoreDocData = { role: "admin", clienteId: null, nombre: "Alan" };
+    emitirSnapshot!();
+
+    await waitFor(() => {
+      const s = result.current;
+      if (s.status !== "in") throw new Error("esperaba 'in'");
+      expect(s.role).toBe("admin");
+    });
+  });
+
+  it("archivar al usuario en caliente lo saca de inmediato", async () => {
+    firestoreDocData = { role: "cliente", clienteId: "cliente-abc" };
+
+    const { result } = renderHook(() => usePortalAuth());
+    userChangeCb!(fakeUser);
+    await waitFor(() => expect(result.current.status).toBe("in"));
+
+    firestoreDocData = { role: "cliente", clienteId: "cliente-abc", archived: true };
+    emitirSnapshot!();
+
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    const s = result.current;
+    if (s.status !== "error") throw new Error("esperaba 'error'");
+    expect(s.message).toMatch(/archivado/i);
   });
 });

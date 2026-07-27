@@ -178,7 +178,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
             <span className="profile-verified-mark" aria-hidden="true">
-              <img src="/verified-check.svg" alt="" />
+              <img src="/verified-check.svg" decoding="async" alt="" />
             </span>
             <span>Cuenta administrador</span>
           </span>

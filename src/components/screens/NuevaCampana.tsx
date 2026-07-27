@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId, isValidElement, cloneElement } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { db, cloudFunctions } from "../../config/firebase";
@@ -28,11 +28,32 @@ interface Props {
 
 const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Otra"];
 
+/**
+ * Etiqueta + campo. La etiqueta se asocia al campo con htmlFor/id, así
+ * TOCARLA enfoca el campo -- en el celular eso agranda bastante el área
+ * útil de cada fila, y además es lo que necesita un lector de pantalla
+ * para anunciar de qué campo se trata.
+ *
+ * El id se genera con useId() y se inyecta en el hijo con cloneElement,
+ * para no tener que inventar y mantener un id a mano en cada uso. Si el
+ * hijo ya trae su propio id, se respeta.
+ */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
+  const hijo = isValidElement(children)
+    ? cloneElement(children as React.ReactElement<{ id?: string }>, {
+        id: (children.props as { id?: string }).id ?? id,
+      })
+    : children;
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6, letterSpacing: 0.3 }}>{label}</label>
-      {children}
+      <label
+        htmlFor={id}
+        style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6, letterSpacing: 0.3 }}
+      >
+        {label}
+      </label>
+      {hijo}
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { httpsCallable } from "firebase/functions";
 import { doc, getDoc } from "firebase/firestore";
 import BackChevron from "../BackChevron";
+import CampoBusqueda from "../CampoBusqueda";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { BrandThumb } from "../BrandThumb";
@@ -270,7 +271,18 @@ export default function Accesos({ onBack }: Props) {
   const invitaciones = state.status === "ready" ? state.invitaciones : [];
   const usuariosActivos = invitaciones.filter((inv) => !inv.archived);
   const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
-  const usuariosVisibles = tab === "activos" ? usuariosActivos : usuariosArchivados;
+  const usuariosDelTab = tab === "activos" ? usuariosActivos : usuariosArchivados;
+  const [busqueda, setBusqueda] = useState("");
+  // Por empresa, contacto y correo: son las tres formas en que uno se
+  // acuerda de un cliente cuando la lista ya no cabe en una pantalla.
+  const usuariosVisibles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return usuariosDelTab;
+    return usuariosDelTab.filter((u) =>
+      [u.clienteNombre, u.email, (u as { contacto?: string }).contacto]
+        .some((campo) => String(campo ?? "").toLowerCase().includes(q))
+    );
+  }, [usuariosDelTab, busqueda]);
 
 
   async function administrarUsuario(inv: InvitacionPortal, accion: "archivar" | "restaurar" | "eliminar") {
@@ -485,13 +497,21 @@ export default function Accesos({ onBack }: Props) {
             {state.message}
           </div>
         )}
-        {state.status === "ready" && usuariosVisibles.length === 0 && (
+        {state.status === "ready" && usuariosDelTab.length === 0 && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
             {tab === "activos" ? "Aún no hay usuarios activos." : "No hay usuarios archivados."}
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+          {usuariosDelTab.length > 0 && (
+            <CampoBusqueda
+              valor={busqueda}
+              onCambio={setBusqueda}
+              placeholder="Buscar por empresa, contacto o correo"
+              resultados={usuariosVisibles.length}
+            />
+          )}
           {usuariosVisibles.map((inv) => {
             const yaCopiado = copiadoId === inv.id;
             const whatsappHref = `https://wa.me/?text=${encodeURIComponent(

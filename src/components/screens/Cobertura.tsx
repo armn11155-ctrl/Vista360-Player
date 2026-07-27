@@ -81,6 +81,11 @@ function esPanelActivoCliente(panel: PanelConUso) {
 function esPanelContratable(panel: PanelConUso) {
   if (esPanelActivoCliente(panel)) return false;
   if (panel.contrato && estadoCampana(panel.contrato) === "Finalizada") return true;
+  // Un soporte ocupado por otro cliente PERO con fecha de liberación
+  // conocida también se puede pedir: se reserva para cuando quede libre.
+  // Sigue mostrándose con su estado real ("Ocupado" + "Se libera el ...")
+  // -- no aparece como si estuviera disponible hoy.
+  if (panel.libreDesde) return true;
   return panel.estado === "Disponible" || panel.estado === "Libre";
 }
 
@@ -167,12 +172,29 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
       `
     : "";
 
+  // Cuándo se libera un soporte exclusivo ocupado por otro cliente. Es la
+  // pregunta que más se hace al ver un pin ocupado ("¿y para noviembre?"),
+  // y hasta ahora no había dónde responderla.
+  const libreDesde = !contrato && panel.libreDesde ? String(panel.libreDesde) : "";
+  const libreDesdeHtml = libreDesde
+    ? `
+        <div class="coverage-popup-divider"></div>
+        <div class="coverage-popup-until">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#64748B" stroke-width="1.6"/><path d="M12 7v5l3 2" stroke="#64748B" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <div class="coverage-popup-until-body">
+            <span class="coverage-popup-until-label">Se libera</span>
+            <span class="coverage-popup-until-value">${escapeHtml(fechaLarga(libreDesde))}</span>
+          </div>
+        </div>
+      `
+    : "";
+
   const accionHtml = !permitirSolicitar
     ? ""
     : !contrato
     ? `
         <button type="button" class="coverage-popup-action" data-cobertura-accion="disponibilidad" data-panel-id="${panel.id}">
-          Solicitar disponibilidad
+          ${libreDesde ? "Reservar para cuando se libere" : "Solicitar disponibilidad"}
         </button>
       `
     : enRenovacion
@@ -204,6 +226,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
           <span>${direccion}</span>
         </div>
         ${vigenciaHtml}
+        ${libreDesdeHtml}
         ${accionHtml}
       </div>
     </div>
@@ -409,12 +432,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           {mapReady && !mapError && panelesState.status === "ready" && (
             <div className="coverage-map-legend coverage-map-legend-desktop" aria-label="Leyenda del mapa">
               <div>
-                <img src="/vista360-map-marker-available.png" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Pantallas que podrías contratar</span>
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-v4.png" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Pantallas contratadas</span>
                 <strong>{panelesActivos}</strong>
               </div>
@@ -467,12 +490,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         {mapReady && !mapError && panelesState.status === "ready" && (
           <div className="coverage-map-legend coverage-map-legend-mobile" aria-label="Leyenda del mapa">
             <div>
-              <img src="/vista360-map-marker-available.png" alt="" aria-hidden="true" />
+              <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
               <span>Pantallas que podrías contratar</span>
               <strong>{panelesContratables}</strong>
             </div>
             <div>
-              <img src="/vista360-map-marker-v4.png" alt="" aria-hidden="true" />
+              <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
               <span>Pantallas contratadas</span>
               <strong>{panelesActivos}</strong>
             </div>

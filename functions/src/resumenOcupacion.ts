@@ -75,10 +75,11 @@ export const resumenOcupacion = onCall(async (request) => {
   const hoy = hoyEnLima();
   const limitePorVencer = sumarDias(hoy, DIAS_POR_VENCER);
 
-  const [panelesSnap, contratosSnap, clientesSnap] = await Promise.all([
+  const [panelesSnap, contratosSnap, clientesSnap, facturasSnap] = await Promise.all([
     db.collection("paneles").get(),
     db.collection("contratos").get(),
     db.collection("clientes").get(),
+    db.collection("facturas").get(),
   ]);
 
   const nombreCliente = new Map<string, string>();
@@ -202,6 +203,54 @@ export const resumenOcupacion = onCall(async (request) => {
     .filter((p) => p.anunciantesActivos === 0 && !p.enMantenimiento)
     .sort((a, b) => (b.diasLibre ?? 99999) - (a.diasLibre ?? 99999));
 
+  // ── Cobranza: qué está emitido y sin cobrar ──────────────────────
+  // Las facturas vienen del sistema de facturación externo y se vinculan
+  // por RUC (cliente_doc) o, si el cliente no tiene RUC cargado allá, por
+  // cliente_id directo. Se resuelven las dos formas para no dejar fuera
+  // ninguna deuda real.
+  const clientePorRuc = new Map<string, string>();
+  clientesSnap.docs.forEach((d) => {
+    const ruc = String(d.data()?.ruc ?? "").trim();
+    if (ruc) clientePorRuc.set(ruc, d.id);
+  });
+
+  const COBRADAS = new Set(["Pagada", "Anulada"]);
+  const pendientes = facturasSnap.docs
+    .map((d) => ({ id: d.id, datos: d.data() as Record<string, unknown> }))
+    .filter(({ datos }) => {
+      if (datos.pagado === true) return false;
+      return !COBRADAS.has(String(datos.estado ?? ""));
+    })
+    .map(({ id, datos: f }) => {
+      const clienteId =
+        String(f.cliente_id ?? "") ||
+        clientePorRuc.get(String(f.cliente_doc ?? "").trim()) ||
+        "";
+      const vence = String(f.fecha_vencimiento ?? "").slice(0, 10);
+      return {
+        id,
+        numero: String(f.numero_fmt ?? f.numero ?? f.id),
+        clienteId,
+        clienteNombre: nombreCliente.get(clienteId) ?? "Cliente sin identificar",
+        estado: String(f.estado ?? ""),
+        total: Number(f.total ?? 0) || 0,
+        moneda: String(f.moneda ?? "PEN"),
+        vence: vence || null,
+        // Negativo = ya se pasó la fecha de vencimiento.
+        diasParaVencer: vence ? diasEntre(hoy, vence) : null,
+        vencida: Boolean(vence && vence < hoy),
+      };
+    })
+    // Primero lo más vencido, después lo que vence antes.
+    .sort((a, b) => (a.diasParaVencer ?? 9999) - (b.diasParaVencer ?? 9999));
+
+  const cobranza = {
+    facturas: pendientes,
+    total: pendientes.reduce((t, f) => t + f.total, 0),
+    vencidas: pendientes.filter((f) => f.vencida).length,
+    totalVencido: pendientes.filter((f) => f.vencida).reduce((t, f) => t + f.total, 0),
+  };
+
   const operativos = paneles.filter((p) => !p.enMantenimiento);
   const conAnunciante = operativos.filter((p) => p.anunciantesActivos > 0);
   // Una LED con un solo anunciante sigue teniendo hueco que vender; una
@@ -234,5 +283,6 @@ export const resumenOcupacion = onCall(async (request) => {
     paneles,
     porVencer,
     libres,
+    cobranza,
   };
 });

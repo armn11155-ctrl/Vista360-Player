@@ -143,6 +143,13 @@ export interface Panel {
    *  real) -- se usa para calcular el "Impacto aproximado" de cada
    *  campaña en ese panel. */
   impactoDiario?: number;
+  /** Solo en soportes exclusivos (lona/mural) que están ocupados: fecha
+   *  desde la que quedan libres. La calcula la tarea diaria
+   *  sincronizarEstadoPaneles y se publica en el panel a propósito --
+   *  sale de contratos de OTROS clientes, que el cliente no puede leer
+   *  por reglas de Firestore, y así ve cuándo pedirlo sin exponer de
+   *  quién es la campaña que lo ocupa. */
+  libreDesde?: string | null;
 }
 
 /** Palabras que delatan un soporte impreso cuando `modalidad` no está

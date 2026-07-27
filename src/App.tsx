@@ -11,16 +11,16 @@ import ConfigMissing from "./components/ConfigMissing";
 import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
 import BrandLoader from "./components/BrandLoader";
-import AdminClientPicker from "./components/AdminClientPicker";
-import AdminPerfil from "./components/screens/AdminPerfil";
+
+
 import BottomNav, { type Tab } from "./components/BottomNav";
 import Sidebar from "./components/Sidebar";
 import Inicio from "./components/screens/Inicio";
-import MisCampanas from "./components/screens/MisCampanas";
-import Evidencias from "./components/screens/Evidencias";
-import Reportes from "./components/screens/Reportes";
-import Perfil from "./components/screens/Perfil";
-import OnboardingTour, { debeVerOnboarding } from "./components/OnboardingTour";
+
+
+
+
+import { debeVerOnboarding } from "./utils/onboarding";
 import { usePushEstado } from "./hooks/usePushEstado";
 import { esMovil } from "./utils/dispositivo";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
@@ -49,6 +49,17 @@ const Notificaciones = lazy(() => import("./components/screens/Notificaciones"))
 const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
 const Paneles = lazy(() => import("./components/screens/Paneles"));
 const Ocupacion = lazy(() => import("./components/screens/Ocupacion"));
+// Estas seis estaban en el bundle inicial: ~2600 líneas que el navegador
+// descargaba para poder mostrar la pantalla de login, donde no se usa
+// ninguna. Ahora bajan cuando hacen falta, y precargarPantallas() las pide
+// apenas la app queda ociosa, así no se nota el cambio al abrirlas.
+const AdminClientPicker = lazy(() => import("./components/AdminClientPicker"));
+const AdminPerfil = lazy(() => import("./components/screens/AdminPerfil"));
+const MisCampanas = lazy(() => import("./components/screens/MisCampanas"));
+const Evidencias = lazy(() => import("./components/screens/Evidencias"));
+const Reportes = lazy(() => import("./components/screens/Reportes"));
+const Perfil = lazy(() => import("./components/screens/Perfil"));
+const OnboardingTour = lazy(() => import("./components/OnboardingTour"));
 
 /** Precarga en segundo plano (cuando el navegador está libre, sin
  *  competir con nada urgente) el código de TODAS las pantallas que
@@ -73,6 +84,12 @@ function precargarPantallas() {
   void import("./components/screens/CrearCliente");
   void import("./components/screens/Paneles");
   void import("./components/screens/Ocupacion");
+  void import("./components/AdminClientPicker");
+  void import("./components/screens/AdminPerfil");
+  void import("./components/screens/MisCampanas");
+  void import("./components/screens/Evidencias");
+  void import("./components/screens/Reportes");
+  void import("./components/screens/Perfil");
 }
 
 type View =
@@ -246,6 +263,10 @@ export default function App() {
       return (
         <div className="app-shell">
           <OfflineBanner online={online} />
+          {/* Suspense porque AdminClientPicker ahora se carga bajo demanda
+              (antes venía en el bundle inicial). Sin esto, React lanza al
+              suspenderse. */}
+          <Suspense fallback={<BrandLoader />}>
           <AdminClientPicker
             onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }}
             onOpenUsuarios={() => setView("accesos")}
@@ -261,6 +282,7 @@ export default function App() {
             gestionInicial={volverAGestion}
             onGestionInicialConsumida={() => setVolverAGestion(false)}
           />
+          </Suspense>
         </div>
       );
     }

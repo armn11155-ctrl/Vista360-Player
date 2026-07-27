@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import BackChevron from "../BackChevron";
-import { useOcupacion, type PanelOcupacion, type PorVencer } from "../../hooks/useOcupacion";
+import { useOcupacion, type FacturaPendiente, type PanelOcupacion, type PorVencer } from "../../hooks/useOcupacion";
 
 interface Props {
   onBack: () => void;
@@ -26,6 +26,50 @@ function fechaCorta(fecha: string) {
   const [a, m, d] = fecha.split("-").map(Number);
   if (!a || !m || !d) return fecha;
   return `${d} ${MESES[m - 1]} ${a}`;
+}
+
+/** Importes en soles con separador de miles -- sin decimales, que en una
+ *  lista de cobranza solo estorban. */
+function montoCorto(valor: number, moneda: string) {
+  const simbolo = moneda === "USD" ? "$" : "S/";
+  return `${simbolo} ${Math.round(valor).toLocaleString("es-PE")}`;
+}
+
+/** Una factura emitida y todavía sin cobrar. */
+function FilaFactura({ f }: { f: FacturaPendiente }) {
+  const c = f.vencida
+    ? { fondo: "rgba(239,68,68,0.10)", borde: "rgba(239,68,68,0.28)", texto: "#DC2626" }
+    : colorUrgencia(f.diasParaVencer ?? 999);
+  return (
+    <div style={{
+      background: "#fff", border: `1px solid ${c.borde}`, borderRadius: 12,
+      padding: "11px 13px", display: "flex", alignItems: "center", gap: 12,
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", overflowWrap: "break-word" }}>
+          {f.clienteNombre}
+        </div>
+        <div style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+          {f.numero}{f.estado ? ` \u00b7 ${f.estado}` : ""}
+        </div>
+      </div>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", whiteSpace: "nowrap" }}>
+          {montoCorto(f.total, f.moneda)}
+        </div>
+        <div style={{
+          fontSize: 11, fontWeight: 800, color: c.texto, background: c.fondo,
+          borderRadius: 999, padding: "2px 8px", marginTop: 4, whiteSpace: "nowrap",
+        }}>
+          {f.vencida
+            ? `vencida hace ${Math.abs(f.diasParaVencer ?? 0)} d`
+            : f.diasParaVencer === null
+              ? "sin fecha"
+              : textoDias(f.diasParaVencer)}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Kpi({ valor, etiqueta, tono }: { valor: string | number; etiqueta: string; tono?: "alerta" | "ok" }) {
@@ -233,6 +277,38 @@ export default function Ocupacion({ onBack }: Props) {
                      tono={state.datos.totales.lonasLibres > 0 ? "alerta" : undefined} />
                 <Kpi valor={state.datos.totales.ledConEspacio} etiqueta="LED con anunciantes" />
               </div>
+            )}
+
+            {state.datos.cobranza.facturas.length > 0 && (
+              <section style={{ marginTop: 26 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>
+                  Pendiente de cobro
+                </h2>
+                <p style={{ fontSize: 12, color: "#64748B", margin: "0 0 12px", lineHeight: 1.5 }}>
+                  Facturas emitidas que todavía no figuran como pagadas.
+                  {state.datos.cobranza.vencidas > 0 && (
+                    <> <strong style={{ color: "#DC2626" }}>
+                      {state.datos.cobranza.vencidas === 1
+                        ? "1 ya venció"
+                        : `${state.datos.cobranza.vencidas} ya vencieron`}
+                      {" "}({montoCorto(state.datos.cobranza.totalVencido, "PEN")}).
+                    </strong></>
+                  )}
+                </p>
+                <div style={{
+                  background: "#0B1220", color: "#fff", borderRadius: 12,
+                  padding: "13px 15px", marginBottom: 12,
+                  display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12,
+                }}>
+                  <span style={{ fontSize: 12, color: "#94A3B8" }}>Total por cobrar</span>
+                  <strong style={{ fontSize: 19, fontWeight: 800 }}>
+                    {montoCorto(state.datos.cobranza.total, "PEN")}
+                  </strong>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {state.datos.cobranza.facturas.map((f) => <FilaFactura key={f.id} f={f} />)}
+                </div>
+              </section>
             )}
 
             <section style={{ marginTop: 26 }}>

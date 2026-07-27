@@ -369,7 +369,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
                         <div className="report-photo-grid">
                           {fotosPanel.map((foto, index) => (
                             <div className="report-photo-thumb" key={foto.id}>
-                              <img src={foto.dataUrl} alt={`Foto ${index + 1}`} />
+                              <img src={foto.dataUrl} alt={`Foto ${index + 1}`} loading="lazy" decoding="async" />
                               <button type="button" onClick={() => quitarFoto(foto.id, id)} aria-label="Quitar foto">
                                 ×
                               </button>

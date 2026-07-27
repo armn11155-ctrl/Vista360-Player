@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { httpsCallable } from "firebase/functions";
 import BackChevron from "../BackChevron";
+import CampoBusqueda from "../CampoBusqueda";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { modalidadDePanel } from "../../types";
@@ -49,7 +50,19 @@ function numeroCoordenada(value: string): number | undefined {
 
 export default function Paneles({ onBack, onMenuClick }: Props) {
   const state = usePanelesDisponibles(true);
-  const paneles = state.status === "ready" ? state.paneles : [];
+  const panelesTodos = state.status === "ready" ? state.paneles : [];
+  const [busqueda, setBusqueda] = useState("");
+  // Busca por nombre, ciudad, tipo y dirección: cuando el inventario
+  // crece, encontrar "el de la avenida" es más rápido escribiendo que
+  // scrolleando.
+  const paneles = useMemo(() => {
+    const q = busqueda.trim().toLowerCase();
+    if (!q) return panelesTodos;
+    return panelesTodos.filter((p) =>
+      [p.nombre, p.ciudad, p.tipo, (p as { direccion?: string }).direccion]
+        .some((campo) => String(campo ?? "").toLowerCase().includes(q))
+    );
+  }, [panelesTodos, busqueda]);
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
@@ -401,13 +414,21 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
             {state.message}
           </div>
         )}
-        {state.status === "ready" && paneles.length === 0 && (
+        {state.status === "ready" && panelesTodos.length === 0 && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
             Aún no hay paneles registrados.
           </div>
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+          {panelesTodos.length > 0 && (
+            <CampoBusqueda
+              valor={busqueda}
+              onCambio={setBusqueda}
+              placeholder="Buscar por nombre, ciudad o dirección"
+              resultados={paneles.length}
+            />
+          )}
           {paneles.map((p) => {
             const badge = ESTADO_BADGE[p.estado] ?? ESTADO_BADGE.Disponible;
             return (

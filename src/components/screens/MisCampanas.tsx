@@ -301,7 +301,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         {isAdmin && estadosMesCampanas.length > 0 && (
           <div className="mis-campanas-month-status">
             <div className="mis-campanas-month-status-header">
-              <img src="/vista360-assistant-icon.svg" alt="" aria-hidden="true" />
+              <img src="/vista360-assistant-icon.svg" decoding="async" alt="" aria-hidden="true" />
               <span>Estado de reportes</span>
             </div>
             {estadosMesCampanas.map((e) => (
@@ -488,10 +488,11 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               Actualiza el nombre y la vigencia de la campaña.
             </div>
 
-            <label style={{ display: "block", color: "#475569", fontSize: 12, fontWeight: 750, marginBottom: 6 }}>
+            <label htmlFor="editar-nombre-campana" style={{ display: "block", color: "#475569", fontSize: 12, fontWeight: 750, marginBottom: 6 }}>
               Nombre de la campaña
             </label>
             <input
+              id="editar-nombre-campana"
               autoFocus
               value={editando.nombre}
               onChange={(event) => setEditando({ ...editando, nombre: event.target.value, error: "" })}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { marcarOnboardingVisto } from "../utils/onboarding";
 
 const PASOS = [
   {
@@ -28,7 +29,6 @@ const PASOS = [
   },
 ];
 
-const STORAGE_KEY = "vista360_onboarding_visto";
 
 // Antes era una sola llave global (sin el uid) -- si dos cuentas de
 // cliente distintas se probaban en el MISMO celular/navegador, la
@@ -38,25 +38,10 @@ const STORAGE_KEY = "vista360_onboarding_visto";
 // uid, asi cada cuenta nueva ve el tour la primera vez que entra,
 // sin importar que otras cuentas se hayan probado antes en ese mismo
 // dispositivo.
-function clave(uid?: string) {
-  return uid ? `${STORAGE_KEY}:${uid}` : STORAGE_KEY;
-}
-
-export function debeVerOnboarding(uid?: string): boolean {
-  try {
-    return localStorage.getItem(clave(uid)) !== "1";
-  } catch {
-    return false; // si localStorage falla (modo privado, etc.), no molestamos con esto
-  }
-}
-
-function marcarVisto(uid?: string) {
-  try {
-    localStorage.setItem(clave(uid), "1");
-  } catch {
-    // sin problema si no se pudo guardar -- simplemente se puede repetir
-  }
-}
+// debeVerOnboarding y marcarOnboardingVisto viven ahora en
+// utils/onboarding.ts -- App.tsx necesita la primera apenas arranca, y
+// tenerla acá obligaba a cargar este componente entero en el bundle
+// inicial aunque el tour casi nunca se muestre.
 
 interface Props {
   uid?: string;
@@ -71,7 +56,7 @@ function Ilustracion({ tipo }: { tipo: string }) {
   if (tipo === "final" || tipo === "bienvenida") {
     return (
       <div style={{ height: 112, display: "grid", placeItems: "center", marginBottom: 16 }}>
-        <img src="/logo-player.png" alt="Vista360 Player" style={{ width: 220, maxWidth: "86%", height: "auto" }} />
+        <img src="/logo-player.png" decoding="async" alt="Vista360 Player" style={{ width: 220, maxWidth: "86%", height: "auto" }} />
       </div>
     );
   }
@@ -115,7 +100,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
   const actual = PASOS[paso];
 
   function cerrar() {
-    marcarVisto(uid);
+    marcarOnboardingVisto(uid);
     onClose();
   }
 

@@ -6881,3 +6881,38 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   max-width: calc(100% - 22px);
   overflow: hidden;
 }
+
+/* Buscador de listas (CampoBusqueda). Alto de 44px para que sea cómodo
+   de tocar, y appearance:none para apagar la X nativa de iOS -- se usa
+   la propia, que se ve igual en todos los navegadores. */
+.campo-busqueda {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 11px 38px 11px 36px;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  color: #0B1220;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.campo-busqueda::placeholder { color: #64748B; }
+.campo-busqueda:focus { border-color: #0877FF; }
+.campo-busqueda::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+
+/* Texto solo para lectores de pantalla: la etiqueta del buscador existe
+   en el DOM (y hace que tocar el placeholder enfoque bien), pero no
+   ocupa espacio visible porque el propio placeholder ya la comunica. */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

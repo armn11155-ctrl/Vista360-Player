@@ -463,7 +463,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
             )}
             {seleccionada.imagenReferencialUrl && (
               <a href={resolverUrl(seleccionada.imagenReferencialUrl)} target="_blank" rel="noreferrer" className="solicitud-detail-image">
-                <img src={resolverUrl(seleccionada.imagenReferencialUrl)} alt="" />
+                <img src={resolverUrl(seleccionada.imagenReferencialUrl)} alt="" loading="lazy" decoding="async" />
                 <span>Ver imagen de referencia</span>
               </a>
             )}

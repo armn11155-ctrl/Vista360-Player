@@ -40,6 +40,19 @@ export interface PorVencer {
   monto: number;
 }
 
+export interface FacturaPendiente {
+  id: string;
+  numero: string;
+  clienteId: string;
+  clienteNombre: string;
+  estado: string;
+  total: number;
+  moneda: string;
+  vence: string | null;
+  diasParaVencer: number | null;
+  vencida: boolean;
+}
+
 export interface ResumenOcupacion {
   hoy: string;
   ventanaDias: number;
@@ -60,6 +73,12 @@ export interface ResumenOcupacion {
   paneles: PanelOcupacion[];
   porVencer: PorVencer[];
   libres: PanelOcupacion[];
+  cobranza: {
+    facturas: FacturaPendiente[];
+    total: number;
+    vencidas: number;
+    totalVencido: number;
+  };
 }
 
 export type OcupacionState =
