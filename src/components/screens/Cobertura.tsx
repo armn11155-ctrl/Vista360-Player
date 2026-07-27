@@ -307,6 +307,17 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             maxBounds: [[-85, -180], [85, 180]],
             maxBoundsViscosity: 1.0,
             worldCopyJump: false,
+            // Por defecto Leaflet deja pasarse un poco del minZoom/maxZoom
+            // MIENTRAS se esta pellizcando con los dedos (a proposito, para
+            // que se sienta "elastico" en vez de topar en seco), y recien
+            // rebota de vuelta al limite cuando se sueltan los dedos. Como
+            // el minZoom de arriba ya esta calculado justo en el punto
+            // exacto sin gris (sin ningun margen de sobra), ese pasarse
+            // aunque sea un instante ya alcanza a mostrar gris. El boton
+            // -/+ no tiene este problema porque no tiene efecto elastico.
+            // Se apaga para que el pellizco tope duro en el mismo limite
+            // que el boton, sin ese instante de gris.
+            bounceAtZoomLimits: false,
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
