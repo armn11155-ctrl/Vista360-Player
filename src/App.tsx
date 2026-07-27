@@ -48,6 +48,7 @@ const Facturas = lazy(() => import("./components/screens/Facturas"));
 const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
 const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
 const Paneles = lazy(() => import("./components/screens/Paneles"));
+const Ocupacion = lazy(() => import("./components/screens/Ocupacion"));
 
 /** Precarga en segundo plano (cuando el navegador está libre, sin
  *  competir con nada urgente) el código de TODAS las pantallas que
@@ -71,6 +72,7 @@ function precargarPantallas() {
   void import("./components/screens/Notificaciones");
   void import("./components/screens/CrearCliente");
   void import("./components/screens/Paneles");
+  void import("./components/screens/Ocupacion");
 }
 
 type View =
@@ -88,7 +90,8 @@ type View =
   | "notificaciones"
   | "nuevoCliente"
   | "miPerfil"
-  | "paneles";
+  | "paneles"
+  | "ocupacion";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -113,6 +116,7 @@ const VIEW_COLORS: Record<View, string> = {
   nuevoCliente: "#0B1220",
   miPerfil: "#0B1220",
   paneles: "#0B1220",
+  ocupacion: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -129,6 +133,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "notificaciones",
   "nuevoCliente",
   "paneles",
+  "ocupacion",
 ]);
 
 export default function App() {
@@ -208,7 +213,7 @@ export default function App() {
   // auth.status === "in"
   if (auth.role === "admin") {
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles") {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion") {
         return (
           <div className="app-shell">
             <OfflineBanner online={online} />
@@ -231,6 +236,8 @@ export default function App() {
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
                     : view === "paneles"
                       ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                      : view === "ocupacion"
+                      ? <Ocupacion onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
             </Suspense>
           </div>
@@ -246,6 +253,7 @@ export default function App() {
             onOpenAnalitica={() => setView("analitica")}
             onOpenPerfil={() => setView("miPerfil")}
             onOpenPaneles={() => setView("paneles")}
+            onOpenOcupacion={() => setView("ocupacion")}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}
             vistaClienteActiva={adminVistaCliente}
@@ -558,6 +566,9 @@ function AuthenticatedApp({
         break;
       case "paneles":
         content = isAdmin ? <Paneles onBack={() => setView("inicio")} /> : null;
+        break;
+      case "ocupacion":
+        content = isAdmin ? <Ocupacion onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
         content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;

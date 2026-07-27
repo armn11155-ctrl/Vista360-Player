@@ -30,6 +30,7 @@ interface Props {
    *  de gestión" siempre se perdía y volver acá caía en la selección
    *  de clientes de cero. Con esto se reabre directo en Centro de
    *  gestión, que es de donde salió. */
+  onOpenOcupacion?: () => void;
   gestionInicial?: boolean;
   onGestionInicialConsumida?: () => void;
 }
@@ -40,7 +41,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -482,6 +483,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
               <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
               <span><strong>Paneles</strong><small>Inventario digital</small></span>
+              <i>›</i>
+            </button>
+            <button type="button" onClick={onOpenOcupacion} className="admin-picker-management-card">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
+              <span><strong>Ocupación</strong><small>Qué se libera y cuándo</small></span>
               <i>›</i>
             </button>
           </div>
