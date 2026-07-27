@@ -369,6 +369,31 @@
       flex: 1;
       background: var(--bg);
     }
+
+    /* Lo MISMO para las pantallas sin barra inferior (Nueva campaña,
+     * Detalle, y las que se abren desde el menú lateral).
+     *
+     * El shell mide a propósito 160px MÁS que la pantalla real y se
+     * "sangra" hacia abajo (bottom: -160px), para que si Safari encoge
+     * su barra no aparezca una franja blanca. Con barra inferior eso ya
+     * estaba resuelto: .main-area se fija a la altura real y el ::after
+     * absorbe el sobrante. Sin barra inferior no había ninguna regla, así
+     * que .main-area (flex:1) se estiraba por los 160px extra y todo lo
+     * anclado abajo -- el botón "Enviar solicitud", por ejemplo --
+     * quedaba renderizado FUERA de la pantalla, invisible y sin manera de
+     * llegar a él ni haciendo scroll. Se veía solo en celular, porque en
+     * escritorio este bloque no aplica. */
+    .app-shell.no-bottom-nav .main-area {
+      flex: 0 0 auto;
+      height: 100vh;
+      height: 100dvh;
+    }
+    .app-shell.no-bottom-nav::after {
+      content: "";
+      display: block;
+      flex: 1;
+      background: var(--bg);
+    }
     .app-shell,
     .main-area,
     .screens,
@@ -6798,10 +6823,28 @@
    tarjeta blanca en vez de quedarse contenido adentro. Estas reglas
    fuerzan que respete el ancho del contenedor en cualquier navegador. */
 input[type="date"] {
+  /* -webkit-appearance:none es LA pieza que faltaba: mientras el control
+     conserva su apariencia nativa, iOS lo dimensiona con su propio ancho
+     intrínseco y se salta width:100%, así que el cuadro se desbordaba de
+     la tarjeta blanca por la derecha. Apagándola, respeta el contenedor. */
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   box-sizing: border-box;
+  /* Sin esto, al quitar la apariencia nativa iOS deja el valor centrado
+     y con una altura distinta a la de los demás campos. */
+  text-align: left;
+  font-family: inherit;
+  min-height: 46px;
+}
+/* El calendario nativo de iOS mete su propio contenedor interno que
+   también hay que dejar fluido, o vuelve a empujar hacia afuera. */
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+  min-width: 0;
 }
 input[type="date"]::-webkit-datetime-edit,
 input[type="date"]::-webkit-datetime-edit-fields-wrapper {
