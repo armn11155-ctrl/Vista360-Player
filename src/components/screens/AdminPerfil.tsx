@@ -57,6 +57,25 @@ function useEspacioR2(): EspacioEstado {
   return estado;
 }
 
+/** Resultado de revisar el bucket en busca de archivos que ya nadie usa. */
+type Huerfano = { key: string; bytes: number; modificado: string };
+type LimpiezaResultado = {
+  totalObjetos: number;
+  huerfanos: number;
+  bytesHuerfanos: number;
+  mbHuerfanos: number;
+  muestra: Huerfano[];
+  borrados: number;
+  soloSimulacion: boolean;
+};
+type LimpiezaEstado =
+  | { fase: "idle" }
+  | { fase: "revisando" }
+  | { fase: "revisado"; datos: LimpiezaResultado }
+  | { fase: "borrando"; datos: LimpiezaResultado }
+  | { fase: "listo"; datos: LimpiezaResultado }
+  | { fase: "error"; mensaje: string };
+
 /**
  * Perfil del administrador — separado del Perfil.tsx de los clientes.
  * Se abre desde el ícono en la esquina del selector de cuentas.
@@ -70,6 +89,47 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
       : 0;
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
+  const [limpieza, setLimpieza] = useState<LimpiezaEstado>({ fase: "idle" });
+
+  /**
+   * Busca archivos en R2 que ya no están citados por ningún documento --
+   * restos de subidas que se cortaron a la mitad. Primero SOLO revisa
+   * (no borra nada): muestra cuántos son y cuánto espacio ocupan, y
+   * recién con el segundo botón se borran de verdad.
+   */
+  async function revisarHuerfanos() {
+    if (!cloudFunctions) { setLimpieza({ fase: "error", mensaje: "Sin conexión. Intenta de nuevo." }); return; }
+    setLimpieza({ fase: "revisando" });
+    try {
+      const fn = httpsCallable<{ confirmar: boolean }, LimpiezaResultado>(cloudFunctions, "limpiarArchivosHuerfanos");
+      const { data } = await fn({ confirmar: false });
+      setLimpieza({ fase: "revisado", datos: data });
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : "";
+      setLimpieza({
+        fase: "error",
+        mensaje: raw.replace("FirebaseError: ", "").replace(/^functions\/[a-z-]+:\s*/i, "")
+          || "No se pudo revisar. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions.",
+      });
+    }
+  }
+
+  async function borrarHuerfanos(previo: LimpiezaResultado) {
+    if (!cloudFunctions) { setLimpieza({ fase: "error", mensaje: "Sin conexión. Intenta de nuevo." }); return; }
+    const confirmado = window.confirm(
+      `¿Borrar ${previo.huerfanos} archivo${previo.huerfanos === 1 ? "" : "s"} y recuperar ${previo.mbHuerfanos} MB? No se puede deshacer.`
+    );
+    if (!confirmado) return;
+    setLimpieza({ fase: "borrando", datos: previo });
+    try {
+      const fn = httpsCallable<{ confirmar: boolean }, LimpiezaResultado>(cloudFunctions, "limpiarArchivosHuerfanos");
+      const { data } = await fn({ confirmar: true });
+      setLimpieza({ fase: "listo", datos: data });
+    } catch (error) {
+      const raw = error instanceof Error ? error.message : "";
+      setLimpieza({ fase: "error", mensaje: raw.replace("FirebaseError: ", "") || "No se pudo completar la limpieza." });
+    }
+  }
 
   async function subirNuevaFoto(file: File, posicion: PosicionRecorte) {
     if (!cloudFunctions) {
@@ -182,6 +242,94 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
                   )}
                 </div>
               )}
+            </div>
+
+            <div className="profile-metric-card" style={{ marginTop: 10 }}>
+              <div style={{ padding: "4px 2px 0" }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: "#0B1220", marginBottom: 4 }}>
+                  Archivos sin usar
+                </div>
+                <div style={{ fontSize: 11.5, color: "#64748B", lineHeight: 1.5, marginBottom: 12 }}>
+                  Restos de subidas que se cortaron a la mitad: ocupan espacio pero ya no
+                  aparecen en ninguna campaña, factura ni solicitud. Primero se revisan;
+                  no se borra nada hasta que lo confirmes.
+                </div>
+
+                {limpieza.fase === "error" && (
+                  <div style={{
+                    background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)",
+                    color: "#DC2626", fontSize: 12, padding: "9px 12px", borderRadius: 10, marginBottom: 10, lineHeight: 1.5,
+                  }}>
+                    {limpieza.mensaje}
+                  </div>
+                )}
+
+                {(limpieza.fase === "revisado" || limpieza.fase === "borrando" || limpieza.fase === "listo") && (
+                  <div style={{
+                    background: limpieza.datos.huerfanos === 0 ? "rgba(34,197,94,0.10)" : "rgba(8,119,255,0.08)",
+                    border: `1px solid ${limpieza.datos.huerfanos === 0 ? "rgba(34,197,94,0.25)" : "rgba(8,119,255,0.2)"}`,
+                    borderRadius: 10, padding: "10px 12px", marginBottom: 10, fontSize: 12.5, lineHeight: 1.6,
+                    color: "#0B1220",
+                  }}>
+                    {limpieza.fase === "listo" ? (
+                      <>Se borraron <strong>{limpieza.datos.borrados}</strong> archivo{limpieza.datos.borrados === 1 ? "" : "s"}. Espacio recuperado: <strong>{limpieza.datos.mbHuerfanos} MB</strong>.</>
+                    ) : limpieza.datos.huerfanos === 0 ? (
+                      <>Todo limpio — revisé {limpieza.datos.totalObjetos} archivos y ninguno sobra.</>
+                    ) : (
+                      <>
+                        <strong>{limpieza.datos.huerfanos}</strong> archivo{limpieza.datos.huerfanos === 1 ? "" : "s"} sin usar,
+                        de {limpieza.datos.totalObjetos} en total. Se recuperarían <strong>{limpieza.datos.mbHuerfanos} MB</strong>.
+                        {limpieza.datos.muestra.length > 0 && (
+                          <details style={{ marginTop: 6 }}>
+                            <summary style={{ cursor: "pointer", fontSize: 11.5, color: "#0877FF", fontWeight: 600 }}>
+                              Ver los más pesados
+                            </summary>
+                            <ul style={{ margin: "8px 0 0", paddingLeft: 16, fontSize: 11, color: "#64748B", lineHeight: 1.7 }}>
+                              {limpieza.datos.muestra.slice(0, 10).map((h) => (
+                                <li key={h.key} style={{ wordBreak: "break-all" }}>
+                                  {h.key} — {formatoEspacio(h.bytes)}
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingBottom: 4 }}>
+                  <button
+                    type="button"
+                    onClick={revisarHuerfanos}
+                    disabled={limpieza.fase === "revisando" || limpieza.fase === "borrando"}
+                    style={{
+                      flex: "1 1 auto", minWidth: 130, padding: "10px 14px", borderRadius: 10,
+                      border: "1.5px solid #E5E7EB", background: "#fff", color: "#0B1220",
+                      fontSize: 13, fontWeight: 700,
+                      cursor: limpieza.fase === "revisando" || limpieza.fase === "borrando" ? "default" : "pointer",
+                    }}
+                  >
+                    {limpieza.fase === "revisando" ? "Revisando…" : "Revisar"}
+                  </button>
+
+                  {(limpieza.fase === "revisado" || limpieza.fase === "borrando") && limpieza.datos.huerfanos > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => borrarHuerfanos(limpieza.datos)}
+                      disabled={limpieza.fase === "borrando"}
+                      style={{
+                        flex: "1 1 auto", minWidth: 130, padding: "10px 14px", borderRadius: 10,
+                        border: "none", background: limpieza.fase === "borrando" ? "#FCA5A5" : "#DC2626",
+                        color: "#fff", fontSize: 13, fontWeight: 700,
+                        cursor: limpieza.fase === "borrando" ? "default" : "pointer",
+                      }}
+                    >
+                      {limpieza.fase === "borrando" ? "Borrando…" : `Borrar y liberar ${limpieza.datos.mbHuerfanos} MB`}
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>
