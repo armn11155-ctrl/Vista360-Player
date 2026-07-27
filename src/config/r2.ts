@@ -22,13 +22,21 @@ interface SubidaR2 {
   thumbKey?: string;
 }
 
-async function pedirUrlFirmada(folder: string, extension: string, contentType: string) {
+async function pedirUrlFirmada(
+  folder: string,
+  extension: string,
+  contentType: string,
+  /** Tamaño real del archivo. Viaja al servidor, que lo valida contra el
+   *  tope y lo incluye en la firma: la URL que devuelve sirve para ESE
+   *  peso y ningún otro. */
+  contentLength: number
+) {
   const functions = getFunctions(app ?? undefined);
   const crearSubidaR2 = httpsCallable<
-    { folder: string; extension: string; contentType: string },
+    { folder: string; extension: string; contentType: string; contentLength: number },
     { key: string; uploadUrl: string }
   >(functions, "crearSubidaR2");
-  const result = await crearSubidaR2({ folder, extension, contentType });
+  const result = await crearSubidaR2({ folder, extension, contentType, contentLength });
   return result.data;
 }
 
@@ -125,7 +133,7 @@ async function subirArchivoYMiniatura(file: File, folder: "vista360/campanas" | 
   const esVideo = file.type.startsWith("video/");
   const contentType = file.type || (esVideo ? "video/mp4" : "image/webp");
 
-  const { key, uploadUrl } = await pedirUrlFirmada(folder, extensionDe(file), contentType);
+  const { key, uploadUrl } = await pedirUrlFirmada(folder, extensionDe(file), contentType, file.size);
   await subirBlob(uploadUrl, file, contentType);
 
   const miniatura = esVideo ? await miniaturaDeVideo(file) : await miniaturaDeImagen(file);
@@ -135,7 +143,7 @@ async function subirArchivoYMiniatura(file: File, folder: "vista360/campanas" | 
     return { key };
   }
 
-  const { key: thumbKey, uploadUrl: thumbUploadUrl } = await pedirUrlFirmada(folder, "webp", "image/webp");
+  const { key: thumbKey, uploadUrl: thumbUploadUrl } = await pedirUrlFirmada(folder, "webp", "image/webp", miniatura.size);
   await subirBlob(thumbUploadUrl, miniatura, "image/webp");
 
   return { key, thumbKey };
@@ -197,7 +205,7 @@ export async function subirFacturaR2(file: File): Promise<{ key: string }> {
   if (file.type !== "application/pdf") {
     throw new Error("Sube un PDF válido.");
   }
-  const { key, uploadUrl } = await pedirUrlFirmada("vista360/facturas", "pdf", "application/pdf");
+  const { key, uploadUrl } = await pedirUrlFirmada("vista360/facturas", "pdf", "application/pdf", file.size);
   await subirBlob(uploadUrl, file, "application/pdf");
   return { key };
 }

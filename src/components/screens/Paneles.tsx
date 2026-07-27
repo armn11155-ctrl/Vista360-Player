@@ -303,10 +303,10 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
               {panelEditando ? `Editar panel — ${panelEditando.nombre}` : "Panel nuevo"}
             </div>
             <div style={{ display: "grid", gap: 10 }}>
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del panel" style={inputStyle} />
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Nombre del panel" style={inputStyle} />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={tipo} onChange={(e) => setTipo(e.target.value)} placeholder="Tipo (ej. Valla, LED)" style={inputStyle} />
-                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Ciudad" style={inputStyle} />
+                <input value={tipo} onChange={(e) => setTipo(e.target.value)} maxLength={40} placeholder="Tipo (ej. Valla, LED)" style={inputStyle} />
+                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ciudad" style={inputStyle} />
               </div>
 
               {/* Esto NO es una etiqueta: decide si el sistema deja que
@@ -346,7 +346,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                   ))}
                 </div>
               </div>
-              <input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Dirección (opcional)" style={inputStyle} />
+              <input value={direccion} onChange={(e) => setDireccion(e.target.value)} maxLength={160} placeholder="Dirección (opcional)" style={inputStyle} />
 
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>

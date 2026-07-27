@@ -48,11 +48,29 @@ export async function subirBufferR2(key: string, buffer: Buffer, contentType: st
 }
 
 /** Devuelve una URL firmada de subida (PUT) que expira — el navegador sube directo a R2. */
-export async function firmarSubidaR2(key: string, contentType: string, expiresInSeconds = 600) {
+/** Tope duro de subida. La app comprime las fotos a 1280px antes de
+ *  subirlas, así que en uso normal nadie se acerca -- pero la URL firmada
+ *  se puede usar FUERA de la app, y sin límite alguien podía subir varios
+ *  GB y llenar el bucket (que se paga). Los PDFs de factura son lo más
+ *  pesado que pasa por acá de verdad. */
+export const MAX_SUBIDA_BYTES = 25 * 1024 * 1024; // 25 MB
+
+export async function firmarSubidaR2(
+  key: string,
+  contentType: string,
+  expiresInSeconds = 600,
+  /** Tamaño EXACTO del archivo que se va a subir, en bytes. Va dentro de
+   *  la firma: si lo que llega a R2 pesa distinto, R2 rechaza la subida.
+   *  Así el límite no es una sugerencia que el cliente pueda ignorar
+   *  saltándose la interfaz -- para subir 1 GB tendría que declararlo, y
+   *  crearSubidaR2 no le firmaría nada por encima del tope. */
+  contentLength?: number
+) {
   const command = new PutObjectCommand({
     Bucket: r2Bucket(),
     Key: key,
     ContentType: contentType,
+    ...(typeof contentLength === "number" ? { ContentLength: contentLength } : {}),
   });
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
 }

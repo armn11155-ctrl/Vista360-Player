@@ -28,6 +28,9 @@ interface Props {
   };
 }
 
+const MAX_NOMBRE = 80;
+const MAX_COMENTARIOS = 1000;
+
 const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura", "Cusco", "Iquitos", "Huancayo", "Tacna", "Pucallpa", "Otra"];
 
 /**
@@ -108,6 +111,18 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   async function enviar() {
     setError("");
     if (!nombre.trim()) { setError("Ponle un nombre a tu campaña."); return; }
+    // Topes de largo. El maxLength de los inputs es solo comodidad: se
+    // salta pegando texto por consola o con el navegador en modo
+    // desarrollador. Como esta solicitud se escribe DIRECTO en Firestore
+    // (no pasa por una Cloud Function), esta es la última barrera antes
+    // de guardar -- sin ella, alguien podía meter cientos de miles de
+    // caracteres y reventar la pantalla del admin.
+    if (nombre.trim().length > MAX_NOMBRE) {
+      setError(`El nombre no puede pasar de ${MAX_NOMBRE} caracteres.`); return;
+    }
+    if (comentarios.trim().length > MAX_COMENTARIOS) {
+      setError(`Los comentarios no pueden pasar de ${MAX_COMENTARIOS} caracteres.`); return;
+    }
     if (!clienteId) { setError("Error: no se identificó tu cuenta. Cierra sesión y vuelve a entrar."); return; }
     if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
     if (fechaInicio < hoyStr) { setError("La fecha de inicio no puede ser anterior a hoy."); return; }
@@ -347,7 +362,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           )}
 
           <Field label="Nombre de la campaña">
-            <input style={inputStyle} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Campaña Invierno 2024" />
+            <input style={inputStyle} maxLength={MAX_NOMBRE} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Campaña Invierno 2024" />
           </Field>
           {panelFijo ? (
             <Field label="Panel solicitado">
@@ -416,7 +431,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
             )}
           </div>
           <Field label="Comentarios adicionales">
-            <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
+            <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} maxLength={MAX_COMENTARIOS} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
           </Field>
         </div>
         <div style={{ height: 16 }} />

@@ -128,7 +128,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           <div style={{ display: "grid", gap: 12 }}>
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
               Correo del usuario
-              <input style={{ ...inputStyle, marginTop: 6 }} value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="cliente@empresa.com" />
+              <input style={{ ...inputStyle, marginTop: 6 }} value={email} onChange={(e) => setEmail(e.target.value)} type="email" maxLength={120} placeholder="cliente@empresa.com" />
             </label>
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
               Contraseña inicial
@@ -143,11 +143,11 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
                 Contacto
-                <input style={{ ...inputStyle, marginTop: 6 }} value={contacto} onChange={(e) => setContacto(e.target.value)} placeholder="Nombre" />
+                <input style={{ ...inputStyle, marginTop: 6 }} value={contacto} onChange={(e) => setContacto(e.target.value)} maxLength={80} placeholder="Nombre" />
               </label>
               <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
                 WhatsApp
-                <input style={{ ...inputStyle, marginTop: 6 }} value={celular} onChange={(e) => setCelular(e.target.value)} placeholder="51999999999" />
+                <input style={{ ...inputStyle, marginTop: 6 }} value={celular} onChange={(e) => setCelular(e.target.value)} maxLength={20} placeholder="51999999999" />
               </label>
             </div>
             <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>

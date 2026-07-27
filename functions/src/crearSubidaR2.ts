@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { R2_SECRETS, esCarpetaValida, firmarSubidaR2, nuevaKey } from "./r2Storage.js";
+import { MAX_SUBIDA_BYTES, R2_SECRETS, esCarpetaValida, firmarSubidaR2, nuevaKey } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -11,6 +11,8 @@ interface CrearSubidaR2Data {
   folder?: string;
   extension?: string;
   contentType?: string;
+  /** Tamaño real del archivo, en bytes. */
+  contentLength?: number;
 }
 
 const TIPOS_PERMITIDOS = new Set([
@@ -56,8 +58,20 @@ export const crearSubidaR2 = onCall({ secrets: R2_SECRETS }, async (request) => 
     throw new HttpsError("invalid-argument", "Tipo de archivo no permitido.");
   }
 
+  // Tamaño: se valida acá y además se mete DENTRO de la firma. Sin esto,
+  // la URL firmada servía para subir un archivo de cualquier peso -- y se
+  // puede usar fuera de la app, así que el límite del navegador no contaba.
+  const contentLength = Number(request.data?.contentLength ?? 0);
+  if (!Number.isFinite(contentLength) || contentLength <= 0) {
+    throw new HttpsError("invalid-argument", "Falta el tamaño del archivo.");
+  }
+  if (contentLength > MAX_SUBIDA_BYTES) {
+    const mb = Math.round(MAX_SUBIDA_BYTES / 1024 / 1024);
+    throw new HttpsError("invalid-argument", `El archivo supera el máximo de ${mb} MB.`);
+  }
+
   const key = nuevaKey(folder, extension);
-  const uploadUrl = await firmarSubidaR2(key, contentType);
+  const uploadUrl = await firmarSubidaR2(key, contentType, 600, contentLength);
 
   return { key, uploadUrl };
 });
