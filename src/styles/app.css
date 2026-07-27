@@ -6111,6 +6111,31 @@
     font-weight: 900;
     text-align: right;
   }
+  .coverage-map-legend-mobile {
+    display: none;
+  }
+  @media (max-width: 899px) {
+    .coverage-map-real {
+      min-height: 380px;
+    }
+    .coverage-map-legend-desktop {
+      display: none;
+    }
+    .coverage-map-legend-mobile {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      z-index: auto;
+      width: 100%;
+      margin: 0 0 12px;
+      display: grid;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    .coverage-selected-card {
+      display: none !important;
+    }
+  }
   @media (min-width: 900px) {
     .coverage-map-real {
       min-height: 470px;
