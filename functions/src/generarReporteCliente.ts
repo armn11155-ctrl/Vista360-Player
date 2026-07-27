@@ -828,6 +828,23 @@ async function cargarElementosSubidosPorPanel(
 export const generarReporteCliente = onCall(
   { timeoutSeconds: 540, memory: "1GiB", secrets: R2_SECRETS },
   async (request) => {
+    // Se recogen ANTES de hacer nada: si la generación falla a mitad,
+    // igual hay que borrarlas. Lo único que debe quedar en R2 es el
+    // reporte terminado -- las fotos sueltas no sirven para nada una vez
+    // que están dentro del PDF, y sueltas solo ocupan espacio.
+    const clavesTemporales: string[] = [];
+    const listaPanelesEntrada = request.data?.panelesFotos;
+    if (Array.isArray(listaPanelesEntrada)) {
+      listaPanelesEntrada.forEach((p: unknown) => {
+        const fotos = (p as { fotos?: unknown })?.fotos;
+        if (!Array.isArray(fotos)) return;
+        fotos.forEach((f: unknown) => {
+          const u = (f as { url?: unknown })?.url;
+          if (typeof u === "string" && esClaveR2(u)) clavesTemporales.push(u);
+        });
+      });
+    }
+
     try {
       const uid = request.auth?.uid;
       if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
@@ -971,22 +988,6 @@ export const generarReporteCliente = onCall(
       // Las fotos ya están dentro del PDF: las copias sueltas en R2 no
       // sirven para nada más y solo ocuparían espacio. Se borran acá para
       // no depender de una limpieza posterior.
-      const clavesTemporales: string[] = [];
-      const listaPaneles = request.data?.panelesFotos;
-      if (Array.isArray(listaPaneles)) {
-        listaPaneles.forEach((p: unknown) => {
-          const fotos = (p as { fotos?: unknown })?.fotos;
-          if (!Array.isArray(fotos)) return;
-          fotos.forEach((f: unknown) => {
-            const u = (f as { url?: unknown })?.url;
-            if (typeof u === "string" && esClaveR2(u)) clavesTemporales.push(u);
-          });
-        });
-      }
-      // borrarObjetoR2 no lanza: si alguna no se puede borrar, queda en el
-      // log y la limpieza de huérfanos la recogerá después. No vale la
-      // pena tumbar un reporte ya generado por esto.
-      await Promise.all(clavesTemporales.map((k) => borrarObjetoR2(k)));
 
       // Avisar al cliente que ya tiene su reporte. Reemplaza a la vieja
       // notificación de "nueva evidencia": esa dependía de la pantalla de
@@ -1017,6 +1018,15 @@ export const generarReporteCliente = onCall(
       console.error("Error inesperado al generar el reporte.", error);
       const detail = error instanceof Error ? error.message : "Error desconocido";
       throw new HttpsError("internal", `No se pudo generar el PDF: ${detail}`);
+    } finally {
+      // En finally a propósito: si la generación se cayó a mitad, esas
+      // fotos ya subidas quedarían huérfanas en R2 para siempre. Así se
+      // limpian pase lo que pase.
+      // borrarObjetoR2 no lanza -- un fallo acá no debe tapar el error real
+      // ni tumbar un reporte que sí se generó bien.
+      if (clavesTemporales.length > 0) {
+        await Promise.all(clavesTemporales.map((k) => borrarObjetoR2(k)));
+      }
     }
   }
 );
