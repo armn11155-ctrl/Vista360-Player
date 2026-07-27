@@ -1,6 +1,6 @@
-import { useRef, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { mensajeDeError } from "../../utils/errores";
-import { addDoc, collection, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
 import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
@@ -8,8 +8,6 @@ import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
 import { db } from "../../config/firebase";
 import { cloudFunctions } from "../../config/firebase";
-import { subirEvidenciaR2 } from "../../config/r2";
-import { comprimirImagen } from "../../utils/comprimirImagen";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
@@ -18,14 +16,6 @@ function WhatsAppIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z" />
-    </svg>
-  );
-}
-
-function ClipIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>
-      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
   );
 }
@@ -65,13 +55,11 @@ function diasParaVencer(c: Contrato): number {
 }
 
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
-type ComprobanteEstado = "idle" | "subiendo" | "subido" | "error";
 
 export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
-  const [comprobante, setComprobante] = useState<ComprobanteEstado>("idle");
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
   const [editando, setEditando] = useState<{
@@ -82,7 +70,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     guardando: boolean;
     error: string;
   } | null>(null);
-  const comprobanteRef = useRef<HTMLInputElement>(null);
   // Siempre en el mismo orden sin importar como vengan del origen:
   // primero las Activas (lo mas urgente/relevante ahora), despues las
   // Programadas (lo que viene), y al final las Finalizadas (ya no
@@ -187,7 +174,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
   function abrirConfirmacion(c: Contrato, panelNombre: string, ciudad: string, e: React.MouseEvent) {
     e.stopPropagation();
-    setComprobante("idle");
     setModal({ contrato: c, panelNombre, ciudad, estado: "confirmando" });
   }
 
@@ -220,23 +206,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       setModal({ ...modal, estado: "enviada", solicitudId: ref.id });
     } catch {
       setModal({ ...modal, estado: "error" });
-    }
-  }
-
-  async function subirComprobante(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !db || !modal?.solicitudId) return;
-    setComprobante("subiendo");
-    try {
-      const { key: url } = await subirEvidenciaR2(await comprimirImagen(file));
-      await updateDoc(doc(db, "solicitudesCampana", modal.solicitudId), {
-        comprobantePagoUrl: url,
-        comprobantePagoFecha: new Date().toISOString(),
-      });
-      setComprobante("subido");
-    } catch {
-      setComprobante("error");
     }
   }
 
@@ -638,8 +607,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     Solicitud enviada
                   </div>
                   <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 20 }}>
-                    Ya la vieron. Puedes escribirnos por WhatsApp <strong>o</strong> adjuntar tu
-                    comprobante de pago aquí mismo — lo que te sea más cómodo, las dos formas son válidas.
+                    Alguien del equipo se va a comunicar contigo pronto. Si quieres, también
+                    puedes escribirnos directo por WhatsApp.
                   </div>
                 </div>
                 <a
@@ -654,43 +623,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                 >
                   <WhatsAppIcon /> Escríbenos para coordinar el pago
                 </a>
-
-                <div style={{ margin: "12px 0", textAlign: "center", fontSize: 12, color: "#64748B" }}>o, si prefieres</div>
-
-                <input ref={comprobanteRef} type="file" accept="image/*" style={{ display: "none" }} onChange={subirComprobante} />
-                {comprobante === "subido" ? (
-                  <div style={{
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                    width: "100%", padding: "13px", background: "rgba(34,197,94,0.1)", borderRadius: 12,
-                    color: "#16A34A", fontWeight: 700, fontSize: 14,
-                  }}>
-                    ✓ Comprobante enviado — lo vamos a revisar
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => comprobanteRef.current?.click()}
-                    disabled={comprobante === "subiendo"}
-                    style={{
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                      width: "100%", padding: "13px", background: "#F3F4F6", border: "1px dashed #D1D5DB",
-                      borderRadius: 12, color: "#374151", fontWeight: 600, fontSize: 14,
-                      cursor: comprobante === "subiendo" ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {comprobante === "subiendo" ? (
-                      "Subiendo…"
-                    ) : (
-                      <>
-                        <ClipIcon /> Ya pagué — adjuntar captura de Yape/Plin
-                      </>
-                    )}
-                  </button>
-                )}
-                {comprobante === "error" && (
-                  <div style={{ fontSize: 12, color: "#DC2626", textAlign: "center", marginTop: 6 }}>
-                    No se pudo subir el comprobante. Intenta de nuevo.
-                  </div>
-                )}
 
                 <button
                   onClick={() => setModal(null)}
