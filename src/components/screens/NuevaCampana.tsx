@@ -123,6 +123,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     setErrorAdmin("");
     if (panelIds.length === 0) { setErrorAdmin("Elige al menos un panel."); return; }
     if (!inicio || !fin) { setErrorAdmin("Pon fecha de inicio y de fin."); return; }
+    if (inicio < hoyStr) { setErrorAdmin("La fecha de inicio no puede ser anterior a hoy."); return; }
     if (fin < inicio) { setErrorAdmin("La fecha de fin no puede ser antes que la de inicio."); return; }
     if (!cloudFunctions) { setErrorAdmin("Sin conexión. Intenta de nuevo."); return; }
     setCreando(true);
@@ -167,7 +168,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         </div>
 
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
-          <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
+          {/* overflow:"hidden" -- red de seguridad: si el control nativo
+              de fecha (input type=date) llegara a pedir más ancho del
+              que le corresponde en algún navegador, que se recorte
+              contra el borde redondeado en vez de salirse visualmente
+              de la tarjeta blanca. */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>
               Crear campaña para este cliente
             </div>
@@ -226,12 +232,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                   encogerse a la mitad disponible. */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Field label="Fecha de inicio">
-                  <input style={inputStyle} type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+                  <input style={inputStyle} type="date" min={hoyStr} value={inicio} onChange={(e) => setInicio(e.target.value)} />
                 </Field>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Field label="Fecha de fin">
-                  <input style={inputStyle} type="date" value={fin} onChange={(e) => setFin(e.target.value)} />
+                  <input style={inputStyle} type="date" min={inicio || hoyStr} value={fin} onChange={(e) => setFin(e.target.value)} />
                 </Field>
               </div>
             </div>
@@ -302,7 +308,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
 
       {/* Form */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
-        <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
+        <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
 
           {error && (

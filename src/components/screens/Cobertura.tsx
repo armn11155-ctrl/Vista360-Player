@@ -293,10 +293,24 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             marker.on("popupopen", (evento: any) => {
               const el: HTMLElement | undefined = evento?.popup?.getElement?.();
               const boton = el?.querySelector<HTMLButtonElement>("[data-cobertura-accion]");
-              boton?.addEventListener("click", () => {
+              if (!boton) return;
+              // En móvil el "click" sintético adentro de un popup de Leaflet
+              // a veces no llega a disparar (el mapa se queda con el toque
+              // por el gesto táctil, o el popup se cierra solo antes de que
+              // el evento se propague) -- se pidió que el botón funcione
+              // igual en el celular, así que se engancha también a
+              // touchend/pointerup como respaldo, con una bandera para no
+              // disparar la acción dos veces si ambos sí llegan a sonar.
+              let disparado = false;
+              const disparar = (ev: Event) => {
+                if (disparado) return;
+                disparado = true;
+                ev.preventDefault();
                 const tipo = boton.dataset.coberturaAccion === "renovacion" ? "renovacion" : "disponibilidad";
                 onSolicitarPanel(panel, tipo);
-              });
+              };
+              boton.addEventListener("click", disparar);
+              boton.addEventListener("touchend", disparar, { passive: false });
             });
           }
         });
