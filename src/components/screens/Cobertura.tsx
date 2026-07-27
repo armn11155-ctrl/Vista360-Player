@@ -71,6 +71,19 @@ function estadoColor(label: string) {
   return "#60A5FA";
 }
 
+/** Negro = contratado por este cliente y todavía vigente/programado.
+ *  Blanco = disponible para contratar (incluye una campaña del cliente
+ *  que ya finalizó y puede volver a contratarse). */
+function esPanelActivoCliente(panel: PanelConUso) {
+  return Boolean(panel.contrato && estadoCampana(panel.contrato) !== "Finalizada");
+}
+
+function esPanelContratable(panel: PanelConUso) {
+  if (esPanelActivoCliente(panel)) return false;
+  if (panel.contrato && estadoCampana(panel.contrato) === "Finalizada") return true;
+  return panel.estado === "Disponible" || panel.estado === "Libre";
+}
+
 // Mismo umbral que usa recordatorioVencimientoCampanas (Cloud
 // Function) para avisarle al cliente que su campaña vence pronto --
 // acá se usa para mostrar el botón "Solicitar renovación" en el popup.
@@ -227,10 +240,16 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         lng: numeroCoordenada((panel as unknown as Record<string, unknown>).lng),
         contrato: usados.get(panel.id),
       }))
+      // El mapa comercial enseña los paneles del cliente y los que
+      // realmente puede solicitar. Un panel ajeno ocupado o en
+      // mantenimiento no debe aparecer como si estuviera disponible.
+      .filter((panel) => Boolean(panel.contrato) || esPanelContratable(panel))
       .sort((a, b) => (a.ciudad || "").localeCompare(b.ciudad || "") || a.nombre.localeCompare(b.nombre));
   }, [contratos, todosPaneles]);
 
   const conCoordenadas = useMemo(() => lista.filter(tieneCoordenadas), [lista]);
+  const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
+  const panelesContratables = useMemo(() => conCoordenadas.filter(esPanelContratable).length, [conCoordenadas]);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
 
@@ -273,13 +292,15 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         markersRef.current = L.layerGroup().addTo(mapRef.current);
 
         conCoordenadas.forEach((panel) => {
-          const active = panel.id === seleccionado?.id;
+          const selected = panel.id === seleccionado?.id;
+          const contratado = esPanelActivoCliente(panel);
+          const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
           const marker = L.marker([panel.lat, panel.lng], {
             icon: L.divIcon({
-              className: `coverage-leaflet-marker ${active ? "active" : ""}`,
-              html: `<span><img src="/vista360-map-marker-v4.png" alt="" /></span>`,
-              iconSize: active ? [48, 74] : [38, 58],
-              iconAnchor: active ? [24, 72] : [19, 56],
+              className: `coverage-leaflet-marker ${selected ? "active" : ""} ${contratado ? "is-contracted" : "is-available"}`,
+              html: `<span><img src="${pinUrl}" alt="" /></span>`,
+              iconSize: selected ? [48, 74] : [38, 58],
+              iconAnchor: selected ? [24, 72] : [19, 56],
             }),
           })
             .addTo(markersRef.current)
@@ -385,6 +406,20 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
+          {mapReady && !mapError && panelesState.status === "ready" && conCoordenadas.length > 0 && (
+            <div className="coverage-map-legend" aria-label="Leyenda del mapa">
+              <div>
+                <img src="/vista360-map-marker-v4.png" alt="" aria-hidden="true" />
+                <span>Paneles activos</span>
+                <strong>{panelesActivos}</strong>
+              </div>
+              <div>
+                <img src="/vista360-map-marker-available.png" alt="" aria-hidden="true" />
+                <span>Disponibles para contratar</span>
+                <strong>{panelesContratables}</strong>
+              </div>
+            </div>
+          )}
           {!mapReady && !mapError && (
             <div className="coverage-map-loading">
               <span aria-hidden="true" />
