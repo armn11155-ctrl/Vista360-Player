@@ -118,7 +118,11 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           const inicial = numeroCoordenada(latRef.current) !== undefined && numeroCoordenada(lngRef.current) !== undefined
             ? ([numeroCoordenada(latRef.current)!, numeroCoordenada(lngRef.current)!] as [number, number])
             : CENTRO_DEFECTO;
-          mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false }).setView(inicial, 13);
+          // Mismo motivo que en Cobertura.tsx: un pellizco para alejar
+          // que no sale perfectamente limpio se puede leer como un doble
+          // toque, y sin esto el mapa hacia zoom IN justo al reves de lo
+          // que el admin queria. Los botones +/- ya cubren el zoom.
+          mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false, doubleClickZoom: false }).setView(inicial, 13);
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
           L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {

@@ -281,6 +281,14 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             zoomControl: false,
             attributionControl: false,
             scrollWheelZoom: false,
+            // Doble click/doble toque para hacer zoom IN estaba activado
+            // por defecto. En un mapa chico, un pellizco para alejar que
+            // no sale perfectamente limpio (los dos dedos tocan casi a la
+            // vez, no exactamente juntos) se puede leer como un doble
+            // toque -- y el mapa hacia zoom IN justo cuando el usuario
+            // queria alejarse. Ya estan los botones +/- para zoom
+            // explicito, asi que se apaga el doble click/doble toque.
+            doubleClickZoom: false,
             // Sin esto, al alejar el zoom se veia gris arriba/abajo (zonas
             // sin tiles cerca de los polos) y arrastrando el mapa a los
             // lados se podia seguir de largo viendo el mismo mapa repetido
