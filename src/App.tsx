@@ -95,6 +95,15 @@ function precargarPantallas() {
     // Si la precarga falla (por ejemplo, por una conexión momentáneamente
     // inestable), Cobertura vuelve a intentarlo normalmente al abrirse.
   });
+  // Y no solo el CÓDIGO de Cobertura -- también sus DATOS. Descargar la
+  // pantalla de antemano no evitaba el "Cargando paneles" que se veía
+  // la primera vez que se entraba en toda la sesión, porque el pedido
+  // a Firestore recién arrancaba cuando el componente se montaba. Acá
+  // se arranca esa misma escucha (compartida, ver usePanelesDisponibles)
+  // de una vez -- así, para cuando la persona realmente toca
+  // "Cobertura", lo más probable es que los paneles ya hayan llegado
+  // mientras miraba Inicio, y no vea "Cargando" en absoluto.
+  void import("./hooks/usePanelesDisponibles").then((m) => m.precargarPaneles());
 }
 
 type View =

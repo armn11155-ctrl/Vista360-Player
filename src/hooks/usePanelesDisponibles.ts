@@ -50,6 +50,124 @@ function comparacionEstable(paneles: Panel[]): string {
   return JSON.stringify(ordenarClavesRecursivo(paneles));
 }
 
+// --- Escucha única compartida entre todas las pantallas ---
+//
+// Antes, cada pantalla que usaba este hook (Cobertura, Paneles, Nueva
+// campaña) abría su PROPIA escucha de Firestore al montarse y la
+// cerraba al desmontarse. Eso traía dos costos: la escucha se
+// reconectaba una y otra vez (de ahí el trabajo extra para evitar el
+// parpadeo de arriba), y -- más importante para lo que se pidió acá --
+// la primera vez que se entraba a Cobertura EN TODA LA SESIÓN, no había
+// forma de evitar el "Cargando paneles": el pedido a Firestore recién
+// arrancaba cuando la pantalla se montaba, así que sí o sí había que
+// esperar la ida y vuelta a la red.
+//
+// Ahora hay una sola escucha compartida (este módulo), que se puede
+// arrancar de antemano con precargarPaneles() -- y App.tsx la llama
+// durante el precalentamiento en segundo plano apenas la app queda
+// ociosa (mismo momento en que se precargan los códigos de las
+// pantallas). Así, para cuando la persona realmente toca "Cobertura"
+// por primera vez, lo más probable es que los paneles ya hayan llegado
+// mientras miraba Inicio, y no vea "Cargando" en absoluto. Si igual no
+// llegaron a tiempo (recién abrió la app y tocó Cobertura de
+// inmediato), se ve el "Cargando" de siempre -- pero solo esa vez.
+let escuchaActiva = false;
+let unsubEscucha: (() => void) | null = null;
+const suscriptores = new Set<(estado: PanelesDisponiblesState) => void>();
+
+function avisarSuscriptores(estado: PanelesDisponiblesState) {
+  suscriptores.forEach((fn) => fn(estado));
+}
+
+function iniciarEscuchaSiHaceFalta() {
+  if (escuchaActiva || !db) return;
+  escuchaActiva = true;
+  // En TIEMPO REAL a propósito. Se probó con una lectura única para
+  // ahorrar conexiones, pero a esta escala no compensa: el inventario
+  // son decenas de soportes físicos, no miles, así que la escucha
+  // cuesta prácticamente nada -- y a cambio el mapa siempre está
+  // correcto.
+  //
+  // Y el estado de un panel SÍ cambia solo mientras alguien mira:
+  // crearContrato lo marca "Ocupado", eliminarContrato lo libera, y la
+  // tarea diaria sincronizarEstadoPaneles ajusta estado y libreDesde.
+  // Con lectura única, quien tuviera Cobertura abierta no vería nada de
+  // eso hasta salir y volver a entrar.
+  //
+  // Esto empezaría a pesar recién con cientos de paneles o muchos
+  // clientes mirando el mapa a la vez; ahí convendría volver a lectura
+  // única con caché.
+  unsubEscucha = onSnapshot(
+    collection(db!, "paneles"),
+    (snap) => {
+      const paneles = snap.docs
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
+        .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+      // Si el contenido es EXACTAMENTE el mismo que ya había en caché
+      // (nada cambió de verdad, solo se volvió a conectar la escucha),
+      // no conviene igual pisar el estado con un array nuevo: aunque
+      // los datos sean iguales, la referencia sí cambia (.map/.sort
+      // siempre arman un array nuevo), y Cobertura usa este resultado
+      // dentro de un useMemo -- un array "nuevo" con el mismo
+      // contenido igual dispara ese memo de nuevo, y de ahí el efecto
+      // que dibuja los pines en el mapa, que los borra TODOS y los
+      // vuelve a crear de cero. Eso es justo el parpadeo que se
+      // reportó: entrando la primera vez se ve "Cargando" (no había
+      // caché todavía, normal), y de ahí en más, como esta escucha
+      // siempre contesta con datos iguales apenas se conecta, los
+      // pines se veían parpadear un instante en CADA entrada a
+      // Cobertura. Comparando el contenido acá, se evita todo ese
+      // trabajo de más cuando en realidad no cambió nada.
+      //
+      // OJO -- esto se probó primero con un simple
+      // JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES), y
+      // el parpadeo SEGUÍA pasando. Investigando en vivo se confirmó
+      // la causa real: Firestore NO garantiza que el orden de las
+      // llaves dentro de cada documento (.data()) sea el mismo entre
+      // una conexión de la escucha y la siguiente, aunque el
+      // documento no haya cambiado en nada -- por ejemplo, un panel
+      // podía llegar como {..., direccion, createdAt, ...} la primera
+      // vez y {..., createdAt, direccion, ...} la segunda. Mismos
+      // datos, mismos valores, pero JSON.stringify arma un texto
+      // distinto solo por el orden, así que la comparación daba
+      // "cambió" cuando en realidad no cambió nada. Por eso acá se
+      // ordena las llaves de cada objeto antes de comparar (y de
+      // guardar en caché) -- así el texto es estable sin importar en
+      // qué orden Firestore entregue los campos.
+      const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
+      if (!cambio) return;
+      CACHE_PANELES = paneles;
+      avisarSuscriptores({ status: "ready", paneles });
+    },
+    (err) => {
+      // Si falla pero ya había algo en caché, se deja lo último bueno
+      // en pantalla en vez de tapar el mapa con un error -- mismo
+      // criterio que useInformes.
+      escuchaActiva = false;
+      unsubEscucha = null;
+      if (CACHE_PANELES) return;
+      avisarSuscriptores({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") });
+    }
+  );
+}
+
+function reiniciarEscucha() {
+  if (unsubEscucha) unsubEscucha();
+  unsubEscucha = null;
+  escuchaActiva = false;
+  iniciarEscuchaSiHaceFalta();
+}
+
+/** Arranca la escucha de paneles de antemano, sin esperar a que alguien
+ *  entre a Cobertura/Paneles/Nueva campaña. La llama App.tsx durante el
+ *  precalentamiento en segundo plano (junto con la precarga del código
+ *  de las pantallas) apenas la app queda ociosa tras iniciar sesión.
+ *  Segura de llamar varias veces: si ya hay una escucha corriendo, no
+ *  hace nada. */
+export function precargarPaneles() {
+  iniciarEscuchaSiHaceFalta();
+}
+
 /** Lista TODOS los paneles (no solo los de un contrato/cliente
  *  específico). La usa el admin para elegir un panel al crear un
  *  contrato nuevo directo desde el Player, y también Cobertura -- ahí
@@ -69,8 +187,7 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
   const [state, setState] = useState<PanelesDisponiblesState>(
     CACHE_PANELES ? { status: "ready", paneles: CACHE_PANELES } : { status: "loading" }
   );
-  const [nonce, setNonce] = useState(0);
-  const recargar = useCallback(() => setNonce((n) => n + 1), []);
+  const recargar = useCallback(() => reiniciarEscucha(), []);
 
   useEffect(() => {
     // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
@@ -78,73 +195,16 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
     // algo. Cuando no hay nada que consultar, el resultado correcto es
     // "listo y vacío", no "cargando".
     if (!db || !habilitado) { setState({ status: "ready", paneles: [] }); return; }
-    // En TIEMPO REAL a propósito. Se probó con una lectura única para
-    // ahorrar conexiones, pero a esta escala no compensa: el inventario
-    // son decenas de soportes físicos, no miles, así que la escucha
-    // cuesta prácticamente nada -- y a cambio el mapa siempre está
-    // correcto.
-    //
-    // Y el estado de un panel SÍ cambia solo mientras alguien mira:
-    // crearContrato lo marca "Ocupado", eliminarContrato lo libera, y la
-    // tarea diaria sincronizarEstadoPaneles ajusta estado y libreDesde.
-    // Con lectura única, quien tuviera Cobertura abierta no vería nada de
-    // eso hasta salir y volver a entrar.
-    //
-    // Esto empezaría a pesar recién con cientos de paneles o muchos
-    // clientes mirando el mapa a la vez; ahí convendría volver a lectura
-    // única con caché.
-    const unsub = onSnapshot(
-      collection(db, "paneles"),
-      (snap) => {
-        const paneles = snap.docs
-          .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
-          .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
-        // Si el contenido es EXACTAMENTE el mismo que ya había en caché
-        // (nada cambió de verdad, solo se volvió a conectar la escucha),
-        // no conviene igual pisar el estado con un array nuevo: aunque
-        // los datos sean iguales, la referencia sí cambia (.map/.sort
-        // siempre arman un array nuevo), y Cobertura usa este resultado
-        // dentro de un useMemo -- un array "nuevo" con el mismo
-        // contenido igual dispara ese memo de nuevo, y de ahí el efecto
-        // que dibuja los pines en el mapa, que los borra TODOS y los
-        // vuelve a crear de cero. Eso es justo el parpadeo que se
-        // reportó: entrando la primera vez se ve "Cargando" (no había
-        // caché todavía, normal), y de ahí en más, como esta escucha
-        // siempre contesta con datos iguales apenas se conecta, los
-        // pines se veían parpadear un instante en CADA entrada a
-        // Cobertura. Comparando el contenido acá, se evita todo ese
-        // trabajo de más cuando en realidad no cambió nada.
-        //
-        // OJO -- esto se probó primero con un simple
-        // JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES), y
-        // el parpadeo SEGUÍA pasando. Investigando en vivo se confirmó
-        // la causa real: Firestore NO garantiza que el orden de las
-        // llaves dentro de cada documento (.data()) sea el mismo entre
-        // una conexión de la escucha y la siguiente, aunque el
-        // documento no haya cambiado en nada -- por ejemplo, un panel
-        // podía llegar como {..., direccion, createdAt, ...} la primera
-        // vez y {..., createdAt, direccion, ...} la segunda. Mismos
-        // datos, mismos valores, pero JSON.stringify arma un texto
-        // distinto solo por el orden, así que la comparación daba
-        // "cambió" cuando en realidad no cambió nada. Por eso acá se
-        // ordena las llaves de cada objeto antes de comparar (y de
-        // guardar en caché) -- así el texto es estable sin importar en
-        // qué orden Firestore entregue los campos.
-        const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
-        if (!cambio) return;
-        CACHE_PANELES = paneles;
-        setState({ status: "ready", paneles });
-      },
-      (err) => {
-        // Si falla pero ya había algo en caché, se deja lo último bueno
-        // en pantalla en vez de tapar el mapa con un error -- mismo
-        // criterio que useInformes.
-        if (CACHE_PANELES) return;
-        setState({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") });
-      }
-    );
-    return unsub;
-  }, [habilitado, nonce]);
+    // Si la precarga (o una pantalla anterior) ya dejó algo en caché
+    // entre el primer render de este componente y este efecto, se
+    // refleja ahora -- así no se pierde un dato que ya había llegado.
+    if (CACHE_PANELES) setState({ status: "ready", paneles: CACHE_PANELES });
+    iniciarEscuchaSiHaceFalta();
+    suscriptores.add(setState);
+    return () => {
+      suscriptores.delete(setState);
+    };
+  }, [habilitado]);
 
   return { ...state, recargar };
 }
