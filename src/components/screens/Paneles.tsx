@@ -7,7 +7,7 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { modalidadDePanel } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
-import { cargarLeaflet } from "../../utils/leaflet";
+import { cargarLeaflet, zoomMinimoSinGris } from "../../utils/leaflet";
 import type { Panel, PanelEstado } from "../../types";
 
 interface Props {
@@ -132,16 +132,33 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           const inicial = numeroCoordenada(latRef.current) !== undefined && numeroCoordenada(lngRef.current) !== undefined
             ? ([numeroCoordenada(latRef.current)!, numeroCoordenada(lngRef.current)!] as [number, number])
             : CENTRO_DEFECTO;
-          // Mismo motivo que en Cobertura.tsx: un pellizco para alejar
-          // que no sale perfectamente limpio se puede leer como un doble
-          // toque, y sin esto el mapa hacia zoom IN justo al reves de lo
-          // que el admin queria. Los botones +/- ya cubren el zoom.
-          mapRef.current = L.map(mapEl.current, { zoomControl: false, attributionControl: false, doubleClickZoom: false }).setView(inicial, 13);
+          // Se pidió que este mapa (elegir dónde va un panel) sea
+          // exactamente el mismo que el de Cobertura -- antes tenía su
+          // propia configuración a medias (otro proveedor de mosaicos,
+          // sin límites de zoom/arrastre) y se sentía como un mapa
+          // distinto, de menor calidad. Ahora usa la misma configuración
+          // fila por fila: mismos mosaicos (OpenStreetMap liso, no el
+          // CARTO Voyager de antes), mismo límite de zoom calculado con
+          // zoomMinimoSinGris() para no dejar ver gris al alejarse, mismo
+          // freno duro en el borde del mundo (maxBounds/viscosity/
+          // worldCopyJump) y mismo apagado del rebote elástico al tocar
+          // ese límite. Ver Cobertura.tsx para el detalle de cada una.
+          mapRef.current = L.map(mapEl.current, {
+            zoomControl: false,
+            attributionControl: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            minZoom: zoomMinimoSinGris(mapEl.current.clientWidth, mapEl.current.clientHeight),
+            maxBounds: [[-85, -180], [85, 180]],
+            maxBoundsViscosity: 1.0,
+            worldCopyJump: false,
+            bounceAtZoomLimits: false,
+          }).setView(inicial, 13);
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
-          L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+          L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
-            attribution: "&copy; OpenStreetMap &copy; CARTO",
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
             // Mismo motivo que en Cobertura.tsx: mas margen de mosaicos
             // precargados alrededor de lo visible, para que un arrastre
             // normal no se tope con una franja gris recien cargando.
@@ -156,12 +173,19 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
 
         // Mismo problema que en Cobertura: el contenedor todavía no tiene
         // su tamaño final cuando Leaflet lo mide, y el mapa queda gris.
-        // Se observa el contenedor en vez de adivinar un retraso.
+        // Se observa el contenedor en vez de adivinar un retraso -- y,
+        // igual que en Cobertura, se reajusta el zoom mínimo cada vez
+        // que el tamaño real del recuadro cambia (entrada de pantalla,
+        // giro del teléfono, teclado que se abre).
         mapRef.current.invalidateSize();
         if (mapEl.current && typeof ResizeObserver !== "undefined") {
           observadorRef.current?.disconnect();
-          observadorRef.current = new ResizeObserver(() => {
+          observadorRef.current = new ResizeObserver((entradas) => {
             mapRef.current?.invalidateSize();
+            const recuadro = entradas[0]?.target as HTMLElement | undefined;
+            if (recuadro && mapRef.current) {
+              mapRef.current.setMinZoom(zoomMinimoSinGris(recuadro.clientWidth, recuadro.clientHeight));
+            }
           });
           observadorRef.current.observe(mapEl.current);
         } else {
