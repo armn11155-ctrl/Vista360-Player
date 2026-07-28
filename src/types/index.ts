@@ -152,6 +152,32 @@ export interface Panel {
   libreDesde?: string | null;
 }
 
+export type CotizacionEstado = "Borrador" | "Enviada" | "Aprobada" | "Rechazada" | "Vencida";
+
+/** Propuesta comercial creada exclusivamente por el administrador. */
+export interface Cotizacion {
+  id: string;
+  numero: string;
+  nombre: string;
+  clienteId: string;
+  clienteNombre: string;
+  panelId: string;
+  panelNombre: string;
+  panelCiudad?: string;
+  inicio: string;
+  fin: string;
+  duracionMeses: number;
+  monto: number;
+  moneda: "PEN" | "USD";
+  incluyeIgv: boolean;
+  vigenciaDias: number;
+  condiciones?: string;
+  observaciones?: string;
+  estado: CotizacionEstado;
+  createdAt?: Timestamp | null;
+  createdAtMs?: number;
+}
+
 /** Palabras que delatan un soporte impreso cuando `modalidad` no está
  *  cargada todavía (paneles creados antes de que existiera el campo). */
 const PISTAS_LONA = ["lona", "mural", "banner", "impres", "valla", "gigantograf", "panel tradicional"];

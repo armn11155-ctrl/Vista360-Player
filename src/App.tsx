@@ -48,6 +48,7 @@ const Notificaciones = lazy(() => import("./components/screens/Notificaciones"))
 const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
 const Paneles = lazy(() => import("./components/screens/Paneles"));
 const Ocupacion = lazy(() => import("./components/screens/Ocupacion"));
+const Cotizaciones = lazy(() => import("./components/screens/Cotizaciones"));
 // Estas seis estaban en el bundle inicial: ~2600 líneas que el navegador
 // descargaba para poder mostrar la pantalla de login, donde no se usa
 // ninguna. Ahora bajan cuando hacen falta, y precargarPantallas() las pide
@@ -80,6 +81,7 @@ function precargarPantallas() {
   void import("./components/screens/CrearCliente");
   void import("./components/screens/Paneles");
   void import("./components/screens/Ocupacion");
+  void import("./components/screens/Cotizaciones");
   void import("./components/AdminClientPicker");
   void import("./components/screens/AdminPerfil");
   void import("./components/screens/MisCampanas");
@@ -119,7 +121,8 @@ type View =
   | "nuevoCliente"
   | "miPerfil"
   | "paneles"
-  | "ocupacion";
+  | "ocupacion"
+  | "cotizaciones";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -142,6 +145,7 @@ const VIEW_COLORS: Record<View, string> = {
   miPerfil: "#0B1220",
   paneles: "#0B1220",
   ocupacion: "#0B1220",
+  cotizaciones: "#01040B",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -157,6 +161,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "nuevoCliente",
   "paneles",
   "ocupacion",
+  "cotizaciones",
 ]);
 
 export default function App() {
@@ -277,7 +282,7 @@ export default function App() {
   // auth.status === "in"
   if (auth.role === "admin") {
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion") {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones") {
         return (
           <div className="app-shell">
             <OfflineBanner online={online} />
@@ -300,9 +305,11 @@ export default function App() {
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
                     : view === "paneles"
                       ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                      : view === "cotizaciones"
+                        ? <Cotizaciones onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : view === "ocupacion"
-                      ? <Ocupacion onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
-                      : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
+                        ? <Ocupacion onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                        : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
             </Suspense>
           </div>
         );
@@ -322,6 +329,7 @@ export default function App() {
             onOpenPerfil={() => setView("miPerfil")}
             onOpenPaneles={() => setView("paneles")}
             onOpenOcupacion={() => setView("ocupacion")}
+            onOpenCotizaciones={() => setView("cotizaciones")}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}
             vistaClienteActiva={adminVistaCliente}

@@ -6801,6 +6801,180 @@ input[type="date"] {
   font-family: inherit;
   min-height: 46px;
 }
+
+/* ===== Cotizaciones · módulo comercial exclusivo del admin ===== */
+.quotes-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  overflow-y: auto;
+  color: #fff;
+  background:
+    radial-gradient(circle at 80% -10%, rgba(21, 74, 145, .26), transparent 36%),
+    linear-gradient(145deg, #01040b 0%, #060d19 58%, #081426 100%);
+}
+.quotes-header {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: calc(30px + env(safe-area-inset-top)) 0 24px;
+  display: grid;
+  grid-template-columns: 46px 1fr auto;
+  align-items: center;
+  gap: 18px;
+}
+.quotes-header > button {
+  width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.13); border-radius: 14px;
+  display: grid; place-items: center; color: #fff; background: rgba(255,255,255,.06); cursor: pointer;
+}
+.quotes-header > button svg { width: 20px; height: 20px; }
+.quotes-header span, .quotes-card-heading span, .quotes-list-head span {
+  color: #6eb1ff; font-size: 11px; line-height: 1; font-weight: 850; letter-spacing: .16em; text-transform: uppercase;
+}
+.quotes-header h1 { margin: 6px 0 3px; font-size: clamp(27px, 3vw, 40px); line-height: 1; letter-spacing: -.035em; }
+.quotes-header p { margin: 0; color: rgba(255,255,255,.56); font-size: 13px; }
+.quotes-header > img { width: 178px; height: auto; opacity: .95; }
+.quotes-layout {
+  width: min(1400px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 0 0 calc(42px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: minmax(480px, .92fr) minmax(420px, 1.08fr);
+  gap: 22px;
+  align-items: start;
+}
+.quotes-form-card, .quotes-list-card {
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 24px;
+  background: rgba(7, 14, 26, .9);
+  box-shadow: 0 24px 70px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px);
+}
+.quotes-form-card { padding: 25px; display: grid; gap: 17px; }
+.quotes-card-heading, .quotes-list-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.quotes-card-heading h2, .quotes-list-head h2 { margin: 5px 0 0; font-size: 20px; letter-spacing: -.02em; }
+.quotes-card-heading > b {
+  padding: 7px 11px; border: 1px solid rgba(110,177,255,.22); border-radius: 999px;
+  color: #9acbff; background: rgba(8,119,255,.09); font-size: 11px;
+}
+.quotes-form-card label { display: grid; gap: 7px; color: rgba(255,255,255,.67); font-size: 11px; font-weight: 750; letter-spacing: .015em; }
+.quotes-form-card input, .quotes-form-card select, .quotes-form-card textarea, .quote-row-actions select {
+  width: 100%; border: 1px solid rgba(255,255,255,.12); border-radius: 13px;
+  background: #101a29; color: #fff; outline: none; font: inherit; font-size: 13px;
+}
+.quotes-form-card input, .quotes-form-card select { height: 46px; padding: 0 13px; }
+.quotes-form-card textarea { resize: vertical; padding: 12px 13px; line-height: 1.45; }
+.quotes-form-card input:focus, .quotes-form-card select:focus, .quotes-form-card textarea:focus {
+  border-color: rgba(110,177,255,.7); box-shadow: 0 0 0 3px rgba(8,119,255,.1);
+}
+.quotes-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.quotes-check { align-content: end; grid-template-columns: 22px 1fr !important; align-items: center; min-height: 46px; }
+.quotes-check input { width: 19px; height: 19px; margin: 0; accent-color: #0877ff; }
+.quotes-check span { color: rgba(255,255,255,.8); font-size: 12px; }
+.quotes-period-summary {
+  padding: 13px 15px; border-radius: 14px; display: flex; justify-content: space-between; gap: 15px;
+  border: 1px solid rgba(110,177,255,.14); background: rgba(8,119,255,.065);
+}
+.quotes-period-summary span { color: #7c8da5; font-size: 11px; }
+.quotes-period-summary strong { font-size: 12px; text-align: right; }
+.quotes-primary-btn {
+  height: 49px; border: 0; border-radius: 14px; color: #06101d; background: #fff;
+  font-weight: 850; font-size: 13px; cursor: pointer;
+}
+.quotes-primary-btn:disabled { opacity: .58; cursor: wait; }
+.quotes-message { padding: 11px 13px; border-radius: 12px; color: #bad9ff; background: rgba(8,119,255,.09); font-size: 12px; line-height: 1.4; }
+.quotes-list-card { padding: 25px; min-height: 430px; }
+.quotes-list-head { padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.quotes-list-head > strong { min-width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px; background: #fff; color: #08111e; }
+.quotes-empty { min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; color: rgba(255,255,255,.44); font-size: 12px; text-align: center; }
+.quotes-empty b { color: #fff; font-size: 16px; }
+.quotes-list { display: grid; gap: 12px; padding-top: 17px; }
+.quote-row {
+  border: 1px solid rgba(255,255,255,.09); border-radius: 17px; display: grid;
+  grid-template-columns: 1fr auto; align-items: center; gap: 13px; background: rgba(255,255,255,.025); overflow: hidden;
+}
+.quote-row-main { min-width: 0; padding: 15px 0 15px 16px; border: 0; color: #fff; background: transparent; text-align: left; cursor: pointer; display: grid; gap: 3px; }
+.quote-row-number { color: #69afff; font-size: 9px; font-weight: 850; letter-spacing: .12em; }
+.quote-row-main > strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quote-row-main > small { color: rgba(255,255,255,.48); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.quote-row-main > b { margin-top: 5px; font-size: 14px; }
+.quote-row-actions { padding-right: 13px; display: flex; align-items: center; gap: 7px; }
+.quote-row-actions select { width: 105px; height: 35px; padding: 0 8px; font-size: 10px; }
+.quote-row-actions button {
+  width: 35px; height: 35px; border: 1px solid rgba(255,255,255,.12); border-radius: 11px;
+  background: #101a29; color: #fff; font-size: 10px; font-weight: 850; cursor: pointer;
+}
+.quote-row-actions button.danger { color: #ff7a86; font-size: 18px; }
+.quote-preview-backdrop {
+  position: fixed; inset: 0; z-index: 500; padding: 24px; display: grid; place-items: center;
+  background: rgba(0,3,9,.78); backdrop-filter: blur(12px); overflow-y: auto;
+}
+.quote-preview-shell { width: min(820px, 100%); }
+.quote-preview-actions { display: flex; justify-content: flex-end; gap: 9px; margin-bottom: 12px; }
+.quote-preview-actions button { border: 1px solid rgba(255,255,255,.16); border-radius: 11px; padding: 10px 14px; color: #fff; background: #101827; font-size: 11px; font-weight: 800; cursor: pointer; }
+.quote-preview-actions button.primary { color: #06101d; background: #fff; }
+.quote-document { border-radius: 25px; overflow: hidden; color: #0b1320; background: #fff; box-shadow: 0 30px 100px rgba(0,0,0,.4); }
+.quote-document > header { padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; background: #050a12; }
+.quote-document > header img { width: 170px; }
+.quote-document > header div { display: grid; gap: 4px; text-align: right; color: #fff; }
+.quote-document > header span { color: #5aa5ff; font-size: 9px; font-weight: 900; letter-spacing: .16em; }
+.quote-document > header strong { font-size: 15px; }
+.quote-document-title { padding: 34px 38px 24px; }
+.quote-document-title > span, .quote-document-copy > span { color: #0877ff; font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.quote-document-title h2 { margin: 8px 0 7px; font-size: 29px; letter-spacing: -.035em; }
+.quote-document-title p { margin: 0; color: #68768a; font-size: 12px; }
+.quote-document-client { margin: 0 38px; padding: 18px 20px; border-radius: 16px; display: flex; justify-content: space-between; gap: 20px; background: #f3f7fc; }
+.quote-document-client div { display: grid; gap: 5px; }
+.quote-document-client div:last-child { text-align: right; }
+.quote-document-client span, .quote-document-details span { color: #78869a; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
+.quote-document-client strong { font-size: 14px; }
+.quote-document-details { margin: 24px 38px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #e5ebf2; border-radius: 16px; overflow: hidden; }
+.quote-document-details > div { padding: 18px; display: grid; gap: 5px; border-right: 1px solid #e5ebf2; }
+.quote-document-details > div:last-child { border-right: 0; }
+.quote-document-details strong { font-size: 14px; }
+.quote-document-details small { color: #6e7c8f; font-size: 10px; line-height: 1.35; }
+.quote-document-copy { margin: 0 38px 18px; padding-top: 17px; border-top: 1px solid #e8edf3; }
+.quote-document-copy p { margin: 7px 0 0; color: #59687b; font-size: 11px; line-height: 1.55; white-space: pre-line; }
+.quote-document footer { margin-top: 28px; padding: 18px 38px; display: flex; justify-content: space-between; color: #fff; background: #050a12; font-size: 10px; }
+.quote-document footer span { color: rgba(255,255,255,.62); }
+
+@media (max-width: 899px) {
+  .quotes-header { width: calc(100% - 30px); padding-top: calc(18px + env(safe-area-inset-top)); grid-template-columns: 42px 1fr; }
+  .quotes-header > img { display: none; }
+  .quotes-header h1 { font-size: 27px; }
+  .quotes-layout { width: calc(100% - 24px); grid-template-columns: 1fr; padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+  .quotes-form-card, .quotes-list-card { padding: 18px; border-radius: 20px; }
+  .quotes-form-grid { grid-template-columns: 1fr; }
+  .quotes-period-summary { align-items: flex-start; flex-direction: column; }
+  .quotes-period-summary strong { text-align: left; line-height: 1.45; }
+  .quote-row { grid-template-columns: 1fr; gap: 0; }
+  .quote-row-main { padding-right: 16px; }
+  .quote-row-actions { padding: 0 13px 13px; }
+  .quote-row-actions select { flex: 1; width: auto; }
+  .quote-preview-backdrop { padding: 12px; align-items: start; }
+  .quote-preview-actions { position: sticky; top: 0; z-index: 2; padding: 8px 0; background: rgba(0,3,9,.88); }
+  .quote-preview-actions button { padding: 9px 10px; }
+  .quote-document > header { padding: 20px; }
+  .quote-document > header img { width: 128px; }
+  .quote-document-title { padding: 25px 22px 18px; }
+  .quote-document-title h2 { font-size: 23px; }
+  .quote-document-client { margin: 0 22px; }
+  .quote-document-details { margin: 20px 22px; grid-template-columns: 1fr; }
+  .quote-document-details > div { border-right: 0; border-bottom: 1px solid #e5ebf2; }
+  .quote-document-details > div:last-child { border-bottom: 0; }
+  .quote-document-copy { margin: 0 22px 16px; }
+  .quote-document footer { padding: 16px 22px; gap: 10px; }
+}
+
+@media print {
+  body * { visibility: hidden !important; }
+  .quote-document, .quote-document * { visibility: visible !important; }
+  .quote-document {
+    position: fixed; inset: 0; width: 100%; border-radius: 0; box-shadow: none;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .quote-preview-backdrop { position: static; padding: 0; background: #fff; }
+  .quote-preview-actions { display: none !important; }
+}
 /* El calendario nativo de iOS mete su propio contenedor interno que
    también hay que dejar fluido, o vuelve a empujar hacia afuera. */
 input[type="date"]::-webkit-date-and-time-value {
