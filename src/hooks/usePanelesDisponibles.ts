@@ -76,6 +76,23 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
         const paneles = snap.docs
           .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
           .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+        // Si el contenido es EXACTAMENTE el mismo que ya había en caché
+        // (nada cambió de verdad, solo se volvió a conectar la escucha),
+        // no conviene igual pisar el estado con un array nuevo: aunque
+        // los datos sean iguales, la referencia sí cambia (.map/.sort
+        // siempre arman un array nuevo), y Cobertura usa este resultado
+        // dentro de un useMemo -- un array "nuevo" con el mismo
+        // contenido igual dispara ese memo de nuevo, y de ahí el efecto
+        // que dibuja los pines en el mapa, que los borra TODOS y los
+        // vuelve a crear de cero. Eso es justo el parpadeo que se
+        // reportó: entrando la primera vez se ve "Cargando" (no había
+        // caché todavía, normal), y de ahí en más, como esta escucha
+        // siempre contesta con datos iguales apenas se conecta, los
+        // pines se veían parpadear un instante en CADA entrada a
+        // Cobertura. Comparando el contenido acá, se evita todo ese
+        // trabajo de más cuando en realidad no cambió nada.
+        const cambio = !CACHE_PANELES || JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES);
+        if (!cambio) return;
         CACHE_PANELES = paneles;
         setState({ status: "ready", paneles });
       },
