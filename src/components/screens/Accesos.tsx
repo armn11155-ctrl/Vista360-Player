@@ -510,22 +510,26 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
               <div style={{ fontSize: 12, color: "var(--red)" }}>{personalInterno.message}</div>
             )}
             {personalInterno.status === "ready" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {personalInterno.personal.map((p) => (
-                  <div key={p.uid} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
-                    <span
-                      style={{
-                        fontWeight: 700, padding: "2px 8px", borderRadius: 20, flexShrink: 0,
-                        color: p.role === "Gerente" ? "#0B3F8A" : "#6D28D9",
-                        background: p.role === "Gerente" ? "rgba(8,119,255,0.12)" : "rgba(109,40,217,0.12)",
-                      }}
-                    >
-                      {p.role.toUpperCase()}
-                    </span>
-                    <span style={{ color: "var(--text)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {p.nombre || p.email} · {p.email}
-                    </span>
-                    {p.archived && <span style={{ color: "var(--muted)", flexShrink: 0 }}>(archivado)</span>}
+                  <div key={p.uid} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <BrandThumb name={p.nombre || p.email} size={36} radius={10} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.nombre || p.email}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11, fontWeight: 700, marginTop: 1,
+                          color: p.role === "Gerente" ? "#0B3F8A" : "#6D28D9",
+                        }}
+                      >
+                        {p.role}{p.archived ? " · archivado" : ""}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {p.email}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
