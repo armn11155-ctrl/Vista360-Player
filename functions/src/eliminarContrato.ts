@@ -1,7 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
+import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -18,6 +20,13 @@ interface EliminarContratoData {
  * de reglas de Firestore). De paso libera el panel (vuelve a
  * "Disponible" si estaba "Ocupado" por esta campaña) y borra la foto
  * de portada de R2 si tenía una, para no dejar espacio ocupado sin uso.
+ *
+ * Un Trabajador puede PEDIR esto, pero no ejecutarlo directo: se pidió
+ * que eliminar una campaña quede sujeto a aprobación del Gerente. La
+ * lógica de borrado en sí se movió a ejecutarEliminarContrato() para
+ * que tanto este endpoint (cuando lo llama el Gerente) como
+ * resolverSolicitudAccion.ts (cuando el Gerente aprueba una solicitud
+ * de un Trabajador) hagan exactamente lo mismo, sin duplicar código.
  */
 export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRETS }, async (request) => {
   const uid = request.auth?.uid;
@@ -27,8 +36,9 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
 
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar campañas.");
+  const rol = propio.data()?.role;
+  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede eliminar campañas.");
   }
 
   const contratoId = String(request.data?.contratoId ?? "").trim();
@@ -36,6 +46,28 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
     throw new HttpsError("invalid-argument", "Falta contratoId.");
   }
 
+  if (esTrabajador(rol)) {
+    const contratoSnap = await db.doc(`contratos/${contratoId}`).get();
+    if (!contratoSnap.exists) {
+      throw new HttpsError("not-found", "No se encontró esa campaña.");
+    }
+    const nombreCampana = String(contratoSnap.data()?.nombre ?? contratoId);
+    const solicitudId = await crearSolicitudPendiente({
+      db,
+      tipo: "eliminarContrato",
+      solicitanteUid: uid,
+      solicitanteNombre: String(propio.data()?.nombre ?? "Un trabajador"),
+      resumen: `Eliminar la campaña "${nombreCampana}".`,
+      payload: { contratoId },
+    });
+    return { ok: true, pendiente: true, solicitudId };
+  }
+
+  await ejecutarEliminarContrato(db, contratoId);
+  return { ok: true, pendiente: false };
+});
+
+export async function ejecutarEliminarContrato(db: Firestore, contratoId: string): Promise<void> {
   const contratoRef = db.doc(`contratos/${contratoId}`);
   const contratoSnap = await contratoRef.get();
   if (!contratoSnap.exists) {
@@ -84,6 +116,4 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
   }
 
   await contratoRef.delete();
-
-  return { ok: true };
-});
+}

@@ -116,8 +116,11 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     setMenuAbiertoId(null);
     setEliminandoId(c.id);
     try {
-      const fn = httpsCallable<{ contratoId: string }, { ok: boolean }>(cloudFunctions, "eliminarContrato");
-      await fn({ contratoId: c.id });
+      const fn = httpsCallable<{ contratoId: string }, { ok: boolean; pendiente?: boolean }>(cloudFunctions, "eliminarContrato");
+      const res = await fn({ contratoId: c.id });
+      if (res.data.pendiente) {
+        window.alert(`Enviado a tu Gerente para aprobación: eliminar la campaña de "${panelNombre}".`);
+      }
     } catch (err) {
       window.alert(err instanceof Error ? err.message : "No se pudo eliminar la campaña.");
     } finally {

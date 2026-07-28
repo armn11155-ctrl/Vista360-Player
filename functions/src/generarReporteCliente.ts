@@ -7,6 +7,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { R2_SECRETS, borrarObjetoR2, firmarLecturaR2, leerObjetoR2, subirBufferR2 } from "./r2Storage.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -852,8 +853,8 @@ export const generarReporteCliente = onCall(
       const db = getFirestore();
       const userSnap = await db.doc(`portalUsers/${uid}`).get();
       const user = userSnap.data();
-      if (!userSnap.exists || user?.role !== "admin") {
-        throw new HttpsError("permission-denied", "Solo la cuenta admin puede generar reportes.");
+      if (!userSnap.exists || !esPersonalInterno(user?.role)) {
+        throw new HttpsError("permission-denied", "Solo el equipo interno puede generar reportes.");
       }
 
       const clienteId = String(request.data?.clienteId ?? "");

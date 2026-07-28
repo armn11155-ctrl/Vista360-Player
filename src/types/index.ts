@@ -214,7 +214,12 @@ export function esPanelExclusivo(panel: Pick<Panel, "modalidad" | "tipo">): bool
  * Lo crea el dueño con scripts/crear-acceso-cliente.mjs — el cliente
  * nunca se auto-registra. Colección: portalUsers (doc id = uid).
  */
-export type PortalRole = "admin" | "cliente";
+// "admin" sigue siendo el valor interno para lo que ahora se llama
+// "Gerente" en la interfaz -- no se renombró a nivel de datos para
+// no tocar las +25 Cloud Functions que ya comparaban role==="admin".
+// "trabajador" es el nuevo rol interno con permisos acotados (ver
+// functions/src/rolesInternos.ts).
+export type PortalRole = "admin" | "trabajador" | "cliente";
 
 export interface PortalUser {
   uid: string;
@@ -262,6 +267,17 @@ export function panelesDeContrato(contrato: Pick<Contrato, "panel_id" | "panel_i
 /** Solicitud de nueva campaña enviada por el cliente — el dueño la revisa
  *  y la convierte en Contrato real desde Vista360, igual que solicitudesWeb.
  *  Colección: solicitudesCampana */
+export interface SolicitudAccion {
+  id: string;
+  tipo: "eliminarContrato" | "eliminarClienteDefinitivo" | "eliminarUsuario" | "crearPanel" | "actualizarPanel";
+  solicitanteNombre: string;
+  estado: "Pendiente" | "Aprobada" | "Rechazada";
+  resumen: string;
+  motivoRechazo?: string | null;
+  createdAt: string | null;
+  resueltoEn?: string | null;
+}
+
 export interface SolicitudCampana {
   id: string;
   cliente_id: string;

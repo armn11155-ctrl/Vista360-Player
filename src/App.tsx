@@ -42,6 +42,7 @@ const NuevaCampana = lazy(() => import("./components/screens/NuevaCampana"));
 const Cobertura = lazy(() => import("./components/screens/Cobertura"));
 const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
 const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
+const AprobacionesGerente = lazy(() => import("./components/screens/AprobacionesGerente"));
 const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
 const Accesos = lazy(() => import("./components/screens/Accesos"));
 const Facturas = lazy(() => import("./components/screens/Facturas"));
@@ -75,6 +76,7 @@ function precargarPantallas() {
   void import("./components/screens/Cobertura");
   void import("./components/screens/MisPantallas");
   void import("./components/screens/AnaliticaClientes");
+  void import("./components/screens/AprobacionesGerente");
   void import("./components/screens/SolicitudesCampana");
   void import("./components/screens/Accesos");
   void import("./components/screens/Facturas");
@@ -123,7 +125,8 @@ type View =
   | "miPerfil"
   | "paneles"
   | "ocupacion"
-  | "cotizaciones";
+  | "cotizaciones"
+  | "aprobaciones";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -147,6 +150,7 @@ const VIEW_COLORS: Record<View, string> = {
   paneles: "#0B1220",
   ocupacion: "#0B1220",
   cotizaciones: "#01040B",
+  aprobaciones: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -163,6 +167,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "paneles",
   "ocupacion",
   "cotizaciones",
+  "aprobaciones",
 ]);
 
 export default function App() {
@@ -237,11 +242,11 @@ export default function App() {
           ? "#0B1220"
         : auth.status === "out"
           ? "#050A12"
-          : auth.role === "admin" && !adminClienteId
+          : (auth.role === "admin" || auth.role === "trabajador") && !adminClienteId
             ? "#050A12"
             : VIEW_COLORS[view] ?? "#0B1220";
   const pageBackground =
-    auth.status === "in" && !(auth.role === "admin" && !adminClienteId)
+    auth.status === "in" && !((auth.role === "admin" || auth.role === "trabajador") && !adminClienteId)
       ? "#FFFFFF"
       : themeColor;
   useThemeColor(themeColor, pageBackground);
@@ -281,9 +286,21 @@ export default function App() {
   }
 
   // auth.status === "in"
-  if (auth.role === "admin") {
+  // "trabajador" entra al mismo shell que "admin" (selector de
+  // clientes, Centro de gestión, etc) -- lo que cambia es qué puede
+  // hacer una vez adentro, no qué pantallas puede ABRIR. Ver el
+  // comentario grande sobre roles en types/index.ts.
+  if (auth.role === "admin" || auth.role === "trabajador") {
+    // "esGerente" (antes "admin" a secas) es el único de los dos roles
+    // internos que puede: aprobar/rechazar solicitudes de un
+    // Trabajador, crear cuentas de Trabajador, y archivar/restaurar
+    // accesos de usuarios. Todo lo demás (gestionar campañas, crear/
+    // editar clientes, publicar reportes, y pedir --con aprobación--
+    // eliminar campañas/clientes/usuarios o tocar el inventario de
+    // paneles) lo puede hacer también un Trabajador.
+    const esGerente = auth.role === "admin";
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones") {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones" || (view === "aprobaciones" && esGerente)) {
         return (
           <div className="app-shell">
             <OfflineBanner online={online} />
@@ -301,7 +318,7 @@ export default function App() {
                     }}
                   />
                 : view === "accesos"
-                  ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                  ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} esGerente={esGerente} />
                   : view === "miPerfil"
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
                     : view === "paneles"
@@ -310,6 +327,8 @@ export default function App() {
                         ? <Cotizaciones onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : view === "ocupacion"
                         ? <Ocupacion onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                      : view === "aprobaciones"
+                        ? <AprobacionesGerente onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                         : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
             </Suspense>
           </div>
@@ -331,6 +350,8 @@ export default function App() {
             onOpenPaneles={() => setView("paneles")}
             onOpenOcupacion={() => setView("ocupacion")}
             onOpenCotizaciones={() => setView("cotizaciones")}
+            onOpenAprobaciones={esGerente ? () => setView("aprobaciones") : undefined}
+            esGerente={esGerente}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}
             vistaClienteActiva={adminVistaCliente}
@@ -353,6 +374,7 @@ export default function App() {
         setContratoAbierto={setContratoAbierto}
         isAdmin={!adminVistaCliente}
         adminNombre={adminVistaCliente ? undefined : auth.nombre}
+        esGerente={esGerente}
         online={online}
         onSeleccionarCliente={adminVistaCliente ? undefined : (id) => {
           setAdminClienteId(id);
@@ -392,6 +414,7 @@ interface AuthenticatedProps {
   setContratoAbierto: (c: Contrato | null) => void;
   isAdmin: boolean;
   adminNombre?: string | null;
+  esGerente?: boolean;
   onCambiarCliente?: () => void;
   onSeleccionarCliente?: (clienteId: string) => void;
   online: boolean;
@@ -407,6 +430,7 @@ function AuthenticatedApp({
   setContratoAbierto,
   isAdmin,
   adminNombre,
+  esGerente,
   onCambiarCliente,
   onSeleccionarCliente,
   online,
@@ -539,6 +563,7 @@ function AuthenticatedApp({
             totalNotifs={totalNotifs}
             isAdmin={isAdmin}
             adminNombre={adminNombre}
+            esGerente={esGerente}
             uid={uid}
             mostrarNotifSpotlight={mostrarNotifPrompt}
             onCerrarNotifSpotlight={() => setNotifPromptAbierto(false)}
@@ -655,7 +680,7 @@ function AuthenticatedApp({
         ) : null;
         break;
       case "accesos":
-        content = isAdmin ? <Accesos onBack={() => setView("inicio")} /> : null;
+        content = isAdmin ? <Accesos onBack={() => setView("inicio")} esGerente={esGerente} /> : null;
         break;
       case "paneles":
         content = isAdmin ? <Paneles onBack={() => setView("inicio")} /> : null;
@@ -692,11 +717,14 @@ function AuthenticatedApp({
         onLogout={() => logout()}
         onCambiarCliente={onCambiarCliente}
         isAdmin={isAdmin}
+        esGerente={esGerente}
         solicitudesPendientes={solCampPendientes}
         active={view}
         // Mismo criterio que el saludo de Inicio.tsx: el admin ve su
         // propio nombre y foto; el cliente ve el logo/nombre de empresa.
-        perfilNombre={isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente")}
+        // Si no hay nombre propio guardado, se cae al rol (Gerente o
+        // Trabajador) en vez de un genérico "Admin".
+        perfilNombre={isAdmin ? (adminNombre || (esGerente === false ? "Trabajador" : "Gerente")) : (cliente?.empresa ?? "Cliente")}
         perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
         perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
         onOpenPerfil={() => { setView("perfil"); setSidebarOpen(false); }}

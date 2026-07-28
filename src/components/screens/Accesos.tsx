@@ -14,6 +14,13 @@ import type { Cliente } from "../../types";
 
 interface Props {
   onBack: () => void;
+  /** true para Gerente (antes "admin" a secas), false para Trabajador.
+   *  Un Trabajador puede pedir "Eliminar definitivo" (queda pendiente
+   *  de aprobación), pero no archivar/restaurar/restablecer
+   *  contraseña ni crear cuentas de Trabajador -- esas siguen siendo
+   *  del Gerente en el backend, así que se ocultan acá también para
+   *  no mostrar botones que van a fallar con permission-denied. */
+  esGerente?: boolean;
 }
 
 function fmtFecha(inv: { createdAt?: { toDate: () => Date } | null }): string {
@@ -60,7 +67,7 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
   );
 }
 
-export default function Accesos({ onBack }: Props) {
+export default function Accesos({ onBack, esGerente = true }: Props) {
   const state = useInvitaciones(true);
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -101,6 +108,84 @@ export default function Accesos({ onBack }: Props) {
   const [reseteandoId, setReseteandoId] = useState<string | null>(null);
   const [resultadoReset, setResultadoReset] = useState<{ nombre: string; email: string; password: string } | null>(null);
   const [errorReset, setErrorReset] = useState("");
+  const [avisoPendiente, setAvisoPendiente] = useState("");
+
+  // ── Crear cuenta de Trabajador (solo Gerente) -- mismo patrón que
+  // "crear cliente" de arriba, pero sin empresa/RUC/avatar: un
+  // Trabajador es cuenta interna, no un cliente. ──
+  const [mostrarFormTrabajador, setMostrarFormTrabajador] = useState(false);
+  const [nuevoTrabajadorNombre, setNuevoTrabajadorNombre] = useState("");
+  const [nuevoTrabajadorEmail, setNuevoTrabajadorEmail] = useState("");
+  const [nuevoTrabajadorPassword, setNuevoTrabajadorPassword] = useState("");
+  const [creandoTrabajador, setCreandoTrabajador] = useState(false);
+  const [errorTrabajador, setErrorTrabajador] = useState("");
+  const [resultadoTrabajador, setResultadoTrabajador] = useState<{ nombre: string; email: string; password: string } | null>(null);
+
+  function limpiarFormTrabajador() {
+    setNuevoTrabajadorNombre("");
+    setNuevoTrabajadorEmail("");
+    setNuevoTrabajadorPassword("");
+    setErrorTrabajador("");
+    setResultadoTrabajador(null);
+  }
+
+  function toggleFormTrabajador() {
+    if (mostrarFormTrabajador) {
+      setMostrarFormTrabajador(false);
+      limpiarFormTrabajador();
+    } else {
+      limpiarFormTrabajador();
+      setMostrarFormTrabajador(true);
+    }
+  }
+
+  async function crearTrabajador() {
+    if (!cloudFunctions) {
+      setErrorTrabajador("Firebase Functions no está configurado.");
+      return;
+    }
+    if (!nuevoTrabajadorNombre.trim()) {
+      setErrorTrabajador("Escribe el nombre del trabajador.");
+      return;
+    }
+    if (!nuevoTrabajadorEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoTrabajadorEmail.trim())) {
+      setErrorTrabajador("El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
+      return;
+    }
+    setCreandoTrabajador(true);
+    setErrorTrabajador("");
+    setResultadoTrabajador(null);
+    try {
+      const fn = httpsCallable<
+        { nombre: string; email: string; password?: string },
+        { uid: string; nombre: string; email: string; password: string }
+      >(cloudFunctions, "crearTrabajadorAcceso");
+      const res = await fn({
+        nombre: nuevoTrabajadorNombre.trim(),
+        email: nuevoTrabajadorEmail.trim(),
+        password: nuevoTrabajadorPassword.trim() || undefined,
+      });
+      setResultadoTrabajador(res.data);
+    } catch (err) {
+      setErrorTrabajador(err instanceof Error ? err.message : "No se pudo crear la cuenta de trabajador.");
+    } finally {
+      setCreandoTrabajador(false);
+    }
+  }
+
+  const mensajeAccesoTrabajador = resultadoTrabajador
+    ? [
+        `Hola ${resultadoTrabajador.nombre}, te mando tu acceso a Vista360 Player.`,
+        "",
+        "Ya puedes entrar como parte del equipo interno.",
+        "",
+        `Portal: ${window.location.origin}`,
+        `Correo: ${resultadoTrabajador.email}`,
+        `Contraseña temporal: ${resultadoTrabajador.password}`,
+        "",
+        "Por seguridad, te recomendamos cambiar la contraseña después del primer ingreso.",
+      ].join("\n")
+    : "";
 
   async function subirAvatarNuevo(file: File) {
     setNuevoSubiendoAvatar(true);
@@ -296,19 +381,27 @@ export default function Accesos({ onBack }: Props) {
       accion === "archivar"
         ? window.confirm(`¿Seguro que quieres archivar el usuario de ${nombre}? No podrá entrar hasta que lo restaures.`)
         : accion === "eliminar"
-          ? window.confirm(`¿Seguro que quieres eliminar definitivamente el usuario de ${nombre}? Esta acción no se puede deshacer.`)
+          ? window.confirm(
+              esGerente
+                ? `¿Seguro que quieres eliminar definitivamente el usuario de ${nombre}? Esta acción no se puede deshacer.`
+                : `¿Pedirle a tu Gerente que elimine definitivamente el usuario de ${nombre}? Quedará pendiente de su aprobación.`
+            )
           : true;
     if (!confirmado) return;
 
     setAccionandoId(inv.id);
     setMenuAbierto(null);
     setErrorCrear("");
+    setAvisoPendiente("");
     try {
       const fn = httpsCallable<
         { invitacionId: string; uid?: string; email: string; accion: "archivar" | "restaurar" | "eliminar" },
-        { ok: boolean }
+        { ok: boolean; pendiente?: boolean }
       >(cloudFunctions, "administrarUsuarioPortal");
-      await fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion });
+      const res = await fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion });
+      if (res.data.pendiente) {
+        setAvisoPendiente(`Enviado a tu Gerente para aprobación: eliminar el acceso de ${nombre}.`);
+      }
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo actualizar el usuario.");
     } finally {
@@ -396,21 +489,74 @@ export default function Accesos({ onBack }: Props) {
           })}
         </div>
 
-        <div className="accesos-create-btn-row" style={{ margin: "12px 0" }}>
+        <div className="accesos-create-btn-row" style={{ margin: "12px 0", display: "flex", gap: 8 }}>
           <button
             className="accesos-create-btn"
             onClick={toggleFormNuevo}
             style={{
-              background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
+              flex: 1, background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
               border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
               fontWeight: 800, cursor: "pointer",
             }}
           >
             {mostrarFormNuevo ? "Cerrar formulario" : "+ Crear cliente"}
           </button>
+          {esGerente && (
+            <button
+              className="accesos-create-btn"
+              onClick={toggleFormTrabajador}
+              style={{
+                flex: 1, background: mostrarFormTrabajador ? "#0B1220" : "#6D28D9", color: "#fff",
+                border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
+                fontWeight: 800, cursor: "pointer",
+              }}
+            >
+              {mostrarFormTrabajador ? "Cerrar formulario" : "+ Crear trabajador"}
+            </button>
+          )}
         </div>
+
+        {mostrarFormTrabajador && esGerente && (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>
+              Cuenta de trabajador
+            </div>
+            <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
+              Un Trabajador puede gestionar campañas, clientes y reportes libremente. Las acciones
+              sensibles (eliminar algo, crear o editar paneles) quedan pendientes de tu aprobación.
+            </div>
+            <div style={{ display: "grid", gap: 10 }}>
+              <input value={nuevoTrabajadorNombre} onChange={(e) => setNuevoTrabajadorNombre(e.target.value)} placeholder="Nombre del trabajador" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoTrabajadorEmail} onChange={(e) => setNuevoTrabajadorEmail(e.target.value)} placeholder="Correo del trabajador" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <input value={nuevoTrabajadorPassword} onChange={(e) => setNuevoTrabajadorPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+            </div>
+            {errorTrabajador && (
+              <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorTrabajador}</div>
+            )}
+            <button
+              onClick={crearTrabajador}
+              disabled={creandoTrabajador}
+              style={{ width: "100%", marginTop: 12, background: creandoTrabajador ? "#C4B5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creandoTrabajador ? "not-allowed" : "pointer" }}
+            >
+              {creandoTrabajador ? "Creando..." : "Crear trabajador y acceso"}
+            </button>
+            {resultadoTrabajador && (
+              <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Trabajador creado</div>
+                <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAccesoTrabajador}</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(mensajeAccesoTrabajador)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
+                  <a href={`mailto:${resultadoTrabajador.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoTrabajador)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {errorCrear && (
           <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 10 }}>{errorCrear}</div>
+        )}
+        {avisoPendiente && (
+          <div style={{ color: "#6D28D9", fontSize: 12, fontWeight: 700, marginBottom: 10 }}>{avisoPendiente}</div>
         )}
         {mensajeOkEdicion && !mostrarFormNuevo && (
           <div style={{ color: "#16A34A", fontSize: 12, fontWeight: 800, marginBottom: 10 }}>{mensajeOkEdicion}</div>
@@ -531,7 +677,12 @@ export default function Accesos({ onBack }: Props) {
                       {inv.clienteNombre || inv.email}
                       {inv.esAdmin && (
                         <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#0B3F8A", background: "rgba(8,119,255,0.12)", padding: "2px 6px", borderRadius: 20 }}>
-                          ADMIN
+                          GERENTE
+                        </span>
+                      )}
+                      {inv.esTrabajador && (
+                        <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#6D28D9", background: "rgba(109,40,217,0.12)", padding: "2px 6px", borderRadius: 20 }}>
+                          TRABAJADOR
                         </span>
                       )}
                     </div>
@@ -585,13 +736,22 @@ export default function Accesos({ onBack }: Props) {
                       <>
                         <MenuButton label="Copiar link" onClick={() => copiar(inv.id, inv.link)} disabled={!inv.link} />
                         <MenuLink label="Enviar por WhatsApp" href={whatsappHref} disabled={!inv.link} />
-                        <MenuButton label="Restablecer contraseña" onClick={() => void restablecerPassword(inv)} />
-                        <MenuButton label="Archivar usuario" danger onClick={() => administrarUsuario(inv, "archivar")} />
+                        {esGerente && (
+                          <MenuButton label="Restablecer contraseña" onClick={() => void restablecerPassword(inv)} />
+                        )}
+                        {esGerente && (
+                          <MenuButton label="Archivar usuario" danger onClick={() => administrarUsuario(inv, "archivar")} />
+                        )}
+                        {!esGerente && (
+                          <MenuButton label="Eliminar (pedir aprobación)" danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                        )}
                       </>
                     ) : (
                       <>
-                        <MenuButton label="Restaurar usuario" onClick={() => administrarUsuario(inv, "restaurar")} />
-                        <MenuButton label="Eliminar definitivo" danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                        {esGerente && (
+                          <MenuButton label="Restaurar usuario" onClick={() => administrarUsuario(inv, "restaurar")} />
+                        )}
+                        <MenuButton label={esGerente ? "Eliminar definitivo" : "Eliminar (pedir aprobación)"} danger onClick={() => administrarUsuario(inv, "eliminar")} />
                       </>
                     )}
                   </div>

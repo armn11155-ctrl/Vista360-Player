@@ -282,9 +282,9 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
       if (panelEditando) {
         const fn = httpsCallable<
           { panelId: string; nombre: string; tipo: string; modalidad: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
-          { ok: boolean }
+          { ok: boolean; pendiente?: boolean }
         >(cloudFunctions, "actualizarPanel");
-        await fn({
+        const res = await fn({
           panelId: panelEditando.id,
           nombre: nombre.trim(),
           tipo: tipo.trim(),
@@ -296,13 +296,13 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           estado,
           impactoDiario: impactoNum,
         });
-        setMensajeOk("Panel actualizado.");
+        setMensajeOk(res.data.pendiente ? "Enviado a tu Gerente para aprobación." : "Panel actualizado.");
       } else {
         const fn = httpsCallable<
           { nombre: string; tipo: string; modalidad: string; ciudad: string; direccion: string; lat?: number; lng?: number; estado: string; impactoDiario?: number },
-          { id: string }
+          { id?: string; pendiente?: boolean }
         >(cloudFunctions, "crearPanel");
-        await fn({
+        const res = await fn({
           nombre: nombre.trim(),
           tipo: tipo.trim(),
           modalidad,
@@ -313,7 +313,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           estado,
           impactoDiario: impactoNum,
         });
-        setMensajeOk("Panel creado.");
+        setMensajeOk(res.data.pendiente ? "Enviado a tu Gerente para aprobación." : "Panel creado.");
       }
       // No hace falta recargar a mano: la lista escucha en tiempo real,
       // así que el panel recién guardado aparece solo.

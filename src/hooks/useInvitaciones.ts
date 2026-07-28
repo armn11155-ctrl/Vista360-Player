@@ -11,6 +11,7 @@ export interface InvitacionPortal {
   avatarKey?: string;
   avatarUrl?: string;
   esAdmin?: boolean;
+  esTrabajador?: boolean;
   link: string;
   archived?: boolean;
   createdAt?: { toDate: () => Date } | null;

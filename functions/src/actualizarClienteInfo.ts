@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -45,8 +46,8 @@ export const actualizarClienteInfo = onCall<ActualizarClienteInfoData>(async (re
 
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede editar clientes.");
+  if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar clientes.");
   }
 
   const clienteId = limpiar(request.data.clienteId);

@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { esPanelExclusivo } from "./modalidadPanel.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -50,8 +51,8 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
 
     const db = getFirestore();
     const propio = await db.doc(`portalUsers/${uid}`).get();
-    if (!propio.exists || propio.data()?.role !== "admin") {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear campañas.");
+    if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
+      throw new HttpsError("permission-denied", "Solo el equipo interno puede crear campañas.");
     }
 
     const clienteId = limpiar(request.data.clienteId);

@@ -1,6 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { FieldValue, getFirestore, type Query } from "firebase-admin/firestore";
+import { FieldValue, getFirestore, type Firestore, type Query } from "firebase-admin/firestore";
+import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -21,6 +23,11 @@ interface AdministrarClienteData {
  * reglas) lo hace robusto sin tener que tocar esa configuración
  * externa — mismo patrón que el resto de acciones sensibles de admin
  * en este archivo de funciones.
+ *
+ * Un Trabajador puede archivar/restaurar clientes libremente (parte
+ * del trabajo del día a día), pero eliminarDefinitivo -- que borra el
+ * cliente y TODO lo asociado, sin vuelta atrás -- queda sujeto a
+ * aprobación del Gerente, igual que eliminar una campaña o un usuario.
  */
 export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (request) => {
   const uid = request.auth?.uid;
@@ -30,8 +37,9 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
 
   const db = getFirestore();
   const propioSnap = await db.doc(`portalUsers/${uid}`).get();
-  if (!propioSnap.exists || propioSnap.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede administrar clientes.");
+  const rol = propioSnap.data()?.role;
+  if (!propioSnap.exists || !(esGerente(rol) || esTrabajador(rol))) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede administrar clientes.");
   }
 
   const clienteId = String(request.data?.clienteId ?? "").trim();
@@ -51,12 +59,37 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
 
   if (accion === "archivar") {
     await clienteRef.set({ archived: true, archivedAt: FieldValue.serverTimestamp() }, { merge: true });
-    return { ok: true };
+    return { ok: true, pendiente: false };
   }
 
   if (accion === "restaurar") {
     await clienteRef.set({ archived: false, archivedAt: null }, { merge: true });
-    return { ok: true };
+    return { ok: true, pendiente: false };
+  }
+
+  // accion === "eliminarDefinitivo"
+  if (esTrabajador(rol)) {
+    const nombreCliente = String(clienteSnap.data()?.empresa ?? clienteId);
+    const solicitudId = await crearSolicitudPendiente({
+      db,
+      tipo: "eliminarClienteDefinitivo",
+      solicitanteUid: uid,
+      solicitanteNombre: String(propioSnap.data()?.nombre ?? "Un trabajador"),
+      resumen: `Eliminar definitivamente al cliente "${nombreCliente}" (y todo lo asociado: campañas, informes, accesos, facturas).`,
+      payload: { clienteId },
+    });
+    return { ok: true, pendiente: true, solicitudId };
+  }
+
+  await ejecutarEliminarClienteDefinitivo(db, clienteId);
+  return { ok: true, pendiente: false };
+});
+
+export async function ejecutarEliminarClienteDefinitivo(db: Firestore, clienteId: string): Promise<void> {
+  const clienteRef = db.doc(`clientes/${clienteId}`);
+  const clienteSnap = await clienteRef.get();
+  if (!clienteSnap.exists) {
+    throw new HttpsError("not-found", "No se encontró ese cliente.");
   }
 
   // eliminarDefinitivo: borra todo lo asociado a este cliente en las
@@ -96,6 +129,4 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
     await borrarQuery(db.collection("facturas").where("cliente_doc", "==", clienteDoc));
   }
   await clienteRef.delete();
-
-  return { ok: true };
-});
+}

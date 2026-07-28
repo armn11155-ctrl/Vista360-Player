@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esPanelExclusivo } from "./modalidadPanel.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -32,8 +33,8 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
 
   const db = getFirestore();
   const usuario = await db.doc(`portalUsers/${uid}`).get();
-  if (!usuario.exists || usuario.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta administradora puede editar campañas.");
+  if (!usuario.exists || !esPersonalInterno(usuario.data()?.role)) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar campañas.");
   }
 
   const contratoId = limpiar(request.data.contratoId);

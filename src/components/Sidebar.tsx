@@ -24,6 +24,9 @@ interface Props {
   onLogout: () => void;
   onCambiarCliente?: () => void;
   isAdmin?: boolean;
+  /** true para Gerente, false para Trabajador -- solo cambia la
+   *  etiqueta de rol que se muestra en la tarjeta de perfil móvil. */
+  esGerente?: boolean;
   solicitudesPendientes?: number;
   /** Vista actual de la app — solo se usa para resaltar el ítem activo
    *  y deslizar el pill de vidrio en el sidebar de escritorio. */
@@ -61,7 +64,7 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = true, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
 
   // ── Pill de vidrio deslizante (solo escritorio — ver .sidebar-pill en app.css) ──
@@ -140,7 +143,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
               {isAdmin && (
                 <span className="sidebar-profile-chip-details">
-                  <span><i aria-hidden="true" />Administrador</span>
+                  <span><i aria-hidden="true" />{esGerente ? "Gerente" : "Trabajador"}</span>
                   <small>Ver mi perfil</small>
                 </span>
               )}

@@ -19,6 +19,7 @@ interface Props {
   totalNotifs?: number;
   isAdmin?: boolean;
   adminNombre?: string | null;
+  esGerente?: boolean;
   uid?: string;
   mostrarNotifSpotlight?: boolean;
   onCerrarNotifSpotlight?: () => void;
@@ -59,7 +60,7 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, uid, mostrarNotifSpotlight, onCerrarNotifSpotlight }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, esGerente, uid, mostrarNotifSpotlight, onCerrarNotifSpotlight }: Props) {
   const { estado: estadoPush, error: errorPush, activar: activarPush } = usePushEstado(uid);
   const notifBtnRef = useRef<HTMLButtonElement>(null);
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
@@ -83,7 +84,12 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const campanaRenovable = [...activas].sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
   const diasRenovacion = campanaRenovable ? diasHasta(campanaRenovable.fin) : null;
   const todoOk = activas.length > 0 || contratos.length === 0;
-  const nombre = isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente");
+  // "esGerente === false" es la única forma de saber que se trata de
+  // un Trabajador y no del Gerente -- si esGerente no llega definido
+  // (pantallas viejas que todavía no lo pasan) se asume Gerente, que
+  // es el único rol interno que existía antes de este cambio.
+  const rolInterno = esGerente === false ? "Trabajador" : "Gerente";
+  const nombre = isAdmin ? (adminNombre || rolInterno) : (cliente?.empresa ?? "Cliente");
   // Hora de Peru (America/Lima, UTC-5 fijo, sin horario de verano) en vez
   // de la hora local del dispositivo, para que el saludo sea correcto sin
   // importar en que zona horaria este configurado el celular del cliente.
@@ -193,7 +199,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
         </div>
         {/* Saludo */}
         <div className={`inicio-greeting-title${isAdmin ? " inicio-greeting-title-admin" : ""}`} style={{ fontSize:18, fontWeight:800, color:"#fff", marginBottom:isAdmin ? 4 : 7, letterSpacing:0, lineHeight:1.1 }}>
-          {saludo}, {isAdmin ? "Admin" : nombre}
+          {saludo}, {isAdmin ? rolInterno : nombre}
         </div>
         <div className={`inicio-greeting-sub${isAdmin ? " inicio-greeting-sub-admin" : ""}`} style={{ fontSize:isAdmin ? 12.5 : 14, color:"rgba(255,255,255,0.72)", marginBottom:isAdmin ? 5 : 16, lineHeight:1.35 }}>
           {isAdmin ? <>Gestiona tus clientes y campañas<br className="inicio-greeting-admin-break" />{" "}desde aquí.</> : "Tu presencia publicitaria, clara y bajo control."}
@@ -217,7 +223,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               onClick={onCambiarCliente}
               style={{ background:"#0B1220", color:"#fff", border:"none", borderRadius:12, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(15,23,42,0.12)" }}
             >
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>Admin</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>{rolInterno}</div>
               <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Cambiar cliente</div>
             </button>
           </div>

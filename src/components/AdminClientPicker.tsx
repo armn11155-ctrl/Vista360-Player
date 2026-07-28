@@ -19,6 +19,12 @@ interface Props {
   onOpenAnalitica?: () => void;
   onOpenPerfil?: () => void;
   onOpenPaneles?: () => void;
+  /** Solo se muestra si esGerente es true -- un Trabajador no ve la
+   *  tarjeta ni puede llegar a esta pantalla. */
+  onOpenAprobaciones?: () => void;
+  /** true para la cuenta Gerente (antes "admin" a secas), false para
+   *  un Trabajador. Ver el comentario grande sobre roles en App.tsx. */
+  esGerente?: boolean;
   adminIniciales?: string;
   /** Para mostrar la foto real (no solo iniciales) en el ícono "Mi perfil". */
   uid?: string;
@@ -43,7 +49,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -147,15 +153,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     setTab(siguiente);
   }
 
-  async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo") {
+  async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo"): Promise<{ pendiente?: boolean }> {
     if (!cloudFunctions) {
       throw new Error("Firebase Functions no está configurado.");
     }
-    const fn = httpsCallable<{ clienteId: string; accion: string }, { ok: boolean }>(
+    const fn = httpsCallable<{ clienteId: string; accion: string }, { ok: boolean; pendiente?: boolean }>(
       cloudFunctions,
       "administrarClienteAdmin"
     );
-    await fn({ clienteId, accion });
+    const res = await fn({ clienteId, accion });
+    return { pendiente: res.data.pendiente };
   }
 
   async function archivarCliente(cliente: Cliente) {
@@ -189,13 +196,21 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }
 
   async function eliminarDefinitivo(cliente: Cliente) {
-    const seguro = window.confirm(`¿Eliminar definitivamente ${cliente.empresa}? Esto borrará el perfil y sus accesos de la base de datos. No se puede deshacer.`);
+    const seguro = window.confirm(
+      esGerente
+        ? `¿Eliminar definitivamente ${cliente.empresa}? Esto borrará el perfil y sus accesos de la base de datos. No se puede deshacer.`
+        : `¿Pedirle a tu Gerente que elimine definitivamente ${cliente.empresa}? Quedará pendiente de su aprobación.`
+    );
     if (!seguro) return;
     setAccionandoId(cliente.id);
     setErrorAccion("");
     try {
-      await llamarAdministrarCliente(cliente.id, "eliminarDefinitivo");
+      const { pendiente } = await llamarAdministrarCliente(cliente.id, "eliminarDefinitivo");
       setMenuCliente(null);
+      if (pendiente) {
+        setErrorAccion("");
+        window.alert(`Enviado a tu Gerente para aprobación: eliminar definitivamente a ${cliente.empresa}.`);
+      }
     } catch (err) {
       // La tarjeta puede seguir visible unas milésimas después de que
       // Firestore confirmó el borrado. Si se vuelve a tocar durante ese
@@ -286,7 +301,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
         <div className="admin-picker-badge">
           <span className="admin-picker-badge-dot" />
-          Modo Administrador
+          {esGerente ? "Modo Gerente" : "Modo Trabajador"}
         </div>
         <div className="admin-picker-title">¿Qué cuenta gestionas?</div>
         <div className="admin-picker-sub">
@@ -517,6 +532,13 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span>
               <i>›</i>
             </button>
+            {esGerente && onOpenAprobaciones && (
+              <button type="button" onClick={onOpenAprobaciones} className="admin-picker-management-card">
+                <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 6 9 17l-5-5"/></svg></span>
+                <span><strong>Aprobaciones</strong><small>Pedidos de tu equipo</small></span>
+                <i>›</i>
+              </button>
+            )}
           </div>
         </div>
       )}

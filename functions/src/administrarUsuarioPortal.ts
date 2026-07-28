@@ -1,7 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
+import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -20,18 +22,37 @@ function limpiar(value?: string) {
   return value?.trim() ?? "";
 }
 
-async function requireAdmin(uid?: string) {
+/** Archivar y restaurar (que básicamente prenden/apagan el acceso de
+ *  alguien) quedan exclusivas del Gerente -- no se pidió que un
+ *  Trabajador pueda tocar eso. Solo "eliminar" (borrado definitivo)
+ *  acepta también al Trabajador, y en ese caso queda pendiente de
+ *  aprobación en vez de ejecutarse directo. */
+async function requireGerenteOTrabajadorParaEliminar(uid?: string): Promise<{ db: Firestore; rol: unknown; nombre: string }> {
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede administrar usuarios.");
+  const rol = propio.data()?.role;
+  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede administrar usuarios.");
   }
+  return { db, rol, nombre: String(propio.data()?.nombre ?? "Un trabajador") };
 }
 
-async function resolverUid(data: AdministrarUsuarioPortalData): Promise<string | null> {
+async function requireGerente(uid?: string): Promise<Firestore> {
+  if (!uid) {
+    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  }
+  const db = getFirestore();
+  const propio = await db.doc(`portalUsers/${uid}`).get();
+  if (!propio.exists || !esGerente(propio.data()?.role)) {
+    throw new HttpsError("permission-denied", "Solo el Gerente puede administrar usuarios.");
+  }
+  return db;
+}
+
+async function resolverUid(db: Firestore, data: AdministrarUsuarioPortalData): Promise<string | null> {
   const uid = limpiar(data.uid);
   if (uid) return uid;
 
@@ -46,21 +67,60 @@ async function resolverUid(data: AdministrarUsuarioPortalData): Promise<string |
 }
 
 export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(async (request) => {
-  await requireAdmin(request.auth?.uid);
-
   const accion = request.data.accion;
-  const invitacionId = limpiar(request.data.invitacionId);
-  const email = limpiar(request.data.email).toLowerCase();
-  const uid = await resolverUid(request.data);
-
   if (!accion || !["archivar", "restaurar", "eliminar"].includes(accion)) {
     throw new HttpsError("invalid-argument", "Acción inválida.");
   }
+
+  if (accion !== "eliminar") {
+    const db = await requireGerente(request.auth?.uid);
+    const invitacionId = limpiar(request.data.invitacionId);
+    const email = limpiar(request.data.email).toLowerCase();
+    const uid = await resolverUid(db, request.data);
+    if (!uid && !invitacionId && !email) {
+      throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
+    }
+    await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion });
+    return { ok: true, pendiente: false };
+  }
+
+  const { db, rol, nombre } = await requireGerenteOTrabajadorParaEliminar(request.auth?.uid);
+  const invitacionId = limpiar(request.data.invitacionId);
+  const email = limpiar(request.data.email).toLowerCase();
+  const uid = await resolverUid(db, request.data);
   if (!uid && !invitacionId && !email) {
     throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
   }
 
-  const db = getFirestore();
+  if (esTrabajador(rol)) {
+    // Se guarda el email como texto suelto en el resumen (no como
+    // identificador para ejecutar, ya que uid/invitacionId ya cubren
+    // eso) para que el Gerente vea a quién corresponde sin tener que
+    // ir a buscarlo.
+    let etiqueta = email || invitacionId || uid || "usuario";
+    if (uid && !email) {
+      const perfil = await db.doc(`portalUsers/${uid}`).get();
+      etiqueta = String(perfil.data()?.email ?? perfil.data()?.nombre ?? uid);
+    }
+    const solicitudId = await crearSolicitudPendiente({
+      db,
+      tipo: "eliminarUsuario",
+      solicitanteUid: request.auth!.uid,
+      solicitanteNombre: nombre,
+      resumen: `Eliminar definitivamente el acceso de "${etiqueta}".`,
+      payload: { invitacionId, uid, email },
+    });
+    return { ok: true, pendiente: true, solicitudId };
+  }
+
+  await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion: "eliminar" });
+  return { ok: true, pendiente: false };
+});
+
+export async function ejecutarAdministrarUsuarioPortal(
+  db: Firestore,
+  { invitacionId, uid, accion }: { invitacionId: string; uid: string | null; accion: AccionUsuarioPortal }
+): Promise<void> {
   const now = FieldValue.serverTimestamp();
   const batch = db.batch();
 
@@ -103,6 +163,4 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
       await getAuth().deleteUser(uid).catch(() => undefined);
     }
   }
-
-  return { ok: true };
-});
+}
