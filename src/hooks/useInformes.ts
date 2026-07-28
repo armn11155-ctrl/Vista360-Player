@@ -12,6 +12,24 @@ export type UseInformesResult = InformesState & { recargar: () => void };
 
 type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
 
+// Cachea el ÚLTIMO listado bueno por cliente, en memoria (se pierde al
+// recargar la página, a propósito -- las URLs firmadas que trae cada
+// informe viven 6h, no hace falta persistirlo en localStorage como
+// useSignedUrls). Se pidió que Reportes sea más rápido: antes, CADA
+// vez que la pantalla se abría (es lazy -- se desmonta al salir, se
+// vuelve a montar de cero al volver a entrar) tocaba esperar de nuevo
+// a la Cloud Function (que lista objetos en R2 y firma URLs, nada
+// instantáneo, y peor si tuvo que "despertar" por inactividad) antes
+// de mostrar CUALQUIER cosa -- la lista ya se había visto hacía 10
+// segundos y aun así había que ver el loader de nuevo. Ahora, si ya
+// hay un listado en caché para ese cliente, se muestra DE UNA (sin
+// loader) mientras por detrás se pide el listado fresco igual y se
+// reemplaza en cuanto llega -- "stale-while-revalidate": lo último
+// visto se ve al toque, y si cambió algo (reporte nuevo, por ejemplo)
+// se actualiza solo, sin que la persona tenga que esperar mirando un
+// loader para eso.
+const CACHE = new Map<string, InformeCliente[]>();
+
 /**
  * La lista de reportes sale directo de R2 (Cloud Function
  * listarReportesCliente), no de Firestore: los PDFs ya viven ahí con
@@ -21,28 +39,48 @@ type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
  * en Reportes.tsx llama a recargar() después de generar un PDF nuevo.
  */
 export function useInformes(clienteId: string): UseInformesResult {
-  const [state, setState] = useState<InformesState>({ status: "loading" });
+  const cacheado = CACHE.get(clienteId);
+  const [state, setState] = useState<InformesState>(
+    cacheado ? { status: "ready", informes: cacheado } : { status: "loading" }
+  );
 
   const recargar = useCallback(() => {
     if (!clienteId || !cloudFunctions) {
       setState({ status: "ready", informes: [] });
       return;
     }
-    setState({ status: "loading" });
+    // Si no hay nada en caché todavía, sí hay que mostrar el loader --
+    // no hay nada mejor que ofrecer mientras se espera la primera vez.
+    if (!CACHE.has(clienteId)) {
+      setState({ status: "loading" });
+    }
     const listarReportesCliente = httpsCallable<{ clienteId: string }, ListarReportesResponse>(
       cloudFunctions,
       "listarReportesCliente"
     );
     listarReportesCliente({ clienteId })
-      .then((res) => setState({ status: "ready", informes: res.data.informes }))
-      .catch((err) =>
-        setState({ status: "error", message: err instanceof Error ? err.message : "Error desconocido" })
-      );
+      .then((res) => {
+        CACHE.set(clienteId, res.data.informes);
+        setState({ status: "ready", informes: res.data.informes });
+      })
+      .catch((err) => {
+        // Si falla el refresco pero YA había algo en caché, se deja
+        // el listado viejo en pantalla en vez de taparlo con un error
+        // -- sigue siendo mejor información desactualizada que nada.
+        if (CACHE.has(clienteId)) return;
+        setState({ status: "error", message: err instanceof Error ? err.message : "Error desconocido" });
+      });
   }, [clienteId]);
 
   useEffect(() => {
+    // Seed inmediato si cambia de cliente y ya hay algo en caché para
+    // el nuevo -- evita el "loading" al alternar entre clientes que ya
+    // se visitaron (el admin, sobre todo).
+    const c = CACHE.get(clienteId);
+    setState(c ? { status: "ready", informes: c } : { status: "loading" });
     recargar();
-  }, [recargar]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clienteId]);
 
   return { ...state, recargar };
 }

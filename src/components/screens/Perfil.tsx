@@ -233,7 +233,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
     <div className="profile-screen">
       <header className="profile-top">
         <div className="profile-top-bar">
-          <img src="/logo-player.png" decoding="async" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
+          <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
           <button type="button" className="profile-bell" aria-label="Notificaciones" onClick={onNotifClick}>
             <Icon type="bell" />
             {totalNotifs > 0 && <span>{totalNotifs > 9 ? "9+" : totalNotifs}</span>}

@@ -56,7 +56,7 @@ function Ilustracion({ tipo }: { tipo: string }) {
   if (tipo === "final" || tipo === "bienvenida") {
     return (
       <div style={{ height: 112, display: "grid", placeItems: "center", marginBottom: 16 }}>
-        <img src="/logo-player.png" decoding="async" alt="Vista360 Player" style={{ width: 220, maxWidth: "86%", height: "auto" }} />
+        <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" style={{ width: 220, maxWidth: "86%", height: "auto" }} />
       </div>
     );
   }

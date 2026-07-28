@@ -68,7 +68,7 @@ export default class ErrorBoundary extends Component<Props, State> {
         }}
       >
         <img
-          src="/logo-player.png"
+          src="/logo-player.webp"
           alt="Vista360 Player"
           decoding="async"
           style={{ width: 132, marginBottom: 28, opacity: 0.9 }}

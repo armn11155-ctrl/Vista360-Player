@@ -22,9 +22,9 @@ export default function BrandLoader({ label = "Cargando", dark = false }: Props)
   return createPortal(
     <div className={`brand-loader${dark ? " brand-loader-dark" : ""}`} role="status" aria-label={label} style={estilo}>
       <div className="brand-loader-mark">
-        <img className="brand-loader-logo brand-loader-logo-base" src="/logo-player.png" alt="" draggable={false} />
+        <img className="brand-loader-logo brand-loader-logo-base" src="/logo-player.webp" alt="" draggable={false} />
         <span className="brand-loader-liquid" aria-hidden="true">
-          <img className="brand-loader-logo brand-loader-logo-fill" src="/logo-player.png" alt="" draggable={false} />
+          <img className="brand-loader-logo brand-loader-logo-fill" src="/logo-player.webp" alt="" draggable={false} />
         </span>
       </div>
     </div>,

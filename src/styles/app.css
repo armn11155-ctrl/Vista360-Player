@@ -201,7 +201,7 @@
      contenedor con flex) para que todas las cargas cubran el viewport
      completo con el mismo fondo blanco, sin importar dónde se usen. */
   /* Pantalla de carga: fondo negro, solo el wordmark VISTA360 PLAYER
-     (logo-player.png, blanco y transparente) con el efecto de "agua
+     (logo-player.webp, blanco y transparente) con el efecto de "agua
      llenando" aplicado directo a las letras -- ya no hay una marca
      "V" aparte de eso. */
   .brand-loader {

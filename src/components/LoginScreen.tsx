@@ -3,7 +3,7 @@ import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
 
-const LOGO = "/login-logo-white.png";
+const LOGO = "/logo-player.webp";
 const SAVED_EMAIL_KEY = "v360_saved_email";
 const REMEMBER_KEY = "v360_remember";
 
