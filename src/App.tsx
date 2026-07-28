@@ -320,7 +320,7 @@ export default function App() {
                 : view === "accesos"
                   ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} esGerente={esGerente} />
                   : view === "miPerfil"
-                    ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} onBack={() => setView("inicio")} />
+                    ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} esGerente={esGerente} onBack={() => setView("inicio")} />
                     : view === "paneles"
                       ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : view === "cotizaciones"

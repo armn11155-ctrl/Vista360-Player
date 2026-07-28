@@ -13,6 +13,11 @@ interface Props {
   uid: string;
   nombre: string;
   email: string;
+  /** true para Gerente (antes "admin" a secas), false para Trabajador.
+   *  Antes esta pantalla siempre decía "Administrador" sin importar
+   *  el rol real -- lo veía tanto el Gerente como cualquier
+   *  Trabajador al entrar a su propio "Mi perfil". */
+  esGerente?: boolean;
   onBack: () => void;
 }
 
@@ -82,7 +87,8 @@ type LimpiezaEstado =
  * Se abre desde el ícono en la esquina del selector de cuentas.
  * Muestra identidad (con foto propia editable) + espacio usado en R2.
  */
-export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
+export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBack }: Props) {
+  const rolInterno = esGerente ? "Gerente" : "Trabajador";
   const espacio = useEspacioR2();
   const porcentajeUsado =
     espacio.status === "ready" && espacio.bytes !== undefined
@@ -190,7 +196,7 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
               onClick={() => setModalAvatarAbierto(true)}
               aria-label="Cambiar foto de perfil"
             >
-              <BrandThumb name={nombre || "Administrador"} avatarUrl={avatarUrl} size={76} radius={38} iconScale={0.72} />
+              <BrandThumb name={nombre || rolInterno} avatarUrl={avatarUrl} size={76} radius={38} iconScale={0.72} />
               <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: "50%" }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
@@ -199,13 +205,13 @@ export default function AdminPerfil({ uid, nombre, email, onBack }: Props) {
               </span>
             </button>
           </div>
-          <div className="admin-perfil-nombre">{nombre || "Administrador"}</div>
+          <div className="admin-perfil-nombre">{nombre || rolInterno}</div>
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
             <span className="profile-verified-mark" aria-hidden="true">
               <img src="/verified-check.svg" decoding="async" alt="" />
             </span>
-            <span>Cuenta administrador</span>
+            <span>Cuenta {rolInterno.toLowerCase()}</span>
           </span>
         </div>
 
