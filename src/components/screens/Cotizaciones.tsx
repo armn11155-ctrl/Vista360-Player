@@ -339,7 +339,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               </div>
               {seleccionada.condiciones && <div className="quote-document-copy"><span>Condiciones de pago</span><p>{seleccionada.condiciones}</p></div>}
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
-              <footer><strong>Vista360</strong><span>Propuesta válida por {seleccionada.vigenciaDias} días.</span></footer>
+              <footer><strong>8 Millas</strong><span>Propuesta válida por {seleccionada.vigenciaDias} días.</span></footer>
             </article>
           </div>
         </div>
