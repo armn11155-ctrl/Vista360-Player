@@ -92,6 +92,7 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
         // Cobertura. Comparando el contenido acá, se evita todo ese
         // trabajo de más cuando en realidad no cambió nada.
         const cambio = !CACHE_PANELES || JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES);
+        console.log("[DIAG-PANELES]", { cambio, teniaCache: !!CACHE_PANELES, nuevos: paneles.length, viejos: CACHE_PANELES?.length, t: performance.now() });
         if (!cambio) return;
         CACHE_PANELES = paneles;
         setState({ status: "ready", paneles });
