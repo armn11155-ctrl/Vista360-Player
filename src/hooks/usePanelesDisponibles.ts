@@ -14,6 +14,19 @@ export type PanelesDisponiblesState =
  *  tras quedarse sin señal). */
 export type PanelesDisponiblesResult = PanelesDisponiblesState & { recargar: () => void };
 
+// Caché en memoria del último listado bueno -- los paneles son el
+// mismo inventario para TODOS (no hay uno por cliente, a diferencia de
+// useInformes), así que no hace falta una key por nadie. Se pidió que
+// Cobertura no muestre "Cargando paneles" cada vez que se entra: sin
+// esto, como el hook arranca en loading" en CADA montaje (Cobertura es
+// una pantalla lazy que se desmonta al salir), el mapa mostraba ese
+// aviso una y otra vez aunque los paneles ya se hubieran visto hace un
+// momento. Ahora, si ya hay algo en caché, se arranca directo en
+// "ready" con eso -- se ve el mapa completo al toque -- mientras la
+// escucha en tiempo real de abajo sigue corriendo igual y corrige
+// cualquier cambio real apenas llega.
+let CACHE_PANELES: Panel[] | null = null;
+
 /** Lista TODOS los paneles (no solo los de un contrato/cliente
  *  específico). La usa el admin para elegir un panel al crear un
  *  contrato nuevo directo desde el Player, y también Cobertura -- ahí
@@ -30,7 +43,9 @@ export type PanelesDisponiblesResult = PanelesDisponiblesState & { recargar: () 
  *  que algunos paneles reales no aparecieran para elegir. Se trae todo
  *  y se ordena del lado del cliente, con nombre vacio como respaldo. */
 export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesResult {
-  const [state, setState] = useState<PanelesDisponiblesState>({ status: "loading" });
+  const [state, setState] = useState<PanelesDisponiblesState>(
+    CACHE_PANELES ? { status: "ready", paneles: CACHE_PANELES } : { status: "loading" }
+  );
   const [nonce, setNonce] = useState(0);
   const recargar = useCallback(() => setNonce((n) => n + 1), []);
 
@@ -61,9 +76,16 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
         const paneles = snap.docs
           .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
           .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+        CACHE_PANELES = paneles;
         setState({ status: "ready", paneles });
       },
-      (err) => setState({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") })
+      (err) => {
+        // Si falla pero ya había algo en caché, se deja lo último bueno
+        // en pantalla en vez de tapar el mapa con un error -- mismo
+        // criterio que useInformes.
+        if (CACHE_PANELES) return;
+        setState({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") });
+      }
     );
     return unsub;
   }, [habilitado, nonce]);
