@@ -19,6 +19,18 @@ const MENSAJES: Record<string, string> = {
   "resource-exhausted": "Demasiados intentos seguidos. Espera un momento.",
   cancelled: "La operación se canceló.",
   internal: "Algo falló de nuestro lado. Intenta de nuevo en un momento.",
+  // Códigos de Firebase Auth (vienen como "auth/wrong-password", por
+  // eso mensajeDeError() ya recorta todo antes de la última "/").
+  // Sin esto, un problema real de conexión al iniciar sesión se veía
+  // igual que una contraseña mal escrita -- el login lo usaba como
+  // respaldo genérico para TODO, sin distinguir.
+  "wrong-password": "Contraseña incorrecta.",
+  "user-not-found": "No existe una cuenta con ese correo.",
+  "invalid-credential": "Usuario o contraseña incorrectos.",
+  "invalid-email": "Ese correo no es válido.",
+  "user-disabled": "Esta cuenta fue deshabilitada. Contacta a tu ejecutivo en Vista360.",
+  "too-many-requests": "Demasiados intentos. Espera un momento e intenta de nuevo.",
+  "network-request-failed": "Sin conexión. Revisa tu internet e intenta de nuevo.",
 };
 
 /** Errores del navegador que no traen código de Firebase. */
@@ -39,18 +51,24 @@ function esFalloDeRed(mensaje: string): boolean {
  *                 no genérico -- es lo que el usuario va a leer.
  */
 export function mensajeDeError(error: unknown, respaldo: string): string {
-  // Antes de mirar el error: si el navegador ya sabe que no hay red, eso
-  // explica el problema mejor que cualquier código.
-  if (typeof navigator !== "undefined" && navigator.onLine === false) {
-    return "Sin conexión. Revisa tu internet e intenta de nuevo.";
-  }
-
+  // El código del error (si lo trae) va PRIMERO, antes que la señal del
+  // navegador: es más específico y más confiable. navigator.onLine es
+  // conocido por dar falsos negativos en algunos celulares/navegadores
+  // -- decir "false" con la conexión perfectamente bien -- y si eso
+  // pasara a mirarse primero, terminaría tapando el motivo real (p.ej.
+  // "permission-denied") con un "sin conexión" que ni siquiera es cierto.
   const codigo = (error as { code?: unknown })?.code;
   if (typeof codigo === "string") {
     // Los códigos vienen como "functions/permission-denied" o
     // "permission-denied" según de dónde salga el error.
     const corto = codigo.includes("/") ? codigo.split("/").pop()! : codigo;
     if (MENSAJES[corto]) return MENSAJES[corto];
+  }
+
+  // Recién si el error no trae un código reconocido, la señal del
+  // navegador es la mejor pista que queda.
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    return "Sin conexión. Revisa tu internet e intenta de nuevo.";
   }
 
   // Ojo: no basta con `instanceof Error`. Algunos errores llegan como

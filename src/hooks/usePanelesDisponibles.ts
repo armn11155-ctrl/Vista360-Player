@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { mensajeDeError } from "../utils/errores";
 import type { Panel } from "../types";
 
 export type PanelesDisponiblesState =
@@ -62,7 +63,7 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
           .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
         setState({ status: "ready", paneles });
       },
-      (err) => setState({ status: "error", message: err.message })
+      (err) => setState({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") })
     );
     return unsub;
   }, [habilitado, nonce]);

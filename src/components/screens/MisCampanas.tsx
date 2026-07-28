@@ -58,7 +58,7 @@ type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error
 
 export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
-  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string } | null>(null);
+  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string; error?: string } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
@@ -204,8 +204,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       });
       setRenovadas((prev) => new Set(prev).add(modal.contrato.id));
       setModal({ ...modal, estado: "enviada", solicitudId: ref.id });
-    } catch {
-      setModal({ ...modal, estado: "error" });
+    } catch (error) {
+      setModal({ ...modal, estado: "error", error: mensajeDeError(error, "No se pudo enviar la solicitud.") });
     }
   }
 
@@ -642,7 +642,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   No se pudo enviar
                 </div>
                 <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 20 }}>
-                  Revisa tu conexión e intenta de nuevo, o escríbenos directo.
+                  {modal.error ?? "Revisa tu conexión e intenta de nuevo, o escríbenos directo."}
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
                   <button

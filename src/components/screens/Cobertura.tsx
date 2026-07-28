@@ -531,7 +531,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             </div>
           )}
           {mapReady && !mapError && panelesState.status === "error" && (
-            <div className="coverage-map-loading is-error">No se pudieron cargar los paneles. Revisa tu conexión.</div>
+            <div className="coverage-map-loading is-error">{panelesState.message}</div>
           )}
           {mapReady && !mapError && panelesState.status === "ready" && conCoordenadas.length === 0 && (
             <div className="coverage-no-coords">

@@ -141,8 +141,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         createdAt: serverTimestamp(),
       });
       setEnviado(true);
-    } catch {
-      setError("No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo.");
+    } catch (error) {
+      setError(mensajeDeError(error, "No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo."));
     } finally {
       setEnviando(false);
     }

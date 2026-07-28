@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import { mensajeDeError } from "../utils/errores";
 
 const LOGO = "/login-logo-white.png";
 const SAVED_EMAIL_KEY = "v360_saved_email";
@@ -43,8 +44,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       }
       await login(email.trim(), password);
       onLoggedIn();
-    } catch {
-      setError("Usuario o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360.");
+    } catch (error) {
+      setError(mensajeDeError(error, "Usuario o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360."));
     } finally {
       setBusy(false);
     }
