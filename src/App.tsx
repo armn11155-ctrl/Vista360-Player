@@ -27,6 +27,7 @@ import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
 import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
+import { useAvatarPropio } from "./hooks/useAvatarPropio";
 import type { Contrato } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
 import { cargarLeaflet } from "./utils/leaflet";
@@ -420,6 +421,10 @@ function AuthenticatedApp({
     ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
     : 0;
   const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
+  // El sidebar del admin debe usar la misma foto guardada en Mi perfil.
+  // Antes se enviaba avatarUrl=undefined de forma explícita, por eso
+  // siempre aparecía el ícono genérico aunque la cuenta sí tuviera foto.
+  const adminAvatarUrl = useAvatarPropio(isAdmin ? uid : undefined);
 
   useEffect(() => {
     // timeout:1500 es la parte importante acá -- sin él,
@@ -689,12 +694,11 @@ function AuthenticatedApp({
         isAdmin={isAdmin}
         solicitudesPendientes={solCampPendientes}
         active={view}
-        // Mismo criterio que el saludo de Inicio.tsx: admin ve su
-        // propio nombre (sin foto propia todavía en el sistema);
-        // cliente ve el logo/nombre de su empresa.
+        // Mismo criterio que el saludo de Inicio.tsx: el admin ve su
+        // propio nombre y foto; el cliente ve el logo/nombre de empresa.
         perfilNombre={isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente")}
         perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
-        perfilAvatarUrl={isAdmin ? undefined : cliente?.avatarUrl}
+        perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
         onOpenPerfil={() => { setView("perfil"); setSidebarOpen(false); }}
       />
       <div className="main-area">

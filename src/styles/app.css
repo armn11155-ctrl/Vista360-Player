@@ -5445,6 +5445,67 @@
       padding-right: 16px;
       justify-content: center;
     }
+    /* Tarjeta amplia del administrador: solo móvil. Ocupa prácticamente
+       todo el ancho útil del drawer y muestra foto, nombre, rol y acceso
+       al perfil como una sola pieza, no como el chip pequeño anterior. */
+    .sidebar-panel .sidebar-profile-chip-admin {
+      width: 100%;
+      min-height: 96px;
+      padding: 12px;
+      gap: 12px;
+      border-radius: 22px;
+      border-color: rgba(255,255,255,.13);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.105), rgba(255,255,255,.035)),
+        #08111f;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        0 14px 30px rgba(0,0,0,.24);
+      text-align: left;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-avatar-default { display: none; }
+    .sidebar-profile-chip-admin .sidebar-profile-avatar-admin-mobile {
+      display: inline-flex;
+      flex: 0 0 auto;
+      padding: 2px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255,255,255,.32), rgba(255,255,255,.04));
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-copy {
+      min-width: 0;
+      flex: 1;
+      display: grid;
+      gap: 7px;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-name {
+      font-size: 15px;
+      line-height: 1.1;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-details {
+      display: grid;
+      gap: 3px;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-details > span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: rgba(255,255,255,.72);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .035em;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-details i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: none;
+    }
+    .sidebar-profile-chip-admin .sidebar-profile-chip-details small {
+      color: rgba(255,255,255,.44);
+      font-size: 9px;
+      font-weight: 650;
+    }
     .sidebar-head .sidebar-profile-chip { max-width: 100%; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
@@ -5521,6 +5582,10 @@
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
+  .sidebar-profile-avatar-default { display: inline-flex; flex: 0 0 auto; }
+  .sidebar-profile-avatar-admin-mobile { display: none; }
+  .sidebar-profile-chip-copy { min-width: 0; display: flex; align-items: center; }
+  .sidebar-profile-chip-details { display: none; }
   .sidebar-profile-chip:active {
     background: rgba(255,255,255,.13);
   }

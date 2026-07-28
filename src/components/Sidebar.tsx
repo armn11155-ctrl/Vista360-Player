@@ -112,18 +112,39 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           <button
             type="button"
             onClick={onOpenPerfil}
-            className="sidebar-profile-chip"
+            className={`sidebar-profile-chip${isAdmin ? " sidebar-profile-chip-admin" : ""}`}
             aria-label="Ver perfil"
           >
-            <BrandThumb
-              name={perfilNombre || "?"}
-              avatarKey={perfilAvatarKey}
-              avatarUrl={perfilAvatarUrl}
-              size={34}
-              radius={10}
-              iconScale={0.6}
-            />
-            <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
+            <span className="sidebar-profile-avatar-default">
+              <BrandThumb
+                name={perfilNombre || "?"}
+                avatarKey={perfilAvatarKey}
+                avatarUrl={perfilAvatarUrl}
+                size={34}
+                radius={10}
+                iconScale={0.6}
+              />
+            </span>
+            {isAdmin && (
+              <span className="sidebar-profile-avatar-admin-mobile">
+                <BrandThumb
+                  name={perfilNombre || "Admin"}
+                  avatarUrl={perfilAvatarUrl}
+                  size={62}
+                  radius={18}
+                  iconScale={0.58}
+                />
+              </span>
+            )}
+            <span className="sidebar-profile-chip-copy">
+              <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
+              {isAdmin && (
+                <span className="sidebar-profile-chip-details">
+                  <span><i aria-hidden="true" />Administrador</span>
+                  <small>Ver mi perfil</small>
+                </span>
+              )}
+            </span>
           </button>
           <div className="sidebar-close" onClick={onClose}>
             <IconCerrar size={13} />
