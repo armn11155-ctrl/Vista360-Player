@@ -141,6 +141,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const avataresPendientes = keysR2.some((k) => !(k in avataresFirmados));
   const todoListo = state.status !== "loading" && !avataresPendientes;
 
+  function cambiarTab(siguiente: "activos" | "archivados") {
+    setErrorAccion("");
+    setTab(siguiente);
+  }
+
   async function llamarAdministrarCliente(clienteId: string, accion: "archivar" | "restaurar" | "eliminarDefinitivo") {
     if (!cloudFunctions) {
       throw new Error("Firebase Functions no está configurado.");
@@ -160,7 +165,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     try {
       await llamarAdministrarCliente(cliente.id, "archivar");
       setMenuCliente(null);
-      setTab("archivados");
+      cambiarTab("archivados");
     } catch (err) {
       setErrorAccion(err instanceof Error ? err.message : "No se pudo archivar el perfil.");
     } finally {
@@ -174,7 +179,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     try {
       await llamarAdministrarCliente(cliente.id, "restaurar");
       setMenuCliente(null);
-      setTab("activos");
+      cambiarTab("activos");
     } catch (err) {
       setErrorAccion(err instanceof Error ? err.message : "No se pudo recuperar el perfil.");
     } finally {
@@ -191,6 +196,15 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       await llamarAdministrarCliente(cliente.id, "eliminarDefinitivo");
       setMenuCliente(null);
     } catch (err) {
+      // La tarjeta puede seguir visible unas milésimas después de que
+      // Firestore confirmó el borrado. Si se vuelve a tocar durante ese
+      // intervalo, la función responde not-found; para eliminar, ese
+      // resultado ya es el estado deseado y no debe mostrarse como error.
+      if ((err as { code?: string })?.code === "functions/not-found") {
+        setMenuCliente(null);
+        setErrorAccion("");
+        return;
+      }
       setErrorAccion(err instanceof Error ? err.message : "No se pudo eliminar definitivamente.");
     } finally {
       setAccionandoId(null);
@@ -298,10 +312,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         </div>
 
         <div className="admin-picker-tabs" role="tablist" aria-label="Perfiles">
-          <button type="button" className={tab === "activos" ? "active" : ""} onClick={() => setTab("activos")}>
+          <button type="button" className={tab === "activos" ? "active" : ""} onClick={() => cambiarTab("activos")}>
             Activos <span>{activos.length}</span>
           </button>
-          <button type="button" className={tab === "archivados" ? "active" : ""} onClick={() => setTab("archivados")}>
+          <button type="button" className={tab === "archivados" ? "active" : ""} onClick={() => cambiarTab("archivados")}>
             Archivados <span>{archivados.length}</span>
           </button>
         </div>
