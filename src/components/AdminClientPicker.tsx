@@ -5,10 +5,11 @@ import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
 import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
 import { usePushEstado } from "../hooks/usePushEstado";
+import { useCampanasActivasPorCliente } from "../hooks/useCampanasActivasPorCliente";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
-import { filtrarClientes } from "../utils/clientPicker";
+import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
 
 interface Props {
@@ -51,6 +52,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // viendo (o si no está viendo ninguno).
   const { estado: estadoPush, activar: activarPush } = usePushEstado(uid);
   const state = useClientesAdmin();
+  const campanasActivasPorCliente = useCampanasActivasPorCliente();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
@@ -86,7 +88,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }, []);
 
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
-  const activos = clientes.filter((c) => !c.archived);
+  const activos = ordenarClientesPorCampanasActivas(
+    clientes.filter((c) => !c.archived),
+    campanasActivasPorCliente
+  );
   const archivados = clientes.filter((c) => !!c.archived);
   const visibles = tab === "activos" ? activos : archivados;
   const filtrados = filtrarClientes(visibles, busqueda);
