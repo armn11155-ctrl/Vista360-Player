@@ -27,6 +27,29 @@ export type PanelesDisponiblesResult = PanelesDisponiblesState & { recargar: () 
 // cualquier cambio real apenas llega.
 let CACHE_PANELES: Panel[] | null = null;
 
+/** JSON.stringify normal depende del orden en que las llaves quedaron
+ *  insertadas en cada objeto -- y Firestore no garantiza que ese orden
+ *  se mantenga igual entre una lectura y la siguiente para el MISMO
+ *  documento sin cambios. Esta versión ordena las llaves (recursivamente,
+ *  por si algún campo fuera un objeto anidado) antes de convertir a
+ *  texto, así la comparación es estable de verdad y no depende de cómo
+ *  Firestore decida entregar los campos esa vez. */
+function ordenarClavesRecursivo(valor: unknown): unknown {
+  if (Array.isArray(valor)) return valor.map(ordenarClavesRecursivo);
+  if (valor && typeof valor === "object") {
+    const objeto = valor as Record<string, unknown>;
+    const ordenado: Record<string, unknown> = {};
+    for (const clave of Object.keys(objeto).sort()) {
+      ordenado[clave] = ordenarClavesRecursivo(objeto[clave]);
+    }
+    return ordenado;
+  }
+  return valor;
+}
+function comparacionEstable(paneles: Panel[]): string {
+  return JSON.stringify(ordenarClavesRecursivo(paneles));
+}
+
 /** Lista TODOS los paneles (no solo los de un contrato/cliente
  *  específico). La usa el admin para elegir un panel al crear un
  *  contrato nuevo directo desde el Player, y también Cobertura -- ahí
@@ -91,8 +114,23 @@ export function usePanelesDisponibles(habilitado: boolean): PanelesDisponiblesRe
         // pines se veían parpadear un instante en CADA entrada a
         // Cobertura. Comparando el contenido acá, se evita todo ese
         // trabajo de más cuando en realidad no cambió nada.
-        const cambio = !CACHE_PANELES || JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES);
-        console.log("[DIAG-PANELES]", { cambio, teniaCache: !!CACHE_PANELES, nuevos: paneles.length, viejos: CACHE_PANELES?.length, t: performance.now() });
+        //
+        // OJO -- esto se probó primero con un simple
+        // JSON.stringify(paneles) !== JSON.stringify(CACHE_PANELES), y
+        // el parpadeo SEGUÍA pasando. Investigando en vivo se confirmó
+        // la causa real: Firestore NO garantiza que el orden de las
+        // llaves dentro de cada documento (.data()) sea el mismo entre
+        // una conexión de la escucha y la siguiente, aunque el
+        // documento no haya cambiado en nada -- por ejemplo, un panel
+        // podía llegar como {..., direccion, createdAt, ...} la primera
+        // vez y {..., createdAt, direccion, ...} la segunda. Mismos
+        // datos, mismos valores, pero JSON.stringify arma un texto
+        // distinto solo por el orden, así que la comparación daba
+        // "cambió" cuando en realidad no cambió nada. Por eso acá se
+        // ordena las llaves de cada objeto antes de comparar (y de
+        // guardar en caché) -- así el texto es estable sin importar en
+        // qué orden Firestore entregue los campos.
+        const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
         if (!cambio) return;
         CACHE_PANELES = paneles;
         setState({ status: "ready", paneles });

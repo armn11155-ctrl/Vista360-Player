@@ -267,7 +267,6 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
 
   useEffect(() => {
-    console.log("[DIAG-EFECTO-MAPA]", { conCoordenadasLen: conCoordenadas.length, t: performance.now() });
     let cancelado = false;
     if (!mapEl.current) return;
 
