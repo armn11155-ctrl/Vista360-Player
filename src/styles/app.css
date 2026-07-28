@@ -3965,9 +3965,8 @@
       background: transparent;
       justify-content: center;
     }
-    .sidebar-panel .sidebar-head img { filter: none; }
     .sidebar-panel .sidebar-head { padding: 34px 14px 16px; }
-    .sidebar-panel .sidebar-logo-img { width: 128px !important; }
+    .sidebar-panel .sidebar-profile-chip { max-width: 100%; }
     .sidebar-close { display: none !important; }
     /* Un poco de aire extra arriba de la lista, separándola del logo
        -- antes arrancaba pegada al header. */
@@ -5446,7 +5445,7 @@
       padding-right: 16px;
       justify-content: center;
     }
-    .sidebar-head .sidebar-logo-img { width: 124px !important; }
+    .sidebar-head .sidebar-profile-chip { max-width: 100%; }
     .sidebar-close { display: none !important; }
     .sidebar-panel.open { transform: translateX(0); }
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
@@ -5509,13 +5508,30 @@
     display: flex; align-items: center; justify-content: space-between;
     flex-shrink: 0;
   }
-  .sidebar-head img { height: 26px; width: auto; display: block; }
-  .sidebar-head .sidebar-logo-img {
-    width: 176px;
+  .sidebar-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     max-width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
+    min-width: 0;
+    padding: 6px 12px 6px 6px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 18px;
+    background: rgba(255,255,255,.08);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sidebar-profile-chip:active {
+    background: rgba(255,255,255,.13);
+  }
+  .sidebar-profile-chip-name {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
   .sidebar-close {
     width: 30px; height: 30px; border-radius: 50%;

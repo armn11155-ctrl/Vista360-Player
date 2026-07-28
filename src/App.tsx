@@ -681,6 +681,13 @@ function AuthenticatedApp({
         isAdmin={isAdmin}
         solicitudesPendientes={solCampPendientes}
         active={view}
+        // Mismo criterio que el saludo de Inicio.tsx: admin ve su
+        // propio nombre (sin foto propia todavía en el sistema);
+        // cliente ve el logo/nombre de su empresa.
+        perfilNombre={isAdmin ? (adminNombre || "Admin") : (cliente?.empresa ?? "Cliente")}
+        perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
+        perfilAvatarUrl={isAdmin ? undefined : cliente?.avatarUrl}
+        onOpenPerfil={() => { setView("perfil"); setSidebarOpen(false); }}
       />
       <div className="main-area">
         <div className="screens">

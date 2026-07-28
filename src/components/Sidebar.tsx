@@ -3,6 +3,7 @@ import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
 } from "./SidebarIcons";
+import { BrandThumb } from "./BrandThumb";
 
 type SidebarView =
   | "inicio"
@@ -27,6 +28,16 @@ interface Props {
   /** Vista actual de la app — solo se usa para resaltar el ítem activo
    *  y deslizar el pill de vidrio en el sidebar de escritorio. */
   active?: string;
+  /** Nombre a mostrar en el chip de perfil del header del sidebar --
+   *  el de la empresa (cliente) o el del admin, según quién haya
+   *  entrado. Ver comentario junto al chip más abajo. */
+  perfilNombre?: string;
+  perfilAvatarKey?: string;
+  perfilAvatarUrl?: string;
+  /** Se dispara al tocar el chip de perfil. Sin esto, el chip igual se
+   *  ve pero no hace nada -- así el sidebar no rompe si algún llamador
+   *  todavía no lo conecta. */
+  onOpenPerfil?: () => void;
 }
 
 const ITEMS: {
@@ -50,7 +61,7 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
 
   // ── Pill de vidrio deslizante (solo escritorio — ver .sidebar-pill en app.css) ──
@@ -89,7 +100,31 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
       <div className={`sidebar-overlay ${open ? "open" : ""}`} onClick={onClose} />
       <div className={`sidebar-panel ${open ? "open" : ""}`}>
         <div className="sidebar-head">
-          <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="sidebar-logo-img" />
+          {/* Antes acá iba el logo genérico de Vista360 Player, igual
+              para cualquier cuenta. Se pidió que en su lugar (tanto en
+              el sidebar móvil como en el de escritorio -- este bloque
+              ya estaba pensado para verse igual en los dos, ver
+              comentario de ".sidebar-head" en app.css) se vea el
+              perfil de la cuenta: foto/ícono + nombre, tocable para ir
+              a Perfil. Mismo componente BrandThumb que ya se usa en
+              Accesos y el selector de clientes, para que se sienta
+              consistente con el resto de la app. */}
+          <button
+            type="button"
+            onClick={onOpenPerfil}
+            className="sidebar-profile-chip"
+            aria-label="Ver perfil"
+          >
+            <BrandThumb
+              name={perfilNombre || "?"}
+              avatarKey={perfilAvatarKey}
+              avatarUrl={perfilAvatarUrl}
+              size={34}
+              radius={10}
+              iconScale={0.6}
+            />
+            <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
+          </button>
           <div className="sidebar-close" onClick={onClose}>
             <IconCerrar size={13} />
           </div>
