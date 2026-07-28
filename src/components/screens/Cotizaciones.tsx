@@ -47,6 +47,14 @@ function dinero(monto: number, moneda: "PEN" | "USD") {
   }).format(monto);
 }
 
+function esUbicacionExonerada(ciudad?: string) {
+  return (ciudad ?? "").toLocaleLowerCase("es").includes("guanajuato");
+}
+
+function esCotizacionExonerada(cotizacion: Cotizacion) {
+  return Boolean(cotizacion.exoneradaIgv) || esUbicacionExonerada(cotizacion.panelCiudad);
+}
+
 const inicial: Formulario = {
   nombre: "",
   clienteId: "",
@@ -73,6 +81,8 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   const [mensaje, setMensaje] = useState("");
   const [seleccionada, setSeleccionada] = useState<Cotizacion | null>(null);
   const fin = useMemo(() => sumarMeses(form.inicio, form.duracionMeses), [form.inicio, form.duracionMeses]);
+  const panelElegido = paneles.find((panel) => panel.id === form.panelId);
+  const exoneradaIgv = esUbicacionExonerada(panelElegido?.ciudad);
 
   async function ejecutar<T>(data: Record<string, unknown>) {
     if (!cloudFunctions) throw new Error("Firebase Functions no está configurado.");
@@ -105,8 +115,8 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     const cliente = clientes.find((c) => c.id === form.clienteId);
     const panel = paneles.find((p) => p.id === form.panelId);
     const monto = Number(form.monto);
-    if (!cliente || !panel || !form.nombre.trim() || !fin || !Number.isFinite(monto) || monto <= 0) {
-      setMensaje("Completa el nombre, cliente, panel, duración y monto.");
+    if (!cliente || !panel || !fin || !Number.isFinite(monto) || monto <= 0) {
+      setMensaje("Completa el cliente, panel, duración y monto.");
       return;
     }
     setGuardando(true);
@@ -125,7 +135,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
         duracionMeses: form.duracionMeses,
         monto,
         moneda: form.moneda,
-        incluyeIgv: form.incluyeIgv,
+        incluyeIgv: exoneradaIgv ? false : form.incluyeIgv,
         vigenciaDias: form.vigenciaDias,
         condiciones: form.condiciones,
         observaciones: form.observaciones,
@@ -165,12 +175,12 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
   function compartirWhatsApp(cotizacion: Cotizacion) {
     const texto = [
-      `*Vista360 Player · ${cotizacion.numero}*`,
+      `*Vista360 · ${cotizacion.numero}*`,
       cotizacion.nombre,
       `Cliente: ${cotizacion.clienteNombre}`,
       `Panel: ${cotizacion.panelNombre}${cotizacion.panelCiudad ? ` · ${cotizacion.panelCiudad}` : ""}`,
       `Periodo: ${fechaVisible(cotizacion.inicio)} al ${fechaVisible(cotizacion.fin)}`,
-      `Inversión: ${dinero(cotizacion.monto, cotizacion.moneda)}${cotizacion.incluyeIgv ? " (incluye IGV)" : " + IGV"}`,
+      `Inversión: ${dinero(cotizacion.monto, cotizacion.moneda)}${esCotizacionExonerada(cotizacion) ? "" : cotizacion.incluyeIgv ? " (incluye IGV)" : " + IGV"}`,
       `Vigencia: ${cotizacion.vigenciaDias} días`,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
@@ -185,7 +195,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
           <h1>Cotizaciones</h1>
           <p>Crea propuestas claras y listas para presentar.</p>
         </div>
-        <img src="/logo-player.webp" alt="Vista360 Player" />
+        <img src="/vista360-quote-logo.png" alt="Vista360" />
       </header>
 
       <main className="quotes-layout">
@@ -195,7 +205,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             <b>Borrador</b>
           </div>
           <label>
-            Nombre de la propuesta
+            Nombre de la campaña <span className="quotes-optional-label">Opcional</span>
             <input value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Ej. Campaña lanzamiento 2026" maxLength={100} />
           </label>
           <div className="quotes-form-grid">
@@ -220,7 +230,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             <label>
               Duración
               <select value={form.duracionMeses} onChange={(e) => setForm({ ...form, duracionMeses: Number(e.target.value) })}>
-                {[1, 2, 3, 4, 6, 9, 12, 18, 24].map((meses) => <option key={meses} value={meses}>{meses} {meses === 1 ? "mes" : "meses"}</option>)}
+                {Array.from({ length: 24 }, (_, index) => index + 1).map((meses) => <option key={meses} value={meses}>{meses} {meses === 1 ? "mes" : "meses"}</option>)}
               </select>
             </label>
             <label>
@@ -240,10 +250,12 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                 {[7, 10, 15, 30, 45, 60].map((dias) => <option key={dias} value={dias}>{dias} días</option>)}
               </select>
             </label>
-            <label className="quotes-check">
-              <input type="checkbox" checked={form.incluyeIgv} onChange={(e) => setForm({ ...form, incluyeIgv: e.target.checked })} />
-              <span>El monto incluye IGV</span>
-            </label>
+            {!exoneradaIgv && (
+              <label className="quotes-check">
+                <input type="checkbox" checked={form.incluyeIgv} onChange={(e) => setForm({ ...form, incluyeIgv: e.target.checked })} />
+                <span>El monto incluye IGV</span>
+              </label>
+            )}
           </div>
           <div className="quotes-period-summary">
             <span>Periodo estimado</span>
@@ -304,7 +316,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             </div>
             <article className="quote-document">
               <header>
-                <img src="/logo-player.webp" alt="Vista360 Player" />
+                <img src="/vista360-quote-logo.png" alt="Vista360" />
                 <div><span>COTIZACIÓN</span><strong>{seleccionada.numero}</strong></div>
               </header>
               <div className="quote-document-title">
@@ -319,11 +331,15 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               <div className="quote-document-details">
                 <div><span>Panel</span><strong>{seleccionada.panelNombre}</strong><small>{seleccionada.panelCiudad || "Ubicación seleccionada"}</small></div>
                 <div><span>Duración</span><strong>{seleccionada.duracionMeses} {seleccionada.duracionMeses === 1 ? "mes" : "meses"}</strong><small>{fechaVisible(seleccionada.inicio)} — {fechaVisible(seleccionada.fin)}</small></div>
-                <div><span>Inversión</span><strong>{dinero(seleccionada.monto, seleccionada.moneda)}</strong><small>{seleccionada.incluyeIgv ? "IGV incluido" : "No incluye IGV"}</small></div>
+                <div>
+                  <span>Inversión</span>
+                  <strong>{dinero(seleccionada.monto, seleccionada.moneda)}</strong>
+                  {!esCotizacionExonerada(seleccionada) && <small>{seleccionada.incluyeIgv ? "IGV incluido" : "No incluye IGV"}</small>}
+                </div>
               </div>
               {seleccionada.condiciones && <div className="quote-document-copy"><span>Condiciones de pago</span><p>{seleccionada.condiciones}</p></div>}
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
-              <footer><strong>Vista360 Player</strong><span>Propuesta válida por {seleccionada.vigenciaDias} días.</span></footer>
+              <footer><strong>Vista360</strong><span>Propuesta válida por {seleccionada.vigenciaDias} días.</span></footer>
             </article>
           </div>
         </div>

@@ -72,8 +72,8 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
     const moneda = request.data.moneda === "USD" ? "USD" : "PEN";
     const vigenciaDias = Number(request.data.vigenciaDias ?? 15);
 
-    if (!nombre || !clienteId || !clienteNombre || !panelId || !panelNombre) {
-      throw new HttpsError("invalid-argument", "Completa el nombre, cliente y panel.");
+    if (!clienteId || !clienteNombre || !panelId || !panelNombre) {
+      throw new HttpsError("invalid-argument", "Completa el cliente y panel.");
     }
     if (!fechaValida(inicio) || !fechaValida(fin) || fin < inicio) {
       throw new HttpsError("invalid-argument", "El periodo de campaña no es válido.");
@@ -88,6 +88,8 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
       throw new HttpsError("invalid-argument", "La vigencia debe estar entre 1 y 90 días.");
     }
 
+    const exoneradaIgv = panelCiudad.toLocaleLowerCase("es").includes("guanajuato");
+    const titulo = nombre || `Propuesta comercial · ${panelNombre}`;
     const metaRef = db.doc("cotizacionesMeta/secuencia");
     const cotizacionRef = db.collection("cotizaciones").doc();
     let numero = "";
@@ -98,7 +100,7 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
       tx.set(metaRef, { valor: siguiente, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
       tx.set(cotizacionRef, {
         numero,
-        nombre,
+        nombre: titulo,
         clienteId,
         clienteNombre,
         panelId,
@@ -109,7 +111,8 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
         duracionMeses,
         monto,
         moneda,
-        incluyeIgv: Boolean(request.data.incluyeIgv),
+        incluyeIgv: exoneradaIgv ? false : Boolean(request.data.incluyeIgv),
+        exoneradaIgv,
         vigenciaDias,
         condiciones: limpiar(request.data.condiciones, 600),
         observaciones: limpiar(request.data.observaciones, 800),

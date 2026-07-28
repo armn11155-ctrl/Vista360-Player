@@ -170,6 +170,9 @@ export interface Cotizacion {
   monto: number;
   moneda: "PEN" | "USD";
   incluyeIgv: boolean;
+  /** true cuando la ubicación está exonerada; en ese caso la propuesta
+   *  no muestra ninguna mención al IGV. */
+  exoneradaIgv?: boolean;
   vigenciaDias: number;
   condiciones?: string;
   observaciones?: string;
