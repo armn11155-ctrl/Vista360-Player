@@ -98,7 +98,21 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
       if (markerRef.current) {
         markerRef.current.setLatLng(latLng);
       } else {
-        markerRef.current = L.marker(latLng, { draggable: true }).addTo(mapRef.current);
+        // Antes esto usaba el pin celeste genérico que trae Leaflet por
+        // defecto (ni siquiera se veía bien -- Vite no empaqueta esas
+        // imágenes automáticamente, así que ni cargaba el ícono).
+        // Ahora usa el mismo pin V360 de Cobertura, así el admin ve acá,
+        // al elegir la ubicación, el mismo pin que después va a
+        // aparecer en el mapa real.
+        markerRef.current = L.marker(latLng, {
+          draggable: true,
+          icon: L.divIcon({
+            className: "coverage-leaflet-marker active",
+            html: '<span><img src="/vista360-map-marker-v4.png" alt="" /></span>',
+            iconSize: [48, 74],
+            iconAnchor: [24, 72],
+          }),
+        }).addTo(mapRef.current);
         markerRef.current.on("dragend", () => {
           const pos = markerRef.current.getLatLng();
           setLat(pos.lat.toFixed(6));
