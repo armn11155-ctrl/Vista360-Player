@@ -335,12 +335,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               </svg>
             </div>
             <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>
-              {enviadoYaExistia ? "Ya habías enviado esta solicitud" : "Solicitud enviada"}
+              {enviadoYaExistia ? "Solicitud en proceso" : "Solicitud recibida"}
             </div>
             <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
               {enviadoYaExistia
-                ? "La pediste hoy mismo hace un rato -- no hacía falta mandarla de nuevo, ya está en camino. Alguien del equipo se va a comunicar contigo para confirmar disponibilidad y coordinar los detalles."
-                : "Alguien del equipo se comunicará contigo para confirmar disponibilidad y coordinar los detalles."}
+                ? "Tu solicitud ya está siendo atendida. Nuestro equipo se comunicará contigo a la brevedad para coordinar los siguientes pasos."
+                : "La solicitud fue enviada correctamente. Nuestro equipo la revisará y se comunicará contigo a la brevedad para coordinar los siguientes pasos."}
             </div>
           </div>
         </div>

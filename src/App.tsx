@@ -29,6 +29,7 @@ import { useNotificaciones } from "./hooks/useNotificaciones";
 import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
 import type { Contrato } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
+import { cargarLeaflet } from "./utils/leaflet";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -84,6 +85,13 @@ function precargarPantallas() {
   void import("./components/screens/MisCampanas");
   void import("./components/screens/Reportes");
   void import("./components/screens/Perfil");
+  // Cobertura necesita además Leaflet, que llega desde un CDN externo.
+  // Descargarlo mientras la app está libre evita que el primer ingreso a
+  // Cobertura tenga que esperar recién ahí por el mapa y sus estilos.
+  void cargarLeaflet().catch(() => {
+    // Si la precarga falla (por ejemplo, por una conexión momentáneamente
+    // inestable), Cobertura vuelve a intentarlo normalmente al abrirse.
+  });
 }
 
 type View =
