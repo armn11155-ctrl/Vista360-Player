@@ -5440,10 +5440,11 @@
       border-right: 1px solid rgba(255,255,255,0.08);
       overflow: hidden;
     }
-    .sidebar-head {
+    .sidebar-panel .sidebar-head {
       background: #050A12 !important;
       padding-left: 16px;
-      padding-right: 14px;
+      padding-right: 16px;
+      justify-content: center;
     }
     .sidebar-head .sidebar-logo-img { width: 124px !important; }
     .sidebar-close { display: none !important; }
