@@ -5,7 +5,6 @@ import { useInformes } from "../../hooks/useInformes";
 import { usePushEstado } from "../../hooks/usePushEstado";
 import NotifPrompt from "../NotifPrompt";
 import { PersonIcon } from "../PersonIcon";
-import { BrandThumb } from "../BrandThumb";
 
 interface Props {
   cliente: Cliente | null;
@@ -116,35 +115,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </div>
-          {/* En móvil (donde este bloque se ve -- en escritorio ".inicio-logo"
-              se oculta y el nav lateral ya cumple ese rol) antes iba acá
-              el logo genérico de Vista360 Player, siempre igual sin
-              importar quién había entrado. Se pidió que en su lugar se
-              vea el perfil de la cuenta -- foto/ícono + nombre --, algo
-              con más identidad y "elegante", y que de paso sirva de
-              atajo a Perfil (mismo destino que el botón que ya existía,
-              pero ese estaba oculto en móvil). Admin ve su propio
-              nombre (sin foto -- el admin todavía no tiene foto propia
-              en el sistema, así que se usa el ícono generado); un
-              cliente ve el logo/foto y nombre de su empresa, igual que
-              en el resto de la app (BrandThumb, ya usado en Accesos,
-              el selector de clientes, etc). */}
-          <button
-            type="button"
-            onClick={() => onGoTo("perfil")}
-            className="inicio-logo inicio-header-profile-chip"
-            aria-label="Ver perfil"
-          >
-            <BrandThumb
-              name={isAdmin ? (adminNombre || "Admin") : nombre}
-              avatarKey={isAdmin ? undefined : cliente?.avatarKey}
-              avatarUrl={isAdmin ? undefined : cliente?.avatarUrl}
-              size={30}
-              radius={9}
-              iconScale={0.62}
-            />
-            <span className="inicio-header-profile-chip-name">{isAdmin ? (adminNombre || "Admin") : nombre}</span>
-          </button>
+          <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="inicio-logo" style={{ height:36, maxWidth:"64%", objectFit:"contain", position:"relative", top:9 }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center", gap:10 }}>
             <button
               type="button"

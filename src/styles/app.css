@@ -695,38 +695,6 @@
   .inicio-profile-top-btn {
     display: none;
   }
-  /* Chip de identidad del header de Inicio en móvil -- reemplaza el
-     logo genérico de Vista360 Player por el perfil de la cuenta
-     (foto/ícono + nombre), tocable para ir a Perfil. En escritorio
-     sigue oculto igual que antes el logo (".inicio-logo", ver media
-     query más abajo), porque ahí el nav lateral ya cumple ese rol. */
-  .inicio-header-profile-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    max-width: min(56vw, 230px);
-    height: 40px;
-    padding: 0 14px 0 6px;
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 20px;
-    background: rgba(255,255,255,.08);
-    box-shadow: 0 12px 26px rgba(0,0,0,.16);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .inicio-header-profile-chip:active {
-    background: rgba(255,255,255,.13);
-  }
-  .inicio-header-profile-chip-name {
-    color: #FFFFFF;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
   /* Botón "Activar" que reemplaza la campanita mientras el navegador
      todavía no tiene permiso de notificaciones -- en cuanto se activa
      (o si ya estaba bloqueado/activado antes), vuelve a mostrarse la
