@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, startTransition, useEffect, useState } from "react";
 import { envMissing } from "./config/env";
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
@@ -144,7 +144,23 @@ export default function App() {
   const online = useOnlineStatus();
   const uid = auth.status === "in" ? auth.user.uid : undefined;
   useRegistrarAcceso(uid);
-  const [view, setView] = useState<View>("inicio");
+  const [view, setViewInmediato] = useState<View>("inicio");
+  // Las pantallas se cargan bajo demanda (lazy) para no descargar toda la
+  // app de una -- eso significa que cambiar de pantalla a veces implica
+  // esperar a que React termine de traer el código de la pantalla nueva.
+  // Un clic es una actualización "sincrona" para React; si esa espera
+  // (Suspense) ocurre justo respondiendo a un clic así, sin avisarle a
+  // React que puede tomarse su tiempo, React 18 tira el error #426 ("A
+  // component suspended while responding to synchronous input") en vez
+  // de mostrar el loader y esperar -- se vio en vivo entrando de "Vista
+  // de clientes" a un cliente. startTransition es la solución que la
+  // propia documentación de React da para este caso puntual: le avisa
+  // que el cambio puede demorar, así que muestra el loader (BrandLoader,
+  // ya puesto en el Suspense) en vez de romperse. setView sigue
+  // llamándose igual en los ~38 lugares que ya la usan en este archivo.
+  function setView(v: View) {
+    startTransition(() => setViewInmediato(v));
+  }
   useRegistrarVisita(uid, view);
   const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
