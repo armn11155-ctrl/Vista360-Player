@@ -14,6 +14,7 @@ export { marcarReporteVisto } from "./marcarReporteVisto.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
 export { crearTrabajadorAcceso } from "./crearTrabajadorAcceso.js";
 export { listarSolicitudesAccion } from "./listarSolicitudesAccion.js";
+export { listarPersonalInterno } from "./listarPersonalInterno.js";
 export { crearClienteNuevo } from "./crearClienteNuevo.js";
 export { crearPanel } from "./crearPanel.js";
 export { crearContrato } from "./crearContrato.js";

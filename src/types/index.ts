@@ -267,6 +267,14 @@ export function panelesDeContrato(contrato: Pick<Contrato, "panel_id" | "panel_i
 /** Solicitud de nueva campaña enviada por el cliente — el dueño la revisa
  *  y la convierte en Contrato real desde Vista360, igual que solicitudesWeb.
  *  Colección: solicitudesCampana */
+export interface PersonaInterna {
+  uid: string;
+  email: string;
+  nombre: string;
+  role: "Gerente" | "Trabajador";
+  archived: boolean;
+}
+
 export interface SolicitudAccion {
   id: string;
   tipo: "eliminarContrato" | "eliminarClienteDefinitivo" | "eliminarUsuario" | "crearPanel" | "actualizarPanel";

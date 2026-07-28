@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { httpsCallable } from "firebase/functions";
 import { doc, getDoc } from "firebase/firestore";
 import BackChevron from "../BackChevron";
@@ -10,7 +10,8 @@ import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
 import { cloudFunctions, db } from "../../config/firebase";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
-import type { Cliente } from "../../types";
+import { mensajeDeError } from "../../utils/errores";
+import type { Cliente, PersonaInterna } from "../../types";
 
 interface Props {
   onBack: () => void;
@@ -110,6 +111,39 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
   const [errorReset, setErrorReset] = useState("");
   const [avisoPendiente, setAvisoPendiente] = useState("");
 
+  // ── Personal interno (Gerente/Trabajador) -- lectura live desde
+  // portalUsers.role, la fuente real de permisos, en vez de depender
+  // de las etiquetas GERENTE/TRABAJADOR de más abajo (esas dependen de
+  // un campo que se setea a mano y puede quedar desactualizado). Se
+  // pidió explícitamente para poder verificar quién tiene el rol de
+  // Gerente en cualquier momento. ──
+  type PersonalInternoEstado =
+    | { status: "loading" }
+    | { status: "error"; message: string }
+    | { status: "ready"; personal: PersonaInterna[] };
+  const [personalInterno, setPersonalInterno] = useState<PersonalInternoEstado>({ status: "loading" });
+
+  const cargarPersonalInterno = useCallback(async () => {
+    if (!cloudFunctions) {
+      setPersonalInterno({ status: "error", message: "Firebase Functions no está configurado." });
+      return;
+    }
+    try {
+      const fn = httpsCallable<Record<string, never>, { personal: PersonaInterna[] }>(cloudFunctions, "listarPersonalInterno");
+      const res = await fn({});
+      setPersonalInterno({ status: "ready", personal: res.data.personal });
+    } catch (err) {
+      setPersonalInterno({
+        status: "error",
+        message: mensajeDeError(err, "No se pudo cargar la lista. Si acaba de actualizarse la app, puede que falte desplegar la función en GitHub Actions."),
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (esGerente) void cargarPersonalInterno();
+  }, [esGerente, cargarPersonalInterno]);
+
   // ── Crear cuenta de Trabajador (solo Gerente) -- mismo patrón que
   // "crear cliente" de arriba, pero sin empresa/RUC/avatar: un
   // Trabajador es cuenta interna, no un cliente. ──
@@ -166,6 +200,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
         password: nuevoTrabajadorPassword.trim() || undefined,
       });
       setResultadoTrabajador(res.data);
+      void cargarPersonalInterno();
     } catch (err) {
       setErrorTrabajador(err instanceof Error ? err.message : "No se pudo crear la cuenta de trabajador.");
     } finally {
@@ -401,6 +436,8 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
       const res = await fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion });
       if (res.data.pendiente) {
         setAvisoPendiente(`Enviado a tu Gerente para aprobación: eliminar el acceso de ${nombre}.`);
+      } else if (esGerente) {
+        void cargarPersonalInterno();
       }
     } catch (err) {
       setErrorCrear(err instanceof Error ? err.message : "No se pudo actualizar el usuario.");
@@ -461,6 +498,40 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
       </div>
 
       <div className="content-area">
+        {esGerente && (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", marginBottom: 8 }}>
+              Personal interno
+            </div>
+            {personalInterno.status === "loading" && (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>Cargando…</div>
+            )}
+            {personalInterno.status === "error" && (
+              <div style={{ fontSize: 12, color: "var(--red)" }}>{personalInterno.message}</div>
+            )}
+            {personalInterno.status === "ready" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {personalInterno.personal.map((p) => (
+                  <div key={p.uid} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+                    <span
+                      style={{
+                        fontWeight: 700, padding: "2px 8px", borderRadius: 20, flexShrink: 0,
+                        color: p.role === "Gerente" ? "#0B3F8A" : "#6D28D9",
+                        background: p.role === "Gerente" ? "rgba(8,119,255,0.12)" : "rgba(109,40,217,0.12)",
+                      }}
+                    >
+                      {p.role.toUpperCase()}
+                    </span>
+                    <span style={{ color: "var(--text)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {p.nombre || p.email} · {p.email}
+                    </span>
+                    {p.archived && <span style={{ color: "var(--muted)", flexShrink: 0 }}>(archivado)</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           {[
             { id: "activos" as const, label: "Activos", count: usuariosActivos.length },
