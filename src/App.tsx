@@ -732,7 +732,7 @@ function AuthenticatedApp({
         // Si no hay nombre propio guardado, se cae al rol (Gerente o
         // Trabajador) en vez de un genérico "Admin".
         perfilNombre={isAdmin
-          ? (esGerente === false ? (adminNombre || "Trabajador") : "Alan Martínez")
+          ? (esGerente === false ? (adminNombre || "Trabajador") : (adminNombre || "Gerente"))
           : (cliente?.empresa ?? "Cliente")}
         perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
         perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
