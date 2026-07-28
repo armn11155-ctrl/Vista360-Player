@@ -5448,7 +5448,7 @@
     /* Tarjeta amplia del administrador: solo móvil. Ocupa prácticamente
        todo el ancho útil del drawer y muestra foto, nombre, rol y acceso
        al perfil como una sola pieza, no como el chip pequeño anterior. */
-    .sidebar-panel .sidebar-profile-chip-admin {
+    .sidebar-panel .sidebar-profile-chip-expanded {
       width: 100%;
       min-height: 96px;
       padding: 12px;
@@ -5463,29 +5463,29 @@
         0 14px 30px rgba(0,0,0,.24);
       text-align: left;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-avatar-default { display: none; }
-    .sidebar-profile-chip-admin .sidebar-profile-avatar-admin-mobile {
+    .sidebar-profile-chip-expanded .sidebar-profile-avatar-default { display: none; }
+    .sidebar-profile-chip-expanded .sidebar-profile-avatar-mobile {
       display: inline-flex;
       flex: 0 0 auto;
       padding: 2px;
       border-radius: 20px;
       background: linear-gradient(145deg, rgba(255,255,255,.32), rgba(255,255,255,.04));
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-copy {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-copy {
       min-width: 0;
       flex: 1;
       display: grid;
       gap: 7px;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-name {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-name {
       font-size: 15px;
       line-height: 1.1;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-details {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-details {
       display: grid;
       gap: 3px;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-details > span {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-details > span {
       display: flex;
       align-items: center;
       gap: 5px;
@@ -5494,14 +5494,14 @@
       font-weight: 800;
       letter-spacing: .035em;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-details i {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-details i {
       width: 6px;
       height: 6px;
       border-radius: 50%;
       background: #60a5fa;
       box-shadow: none;
     }
-    .sidebar-profile-chip-admin .sidebar-profile-chip-details small {
+    .sidebar-profile-chip-expanded .sidebar-profile-chip-details small {
       color: rgba(255,255,255,.44);
       font-size: 9px;
       font-weight: 650;
@@ -5512,7 +5512,7 @@
     /* Más aire arriba (separa la lista del logo) y menos abajo (para que
        cerrar sesión quede pegado más al fondo, no flotando en el medio).
        !important: ver nota arriba de por qué hace falta acá. */
-    .sidebar-list { padding: 56px 0 calc(6px + env(safe-area-inset-bottom)) !important; overflow-y: auto; }
+    .sidebar-list { padding: 18px 0 calc(6px + env(safe-area-inset-bottom)) !important; overflow-y: auto; }
     .sidebar-item[data-sidebar-id="inicio"] { order: 1; }
     .sidebar-item[data-sidebar-id="campanas"] { order: 2; }
     .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }
@@ -5583,7 +5583,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   .sidebar-profile-avatar-default { display: inline-flex; flex: 0 0 auto; }
-  .sidebar-profile-avatar-admin-mobile { display: none; }
+  .sidebar-profile-avatar-mobile { display: none; }
   .sidebar-profile-chip-copy { min-width: 0; display: flex; align-items: center; }
   .sidebar-profile-chip-details { display: none; }
   .sidebar-profile-chip:active {

@@ -385,6 +385,11 @@ export default function App() {
           setAdminVistaCliente(false);
           setView("inicio");
         }}
+        onOpenAdminPerfil={() => {
+          setAdminClienteId(null);
+          setAdminVistaCliente(false);
+          setView("miPerfil");
+        }}
       />
     );
   }
@@ -416,6 +421,7 @@ interface AuthenticatedProps {
   adminNombre?: string | null;
   esGerente?: boolean;
   onCambiarCliente?: () => void;
+  onOpenAdminPerfil?: () => void;
   onSeleccionarCliente?: (clienteId: string) => void;
   online: boolean;
 }
@@ -432,6 +438,7 @@ function AuthenticatedApp({
   adminNombre,
   esGerente,
   onCambiarCliente,
+  onOpenAdminPerfil,
   onSeleccionarCliente,
   online,
 }: AuthenticatedProps) {
@@ -722,12 +729,20 @@ function AuthenticatedApp({
         active={view}
         // Mismo criterio que el saludo de Inicio.tsx: el admin ve su
         // propio nombre y foto; el cliente ve el logo/nombre de empresa.
+<<<<<<< Updated upstream
         // Si no hay nombre propio guardado, se cae al rol (Gerente o
         // Trabajador) en vez de un genérico "Admin".
         perfilNombre={isAdmin ? (adminNombre || (esGerente === false ? "Trabajador" : "Gerente")) : (cliente?.empresa ?? "Cliente")}
+=======
+        perfilNombre={isAdmin ? "Alan Martínez" : (cliente?.empresa ?? "Cliente")}
+>>>>>>> Stashed changes
         perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
         perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
-        onOpenPerfil={() => { setView("perfil"); setSidebarOpen(false); }}
+        onOpenPerfil={() => {
+          if (isAdmin && onOpenAdminPerfil) onOpenAdminPerfil();
+          else setView("perfil");
+          setSidebarOpen(false);
+        }}
       />
       <div className="main-area">
         <div className="screens">

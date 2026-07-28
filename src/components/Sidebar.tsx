@@ -115,7 +115,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           <button
             type="button"
             onClick={onOpenPerfil}
-            className={`sidebar-profile-chip${isAdmin ? " sidebar-profile-chip-admin" : ""}`}
+            className="sidebar-profile-chip sidebar-profile-chip-expanded"
             aria-label="Ver perfil"
           >
             <span className="sidebar-profile-avatar-default">
@@ -128,25 +128,31 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 iconScale={0.6}
               />
             </span>
-            {isAdmin && (
-              <span className="sidebar-profile-avatar-admin-mobile">
-                <BrandThumb
-                  name={perfilNombre || "Admin"}
-                  avatarUrl={perfilAvatarUrl}
-                  size={62}
-                  radius={18}
-                  iconScale={0.58}
-                />
-              </span>
-            )}
+            <span className="sidebar-profile-avatar-mobile">
+              <BrandThumb
+                name={perfilNombre || "Perfil"}
+                avatarKey={perfilAvatarKey}
+                avatarUrl={perfilAvatarUrl}
+                size={62}
+                radius={18}
+                iconScale={0.58}
+              />
+            </span>
             <span className="sidebar-profile-chip-copy">
               <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
+<<<<<<< Updated upstream
               {isAdmin && (
                 <span className="sidebar-profile-chip-details">
                   <span><i aria-hidden="true" />{esGerente ? "Gerente" : "Trabajador"}</span>
                   <small>Ver mi perfil</small>
                 </span>
               )}
+=======
+              <span className="sidebar-profile-chip-details">
+                <span><i aria-hidden="true" />{isAdmin ? "Administrador" : "Cliente"}</span>
+                <small>{isAdmin ? "Ver mi perfil" : "Ver perfil del cliente"}</small>
+              </span>
+>>>>>>> Stashed changes
             </span>
           </button>
           <div className="sidebar-close" onClick={onClose}>
