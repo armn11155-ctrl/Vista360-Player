@@ -1,45 +1,44 @@
-declare global {
-  interface Window {
-    L?: any;
-  }
-}
+let leafletPromesa: Promise<typeof import("leaflet")> | null = null;
 
 /**
- * Carga Leaflet (mapa) desde CDN una sola vez -- lo usan tanto
- * Cobertura.tsx (ver paneles en el mapa) como Paneles.tsx (elegir la
- * ubicación de un panel nuevo con un click). Si ya está cargado
- * (window.L existe) resuelve al toque.
+ * Carga Leaflet (mapa) una sola vez -- lo usan tanto Cobertura.tsx (ver
+ * paneles en el mapa) como Paneles.tsx (elegir la ubicación de un panel
+ * nuevo con un click).
+ *
+ * Antes esto bajaba leaflet.js y leaflet.css desde unpkg.com en tiempo
+ * de ejecución (una petición aparte a un servidor de terceros, cada vez
+ * que el navegador no lo tuviera ya en su cache HTTP nativo -- algo
+ * frecuente en celular/PWA, donde el sistema operativo puede vaciar ese
+ * cache en cualquier momento). Eso hacía que Cobertura dependiera de que
+ * unpkg.com respondiera rápido, ADEMÁS de la propia conexión del
+ * usuario -- justo lo contrario de lo que se busca para que la app
+ * funcione bien con poca señal.
+ *
+ * Ahora Leaflet es una dependencia normal de npm: Vite lo empaqueta como
+ * un archivo propio (mismo origen, nombre con hash de contenido), así
+ * que lo cachea el Service Worker igual que el resto de /assets/* --
+ * "cache primero", sin tocar la red de nuevo una vez que se descargó la
+ * primera vez, y sin depender de que un tercero esté disponible.
+ *
+ * Sigue siendo un import DINÁMICO (no uno normal arriba del archivo) a
+ * propósito: así el código de Leaflet no engorda el bundle inicial y
+ * solo se pide cuando alguien realmente abre Cobertura o Paneles --
+ * mismo comportamiento de antes, ahora sin CDN externo.
  */
-export function cargarLeaflet(): Promise<any> {
-  if (window.L) return Promise.resolve(window.L);
-
-  const cssId = "leaflet-css";
-  if (!document.getElementById(cssId)) {
-    const link = document.createElement("link");
-    link.id = cssId;
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(link);
-  }
-
-  const scriptId = "leaflet-js";
-  const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
-  if (existing) {
-    return new Promise<any>((resolve, reject) => {
-      existing.addEventListener("load", () => resolve(window.L));
-      existing.addEventListener("error", reject);
+export function cargarLeaflet(): Promise<typeof import("leaflet")> {
+  if (!leafletPromesa) {
+    leafletPromesa = Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(
+      ([L]) => L
+    );
+    // Si falla (paquete corrupto en cache, error de build, etc.), no
+    // dejar la promesa "envenenada" para siempre -- el próximo que la
+    // pida vuelve a intentar desde cero en vez de fallar por algo que
+    // ya pasó.
+    leafletPromesa.catch(() => {
+      leafletPromesa = null;
     });
   }
-
-  return new Promise<any>((resolve, reject) => {
-    const script = document.createElement("script");
-    script.id = scriptId;
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.async = true;
-    script.onload = () => resolve(window.L);
-    script.onerror = reject;
-    document.body.appendChild(script);
-  });
+  return leafletPromesa;
 }
 
 /**

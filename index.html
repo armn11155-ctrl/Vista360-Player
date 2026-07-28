@@ -26,9 +26,18 @@
     <link rel="icon" type="image/png" href="/apple-touch-icon.png" />
     <link rel="shortcut icon" href="/apple-touch-icon.png" />
 
-    <!-- Leaflet y OpenStreetMap cargan el mapa plano de Cobertura. -->
-    <link rel="preconnect" href="https://unpkg.com" crossorigin />
+    <!-- OpenStreetMap sirve las imagenes del mapa de Cobertura (Leaflet
+         en si ya no viene de un CDN externo, se empaqueta con la app). -->
     <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+
+    <!-- Firebase (login y datos): adelantar el DNS/TLS mientras el JS
+         todavia esta cargando, para que el primer login o la primera
+         lectura de datos no paguen esa espera aparte. Estos dominios
+         son siempre los mismos sin importar el proyecto (el ID del
+         proyecto va en la URL, no en el dominio). -->
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
 
     <title>Vista360 Player</title>
   </head>

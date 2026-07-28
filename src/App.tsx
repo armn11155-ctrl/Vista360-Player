@@ -85,9 +85,12 @@ function precargarPantallas() {
   void import("./components/screens/MisCampanas");
   void import("./components/screens/Reportes");
   void import("./components/screens/Perfil");
-  // Cobertura necesita además Leaflet, que llega desde un CDN externo.
-  // Descargarlo mientras la app está libre evita que el primer ingreso a
-  // Cobertura tenga que esperar recién ahí por el mapa y sus estilos.
+  // Cobertura necesita además el chunk de Leaflet (ahora empaquetado con
+  // la app, ya no un CDN externo -- ver utils/leaflet.ts). Pedirlo acá
+  // igual sirve: aunque ya esté en el mismo paquete Vite, sigue siendo
+  // un chunk aparte que el navegador tiene que buscar en caché/red la
+  // primera vez, así que precargarlo evita que el primer ingreso a
+  // Cobertura tenga que esperar recién ahí.
   void cargarLeaflet().catch(() => {
     // Si la precarga falla (por ejemplo, por una conexión momentáneamente
     // inestable), Cobertura vuelve a intentarlo normalmente al abrirse.
@@ -402,9 +405,19 @@ function AuthenticatedApp({
   const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
 
   useEffect(() => {
+    // timeout:1500 es la parte importante acá -- sin él,
+    // requestIdleCallback puede demorar mucho más de lo que parece
+    // "ocioso" (el navegador nunca lo considera libre de verdad si hay
+    // animaciones corriendo, como el logo de BrandLoader, o la persona
+    // sigue tocando la pantalla) y la precarga podía terminar
+    // disparándose recién cuando la persona YA estaba navegando entre
+    // pantallas -- exactamente el "cargando, cargando" que se quiere
+    // evitar. Con el timeout, el navegador SÍ o SÍ la corre antes de
+    // 1.5s, esté "libre" o no, aunque sea compitiendo un poco con otra
+    // cosa -- mejor eso que dejar la app entera sintiéndose pesada.
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
     const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
-    const id = idle(precargarPantallas);
+    const id = idle(precargarPantallas, { timeout: 1500 });
     return () => cancelar(id);
   }, []);
 
