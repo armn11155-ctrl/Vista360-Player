@@ -1,12 +1,10 @@
 import { useState, type CSSProperties } from "react";
 import { mensajeDeError } from "../../utils/errores";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
 import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useInformes } from "../../hooks/useInformes";
-import { db } from "../../config/firebase";
 import { cloudFunctions } from "../../config/firebase";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { campaignCityImage } from "../../utils/campaignCity";
@@ -178,9 +176,20 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   }
 
   async function confirmarRenovacion() {
-    if (!modal || !db || !clienteId) return;
+    if (!modal || !cloudFunctions || !clienteId) return;
     setModal({ ...modal, estado: "enviando" });
     try {
+      // Antes esto era un addDoc directo a Firestore, y por eso mismo
+      // dejó de funcionar: al agregarle ciudad y fechas (ver el porqué
+      // más abajo) empezó a mandar campos que las reglas de
+      // "solicitudesCampana" no tenían contempladas, y Firestore lo
+      // rechazaba con "permission-denied" ("No tienes permiso para
+      // hacer esto.") -- el código estaba bien, el problema era que ya
+      // no dependía solo de él. Ahora pasa por Admin SDK
+      // (crearSolicitudCampana), igual que el resto de escrituras
+      // sensibles de esta app, así que un campo nuevo en el formulario
+      // no puede volver a romper esto.
+      //
       // Mismos campos que crea Nueva campaña (y Cobertura, que pasa por
       // ahí): antes esta era la única ruta que seguía escribiendo
       // "objetivo" -- un campo que ya se quitó del formulario -- y que
@@ -190,8 +199,15 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       // cliente. Ahora las tres rutas guardan la misma forma.
       const finActual = soloFecha(modal.contrato.fin);
       const inicioSugerido = finActual ? sumarDias(finActual, 1) : hoyEnPeru();
-      const ref = await addDoc(collection(db, "solicitudesCampana"), {
-        cliente_id: clienteId,
+      const fn = httpsCallable<
+        {
+          clienteId: string; nombre: string; ciudades: string[]; comentarios: string;
+          fechaInicioDeseada: string; fechaFinDeseada: string | null;
+        },
+        { ok: boolean; id: string }
+      >(cloudFunctions, "crearSolicitudCampana");
+      const res = await fn({
+        clienteId,
         nombre: `Renovación — ${modal.panelNombre}`,
         ciudades: modal.ciudad ? [modal.ciudad] : [],
         comentarios: `Renovación de la campaña en el panel "${modal.panelNombre}"${modal.ciudad ? ` (${modal.ciudad})` : ""}, que vence el ${finActual}.`,
@@ -199,11 +215,9 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         // lo que se quiere al renovar: que no quede un hueco sin salir.
         fechaInicioDeseada: inicioSugerido,
         fechaFinDeseada: null,
-        estado: "Pendiente",
-        createdAt: serverTimestamp(),
       });
       setRenovadas((prev) => new Set(prev).add(modal.contrato.id));
-      setModal({ ...modal, estado: "enviada", solicitudId: ref.id });
+      setModal({ ...modal, estado: "enviada", solicitudId: res.data.id });
     } catch (error) {
       setModal({ ...modal, estado: "error", error: mensajeDeError(error, "No se pudo enviar la solicitud.") });
     }

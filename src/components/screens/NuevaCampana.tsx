@@ -1,9 +1,8 @@
 import { useState, useId, isValidElement, cloneElement } from "react";
 import { campoBase } from "../../styles/campos";
 import { mensajeDeError } from "../../utils/errores";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
-import { db, cloudFunctions } from "../../config/firebase";
+import { cloudFunctions } from "../../config/firebase";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { formatCampaignName } from "../../utils/campaignName";
 import { sumarMeses } from "../../utils/fechas";
@@ -111,12 +110,11 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   async function enviar() {
     setError("");
     if (!nombre.trim()) { setError("Ponle un nombre a tu campaña."); return; }
-    // Topes de largo. El maxLength de los inputs es solo comodidad: se
+    // Topes de largo -- el maxLength de los inputs es solo comodidad (se
     // salta pegando texto por consola o con el navegador en modo
-    // desarrollador. Como esta solicitud se escribe DIRECTO en Firestore
-    // (no pasa por una Cloud Function), esta es la última barrera antes
-    // de guardar -- sin ella, alguien podía meter cientos de miles de
-    // caracteres y reventar la pantalla del admin.
+    // desarrollador). La Cloud Function los vuelve a revisar del lado
+    // del servidor, pero conviene frenarlo acá también para no ni
+    // siquiera intentar la llamada con algo que se sabe que va a fallar.
     if (nombre.trim().length > MAX_NOMBRE) {
       setError(`El nombre no puede pasar de ${MAX_NOMBRE} caracteres.`); return;
     }
@@ -124,12 +122,27 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       setError(`Los comentarios no pueden pasar de ${MAX_COMENTARIOS} caracteres.`); return;
     }
     if (!clienteId) { setError("Error: no se identificó tu cuenta. Cierra sesión y vuelve a entrar."); return; }
-    if (!db) { setError("Sin conexión. Intenta de nuevo."); return; }
+    if (!cloudFunctions) { setError("Sin conexión. Intenta de nuevo."); return; }
     if (fechaInicio < hoyStr) { setError("La fecha de inicio no puede ser anterior a hoy."); return; }
     setEnviando(true);
     try {
-      await addDoc(collection(db, "solicitudesCampana"), {
-        cliente_id: clienteId,
+      // Antes esto era un addDoc directo a Firestore -- dejó de
+      // funcionar ("No tienes permiso para hacer esto.") en cuanto el
+      // formulario empezó a mandar más campos (ciudades, fechaFinDeseada)
+      // de los que las reglas de "solicitudesCampana" tenían contempladas.
+      // Ahora pasa por Admin SDK, igual que crearContrato/eliminarContrato,
+      // así que no depende de mantener esas reglas sincronizadas a mano
+      // con el formulario. Ver crearSolicitudCampana.ts para el detalle.
+      const fn = httpsCallable<
+        {
+          clienteId: string; nombre: string; ciudades: string[]; comentarios: string;
+          fechaInicioDeseada: string; fechaFinDeseada: string; mesesDeseados: number;
+          panelSolicitadoId?: string; panelSolicitadoNombre?: string;
+        },
+        { ok: boolean; id: string }
+      >(cloudFunctions, "crearSolicitudCampana");
+      await fn({
+        clienteId,
         nombre: formatCampaignName(nombre),
         ciudades: ciudad ? [ciudad] : [],
         comentarios: comentarios.trim(),
@@ -137,8 +150,6 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         fechaFinDeseada: sumarMeses(fechaInicio, meses),
         mesesDeseados: meses,
         ...(panelFijo ? { panelSolicitadoId: panelFijo.id, panelSolicitadoNombre: panelFijo.nombre } : {}),
-        estado: "Pendiente",
-        createdAt: serverTimestamp(),
       });
       setEnviado(true);
     } catch (error) {

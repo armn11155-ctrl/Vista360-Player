@@ -162,16 +162,41 @@ export default function App() {
     startTransition(() => setViewInmediato(v));
   }
   useRegistrarVisita(uid, view);
-  const [contratoAbierto, setContratoAbierto] = useState<Contrato | null>(null);
+  // Estos 4 estados (contratoAbierto, adminClienteId, volverAGestion,
+  // adminVistaCliente) casi siempre cambian JUNTO con la pantalla
+  // (setView) en el mismo clic -- por ejemplo, entrar a un cliente desde
+  // "Vista de clientes" cambia adminClienteId Y view a la vez. Si
+  // adminClienteId se actualizara de forma síncrona normal mientras view
+  // se actualiza con startTransition, React 18 igual tira el error #426
+  // (ver el comentario de setView más arriba): el cambio de pantalla
+  // "espera su turno" pero el de adminClienteId no, así que la
+  // renderización que se dispara con adminClienteId ya actualizado sigue
+  // siendo síncrona y sigue reventando si la pantalla nueva todavía no
+  // cargó su código. Por eso los 4 llevan el mismo envoltorio con
+  // startTransition que setView, para que TODO el cambio (pantalla +
+  // estos datos) se trate como una sola transición.
+  const [contratoAbierto, setContratoAbiertoInmediato] = useState<Contrato | null>(null);
+  function setContratoAbierto(c: Contrato | null) {
+    startTransition(() => setContratoAbiertoInmediato(c));
+  }
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
-  const [adminClienteId, setAdminClienteId] = useState<string | null>(null);
+  const [adminClienteId, setAdminClienteIdInmediato] = useState<string | null>(null);
+  function setAdminClienteId(id: string | null) {
+    startTransition(() => setAdminClienteIdInmediato(id));
+  }
   // Cuando se vuelve con "atrás" desde Usuarios/Solicitudes/Analítica/
   // Paneles, hay que reabrir Centro de gestión (de donde salió esta
   // navegación), no la Selección de clientes de cero -- ver
   // AdminClientPicker.tsx (gestionInicial).
-  const [volverAGestion, setVolverAGestion] = useState(false);
-  const [adminVistaCliente, setAdminVistaCliente] = useState(false);
+  const [volverAGestion, setVolverAGestionInmediato] = useState(false);
+  function setVolverAGestion(v: boolean) {
+    startTransition(() => setVolverAGestionInmediato(v));
+  }
+  const [adminVistaCliente, setAdminVistaClienteInmediato] = useState(false);
+  function setAdminVistaCliente(v: boolean | ((activa: boolean) => boolean)) {
+    startTransition(() => setAdminVistaClienteInmediato(v));
+  }
 
   // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
   // el estado (login, cargando, selector de cliente, o ya adentro) — debe
@@ -379,7 +404,16 @@ function AuthenticatedApp({
   // Precarga del formulario de Nueva campaña cuando se pide desde un
   // pin de Cobertura ("Solicitar disponibilidad"/"Solicitar
   // renovación") -- así la persona no escribe todo de cero.
-  const [prefillNueva, setPrefillNueva] = useState<{ nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null>(null);
+  // Mismo motivo que contratoAbierto/adminClienteId en App(): esto
+  // cambia junto con setView("nueva") en el mismo clic (botón
+  // "Solicitar renovación/disponibilidad" del mapa de Cobertura), así
+  // que también necesita ir envuelto en startTransition -- si no,
+  // React 18 revienta con el error #426 igual, aunque setView ya esté
+  // envuelto (ver ese comentario en App() para el detalle completo).
+  const [prefillNueva, setPrefillNuevaInmediato] = useState<{ nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null>(null);
+  function setPrefillNueva(p: { nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null) {
+    startTransition(() => setPrefillNuevaInmediato(p));
+  }
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
   const pushEstadoGlobal = usePushEstado(uid);
   // Foco de luz para activar push -- a propósito NO se guarda "ya lo vi"
