@@ -175,7 +175,9 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
   function compartirWhatsApp(cotizacion: Cotizacion) {
     const texto = [
-      `*Vista360 · ${cotizacion.numero}*`,
+      "Hola, te comparto la cotización de 8 Millas para tu revisión.",
+      "",
+      `*8 Millas · ${cotizacion.numero}*`,
       cotizacion.nombre,
       `Cliente: ${cotizacion.clienteNombre}`,
       `Panel: ${cotizacion.panelNombre}${cotizacion.panelCiudad ? ` · ${cotizacion.panelCiudad}` : ""}`,
