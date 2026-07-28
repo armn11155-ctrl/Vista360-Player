@@ -729,13 +729,11 @@ function AuthenticatedApp({
         active={view}
         // Mismo criterio que el saludo de Inicio.tsx: el admin ve su
         // propio nombre y foto; el cliente ve el logo/nombre de empresa.
-<<<<<<< Updated upstream
         // Si no hay nombre propio guardado, se cae al rol (Gerente o
         // Trabajador) en vez de un genérico "Admin".
-        perfilNombre={isAdmin ? (adminNombre || (esGerente === false ? "Trabajador" : "Gerente")) : (cliente?.empresa ?? "Cliente")}
-=======
-        perfilNombre={isAdmin ? "Alan Martínez" : (cliente?.empresa ?? "Cliente")}
->>>>>>> Stashed changes
+        perfilNombre={isAdmin
+          ? (esGerente === false ? (adminNombre || "Trabajador") : "Alan Martínez")
+          : (cliente?.empresa ?? "Cliente")}
         perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
         perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
         onOpenPerfil={() => {

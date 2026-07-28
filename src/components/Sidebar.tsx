@@ -140,19 +140,10 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             </span>
             <span className="sidebar-profile-chip-copy">
               <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
-<<<<<<< Updated upstream
-              {isAdmin && (
-                <span className="sidebar-profile-chip-details">
-                  <span><i aria-hidden="true" />{esGerente ? "Gerente" : "Trabajador"}</span>
-                  <small>Ver mi perfil</small>
-                </span>
-              )}
-=======
               <span className="sidebar-profile-chip-details">
-                <span><i aria-hidden="true" />{isAdmin ? "Administrador" : "Cliente"}</span>
+                <span><i aria-hidden="true" />{isAdmin ? (esGerente ? "Gerente" : "Trabajador") : "Cliente"}</span>
                 <small>{isAdmin ? "Ver mi perfil" : "Ver perfil del cliente"}</small>
               </span>
->>>>>>> Stashed changes
             </span>
           </button>
           <div className="sidebar-close" onClick={onClose}>
