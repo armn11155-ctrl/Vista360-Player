@@ -106,6 +106,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // ahora es manual; automatizar la disponibilidad real queda para
   // más adelante).
   const [enviado, setEnviado] = useState(false);
+  const [enviadoYaExistia, setEnviadoYaExistia] = useState(false);
 
   async function enviar() {
     setError("");
@@ -139,9 +140,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           fechaInicioDeseada: string; fechaFinDeseada: string; mesesDeseados: number;
           panelSolicitadoId?: string; panelSolicitadoNombre?: string;
         },
-        { ok: boolean; id: string }
+        { ok: boolean; id: string; yaExistia?: boolean }
       >(cloudFunctions, "crearSolicitudCampana");
-      await fn({
+      const res = await fn({
         clienteId,
         nombre: formatCampaignName(nombre),
         ciudades: ciudad ? [ciudad] : [],
@@ -151,6 +152,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         mesesDeseados: meses,
         ...(panelFijo ? { panelSolicitadoId: panelFijo.id, panelSolicitadoNombre: panelFijo.nombre } : {}),
       });
+      setEnviadoYaExistia(Boolean(res.data.yaExistia));
       setEnviado(true);
     } catch (error) {
       setError(mensajeDeError(error, "No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo."));
@@ -332,9 +334,13 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>Solicitud enviada</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>
+              {enviadoYaExistia ? "Ya habías enviado esta solicitud" : "Solicitud enviada"}
+            </div>
             <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
-              Alguien del equipo se comunicará contigo para confirmar disponibilidad y coordinar los detalles.
+              {enviadoYaExistia
+                ? "La pediste hoy mismo hace un rato -- no hacía falta mandarla de nuevo, ya está en camino. Alguien del equipo se va a comunicar contigo para confirmar disponibilidad y coordinar los detalles."
+                : "Alguien del equipo se comunicará contigo para confirmar disponibilidad y coordinar los detalles."}
             </div>
           </div>
         </div>

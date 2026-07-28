@@ -100,6 +100,38 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
   const panelSolicitadoId = limpiar(request.data?.panelSolicitadoId);
   const panelSolicitadoNombre = limpiar(request.data?.panelSolicitadoNombre);
 
+  // Evitar duplicados: se pidió específicamente esto porque un cliente
+  // puede tocar "Enviar solicitud" varias veces el mismo día (doble
+  // clic, la app se ve lenta y vuelve a intentar, o simplemente no se
+  // acuerda que ya la mandó hace un rato) y terminaba con 2 o 3
+  // solicitudes idénticas en la bandeja del admin. Si ya existe una
+  // solicitud de HOY (hora de Perú), del mismo cliente, todavía
+  // "Pendiente" (el admin no la tocó) y para lo mismo -- mismo panel si
+  // la solicitud es sobre un panel puntual (renovación/disponibilidad),
+  // o mismo nombre si es una solicitud general -- no se crea una nueva:
+  // se devuelve la que ya existe, y el cliente ve el mismo "solicitud
+  // enviada" de siempre (no un error), solo que con el aviso de que ya
+  // la habían mandado. Desde su lado no cambia nada malo: su pedido YA
+  // está en camino, no hacía falta mandarlo de nuevo.
+  const hoyPeru = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
+  const pendientesSnap = await db
+    .collection("solicitudesCampana")
+    .where("cliente_id", "==", clienteId)
+    .where("estado", "==", "Pendiente")
+    .get();
+  const duplicada = pendientesSnap.docs.find((d) => {
+    const data = d.data();
+    const creada = data.createdAt?.toDate ? data.createdAt.toDate() : null;
+    if (!creada) return false;
+    const fechaCreada = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(creada);
+    if (fechaCreada !== hoyPeru) return false;
+    if (panelSolicitadoId) return data.panelSolicitadoId === panelSolicitadoId;
+    return String(data.nombre ?? "") === nombre;
+  });
+  if (duplicada) {
+    return { ok: true, id: duplicada.id, yaExistia: true };
+  }
+
   const ref = await db.collection("solicitudesCampana").add({
     cliente_id: clienteId,
     nombre,
@@ -113,5 +145,5 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
     ...(panelSolicitadoId ? { panelSolicitadoId, panelSolicitadoNombre: panelSolicitadoNombre || panelSolicitadoId } : {}),
   });
 
-  return { ok: true, id: ref.id };
+  return { ok: true, id: ref.id, yaExistia: false };
 });

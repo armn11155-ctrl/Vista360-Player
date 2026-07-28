@@ -56,7 +56,7 @@ type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error
 
 export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
   const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
-  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string; error?: string } | null>(null);
+  const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string; error?: string; yaExistia?: boolean } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
@@ -204,7 +204,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           clienteId: string; nombre: string; ciudades: string[]; comentarios: string;
           fechaInicioDeseada: string; fechaFinDeseada: string | null;
         },
-        { ok: boolean; id: string }
+        { ok: boolean; id: string; yaExistia?: boolean }
       >(cloudFunctions, "crearSolicitudCampana");
       const res = await fn({
         clienteId,
@@ -217,7 +217,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         fechaFinDeseada: null,
       });
       setRenovadas((prev) => new Set(prev).add(modal.contrato.id));
-      setModal({ ...modal, estado: "enviada", solicitudId: res.data.id });
+      setModal({ ...modal, estado: "enviada", solicitudId: res.data.id, yaExistia: res.data.yaExistia });
     } catch (error) {
       setModal({ ...modal, estado: "error", error: mensajeDeError(error, "No se pudo enviar la solicitud.") });
     }
@@ -618,11 +618,12 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                     </svg>
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
-                    Solicitud enviada
+                    {modal.yaExistia ? "Ya habías enviado esta solicitud" : "Solicitud enviada"}
                   </div>
                   <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 20 }}>
-                    Alguien del equipo se va a comunicar contigo pronto. Si quieres, también
-                    puedes escribirnos directo por WhatsApp.
+                    {modal.yaExistia
+                      ? "La pediste hoy mismo hace un rato -- no hacía falta mandarla de nuevo, ya está en camino. Alguien del equipo se va a comunicar contigo pronto."
+                      : "Alguien del equipo se va a comunicar contigo pronto. Si quieres, también puedes escribirnos directo por WhatsApp."}
                   </div>
                 </div>
                 <a
