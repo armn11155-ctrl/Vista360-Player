@@ -4,6 +4,20 @@ import type { User } from "firebase/auth";
 import { auth, db, logout, onUserChange } from "../config/firebase";
 import type { PortalRole, PortalUser } from "../types";
 
+// Cuentas creadas a mano antes de que existiera el campo "nombre" en
+// portalUsers (la del Gerente original, armn.101@hotmail.com) nunca lo
+// tuvieron, así que en toda la app se caía al nombre del rol ("Gerente")
+// en vez de al nombre real -- se ve en Mi perfil y en el sidebar. Hay una
+// Cloud Function (actualizarNombrePropio) que lo corrige escribiendo en
+// Firestore, pero eso depende de que esté desplegada; mientras tanto (o
+// si nunca se despliega) esto asegura que el nombre correcto se vea
+// igual, sin depender del servidor. En cuanto Firestore sí tenga el
+// campo "nombre" (por la función, o editado a mano desde Mi perfil), ese
+// valor real gana siempre -- esto es solo el último fallback.
+const NOMBRES_CONOCIDOS: Record<string, string> = {
+  "armn.101@hotmail.com": "Alan Martínez",
+};
+
 export type AuthState =
   | { status: "loading" }
   | { status: "out" }
@@ -72,7 +86,7 @@ export function usePortalAuth(): AuthState {
             user,
             role,
             clienteId: role === "cliente" ? data.clienteId ?? null : null,
-            nombre: data.nombre ?? null,
+            nombre: data.nombre ?? NOMBRES_CONOCIDOS[(user.email ?? "").trim().toLowerCase()] ?? null,
           });
         },
         () => {
