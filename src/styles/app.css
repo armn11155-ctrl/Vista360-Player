@@ -4649,16 +4649,22 @@
     background: #EEF2F7;
     overflow-y: auto;
   }
+  /* Antes esta cabecera quedaba como una caja redondeada metida
+     adentro del padding de la pantalla ("un cuadrado") -- se pidio que
+     sea una barra completa de punta a punta, como el resto de las
+     cabeceras (Usuarios, Cotizaciones). Con margen negativo se come el
+     padding lateral/superior de .admin-picker-management-screen para
+     llegar a los bordes de verdad, y el padding propio compensa esa
+     resta para que el contenido de adentro no quede pegado al borde. */
   .admin-picker-management-head {
     position: relative;
     overflow: hidden;
-    padding: 16px 18px;
-    border-radius: 18px;
+    margin: calc(-22px - env(safe-area-inset-top)) -18px 28px;
+    padding: calc(24px + env(safe-area-inset-top)) 18px 20px;
     background: #0B1220;
     display: flex;
     align-items: center;
     gap: 13px;
-    margin-bottom: 28px;
   }
   .admin-picker-management-head::before {
     content: "";
@@ -6733,6 +6739,17 @@
       width: min(680px, 100%);
       margin-left: auto;
       margin-right: auto;
+    }
+    /* La barra "completa de punta a punta" es un pedido solo para
+       celular (el margen negativo de la base se come el padding de
+       .admin-picker-management-screen) -- acá, en escritorio, esta
+       pantalla ya tiene su propio fondo con foto y el header vuelve a
+       ser la caja redondeada centrada de siempre, así que hay que
+       anular ese margen negativo y el padding/radio de la base. */
+    .admin-picker-management-head {
+      margin: 0 auto 28px;
+      padding: 16px 18px;
+      border-radius: 18px;
     }
     .admin-picker-management-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
