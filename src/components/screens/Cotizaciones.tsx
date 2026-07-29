@@ -317,31 +317,36 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               <button type="button" className="primary" onClick={() => window.print()}>Imprimir / Guardar PDF</button>
             </div>
             <article className="quote-document">
-              <header>
-                <img src="/vista360-quote-logo.png" alt="Vista360" />
-                <div><span>COTIZACIÓN</span><strong>{seleccionada.numero}</strong></div>
+              <header className="quote-letterhead">
+                <div className="quote-letterhead-brand">
+                  <i aria-hidden="true" />
+                  <img src="/vista360-quote-logo.png" alt="Vista360" />
+                </div>
+                <div className="quote-letterhead-meta"><strong>COTIZACIÓN COMERCIAL</strong><span>{seleccionada.numero}</span></div>
               </header>
               <div className="quote-document-title">
                 <span>Propuesta comercial</span>
                 <h2>{seleccionada.nombre}</h2>
                 <p>Una campaña diseñada para generar presencia, alcance y resultados.</p>
               </div>
-              <div className="quote-document-client">
-                <div><span>Preparado para</span><strong>{seleccionada.clienteNombre}</strong></div>
-                <div><span>Estado</span><strong>{seleccionada.estado}</strong></div>
-              </div>
-              <div className="quote-document-details">
-                <div><span>Panel</span><strong>{seleccionada.panelNombre}</strong><small>{seleccionada.panelCiudad || "Ubicación seleccionada"}</small></div>
-                <div><span>Duración</span><strong>{seleccionada.duracionMeses} {seleccionada.duracionMeses === 1 ? "mes" : "meses"}</strong><small>{fechaVisible(seleccionada.inicio)} — {fechaVisible(seleccionada.fin)}</small></div>
-                <div>
-                  <span>Inversión</span>
-                  <strong>{dinero(seleccionada.monto, seleccionada.moneda)}</strong>
-                  {!esCotizacionExonerada(seleccionada) && <small>{seleccionada.incluyeIgv ? "IGV incluido" : "No incluye IGV"}</small>}
+              <div className="quote-document-table" role="table" aria-label="Detalle de la cotización">
+                <div className="quote-document-table-head" role="row"><strong>DETALLE DE LA PROPUESTA</strong><span>{seleccionada.estado}</span></div>
+                <div className="quote-document-table-row" role="row"><span>CLIENTE</span><strong>{seleccionada.clienteNombre}</strong></div>
+                <div className="quote-document-table-row" role="row"><span>PANEL</span><strong>{seleccionada.panelNombre}</strong></div>
+                <div className="quote-document-table-row" role="row"><span>UBICACIÓN</span><strong>{seleccionada.panelCiudad || "Ubicación seleccionada"}</strong></div>
+                <div className="quote-document-table-row" role="row"><span>PERIODO</span><strong>{fechaVisible(seleccionada.inicio)} al {fechaVisible(seleccionada.fin)}</strong></div>
+                <div className="quote-document-table-row" role="row"><span>DURACIÓN</span><strong>{seleccionada.duracionMeses} {seleccionada.duracionMeses === 1 ? "mes" : "meses"}</strong></div>
+                <div className="quote-document-table-row quote-document-investment" role="row">
+                  <span>INVERSIÓN</span>
+                  <div><strong>{dinero(seleccionada.monto, seleccionada.moneda)}</strong>{!esCotizacionExonerada(seleccionada) && <small>{seleccionada.incluyeIgv ? "Incluye IGV" : "No incluye IGV"}</small>}</div>
                 </div>
               </div>
               {seleccionada.condiciones && <div className="quote-document-copy"><span>Condiciones de pago</span><p>{seleccionada.condiciones}</p></div>}
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
-              <footer><strong>8 Millas</strong><span>Propuesta válida por {seleccionada.vigenciaDias} días.</span></footer>
+              <footer>
+                <div><strong>8 MILLAS</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
+                <div><strong>Propuesta válida por {seleccionada.vigenciaDias} días.</strong><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>
+              </footer>
             </article>
           </div>
         </div>

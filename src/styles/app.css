@@ -6987,30 +6987,36 @@ input[type="date"] {
 .quote-preview-actions { display: flex; justify-content: flex-end; gap: 9px; margin-bottom: 12px; }
 .quote-preview-actions button { border: 1px solid rgba(255,255,255,.16); border-radius: 11px; padding: 10px 14px; color: #fff; background: #101827; font-size: 11px; font-weight: 800; cursor: pointer; }
 .quote-preview-actions button.primary { color: #06101d; background: #fff; }
-.quote-document { border-radius: 25px; overflow: hidden; color: #0b1320; background: #fff; box-shadow: 0 30px 100px rgba(0,0,0,.4); }
-.quote-document > header { padding: 25px 30px; display: flex; justify-content: space-between; align-items: center; background: #050a12; }
-.quote-document > header img { width: 170px; }
-.quote-document > header div { display: grid; gap: 4px; text-align: right; color: #fff; }
-.quote-document > header span { color: #5aa5ff; font-size: 9px; font-weight: 900; letter-spacing: .16em; }
-.quote-document > header strong { font-size: 15px; }
-.quote-document-title { padding: 34px 38px 24px; }
-.quote-document-title > span, .quote-document-copy > span { color: #0877ff; font-size: 10px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
-.quote-document-title h2 { margin: 8px 0 7px; font-size: 29px; letter-spacing: -.035em; }
-.quote-document-title p { margin: 0; color: #68768a; font-size: 12px; }
-.quote-document-client { margin: 0 38px; padding: 18px 20px; border-radius: 16px; display: flex; justify-content: space-between; gap: 20px; background: #f3f7fc; }
-.quote-document-client div { display: grid; gap: 5px; }
-.quote-document-client div:last-child { text-align: right; }
-.quote-document-client span, .quote-document-details span { color: #78869a; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .09em; }
-.quote-document-client strong { font-size: 14px; }
-.quote-document-details { margin: 24px 38px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #e5ebf2; border-radius: 16px; overflow: hidden; }
-.quote-document-details > div { padding: 18px; display: grid; gap: 5px; border-right: 1px solid #e5ebf2; }
-.quote-document-details > div:last-child { border-right: 0; }
-.quote-document-details strong { font-size: 14px; }
-.quote-document-details small { color: #6e7c8f; font-size: 10px; line-height: 1.35; }
-.quote-document-copy { margin: 0 38px 18px; padding-top: 17px; border-top: 1px solid #e8edf3; }
-.quote-document-copy p { margin: 7px 0 0; color: #59687b; font-size: 11px; line-height: 1.55; white-space: pre-line; }
-.quote-document footer { margin-top: 28px; padding: 18px 38px; display: flex; justify-content: space-between; color: #fff; background: #050a12; font-size: 10px; }
-.quote-document footer span { color: rgba(255,255,255,.62); }
+.quote-document { border-radius: 3px; overflow: hidden; color: #141d2c; background: #fff; box-shadow: 0 30px 100px rgba(0,0,0,.4); }
+.quote-letterhead { min-height: 112px; padding: 32px 44px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; background: #fff; }
+.quote-letterhead-brand { display: flex; align-items: center; gap: 23px; }
+.quote-letterhead-brand i { width: 9px; height: 68px; display: block; background: #071322; }
+.quote-letterhead-brand img { width: 184px; height: auto; filter: brightness(.16) saturate(.8); }
+.quote-letterhead-meta { padding-top: 5px; display: grid; gap: 5px; text-align: right; color: #172235; }
+.quote-letterhead-meta strong { font-family: Georgia, 'Times New Roman', serif; font-size: 12px; letter-spacing: .11em; }
+.quote-letterhead-meta span { color: #657083; font-family: Georgia, 'Times New Roman', serif; font-size: 11px; letter-spacing: .08em; }
+.quote-document-title { padding: 22px 44px 26px; }
+.quote-document-title > span, .quote-document-copy > span { color: #657083; font-family: Georgia, 'Times New Roman', serif; font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.quote-document-title h2 { margin: 8px 0 7px; font-family: Georgia, 'Times New Roman', serif; font-size: 31px; letter-spacing: .015em; }
+.quote-document-title p { margin: 0; color: #667183; font-family: Georgia, 'Times New Roman', serif; font-size: 14px; }
+.quote-document-table { margin: 0 44px; border: 1px solid #d4d9e0; }
+.quote-document-table-head { min-height: 45px; padding: 0 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; color: #fff; background: #071322; font-family: Georgia, 'Times New Roman', serif; font-size: 12px; letter-spacing: .06em; }
+.quote-document-table-head span { padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); color: rgba(255,255,255,.85); font-family: inherit; font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.quote-document-table-row { min-height: 47px; display: grid; grid-template-columns: 31% 1fr; align-items: stretch; border-top: 1px solid #d4d9e0; }
+.quote-document-table-row > span { padding: 13px 15px; display: flex; align-items: center; color: #5d6878; background: #f1f3f6; font-family: Georgia, 'Times New Roman', serif; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.quote-document-table-row > strong, .quote-document-table-row > div { min-width: 0; padding: 12px 16px; display: flex; align-items: center; color: #172235; font-family: Georgia, 'Times New Roman', serif; font-size: 13px; font-weight: 500; line-height: 1.35; }
+.quote-document-investment > div { display: grid; gap: 2px; }
+.quote-document-investment strong { font-size: 16px; font-weight: 700; letter-spacing: .04em; }
+.quote-document-investment small { color: #657083; font-size: 10px; }
+.quote-document-copy { margin: 0 44px; padding: 17px 18px; border: 1px solid #d4d9e0; border-top: 0; background: #f6f7f9; }
+.quote-document-copy + .quote-document-copy { border-top: 1px solid #d4d9e0; }
+.quote-document-copy p { margin: 7px 0 0; color: #344054; font-family: Georgia, 'Times New Roman', serif; font-size: 12px; line-height: 1.5; white-space: pre-line; }
+.quote-document footer { margin-top: 32px; padding: 18px 44px; display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #283346; background: #fff; font-family: Georgia, 'Times New Roman', serif; font-size: 10px; }
+.quote-document footer > div { display: grid; gap: 4px; }
+.quote-document footer > div:last-child { padding: 11px 18px; color: #fff; background: #071322; text-align: right; }
+.quote-document footer strong { font-size: 10px; letter-spacing: .06em; }
+.quote-document footer span { color: #657083; font-size: 9px; letter-spacing: .05em; }
+.quote-document footer > div:last-child span { color: rgba(255,255,255,.8); }
 
 @media (max-width: 899px) {
   .quotes-header { width: calc(100% - 30px); padding-top: calc(18px + env(safe-area-inset-top)); grid-template-columns: 42px 1fr; }
@@ -7028,16 +7034,23 @@ input[type="date"] {
   .quote-preview-backdrop { padding: 12px; align-items: start; }
   .quote-preview-actions { position: sticky; top: 0; z-index: 2; padding: 8px 0; background: rgba(0,3,9,.88); }
   .quote-preview-actions button { padding: 9px 10px; }
-  .quote-document > header { padding: 20px; }
-  .quote-document > header img { width: 128px; }
+  .quote-letterhead { min-height: 90px; padding: 24px 22px 19px; gap: 14px; }
+  .quote-letterhead-brand { gap: 13px; }
+  .quote-letterhead-brand i { width: 6px; height: 48px; }
+  .quote-letterhead-brand img { width: 128px; }
+  .quote-letterhead-meta { padding-top: 3px; }
+  .quote-letterhead-meta strong { font-size: 8px; }
+  .quote-letterhead-meta span { font-size: 8px; }
   .quote-document-title { padding: 25px 22px 18px; }
   .quote-document-title h2 { font-size: 23px; }
-  .quote-document-client { margin: 0 22px; }
-  .quote-document-details { margin: 20px 22px; grid-template-columns: 1fr; }
-  .quote-document-details > div { border-right: 0; border-bottom: 1px solid #e5ebf2; }
-  .quote-document-details > div:last-child { border-bottom: 0; }
-  .quote-document-copy { margin: 0 22px 16px; }
-  .quote-document footer { padding: 16px 22px; gap: 10px; }
+  .quote-document-table { margin: 0 22px; }
+  .quote-document-table-head { min-height: 42px; padding: 0 13px; font-size: 10px; }
+  .quote-document-table-row { grid-template-columns: 37% 1fr; }
+  .quote-document-table-row > span { padding: 11px 10px; font-size: 8px; }
+  .quote-document-table-row > strong, .quote-document-table-row > div { padding: 10px 11px; font-size: 11px; }
+  .quote-document-copy { margin: 0 22px; padding: 14px 13px; }
+  .quote-document footer { margin-top: 24px; padding: 16px 22px; align-items: stretch; flex-direction: column; gap: 10px; }
+  .quote-document footer > div:last-child { text-align: left; }
 }
 
 @media print {
