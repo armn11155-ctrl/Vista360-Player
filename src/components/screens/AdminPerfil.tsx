@@ -97,39 +97,29 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
-  // ── Editar nombre propio -- hacía falta porque las cuentas de
-  // Gerente creadas a mano (antes de que existiera este sistema de
-  // roles) nunca tuvieron un campo "nombre" en portalUsers, así que
-  // acá (y en el sidebar, y en Personal interno) siempre caía al
-  // nombre del rol ("Gerente") en vez de al nombre real. ──
-  const [editandoNombre, setEditandoNombre] = useState(false);
-  const [nombreEnEdicion, setNombreEnEdicion] = useState(nombre);
+  // ── Editar nombre propio -- un simple prompt() alcanza: es algo
+  // que se toca una sola vez (la cuenta Gerente se creó a mano antes
+  // de que existiera este sistema de roles y su documento nunca tuvo
+  // un campo "nombre", así que caía al nombre del rol), no hace falta
+  // un formulario aparte con Cancelar/Guardar para eso. ──
   const [guardandoNombre, setGuardandoNombre] = useState(false);
-  const [errorNombre, setErrorNombre] = useState("");
 
-  function abrirEdicionNombre() {
-    setNombreEnEdicion(nombre);
-    setErrorNombre("");
-    setEditandoNombre(true);
-  }
-
-  async function guardarNombre() {
-    if (!cloudFunctions) { setErrorNombre("Sin conexión. Intenta de nuevo."); return; }
-    const valor = nombreEnEdicion.trim();
-    if (!valor) { setErrorNombre("Escribe tu nombre."); return; }
+  async function editarNombre() {
+    const valor = window.prompt("Tu nombre", nombre || "");
+    if (valor === null) return;
+    const limpio = valor.trim();
+    if (!limpio || !cloudFunctions) return;
     setGuardandoNombre(true);
-    setErrorNombre("");
     try {
       const fn = httpsCallable<{ nombre: string }, { nombre: string }>(cloudFunctions, "actualizarNombrePropio");
-      await fn({ nombre: valor });
+      await fn({ nombre: limpio });
       // No hace falta guardar el resultado a mano: usePortalAuth
       // escucha portalUsers/{uid} en vivo, así que "nombre" (el prop
       // que llega de App.tsx) se actualiza solo apenas Firestore
       // confirma el guardado -- mismo mecanismo que el avatar de acá
       // arriba.
-      setEditandoNombre(false);
     } catch (error) {
-      setErrorNombre(mensajeDeError(error, "No se pudo guardar el nombre. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions."));
+      window.alert(mensajeDeError(error, "No se pudo guardar el nombre. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions."));
     } finally {
       setGuardandoNombre(false);
     }
@@ -243,50 +233,19 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
               </span>
             </button>
           </div>
-          {editandoNombre ? (
-            <div style={{ width: "100%", maxWidth: 280, display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
-              <input
-                type="text"
-                value={nombreEnEdicion}
-                onChange={(e) => setNombreEnEdicion(e.target.value)}
-                placeholder="Tu nombre"
-                autoFocus
-                style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "10px 12px", boxSizing: "border-box", fontSize: 14, textAlign: "center" }}
-              />
-              {errorNombre && <div style={{ color: "#DC2626", fontSize: 12 }}>{errorNombre}</div>}
-              <div style={{ display: "flex", gap: 8, width: "100%" }}>
-                <button
-                  type="button"
-                  onClick={() => setEditandoNombre(false)}
-                  disabled={guardandoNombre}
-                  style={{ flex: 1, background: "rgba(15,23,42,0.06)", border: "none", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => void guardarNombre()}
-                  disabled={guardandoNombre}
-                  style={{ flex: 1, background: "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "10px", fontWeight: 700, fontSize: 12, cursor: guardandoNombre ? "not-allowed" : "pointer" }}
-                >
-                  {guardandoNombre ? "Guardando…" : "Guardar"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={abrirEdicionNombre}
-              style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: 0 }}
-              aria-label="Editar nombre"
-            >
-              <span className="admin-perfil-nombre">{nombre || rolInterno}</span>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
-              </svg>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => void editarNombre()}
+            disabled={guardandoNombre}
+            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: guardandoNombre ? "not-allowed" : "pointer", padding: 0 }}
+            aria-label="Editar nombre"
+          >
+            <span className="admin-perfil-nombre">{guardandoNombre ? "Guardando…" : (nombre || rolInterno)}</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
+            </svg>
+          </button>
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
             <span className="profile-verified-mark" aria-hidden="true">
