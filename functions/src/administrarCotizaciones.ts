@@ -88,7 +88,15 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
       throw new HttpsError("invalid-argument", "La vigencia debe estar entre 1 y 90 días.");
     }
 
-    const exoneradaIgv = panelCiudad.toLocaleLowerCase("es").includes("guanajuato");
+    // "huanuco" sin tilde: se normaliza (quitando tildes) antes de
+    // comparar para que agarre "Huánuco" y "Huanuco" por igual. Antes
+    // decía "guanajuato" (ciudad de México) -- error de dictado por voz
+    // de hace tiempo que nadie había notado.
+    const exoneradaIgv = panelCiudad
+      .toLocaleLowerCase("es")
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .includes("huanuco");
     const titulo = nombre || `Propuesta comercial · ${panelNombre}`;
     const metaRef = db.doc("cotizacionesMeta/secuencia");
     const cotizacionRef = db.collection("cotizaciones").doc();

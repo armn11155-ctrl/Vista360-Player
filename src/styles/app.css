@@ -7054,6 +7054,14 @@ input[type="date"] {
 }
 
 @media print {
+  /* margin:0 hace que Chrome/Edge no dejen espacio para su encabezado
+     y pie por defecto (título de la pestaña, fecha, URL, "Página X de
+     Y") -- sin margen no hay dónde ponerlos, así que no aparecen. Si
+     la persona igual los tiene tildados a mano en el diálogo de
+     impresión, esto no lo puede evitar (eso ya es config del
+     navegador, no de la página), pero es la config por defecto. */
+  @page { margin: 0; }
+  html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .quote-document, .quote-document * { visibility: visible !important; }
   .quote-document {
