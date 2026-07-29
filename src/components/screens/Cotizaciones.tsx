@@ -175,9 +175,9 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
   function compartirWhatsApp(cotizacion: Cotizacion) {
     const texto = [
-      "Hola, te comparto la cotización de 8 Millas para tu revisión.",
+      "Hola, te comparto la cotización de VISTA360 para tu revisión.",
       "",
-      `*8 Millas · ${cotizacion.numero}*`,
+      `*VISTA360 · ${cotizacion.numero}*`,
       cotizacion.nombre,
       `Cliente: ${cotizacion.clienteNombre}`,
       `Panel: ${cotizacion.panelNombre}${cotizacion.panelCiudad ? ` · ${cotizacion.panelCiudad}` : ""}`,
@@ -322,10 +322,10 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                   <i aria-hidden="true" />
                   <img src="/vista360-quote-logo.png" alt="Vista360" />
                 </div>
-                <div className="quote-letterhead-meta"><strong>COTIZACIÓN COMERCIAL</strong><span>{seleccionada.numero}</span></div>
+                <div className="quote-letterhead-meta"><strong>ALAN MARTÍNEZ</strong><span>DIRECTOR GENERAL</span></div>
               </header>
               <div className="quote-document-title">
-                <span>Propuesta comercial</span>
+                <span>Cotización comercial · {seleccionada.numero}</span>
                 <h2>{seleccionada.nombre}</h2>
                 <p>Una campaña diseñada para generar presencia, alcance y resultados.</p>
               </div>
@@ -341,11 +341,15 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                   <div><strong>{dinero(seleccionada.monto, seleccionada.moneda)}</strong>{!esCotizacionExonerada(seleccionada) && <small>{seleccionada.incluyeIgv ? "Incluye IGV" : "No incluye IGV"}</small>}</div>
                 </div>
               </div>
+              <div className="quote-document-copy">
+                <span>Importante</span>
+                <p>Esta cotización tiene una vigencia de {seleccionada.vigenciaDias} días desde su emisión. Cualquier consulta, escríbenos al 947 957 971.</p>
+              </div>
               {seleccionada.condiciones && <div className="quote-document-copy"><span>Condiciones de pago</span><p>{seleccionada.condiciones}</p></div>}
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
               <footer>
-                <div><strong>8 MILLAS</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
-                <div><strong>Propuesta válida por {seleccionada.vigenciaDias} días.</strong><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>
+                <div><strong>947 957 971 · ochomillas.101@hotmail.com</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
+                <div><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>
               </footer>
             </article>
           </div>
