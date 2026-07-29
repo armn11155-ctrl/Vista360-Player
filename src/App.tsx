@@ -6,7 +6,8 @@ import { useContratos } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
 import { useThemeColor } from "./hooks/useThemeColor";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
-import { logout } from "./config/firebase";
+import { logout, cloudFunctions } from "./config/firebase";
+import { httpsCallable } from "firebase/functions";
 import ConfigMissing from "./components/ConfigMissing";
 import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
@@ -175,6 +176,25 @@ export default function App() {
   const online = useOnlineStatus();
   const uid = auth.status === "in" ? auth.user.uid : undefined;
   useRegistrarAcceso(uid);
+  // La cuenta Gerente original (armn.101@hotmail.com) se creó a mano
+  // antes de que existiera este sistema de roles y su documento en
+  // portalUsers nunca tuvo un campo "nombre" -- por eso caía siempre
+  // al nombre del rol ("Gerente") en vez de al nombre real. Pedido
+  // explícito: que se corrija solo, sin que la persona tenga que
+  // tocar nada. Como no hay forma de escribir Firestore directo desde
+  // acá, esto llama una sola vez (mientras nombre siga vacío) a la
+  // misma Cloud Function que usa "Mi perfil" para guardar el nombre
+  // propio -- en cuanto se guarda, usePortalAuth lo refleja solo (ver
+  // ese hook) y este efecto no vuelve a dispararse.
+  useEffect(() => {
+    if (auth.status !== "in" || auth.nombre || !cloudFunctions) return;
+    if ((auth.user.email ?? "").trim().toLowerCase() !== "armn.101@hotmail.com") return;
+    const fn = httpsCallable<{ nombre: string }, { nombre: string }>(cloudFunctions, "actualizarNombrePropio");
+    void fn({ nombre: "Alan Martínez" }).catch(() => {
+      // Si la función todavía no está desplegada, no pasa nada -- se
+      // reintenta solo la próxima vez que entre a la app.
+    });
+  }, [auth]);
   const [view, setViewInmediato] = useState<View>("inicio");
   // Las pantallas se cargan bajo demanda (lazy) para no descargar toda la
   // app de una -- eso significa que cambiar de pantalla a veces implica
