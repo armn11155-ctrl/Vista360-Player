@@ -326,7 +326,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               <header className="quote-letterhead">
                 <div className="quote-letterhead-brand">
                   <i aria-hidden="true" />
-                  <span className="quote-letterhead-wordmark">VISTA360</span>
+                  <img src="/vista360-logo-cotizacion.png" alt="Vista360" className="quote-letterhead-logo" />
                 </div>
                 <div className="quote-letterhead-meta"><strong>ALAN MARTÍNEZ</strong><span>DIRECTOR GENERAL</span></div>
               </header>

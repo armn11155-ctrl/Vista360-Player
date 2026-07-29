@@ -6991,7 +6991,7 @@ input[type="date"] {
 .quote-letterhead { min-height: 112px; padding: 32px 44px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; background: #fff; }
 .quote-letterhead-brand { display: flex; align-items: center; gap: 23px; }
 .quote-letterhead-brand i { width: 9px; height: 68px; display: block; background: #071322; }
-.quote-letterhead-wordmark { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-weight: 800; font-size: 30px; letter-spacing: .01em; color: #0B1220; line-height: 1; }
+.quote-letterhead-logo { height: 34px; width: auto; display: block; }
 .quote-letterhead-meta { padding-top: 5px; display: grid; gap: 5px; text-align: right; color: #172235; }
 .quote-letterhead-meta strong { font-family: Georgia, 'Times New Roman', serif; font-size: 12px; letter-spacing: .11em; }
 .quote-letterhead-meta span { color: #657083; font-family: Georgia, 'Times New Roman', serif; font-size: 11px; letter-spacing: .08em; }
@@ -7037,7 +7037,7 @@ input[type="date"] {
   .quote-letterhead { min-height: 90px; padding: 24px 22px 19px; gap: 14px; }
   .quote-letterhead-brand { gap: 13px; }
   .quote-letterhead-brand i { width: 6px; height: 48px; }
-  .quote-letterhead-wordmark { font-size: 21px; }
+  .quote-letterhead-logo { height: 24px; }
   .quote-letterhead-meta { padding-top: 3px; }
   .quote-letterhead-meta strong { font-size: 8px; }
   .quote-letterhead-meta span { font-size: 8px; }
