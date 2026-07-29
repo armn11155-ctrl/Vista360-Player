@@ -197,20 +197,22 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   return (
     <div className="quotes-screen">
       <header className="quotes-header">
-        <button type="button" onClick={onBack} aria-label="Volver"><BackChevron /></button>
-        <div>
-          <span>Centro comercial</span>
-          <h1>Cotizaciones</h1>
-          <p>Crea propuestas claras y listas para presentar.</p>
+        <div className="quotes-header-inner">
+          <button type="button" onClick={onBack} aria-label="Volver"><BackChevron /></button>
+          <div>
+            <span>Centro comercial</span>
+            <h1>Cotizaciones</h1>
+            <p>Crea propuestas claras y listas para presentar.</p>
+          </div>
+          <img src="/vista360-quote-logo.png" alt="Vista360" />
         </div>
-        <img src="/vista360-quote-logo.png" alt="Vista360" />
       </header>
 
       <main className="quotes-layout">
         <form className="quotes-form-card" onSubmit={guardar}>
           <div className="quotes-card-heading">
             <div><span>Nueva propuesta</span><h2>Datos de la cotización</h2></div>
-            <b>Borrador</b>
+            <b>Cotización</b>
           </div>
           <label>
             Nombre de la campaña <span className="quotes-optional-label">Opcional</span>

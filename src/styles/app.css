@@ -508,12 +508,12 @@
      con margen, asi la pausa es de verdad invisible y cada pasada se
      ve como una unica barrida limpia, sin salto visible al reiniciar. */
   .header-dark, .detail-header, .profile-top, .reports-header,
-  .coverage-header-compact, .inicio-header, .campanas-header {
+  .coverage-header-compact, .inicio-header, .campanas-header, .quotes-header {
     position: relative;
   }
   .header-dark::before, .detail-header::before, .profile-top::before,
   .reports-header::before, .coverage-header-compact::before,
-  .inicio-header::before, .campanas-header::before {
+  .inicio-header::before, .campanas-header::before, .quotes-header::before {
     content: "";
     position: absolute;
     left: 0;
@@ -524,7 +524,7 @@
   }
   .header-dark::after, .detail-header::after, .profile-top::after,
   .reports-header::after, .coverage-header-compact::after,
-  .inicio-header::after, .campanas-header::after {
+  .inicio-header::after, .campanas-header::after, .quotes-header::after {
     content: "";
     position: absolute;
     left: 0;
@@ -549,7 +549,7 @@
   @media (prefers-reduced-motion: reduce) {
     .header-dark::after, .detail-header::after, .profile-top::after,
     .reports-header::after, .coverage-header-compact::after,
-    .inicio-header::after, .campanas-header::after,
+    .inicio-header::after, .campanas-header::after, .quotes-header::after,
     .detalle-campana-line::after {
       animation: none;
       display: none;
@@ -6874,11 +6874,19 @@ input[type="date"] {
   z-index: 20;
   overflow-y: auto;
   color: #fff;
-  background:
-    radial-gradient(circle at 80% -10%, rgba(21, 74, 145, .26), transparent 36%),
-    linear-gradient(145deg, #01040b 0%, #060d19 58%, #081426 100%);
+  background: #EEF2F7;
 }
+/* Cabecera oscura con la misma raya azul animada que Usuarios/Solicitudes/
+   Analitica/Paneles (.detail-header) -- se agrego .quotes-header al grupo
+   de selectores de esa raya mas abajo. El "piso" de la pantalla (fondo de
+   .quotes-screen) ahora es blanco como en esas pantallas; las tarjetas de
+   abajo (form/lista, "los cuadrados negros con azul") se quedan igual,
+   no se tocan. */
 .quotes-header {
+  width: 100%;
+  background: #0B1220;
+}
+.quotes-header-inner {
   width: min(1400px, calc(100% - 48px));
   margin: 0 auto;
   padding: calc(30px + env(safe-area-inset-top)) 0 24px;
@@ -6887,17 +6895,17 @@ input[type="date"] {
   align-items: center;
   gap: 18px;
 }
-.quotes-header > button {
+.quotes-header-inner > button {
   width: 42px; height: 42px; border: 1px solid rgba(255,255,255,.13); border-radius: 14px;
   display: grid; place-items: center; color: #fff; background: rgba(255,255,255,.06); cursor: pointer;
 }
-.quotes-header > button svg { width: 20px; height: 20px; }
+.quotes-header-inner > button svg { width: 20px; height: 20px; }
 .quotes-header span, .quotes-card-heading span, .quotes-list-head span {
   color: #6eb1ff; font-size: 11px; line-height: 1; font-weight: 850; letter-spacing: .16em; text-transform: uppercase;
 }
-.quotes-header h1 { margin: 6px 0 3px; font-size: clamp(27px, 3vw, 40px); line-height: 1; letter-spacing: -.035em; }
+.quotes-header h1 { margin: 6px 0 3px; font-size: clamp(27px, 3vw, 40px); line-height: 1; letter-spacing: -.035em; color: #fff; }
 .quotes-header p { margin: 0; color: rgba(255,255,255,.56); font-size: 13px; }
-.quotes-header > img { width: 178px; height: auto; opacity: .95; }
+.quotes-header-inner > img { width: 178px; height: auto; opacity: .95; }
 .quotes-layout {
   width: min(1400px, calc(100% - 48px));
   margin: 0 auto;
@@ -7019,8 +7027,8 @@ input[type="date"] {
 .quote-document footer > div:last-child span { color: rgba(255,255,255,.8); }
 
 @media (max-width: 899px) {
-  .quotes-header { width: calc(100% - 30px); padding-top: calc(18px + env(safe-area-inset-top)); grid-template-columns: 42px 1fr; }
-  .quotes-header > img { display: none; }
+  .quotes-header-inner { width: calc(100% - 30px); padding-top: calc(18px + env(safe-area-inset-top)); grid-template-columns: 42px 1fr; }
+  .quotes-header-inner > img { display: none; }
   .quotes-header h1 { font-size: 27px; }
   .quotes-layout { width: calc(100% - 24px); grid-template-columns: 1fr; padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
   .quotes-form-card, .quotes-list-card { padding: 18px; border-radius: 20px; }
@@ -7064,11 +7072,19 @@ input[type="date"] {
   html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .quote-document, .quote-document * { visibility: visible !important; }
+  /* Antes .quote-document quedaba position:fixed en impresion -- eso lo
+     ancla al viewport y en paginas de mas de una hoja (cotizaciones con
+     condiciones/observaciones largas) el contenido que no entraba en la
+     primera hoja se recortaba en vez de pasar a la pagina 2. Con
+     position:static fluye normal y pagina como cualquier documento. */
+  .quote-preview-backdrop {
+    position: static; display: block; padding: 0; background: #fff;
+  }
+  .quote-preview-shell { width: 100%; }
   .quote-document {
-    position: fixed; inset: 0; width: 100%; border-radius: 0; box-shadow: none;
+    position: static; width: 100%; border-radius: 0; box-shadow: none;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
-  .quote-preview-backdrop { position: static; padding: 0; background: #fff; }
   .quote-preview-actions { display: none !important; }
 }
 /* El calendario nativo de iOS mete su propio contenedor interno que
