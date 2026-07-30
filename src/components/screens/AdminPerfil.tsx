@@ -22,8 +22,11 @@ interface Props {
 }
 
 function formatoEspacio(bytes: number) {
+  // Dos decimales siempre -- antes MB mostraba solo uno (ej. "3.0")
+  // mientras GB ya mostraba dos, inconsistente. Se pidió mas precision
+  // para poder ver el uso real, no solo un numero redondeado.
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 }
 
@@ -268,7 +271,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                   <div className="storage-usage-bar-caption">
                     <span>{formatoEspacio(espacio.bytes)} de 10 GB usados</span>
                     <strong className={porcentajeUsado >= 90 ? "is-critical" : ""}>
-                      {porcentajeUsado.toFixed(porcentajeUsado < 10 ? 1 : 0)}%
+                      {porcentajeUsado.toFixed(2)}%
                     </strong>
                   </div>
                   {porcentajeUsado >= 90 && (

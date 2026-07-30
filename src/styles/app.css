@@ -6955,6 +6955,11 @@ input[type="date"] {
   inset: 0;
   z-index: 20;
   overflow-y: auto;
+  /* A .content-area (Usuarios y demas admin-tool-screen) ya le pusimos
+     esto -- acá faltaba, por eso el rebote/scroll se sentía "suelto",
+     dejaba subir y bajar de más comparado con esas pantallas. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   color: #fff;
   background: #EEF2F7;
 }
@@ -7035,14 +7040,19 @@ input[type="date"] {
   letter-spacing: .04em;
   text-transform: uppercase;
 }
+/* Cuadros de informacion BLANCOS adentro de la tarjeta oscura --
+   mismo criterio que ya usa "Generar reporte" (.reports-panel-select,
+   .report-month-select): el cuadro grande es negro, pero los campos
+   de adentro son blancos con texto oscuro, no al reves. */
 .quotes-form-card input, .quotes-form-card select, .quotes-form-card textarea, .quote-row-actions select {
-  width: 100%; border: 1px solid rgba(255,255,255,.12); border-radius: 13px;
-  background: #101a29; color: #fff; outline: none; font: inherit; font-size: 13px;
+  width: 100%; border: 1px solid #E2E8F0; border-radius: 13px;
+  background: #FFFFFF; color: #0B1220; outline: none; font: inherit; font-size: 13px;
+  color-scheme: light;
 }
 .quotes-form-card input, .quotes-form-card select { height: 46px; padding: 0 13px; }
 .quotes-form-card textarea { resize: vertical; padding: 12px 13px; line-height: 1.45; }
 .quotes-form-card input:focus, .quotes-form-card select:focus, .quotes-form-card textarea:focus {
-  border-color: rgba(110,177,255,.7); box-shadow: 0 0 0 3px rgba(8,119,255,.1);
+  border-color: #0877FF; box-shadow: 0 0 0 3px rgba(15,23,42,.12);
 }
 .quotes-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .quotes-check { align-content: end; grid-template-columns: 22px 1fr !important; align-items: center; min-height: 46px; }
