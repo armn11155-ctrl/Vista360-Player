@@ -3099,6 +3099,11 @@
     height: auto;
     filter: drop-shadow(0 12px 26px rgba(0,0,0,.52));
   }
+  /* Tagline de marca debajo del logo -- mismo texto que ya usa el pie
+     de las cotizaciones impresas ("MÁS QUE VISIBILIDAD. PRESENCIA.").
+     Es solo para escritorio (a pedido del usuario) -- en celular
+     queda oculto, no se cambia nada de lo que ya había. */
+  .login-tagline { display: none; }
   .login-card {
     position: relative;
     overflow: hidden;
@@ -3287,19 +3292,39 @@
       background-size: cover;
       transform: none;
     }
+    /* Bloque logo+tarjeta corrido hacia la DERECHA de la pantalla
+       (antes iba a la izquierda) -- se mantiene centrado verticalmente. */
     .login-shell {
       flex-direction: row;
       align-items: center;
-      justify-content: flex-start;
-      padding-left: 100px;
-      padding-right: 60px;
+      justify-content: flex-end;
+      padding-left: 60px;
+      padding-right: 100px;
     }
     .login-right-panel { width: auto; }
     .login-logo, .login-card, .login-foot {
       width: 100%;
       max-width: 440px;
-      margin-left: 0;
-      margin-right: auto;
+      margin-left: auto;
+      margin-right: 0;
+    }
+    /* Tarjeta (y logo/pie, para que sigan alineados) más angosta en
+       escritorio, y la tarjeta además más alta -- como se pidió. */
+    .login-logo, .login-card, .login-foot {
+      max-width: 360px;
+    }
+    .login-card {
+      padding: 52px 26px;
+    }
+    .login-tagline {
+      display: block;
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(226,232,240,.72);
+      text-shadow: 0 1px 4px rgba(0,0,0,.6);
     }
     /* El botón se queda blanco, igual que en celular -- no se
        necesita ningún override acá (.login-btn base ya es blanco). */

@@ -77,11 +77,11 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       {/* Logo arriba de la tarjeta, igual en celular y en escritorio
           -- a pedido del usuario ya no van separados en 2 columnas.
           En escritorio este bloque completo se ubica del lado
-          izquierdo de la pantalla (ver .login-shell en app.css),
-          dejando la foto de la ciudad más visible a la derecha. */}
+          DERECHO de la pantalla (ver .login-shell en app.css). */}
       <div className="login-right-panel">
         <div className="login-logo">
           <img src={LOGO} alt="Vista360 Player" draggable={false} />
+          <div className="login-tagline">Más que visibilidad. Presencia.</div>
         </div>
         <div className="login-card">
           <div className="login-title">Bienvenido</div>
