@@ -27,6 +27,14 @@ interface Props {
   /** true para Gerente, false para Trabajador -- solo cambia la
    *  etiqueta de rol que se muestra en la tarjeta de perfil móvil. */
   esGerente?: boolean;
+  /** true solo cuando quien está REALMENTE conectado es personal
+   *  interno (Gerente o Trabajador), sin importar si en este momento
+   *  "isAdmin" está en false por estar viendo la app como un cliente
+   *  puntual. Controla qué identidad (foto/nombre) se muestra en el
+   *  chip de perfil -- separado de "isAdmin", que sigue controlando
+   *  el resto del menú (ítems solo-admin, etc.) según el modo de
+   *  vista actual. */
+  esInterno?: boolean;
   solicitudesPendientes?: number;
   /** Vista actual de la app — solo se usa para resaltar el ítem activo
    *  y deslizar el pill de vidrio en el sidebar de escritorio. */
@@ -64,8 +72,11 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = true, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = true, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
+  // Si algún llamador todavía no pasa esInterno, se cae al criterio
+  // viejo (isAdmin) para no romper nada.
+  const identidadInterna = esInterno ?? isAdmin;
 
   // ── Pill de vidrio deslizante (solo escritorio — ver .sidebar-pill en app.css) ──
   const listRef = useRef<HTMLDivElement>(null);
@@ -103,12 +114,20 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
       <div className={`sidebar-overlay ${open ? "open" : ""}`} onClick={onClose} />
       <div className={`sidebar-panel ${open ? "open" : ""}`}>
         <div className="sidebar-head">
-          {/* Antes acá iba el logo genérico de Vista360 Player, igual
-              para cualquier cuenta. Se pidió que en su lugar (tanto en
-              el sidebar móvil como en el de escritorio -- este bloque
-              ya estaba pensado para verse igual en los dos, ver
-              comentario de ".sidebar-head" en app.css) se vea el
-              perfil de la cuenta: foto/ícono + nombre, tocable para ir
+          {/* El logo genérico se había quitado del todo (mobile y
+              escritorio) a favor del chip de perfil de la cuenta. Se
+              pidió de vuelta, pero solo en escritorio -- "sidebar-logo"
+              queda oculto por defecto (regla compartida más abajo en
+              app.css) y solo se muestra dentro del @media (min-width:
+              900px), arriba del chip de perfil. En móvil el chip de
+              perfil sigue siendo lo único visible acá. */}
+          <img
+            src="/logo-player.webp"
+            alt="Vista360 Player"
+            className="sidebar-logo"
+            draggable={false}
+          />
+          {/* Perfil de la cuenta: foto/ícono + nombre, tocable para ir
               a Perfil. Mismo componente BrandThumb que ya se usa en
               Accesos y el selector de clientes, para que se sienta
               consistente con el resto de la app. */}
@@ -141,8 +160,8 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             <span className="sidebar-profile-chip-copy">
               <span className="sidebar-profile-chip-name">{perfilNombre || "Perfil"}</span>
               <span className="sidebar-profile-chip-details">
-                <span><i aria-hidden="true" />{isAdmin ? (esGerente ? "Gerente" : "Trabajador") : "Cliente"}</span>
-                <small>{isAdmin ? "Ver mi perfil" : "Ver perfil del cliente"}</small>
+                <span><i aria-hidden="true" />{identidadInterna ? (esGerente ? "Gerente" : "Trabajador") : "Cliente"}</span>
+                <small>{identidadInterna ? "Ver mi perfil" : "Ver perfil del cliente"}</small>
               </span>
             </span>
           </button>

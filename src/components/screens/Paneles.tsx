@@ -7,12 +7,19 @@ import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { modalidadDePanel } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
+import { mensajeDeError } from "../../utils/errores";
 import { cargarLeaflet, zoomMinimoSinGris } from "../../utils/leaflet";
 import type { Panel, PanelEstado } from "../../types";
 
 interface Props {
   onBack: () => void;
   onMenuClick?: () => void;
+  /** true para Gerente. Solo el Gerente puede eliminar un panel --
+   *  a diferencia de crear/editar, que un Trabajador puede pedir y
+   *  queda pendiente de aprobación, borrar es irreversible y puede
+   *  afectar contratos históricos, así que directamente no se ofrece
+   *  la opción si no sos Gerente. */
+  esGerente?: boolean;
 }
 
 const ESTADOS: PanelEstado[] = ["Disponible", "Ocupado", "Mantenimiento", "Libre"];
@@ -42,7 +49,7 @@ function numeroCoordenada(value: string): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-export default function Paneles({ onBack, onMenuClick }: Props) {
+export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props) {
   const state = usePanelesDisponibles(true);
   const panelesTodos = state.status === "ready" ? state.paneles : [];
   const [busqueda, setBusqueda] = useState("");
@@ -57,6 +64,29 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
         .some((campo) => String(campo ?? "").toLowerCase().includes(q))
     );
   }, [panelesTodos, busqueda]);
+
+  // ── Eliminar panel (solo Gerente) -- botón de tres puntos, mismo
+  // patrón que Usuarios (Accesos.tsx). ──
+  const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
+  const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  const [errorEliminar, setErrorEliminar] = useState("");
+
+  async function eliminarPanel(panel: Panel) {
+    if (!cloudFunctions) { setErrorEliminar("Sin conexión. Intenta de nuevo."); return; }
+    const confirmado = window.confirm(`¿Eliminar el panel "${panel.nombre}"? No se puede deshacer.`);
+    if (!confirmado) return;
+    setMenuAbiertoId(null);
+    setErrorEliminar("");
+    setEliminandoId(panel.id);
+    try {
+      const fn = httpsCallable<{ panelId: string }, { ok: boolean }>(cloudFunctions, "eliminarPanel");
+      await fn({ panelId: panel.id });
+    } catch (error) {
+      setErrorEliminar(mensajeDeError(error, "No se pudo eliminar el panel. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions."));
+    } finally {
+      setEliminandoId(null);
+    }
+  }
 
   const [mostrarForm, setMostrarForm] = useState(false);
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
@@ -477,6 +507,12 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
           </div>
         )}
 
+        {errorEliminar && (
+          <div style={{ marginTop: 12, fontSize: 12, color: "#DC2626", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 12, padding: "10px 12px" }}>
+            {errorEliminar}
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
           {panelesTodos.length > 0 && (
             <CampoBusqueda
@@ -493,7 +529,7 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                 className="card"
                 key={p.id}
                 onClick={() => abrirEdicion(p)}
-                style={{ padding: 14, cursor: "pointer" }}
+                style={{ padding: 14, cursor: "pointer", position: "relative" }}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
                   <div style={{ minWidth: 0 }}>
@@ -510,11 +546,53 @@ export default function Paneles({ onBack, onMenuClick }: Props) {
                     }}>
                       {p.estado}
                     </span>
+                    {esGerente && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setMenuAbiertoId((id) => id === p.id ? null : p.id); }}
+                        style={{
+                          width: 30, height: 30, borderRadius: 14, border: "1px solid #E5E7EB",
+                          background: "#fff", color: "#64748B", fontSize: 17, fontWeight: 900,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          cursor: "pointer", flexShrink: 0, lineHeight: 1,
+                        }}
+                        aria-label="Opciones del panel"
+                      >
+                        ⋯
+                      </button>
+                    )}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
                   </div>
                 </div>
+                {eliminandoId === p.id && (
+                  <div style={{ marginTop: 9, fontSize: 11, color: "#64748B", fontWeight: 700 }}>
+                    Eliminando...
+                  </div>
+                )}
+                {menuAbiertoId === p.id && (
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      position: "absolute", top: 44, right: 12, zIndex: 20, minWidth: 168,
+                      background: "#fff", border: "1px solid #E5E7EB", borderRadius: 12,
+                      boxShadow: "0 18px 38px rgba(15,23,42,0.16)", padding: 6,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => void eliminarPanel(p)}
+                      style={{
+                        width: "100%", border: "none", background: "transparent", borderRadius: 8,
+                        padding: "14px 11px", textAlign: "left", fontSize: 12, fontWeight: 800,
+                        color: "#DC2626", cursor: "pointer",
+                      }}
+                    >
+                      Eliminar panel
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}

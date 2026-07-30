@@ -3990,10 +3990,18 @@
     }
     .sidebar-panel .sidebar-head {
       background: transparent;
+      flex-direction: column;
       justify-content: center;
     }
     .sidebar-panel .sidebar-head { padding: 34px 14px 16px; }
     .sidebar-panel .sidebar-profile-chip { max-width: 100%; }
+    /* Logo de vuelta, solo en escritorio, arriba del chip de perfil. */
+    .sidebar-panel .sidebar-logo {
+      display: block;
+      height: 20px;
+      width: auto;
+      margin: 0 auto 18px;
+    }
     .sidebar-close { display: none !important; }
     /* Un poco de aire extra arriba de la lista, separándola del logo
        -- antes arrancaba pegada al header. */
@@ -5640,6 +5648,9 @@
     display: flex; align-items: center; justify-content: space-between;
     flex-shrink: 0;
   }
+  /* Oculto por defecto (móvil) -- solo se muestra en el bloque de
+     escritorio más abajo. */
+  .sidebar-logo { display: none; }
   .sidebar-profile-chip {
     display: inline-flex;
     align-items: center;

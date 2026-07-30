@@ -351,7 +351,7 @@ export default function App() {
                   : view === "miPerfil"
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} esGerente={esGerente} onBack={() => setView("inicio")} />
                     : view === "paneles"
-                      ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                      ? <Paneles onBack={() => { setVolverAGestion(true); setView("inicio"); }} esGerente={esGerente} />
                       : view === "cotizaciones"
                         ? <Cotizaciones onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : view === "ocupacion"
@@ -402,7 +402,12 @@ export default function App() {
         contratoAbierto={contratoAbierto}
         setContratoAbierto={setContratoAbierto}
         isAdmin={!adminVistaCliente}
-        adminNombre={adminVistaCliente ? undefined : auth.nombre}
+        // Antes esto se ponía undefined mientras el Gerente veía la
+        // app "como cliente" -- por eso el sidebar se ponía a mostrar
+        // el nombre/logo de la empresa del cliente en vez del propio.
+        // El nombre de quien está REALMENTE conectado no depende del
+        // modo de vista, así que siempre va el propio.
+        adminNombre={auth.nombre}
         esGerente={esGerente}
         online={online}
         onSeleccionarCliente={adminVistaCliente ? undefined : (id) => {
@@ -481,10 +486,19 @@ function AuthenticatedApp({
     ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
     : 0;
   const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
+  // "esInterno" identifica una sesión REAL de Gerente/Trabajador, sin
+  // importar si en este momento está en modo "ver como cliente"
+  // (adminVistaCliente). A diferencia de "isAdmin" -- que sí cambia con
+  // ese modo de vista y controla qué PANTALLA se muestra -- "esGerente"
+  // solo llega definido (true/false) cuando quien entró es personal
+  // interno; en el llamador para clientes reales nunca se pasa (queda
+  // undefined). Sirve para que el chip de perfil del sidebar siempre
+  // muestre la identidad de quien está REALMENTE conectado.
+  const esInterno = esGerente !== undefined;
   // El sidebar del admin debe usar la misma foto guardada en Mi perfil.
   // Antes se enviaba avatarUrl=undefined de forma explícita, por eso
   // siempre aparecía el ícono genérico aunque la cuenta sí tuviera foto.
-  const adminAvatarUrl = useAvatarPropio(isAdmin ? uid : undefined);
+  const adminAvatarUrl = useAvatarPropio(esInterno ? uid : undefined);
 
   useEffect(() => {
     // timeout:1500 es la parte importante acá -- sin él,
@@ -719,7 +733,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Accesos onBack={() => setView("inicio")} esGerente={esGerente} /> : null;
         break;
       case "paneles":
-        content = isAdmin ? <Paneles onBack={() => setView("inicio")} /> : null;
+        content = isAdmin ? <Paneles onBack={() => setView("inicio")} esGerente={esGerente} /> : null;
         break;
       case "ocupacion":
         content = isAdmin ? <Ocupacion onBack={() => setView("inicio")} /> : null;
@@ -754,19 +768,24 @@ function AuthenticatedApp({
         onCambiarCliente={onCambiarCliente}
         isAdmin={isAdmin}
         esGerente={esGerente}
+        esInterno={esInterno}
         solicitudesPendientes={solCampPendientes}
         active={view}
-        // Mismo criterio que el saludo de Inicio.tsx: el admin ve su
-        // propio nombre y foto; el cliente ve el logo/nombre de empresa.
+        // El chip de perfil siempre muestra la identidad de quien está
+        // REALMENTE conectado (esInterno), no la del modo de vista
+        // actual (isAdmin) -- así, si el Gerente está "viendo como
+        // cliente", el sidebar sigue mostrando su propio nombre/foto en
+        // vez de saltar al logo/nombre de la empresa del cliente. Un
+        // cliente real (esInterno=false) siempre ve su propia empresa.
         // Si no hay nombre propio guardado, se cae al rol (Gerente o
         // Trabajador) en vez de un genérico "Admin".
-        perfilNombre={isAdmin
+        perfilNombre={esInterno
           ? (esGerente === false ? (adminNombre || "Trabajador") : (adminNombre || "Gerente"))
           : (cliente?.empresa ?? "Cliente")}
-        perfilAvatarKey={isAdmin ? undefined : cliente?.avatarKey}
-        perfilAvatarUrl={isAdmin ? adminAvatarUrl : cliente?.avatarUrl}
+        perfilAvatarKey={esInterno ? undefined : cliente?.avatarKey}
+        perfilAvatarUrl={esInterno ? adminAvatarUrl : cliente?.avatarUrl}
         onOpenPerfil={() => {
-          if (isAdmin && onOpenAdminPerfil) onOpenAdminPerfil();
+          if (esInterno && onOpenAdminPerfil) onOpenAdminPerfil();
           else setView("perfil");
           setSidebarOpen(false);
         }}
