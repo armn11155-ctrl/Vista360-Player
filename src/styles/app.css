@@ -6860,7 +6860,7 @@
     }
     .admin-picker-management-head,
     .admin-picker-management-grid {
-      width: min(720px, 100%);
+      width: min(600px, 100%);
       margin-left: auto;
       margin-right: auto;
     }
