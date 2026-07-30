@@ -3093,7 +3093,7 @@
   .login-right-panel { width: 100%; display: flex; flex-direction: column; }
   .login-logo, .login-card, .login-foot {
     width: 100%;
-    max-width: 320px;
+    max-width: 340px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -3111,7 +3111,10 @@
     -webkit-backdrop-filter: blur(12px) saturate(108%);
     border: 1px solid rgba(255,255,255,.17);
     border-radius: 20px;
-    padding: 30px 24px;
+    /* Un poco más grande (más alta y más ancha) -- se pidió que
+       respire más, en celular Y en escritorio (es la misma regla
+       base para ambos). */
+    padding: 40px 28px;
     box-shadow: 0 30px 90px -24px rgba(0,0,0,.88), inset 0 1px 0 rgba(255,255,255,.10);
   }
   .login-title {
@@ -3321,7 +3324,7 @@
     .login-logo { display: none; }
     .login-card, .login-foot {
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       margin-left: auto;
       margin-right: auto;
     }
