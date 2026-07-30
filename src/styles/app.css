@@ -7000,15 +7000,26 @@ input[type="date"] {
   align-items: start;
 }
 .quotes-form-card, .quotes-list-card {
-  border: 1px solid rgba(255,255,255,.11);
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: 24px;
-  background: rgba(7, 14, 26, .9);
+  /* Antes era un rgba plano + blur -- el mismo degradado diagonal que
+     ya se usa en "Generar reporte" (.report-admin-panel) le da mas
+     profundidad/pulido en vez de verse como un panel liso. */
+  background: linear-gradient(165deg, #0F1626 0%, #060910 100%);
   box-shadow: 0 24px 70px rgba(0,0,0,.28);
-  backdrop-filter: blur(18px);
 }
 .quotes-form-card { padding: 25px; display: grid; gap: 17px; }
 .quotes-card-heading, .quotes-list-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .quotes-card-heading h2, .quotes-list-head h2 { margin: 5px 0 0; font-size: 20px; letter-spacing: -.02em; }
+/* Insignia con icono, mismo criterio que .report-admin-icon en
+   "Generar reporte" -- se pidió ese mismo nivel de diseño acá. */
+.quotes-card-heading-copy { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.quotes-card-icon {
+  width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; background: linear-gradient(135deg, #0877FF, #2F6FED);
+  box-shadow: 0 10px 18px rgba(5,10,18,.16);
+}
 .quotes-card-heading > b {
   padding: 7px 11px; border: 1px solid rgba(110,177,255,.22); border-radius: 999px;
   color: #9acbff; background: rgba(8,119,255,.09); font-size: 11px;

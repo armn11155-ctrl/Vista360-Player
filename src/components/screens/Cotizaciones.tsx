@@ -211,7 +211,16 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
       <main className="quotes-layout">
         <form className="quotes-form-card" onSubmit={guardar}>
           <div className="quotes-card-heading">
-            <div><span>Nueva propuesta</span><h2>Datos de la cotización</h2></div>
+            <div className="quotes-card-heading-copy">
+              <span className="quotes-card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
+                  <path d="M14 3v5h5" />
+                  <path d="M9 13h6M9 17h6" />
+                </svg>
+              </span>
+              <div><span>Nueva propuesta</span><h2>Datos de la cotización</h2></div>
+            </div>
             <b>Cotización</b>
           </div>
           <label>
@@ -287,7 +296,15 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
         <section className="quotes-list-card">
           <div className="quotes-list-head">
-            <div><span>Historial comercial</span><h2>Cotizaciones recientes</h2></div>
+            <div className="quotes-card-heading-copy">
+              <span className="quotes-card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3.5 2" />
+                </svg>
+              </span>
+              <div><span>Historial comercial</span><h2>Cotizaciones recientes</h2></div>
+            </div>
             <strong>{cotizaciones.length}</strong>
           </div>
           {cargando && <div className="quotes-empty">Cargando cotizaciones…</div>}

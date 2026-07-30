@@ -261,6 +261,40 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   }, [contratos, todosPaneles]);
 
   const conCoordenadas = useMemo(() => lista.filter(tieneCoordenadas), [lista]);
+  // Paneles distintos pueden compartir exactamente la misma ubicación
+  // (ej. un mediano y un grande en el mismo poste/edificio de
+  // Pacífico) -- puestos en el pin EXACTO, uno queda tapando al otro
+  // por completo (mismos píxeles), así que solo se veía el que se
+  // dibujaba último. Acá se agrupan los que caen en el mismo punto y
+  // se reparten en un círculo chico alrededor del punto real, así
+  // todos quedan visibles y clickeables. Solo cambia dónde se DIBUJA
+  // el pin -- el resto (popup, "Cómo llegar", bounds) sigue usando las
+  // coordenadas reales del panel.
+  const posicionMarcador = useMemo(() => {
+    const grupos = new Map<string, typeof conCoordenadas>();
+    conCoordenadas.forEach((panel) => {
+      const clave = `${panel.lat.toFixed(5)},${panel.lng.toFixed(5)}`;
+      const lista2 = grupos.get(clave);
+      if (lista2) lista2.push(panel);
+      else grupos.set(clave, [panel]);
+    });
+    const mapa = new Map<string, [number, number]>();
+    grupos.forEach((panelesDelPunto) => {
+      const n = panelesDelPunto.length;
+      // ~13m de radio: separa los pines a simple vista sin que parezca
+      // que están en otra manzana.
+      const radio = 0.00012;
+      panelesDelPunto.forEach((panel, i) => {
+        if (n === 1) {
+          mapa.set(panel.id, [panel.lat, panel.lng]);
+          return;
+        }
+        const angulo = (2 * Math.PI * i) / n;
+        mapa.set(panel.id, [panel.lat + Math.cos(angulo) * radio, panel.lng + Math.sin(angulo) * radio]);
+      });
+    });
+    return mapa;
+  }, [conCoordenadas]);
   const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
   const panelesContratables = useMemo(() => conCoordenadas.filter(esPanelContratable).length, [conCoordenadas]);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
@@ -344,7 +378,8 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           const selected = panel.id === seleccionado?.id;
           const contratado = esPanelActivoCliente(panel);
           const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
-          const marker = L.marker([panel.lat, panel.lng], {
+          const [latMarcador, lngMarcador] = posicionMarcador.get(panel.id) ?? [panel.lat, panel.lng];
+          const marker = L.marker([latMarcador, lngMarcador], {
             icon: L.divIcon({
               className: `coverage-leaflet-marker ${selected ? "active" : ""} ${contratado ? "is-contracted" : "is-available"}`,
               html: `<span><img src="${pinUrl}" alt="" /></span>`,
@@ -455,7 +490,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
       observadorRef.current?.disconnect();
       observadorRef.current = null;
     };
-  }, [conCoordenadas, seleccionado, seleccionadoId]);
+  }, [conCoordenadas, posicionMarcador, seleccionado, seleccionadoId]);
 
   useEffect(() => () => {
     markersRef.current?.remove();
