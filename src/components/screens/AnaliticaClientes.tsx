@@ -2,27 +2,21 @@ import BackChevron from "../BackChevron";
 import { useAccesosClientes } from "../../hooks/useAccesosClientes";
 import type { AccesoCliente } from "../../hooks/useAccesosClientes";
 
+// Evidencias, Portafolio, Impacto y Contáctanos se retiraron del app
+// hace tiempo y ya no tienen pantalla real -- a pedido del usuario, se
+// quitaron también sus nombres de esta tabla. Si algún cliente tiene
+// visitas históricas registradas a esas pantallas viejas, ahora se
+// van a ver con la llave en crudo (ej. "evidencias") en vez de un
+// nombre bonito -- se decidió aceptar eso a cambio de limpiar el código.
 const NOMBRES_PANTALLA: Record<string, string> = {
   inicio: "Inicio",
   campanas: "Mis Campañas",
   detalle: "Detalle de campaña",
-  // La pantalla de Evidencias se retiró, pero el nombre se conserva: las
-  // visitas históricas ya registradas seguirían apareciendo, y sin esta
-  // línea se mostrarían como "evidencias" en crudo.
-  evidencias: "Evidencias",
   reportes: "Reportes",
   perfil: "Perfil",
   nueva: "Nueva campaña",
-  // Portafolio y Contáctanos se retiraron (ninguna de las dos tenía
-  // ya un botón real que llevara ahí) -- se conservan los nombres
-  // por el mismo motivo que "evidencias" arriba: si hay visitas
-  // históricas registradas de cuando sí existían, se siguen viendo
-  // con su nombre en vez de la llave en crudo.
-  portafolio: "Portafolio",
   cobertura: "Cobertura",
   mispantallas: "Mis Publicidades",
-  impacto: "Impacto",
-  contactanos: "Contáctanos",
 };
 
 /** La pantalla que más veces visitó este cliente, o null si nunca visitó ninguna. */

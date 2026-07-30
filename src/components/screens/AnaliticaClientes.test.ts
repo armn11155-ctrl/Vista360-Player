@@ -53,10 +53,17 @@ describe("pantallaFavorita", () => {
   it("devuelve la pantalla con más visitas, con nombre legible", () => {
     const resultado = pantallaFavorita({
       inicio: { count: 3, lastVisit: null },
-      evidencias: { count: 8, lastVisit: null },
+      cobertura: { count: 8, lastVisit: null },
       reportes: { count: 1, lastVisit: null },
     });
-    expect(resultado).toEqual({ nombre: "Evidencias", count: 8 });
+    expect(resultado).toEqual({ nombre: "Cobertura", count: 8 });
+  });
+
+  it("una pantalla retirada (ej. \"evidencias\") ya no tiene nombre legible, usa el id tal cual", () => {
+    const resultado = pantallaFavorita({
+      evidencias: { count: 8, lastVisit: null },
+    });
+    expect(resultado).toEqual({ nombre: "evidencias", count: 8 });
   });
 
   it("si la pantalla no tiene nombre legible conocido, usa el id tal cual", () => {
