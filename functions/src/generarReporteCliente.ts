@@ -558,11 +558,15 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.image(LOGO_WORDMARK_WHITE, leftX, y, { width: logoW });
   y += 130;
 
+  // Mismo tagline de marca que ya usan las cotizaciones (pie del PDF)
+  // y el login del portal -- antes esta pagina decia algo distinto
+  // ("Publicidad exterior premium"), se unifica para que sea el mismo
+  // mensaje en todos los documentos de cara al cliente.
   doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
-    .text("Publicidad exterior premium", leftX, y, { width: 900 });
+    .text("Más que visibilidad.", leftX, y, { width: 900 });
   y += 58;
   doc.font("Helvetica").fontSize(18).fillColor(COLORS.muted)
-    .text("Presencia que impacta. Evidencia que respalda. Marca que se recuerda.", leftX, y, { width: 760 });
+    .text("Presencia.", leftX, y, { width: 760 });
   y += 62;
 
   doc.moveTo(leftX, y).lineTo(leftX + 320, y).lineWidth(3).strokeColor(COLORS.accent2).stroke();
@@ -580,6 +584,12 @@ function cierre(doc: PDFKit.PDFDocument) {
   drawPhoneIcon(doc, leftX + 3, y + 2, 20, 24, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
     .text(CONTACTO_TELEFONO, leftX + 40, y);
+  y += 46;
+
+  // Categoria del negocio, como en la tarjeta de presentacion de
+  // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
+  doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", leftX, y, { characterSpacing: 1 });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
