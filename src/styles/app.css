@@ -3095,8 +3095,7 @@
   }
   .login-logo { text-align: center; margin-bottom: 34px; }
   .login-logo img {
-    /* Se pidio achicar un poco mas el logo del login. */
-    width: min(272px, 74%);
+    width: min(330px, 88%);
     height: auto;
     filter: drop-shadow(0 12px 26px rgba(0,0,0,.52));
   }
