@@ -13,6 +13,12 @@ interface CrearFacturaAdminData {
   pdfUrl?: string;
   pdfPesoBytes?: number;
   pdfPesoOriginalBytes?: number;
+  /** Campaña (contrato) a la que corresponde -- opcional, para que
+   *  el detalle de esa campaña pueda mostrar un acceso directo a su
+   *  factura. Nunca lo tienen las facturas sincronizadas por RUC
+   *  desde el sistema externo, solo las que se suben desde acá. */
+  contratoId?: string;
+  contratoNombre?: string;
 }
 
 function limpiar(value?: string) {
@@ -47,6 +53,8 @@ export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) =
   const clienteId = limpiar(request.data.clienteId);
   const numeroFmt = limpiar(request.data.numeroFmt);
   const pdfUrl = limpiar(request.data.pdfUrl);
+  const contratoId = limpiar(request.data.contratoId);
+  const contratoNombre = limpiar(request.data.contratoNombre);
   const pdfPesoBytes = Number(request.data.pdfPesoBytes ?? 0);
   const pdfPesoOriginalBytes = Number(request.data.pdfPesoOriginalBytes ?? pdfPesoBytes);
 
@@ -62,6 +70,8 @@ export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) =
   const facturaRef = await db.collection("facturas").add({
     ...(ruc ? { cliente_doc: ruc } : {}),
     ...(clienteId ? { cliente_id: clienteId } : {}),
+    ...(contratoId ? { contrato_id: contratoId } : {}),
+    ...(contratoNombre ? { contratoNombre } : {}),
     tipo_doc: "Factura",
     numero_fmt: numeroFmt || "Factura",
     estado: "Emitida",

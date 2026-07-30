@@ -739,7 +739,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Ocupacion onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
-        content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} />;
+        content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} contratos={contratos} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} uid={uid} onBack={() => setView("inicio")} />;

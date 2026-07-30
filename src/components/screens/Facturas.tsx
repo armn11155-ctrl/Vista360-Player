@@ -4,7 +4,7 @@ import { useFacturas } from "../../hooks/useFacturas";
 import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
-import type { Cliente, Factura } from "../../types";
+import type { Cliente, Contrato, Factura } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { FacturaCard } from "../FacturaCard";
 import { etiquetaMes } from "../../utils/informesGrouping";
@@ -63,9 +63,13 @@ interface Props {
   onBack: () => void;
   isAdmin?: boolean;
   onMenuClick?: () => void;
+  /** Campañas de este cliente -- opcional, solo para poder ofrecer
+   *  "¿a qué campaña corresponde?" al subir una factura a mano. Sin
+   *  esto la factura igual se sube bien, solo que sin ese vínculo. */
+  contratos?: Contrato[];
 }
 
-export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick }: Props) {
+export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick, contratos = [] }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
   const [filtroAnio, setFiltroAnio] = useState("");
@@ -84,6 +88,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
   const [subiendo, setSubiendo] = useState(false);
   const [preparando, setPreparando] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [campanaFacturaId, setCampanaFacturaId] = useState("");
 
   async function elegirPdf(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -125,8 +130,13 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
       // coleccion "facturas" es de facturacion-web (otro sistema) y
       // sus reglas de Firestore no dejan escribir desde acá, solo
       // leer. Escribir directo daba "permiso denegado".
+      const campanaElegida = contratos.find((c) => c.id === campanaFacturaId);
       const crearFacturaAdmin = httpsCallable<
-        { ruc?: string; clienteId?: string; numeroFmt?: string; pdfUrl: string; pdfPesoBytes: number; pdfPesoOriginalBytes: number },
+        {
+          ruc?: string; clienteId?: string; numeroFmt?: string; pdfUrl: string;
+          pdfPesoBytes: number; pdfPesoOriginalBytes: number;
+          contratoId?: string; contratoNombre?: string;
+        },
         { ok: boolean; id: string }
       >(cloudFunctions, "crearFacturaAdmin");
       await crearFacturaAdmin({
@@ -136,10 +146,13 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
         pdfUrl,
         pdfPesoBytes: pdfListo.size,
         pdfPesoOriginalBytes: pesoOriginal || pdfListo.size,
+        contratoId: campanaElegida?.id,
+        contratoNombre: campanaElegida?.nombre,
       });
       setMensaje(`Factura subida (${formatoBytes(pdfListo.size)}). El cliente ya puede verla.`);
       setPdfListo(null);
       setPesoOriginal(0);
+      setCampanaFacturaId("");
     } catch (err) {
       setMensaje(err instanceof Error ? err.message : "No se pudo subir la factura.");
     } finally {
@@ -176,6 +189,27 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
             >
               {preparando ? "Optimizando..." : "Agregar PDF"}
             </button>
+            {pdfListo && contratos.length > 0 && (
+              <div style={{ marginTop: 2 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", display: "block", marginBottom: 4 }}>
+                  ¿A qué campaña corresponde? (opcional)
+                </label>
+                <select
+                  value={campanaFacturaId}
+                  onChange={(e) => setCampanaFacturaId(e.target.value)}
+                  disabled={subiendo}
+                  style={{
+                    width: "100%", padding: "10px 12px", borderRadius: 10,
+                    border: "1.5px solid #E5E7EB", fontSize: 13, color: "#0B1220", background: "#fff",
+                  }}
+                >
+                  <option value="">Sin campaña asociada</option>
+                  {contratos.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nombre || `Campaña (${c.inicio} – ${c.fin})`}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             {pdfListo && (
               <button
                 type="button"

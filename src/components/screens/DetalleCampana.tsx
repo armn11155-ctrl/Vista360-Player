@@ -1,13 +1,19 @@
 import { useState, type CSSProperties } from "react";
+import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato } from "../../types";
-import { diasHasta, progresoCampana } from "../../utils/fechas";
+import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
+import { useFacturas } from "../../hooks/useFacturas";
+import { FacturaCard } from "../FacturaCard";
+import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImageHero } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
+import { cloudFunctions } from "../../config/firebase";
+import { mensajeDeError } from "../../utils/errores";
+import { descargarRecordatorioCalendario } from "../../utils/calendarioIcs";
 
 interface Props {
   contrato: Contrato;
@@ -104,6 +110,62 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   const cityStyle = {
     "--campaign-city-image": `url("${campaignCityImageHero(contrato.id)}")`,
   } as CSSProperties;
+
+  // ── Solicitar renovación directo desde el detalle ──
+  // Mismo flujo (y misma Cloud Function, crearSolicitudCampana) que
+  // ya existe en MisCampanas.tsx -- antes solo se podía pedir desde
+  // la lista, así que si la persona ya estaba viendo el detalle de
+  // la campaña tenía que volver atrás para encontrar el botón. Solo
+  // para clientes (isAdmin=false): el Gerente no "solicita" sus
+  // propias renovaciones, las aprueba.
+  const [renovacion, setRenovacion] = useState<"idle" | "enviando" | "enviada" | "error">("idle");
+  const [errorRenovacion, setErrorRenovacion] = useState("");
+  const puedeRenovar = !isAdmin && estado === "Activa" && diasHasta(contrato.fin) <= 14 && diasHasta(contrato.fin) >= 0;
+
+  async function solicitarRenovacion() {
+    if (!cloudFunctions) { setErrorRenovacion("Sin conexión. Intenta de nuevo."); setRenovacion("error"); return; }
+    const confirmado = window.confirm(`¿Solicitar la renovación de "${tituloCampana}"?`);
+    if (!confirmado) return;
+    setRenovacion("enviando");
+    setErrorRenovacion("");
+    try {
+      const finActual = soloFecha(contrato.fin);
+      const inicioSugerido = finActual ? sumarDias(finActual, 1) : hoyEnPeru();
+      const ciudadCampana = panel?.ciudad ?? "";
+      const fn = httpsCallable<
+        {
+          clienteId: string; nombre: string; ciudades: string[]; comentarios: string;
+          fechaInicioDeseada: string; fechaFinDeseada: string | null;
+        },
+        { ok: boolean; id: string; yaExistia?: boolean }
+      >(cloudFunctions, "crearSolicitudCampana");
+      await fn({
+        clienteId: contrato.cliente_id,
+        nombre: `Renovación — ${nombrePaneles}`,
+        ciudades: ciudadCampana ? [ciudadCampana] : [],
+        comentarios: `Renovación de la campaña en el panel "${nombrePaneles}"${ciudadCampana ? ` (${ciudadCampana})` : ""}, que vence el ${finActual}.`,
+        fechaInicioDeseada: inicioSugerido,
+        fechaFinDeseada: null,
+      });
+      setRenovacion("enviada");
+    } catch (error) {
+      setErrorRenovacion(mensajeDeError(error, "No se pudo enviar la solicitud."));
+      setRenovacion("error");
+    }
+  }
+
+  // ── Recordatorio de vencimiento al calendario ──
+  // Se genera un .ics acá mismo, en el navegador -- no depende de
+  // ningún servidor, funciona con Google Calendar, Apple Calendar y
+  // Outlook por igual.
+  function agregarRecordatorio() {
+    descargarRecordatorioCalendario({
+      fecha: soloFecha(contrato.fin),
+      titulo: `Vence campaña: ${tituloCampana}`,
+      descripcion: `La campaña "${tituloCampana}" en ${nombrePaneles} vence este día. Coordina la renovación con Vista360 (947 957 971) si quieres seguir al aire.`,
+      nombreArchivo: `vencimiento-${contrato.id}`,
+    });
+  }
   // PDF del reporte mensual del cliente (el mismo que se ve en la
   // pantalla de Reportes) — se muestra tambien aca para no tener que
   // salir de la campaña a buscarlo.
@@ -120,6 +182,16 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
     : [];
   const keysInformes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
   const urlsInformesFirmadas = useSignedUrls(keysInformes);
+
+  // Factura de esta campaña -- solo aparece si el admin la etiquetó al
+  // subirla a mano desde la pantalla Facturas (ver Facturas.tsx). Las
+  // facturas sincronizadas del sistema externo (facturacion-web, por
+  // RUC) nunca van a tener este dato, así que para muchos clientes acá
+  // simplemente no va a aparecer nada -- eso es esperado, no es un bug.
+  const rucCampana = rucCliente(cliente);
+  const facturasState = useFacturas(rucCampana, contrato.cliente_id);
+  const facturas = facturasState.status === "ready" ? facturasState.facturas : [];
+  const facturaCampana = facturas.find((f) => f.contrato_id === contrato.id);
 
   const TABS: { id: TabId; label: string }[] = [
     { id: "resumen",    label: "Resumen" },
@@ -280,7 +352,70 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                   </div>
                 </div>
               )}
+
+              {estado !== "Finalizada" && (
+                <button
+                  type="button"
+                  onClick={agregarRecordatorio}
+                  style={{
+                    marginTop: 12, width: "100%", padding: "11px 12px", borderRadius: 10,
+                    border: "1.5px solid #E5E7EB", background: "#fff", color: "#334155",
+                    fontSize: 12, fontWeight: 700, cursor: "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4.5" width="18" height="17" rx="2" />
+                    <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
+                  </svg>
+                  Agregar vencimiento al calendario
+                </button>
+              )}
+
+              {puedeRenovar && (
+                renovacion === "enviada" ? (
+                  <div style={{
+                    marginTop: 12, padding: "11px 12px", borderRadius: 10,
+                    background: "rgba(34,197,94,0.09)", border: "1px solid rgba(34,197,94,0.25)",
+                    color: "#15803D", fontSize: 12, fontWeight: 700,
+                    display: "flex", alignItems: "center", gap: 7,
+                  }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803D" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m5 12 5 5L20 7" /></svg>
+                    Solicitud de renovación enviada
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={solicitarRenovacion}
+                    disabled={renovacion === "enviando"}
+                    style={{
+                      marginTop: 12, width: "100%", padding: "12px", borderRadius: 10,
+                      border: "none", background: "#0877FF", color: "#fff",
+                      fontSize: 13, fontWeight: 800, cursor: renovacion === "enviando" ? "default" : "pointer",
+                      opacity: renovacion === "enviando" ? 0.7 : 1,
+                    }}
+                  >
+                    {renovacion === "enviando" ? "Enviando…" : "Solicitar renovación"}
+                  </button>
+                )
+              )}
+              {renovacion === "error" && (
+                <div style={{ marginTop: 8, fontSize: 11, color: "#DC2626" }}>{errorRenovacion}</div>
+              )}
             </div>
+
+            {/* Factura de esta campaña -- solo se muestra si existe una
+                factura etiquetada con este contrato (ver comentario junto
+                a facturaCampana más arriba). Si el cliente factura por el
+                sistema externo sincronizado por RUC, esto simplemente no
+                aparece -- no es un error, es que ese sistema no conoce el
+                concepto de "campaña". */}
+            {facturaCampana && (
+              <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Factura de esta campaña</div>
+                <FacturaCard factura={facturaCampana} cliente={cliente} isAdmin={isAdmin} />
+              </div>
+            )}
 
           </>
         )}

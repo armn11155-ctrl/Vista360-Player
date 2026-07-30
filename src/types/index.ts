@@ -351,6 +351,14 @@ export interface Factura {
    *  identifica todo por RUC via cliente_doc, este campo es el puente
    *  para poder subir/ver facturas sin depender de tener RUC). */
   cliente_id?: string;
+  /** Campaña (contrato) a la que corresponde esta factura -- opcional,
+   *  solo lo tienen las facturas subidas a mano desde Vista360 Player
+   *  (crearFacturaAdmin) cuando el admin lo indicó al subirla. Las que
+   *  vienen sincronizadas del sistema externo (facturacion-web, por
+   *  RUC) nunca lo van a tener -- ese sistema no sabe nada de
+   *  "campañas", es un concepto propio de Vista360 Player. */
+  contrato_id?: string;
+  contratoNombre?: string;
   total?: number;
   moneda?: string;
   pagado?: boolean;
