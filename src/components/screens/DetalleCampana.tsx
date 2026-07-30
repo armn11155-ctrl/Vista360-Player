@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
+import { diasHasta, progresoCampana } from "../../utils/fechas";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
@@ -241,7 +242,6 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
               </div>
             )}
 
-            {/* Próxima reproducción placeholder */}
             <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
               <div style={{ fontSize: 13, color: "#64748B", display: "flex", flexDirection: "column", gap: 6 }}>
@@ -249,6 +249,37 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
                 <div>Monto: <strong style={{ color: "#0B1220" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
                 <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
               </div>
+
+              {/* Antes acá no había nada de tiempo/avance -- solo se veían
+                  las fechas arriba, en el encabezado, sin decir cuánto
+                  falta. MisCampanas.tsx (la lista) ya calculaba este mismo
+                  progreso (progresoCampana) para su propia barra, pero acá
+                  en el detalle nunca se mostraba -- se reusa el mismo
+                  cálculo para que ambas pantallas digan lo mismo. */}
+              {estado !== "Finalizada" && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{
+                    height: 6, borderRadius: 4, overflow: "hidden", background: "#EEF1F5",
+                  }}>
+                    <div style={{
+                      height: "100%", width: `${progresoCampana(contrato.inicio, contrato.fin)}%`,
+                      background: "linear-gradient(90deg,#0877FF,#52A5FF)", borderRadius: 4,
+                    }} />
+                  </div>
+                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 6, display: "flex", justifyContent: "space-between", gap: 8 }}>
+                    <span>{progresoCampana(contrato.inicio, contrato.fin)}% del periodo transcurrido</span>
+                    <strong style={{ color: "#0B1220" }}>
+                      {estado === "Programada"
+                        ? `Empieza en ${diasHasta(contrato.inicio)} día${diasHasta(contrato.inicio) === 1 ? "" : "s"}`
+                        : diasHasta(contrato.fin) === 0
+                          ? "Vence hoy"
+                          : diasHasta(contrato.fin) === 1
+                            ? "Vence mañana"
+                            : `Vence en ${diasHasta(contrato.fin)} días`}
+                    </strong>
+                  </div>
+                </div>
+              )}
             </div>
 
           </>

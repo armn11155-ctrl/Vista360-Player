@@ -3997,7 +3997,9 @@
       flex-direction: column;
       justify-content: center;
     }
-    .sidebar-panel .sidebar-head { padding: 34px 14px 22px; }
+    /* Bajado un poco (antes 34px arriba) -- quedaba pegado al borde
+       superior del sidebar, se pidió más aire encima del logo. */
+    .sidebar-panel .sidebar-head { padding: 46px 14px 22px; }
     .sidebar-panel .sidebar-profile-chip { max-width: 100%; }
     /* Pedido explícito: en escritorio el sidebar solo lleva el logo,
        centrado -- el chip de perfil (foto+nombre) ya no va acá
