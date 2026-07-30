@@ -547,49 +547,60 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   drawRingAsset(doc, 1001, 0, 599);
 
-  // Todo el bloque alineado a la izquierda: logo, frase, raya
-  // divisoria y contacto, uno debajo del otro. Todo mas grande que
-  // antes (logo, textos, raya) y el correo/telefono cada uno en su
-  // propia linea con su icono.
-  const leftX = PAGE.margin;
-  let y = PAGE.height * 0.24;
+  // Layout de 2 columnas con raya divisoria VERTICAL -- se pidio
+  // inspirarse en la tarjeta de presentacion de referencia (logo a la
+  // izquierda, raya, datos de contacto a la derecha, todo simetrico).
+  // Antes era una sola columna a la izquierda con todo apilado.
+  //
+  // El bloque completo se mantiene a la izquierda del anillo
+  // decorativo (drawRingAsset arranca en x=1001) para no pisarlo.
+  const blockRight = 960;
+  const dividerX = PAGE.margin + (blockRight - PAGE.margin) * 0.42;
+  const leftColX = PAGE.margin;
+  const leftColW = dividerX - 40 - leftColX;
+  const rightColX = dividerX + 50;
+  const rightColW = blockRight - rightColX;
+  const dividerY1 = 280;
+  const dividerY2 = 620;
 
-  const logoW = 420;
-  doc.image(LOGO_WORDMARK_WHITE, leftX, y, { width: logoW });
-  y += 130;
-
+  // ── Columna izquierda: logo + tagline, centrados ──
   // Mismo tagline de marca que ya usan las cotizaciones (pie del PDF)
   // y el login del portal -- antes esta pagina decia algo distinto
   // ("Publicidad exterior premium"), se unifica para que sea el mismo
   // mensaje en todos los documentos de cara al cliente.
-  doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
-    .text("Más que visibilidad.", leftX, y, { width: 900 });
-  y += 58;
-  doc.font("Helvetica").fontSize(18).fillColor(COLORS.muted)
-    .text("Presencia.", leftX, y, { width: 760 });
-  y += 62;
+  const logoW = 300;
+  const logoX = leftColX + (leftColW - logoW) / 2;
+  const logoY = 380;
+  doc.image(LOGO_WORDMARK_WHITE, logoX, logoY, { width: logoW });
 
-  doc.moveTo(leftX, y).lineTo(leftX + 320, y).lineWidth(3).strokeColor(COLORS.accent2).stroke();
-  y += 40;
+  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
+    .text("Más que visibilidad.", leftColX, logoY + 95, { width: leftColW, align: "center" });
+  doc.font("Helvetica").fontSize(15).fillColor(COLORS.muted)
+    .text("Presencia.", leftColX, logoY + 129, { width: leftColW, align: "center" });
 
+  // ── Raya divisoria vertical ──
+  doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor(COLORS.line).stroke();
+
+  // ── Columna derecha: contacto, mas grande, simetrico con la izquierda ──
+  let y = 350;
   doc.font("Helvetica-Bold").fontSize(15).fillColor(COLORS.accent)
-    .text("CONTACTO", leftX, y, { characterSpacing: 1.5 });
-  y += 34;
+    .text("CONTACTO", rightColX, y, { characterSpacing: 1.5 });
+  y += 38;
 
-  drawEmailIcon(doc, leftX, y + 4, 26, 19, COLORS.accent2);
+  drawPhoneIcon(doc, rightColX + 3, y + 3, 20, 24, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
-    .text(CONTACTO_EMAIL, leftX + 40, y);
+    .text(CONTACTO_TELEFONO, rightColX + 42, y);
   y += 52;
 
-  drawPhoneIcon(doc, leftX + 3, y + 2, 20, 24, COLORS.accent2);
+  drawEmailIcon(doc, rightColX, y + 4, 26, 19, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
-    .text(CONTACTO_TELEFONO, leftX + 40, y);
-  y += 46;
+    .text(CONTACTO_EMAIL, rightColX + 42, y, { width: rightColW - 42 });
+  y += 52;
 
   // Categoria del negocio, como en la tarjeta de presentacion de
   // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
   doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", leftX, y, { characterSpacing: 1 });
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, y, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
