@@ -2931,7 +2931,10 @@
     left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: rgba(203,213,225,.55);
+    /* El campo (.form-input) tiene fondo BLANCO (--card) -- un gris
+       clarito acá quedaba casi invisible encima. Negro/casi negro
+       para que se vea con buen contraste, como pidió el usuario. */
+    color: #0B1220;
     pointer-events: none;
     display: flex;
   }
@@ -3296,7 +3299,7 @@
     .login-left-panel {
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 36px;
       width: 100%;
       max-width: 420px;
       color: #fff;
@@ -3313,15 +3316,17 @@
       color: rgba(255,255,255,.9);
     }
     .login-left-tagline strong { color: #fff; }
-    .login-feature-list { display: flex; flex-direction: column; gap: 14px; }
+    /* Más separación entre las 3 tarjetas y más aire adentro de cada
+       una -- se pidió que "respire más", antes quedaban muy pegadas. */
+    .login-feature-list { display: flex; flex-direction: column; gap: 20px; }
     .login-feature-card {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.13);
       border-radius: 14px;
-      padding: 14px 16px;
+      padding: 18px 20px;
       backdrop-filter: blur(6px);
       -webkit-backdrop-filter: blur(6px);
     }
@@ -3337,7 +3342,7 @@
       box-shadow: 0 10px 18px rgba(5,10,18,.25);
     }
     .login-feature-title { font-size: 14px; font-weight: 750; color: #fff; }
-    .login-feature-sub { font-size: 12px; color: rgba(226,232,240,.68); margin-top: 2px; line-height: 1.4; }
+    .login-feature-sub { font-size: 12px; color: rgba(226,232,240,.7); margin-top: 4px; line-height: 1.5; }
 
     /* El logo grande ya vive en el panel izquierdo -- no hace falta
        repetirlo arriba de la tarjeta como en celular. */
