@@ -237,6 +237,14 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
   const observadorRef = useRef<ResizeObserver | null>(null);
+  // Paneles que comparten exactamente la misma ubicación (ver
+  // gruposSolapados más abajo) y sus markers de Leaflet ya creados --
+  // guardados en refs (no en estado) para que el listener de zoom
+  // pueda leer siempre la versión más reciente sin quedar "pegado" a
+  // los valores de cuando se enganchó por primera vez.
+  const gruposSolapadosRef = useRef<PanelConCoordenadas[][]>([]);
+  const markersPorIdRef = useRef<Map<string, any>>(new Map());
+  const reposicionarSolapadosRef = useRef<() => void>(() => undefined);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
 
@@ -283,36 +291,35 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   // (ej. un mediano y un grande en el mismo poste/edificio de
   // Pacífico) -- puestos en el pin EXACTO, uno queda tapando al otro
   // por completo (mismos píxeles), así que solo se veía el que se
-  // dibujaba último. Acá se agrupan los que caen en el mismo punto y
-  // se reparten en un círculo chico alrededor del punto real, así
-  // todos quedan visibles y clickeables. Solo cambia dónde se DIBUJA
-  // el pin -- el resto (popup, "Cómo llegar", bounds) sigue usando las
-  // coordenadas reales del panel.
-  const posicionMarcador = useMemo(() => {
-    const grupos = new Map<string, typeof conCoordenadas>();
+  // dibujaba último.
+  //
+  // Antes esto se resolvía separándolos ~13m (en grados de lat/lng,
+  // fijo) alrededor del punto real. El problema: 13m reales son una
+  // separación ENORME en la pantalla con zoom cercano, pero con el
+  // mapa alejado (que es como arranca siempre que hay paneles en
+  // ciudades distintas -- fitBounds hace zoom out para que entren
+  // todos) esos mismos 13m ocupan literalmente menos de un píxel: los
+  // pines seguían encimados, solo que ahora invisiblemente. Por eso
+  // seguía viéndose "un pin de menos" aunque el contador de arriba ya
+  // dijera el número correcto.
+  //
+  // Ahora solo se AGRUPAN acá (qué paneles comparten punto); la
+  // separación de verdad se calcula en PÍXELES de pantalla (no en
+  // grados) dentro del efecto que dibuja el mapa, y se vuelve a
+  // calcular cada vez que cambia el zoom (ver reposicionarSolapados
+  // más abajo) -- así el espacio entre pines se ve igual de separado
+  // sin importar qué tan alejado o cercano esté el mapa.
+  const gruposSolapados = useMemo(() => {
+    const grupos = new Map<string, PanelConCoordenadas[]>();
     conCoordenadas.forEach((panel) => {
       const clave = `${panel.lat.toFixed(5)},${panel.lng.toFixed(5)}`;
       const lista2 = grupos.get(clave);
       if (lista2) lista2.push(panel);
       else grupos.set(clave, [panel]);
     });
-    const mapa = new Map<string, [number, number]>();
-    grupos.forEach((panelesDelPunto) => {
-      const n = panelesDelPunto.length;
-      // ~13m de radio: separa los pines a simple vista sin que parezca
-      // que están en otra manzana.
-      const radio = 0.00012;
-      panelesDelPunto.forEach((panel, i) => {
-        if (n === 1) {
-          mapa.set(panel.id, [panel.lat, panel.lng]);
-          return;
-        }
-        const angulo = (2 * Math.PI * i) / n;
-        mapa.set(panel.id, [panel.lat + Math.cos(angulo) * radio, panel.lng + Math.sin(angulo) * radio]);
-      });
-    });
-    return mapa;
+    return [...grupos.values()].filter((grupo) => grupo.length > 1);
   }, [conCoordenadas]);
+  gruposSolapadosRef.current = gruposSolapados;
   const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
   const panelesContratables = useMemo(() => conCoordenadas.filter(esPanelContratable).length, [conCoordenadas]);
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
@@ -387,17 +394,28 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             // moverse.
             keepBuffer: 4,
           }).addTo(mapRef.current);
+
+          // Enganchado UNA sola vez (recién al crear el mapa, no en
+          // cada corrida de este efecto) -- llama siempre a la versión
+          // más reciente de reposicionarSolapados a través del ref, así
+          // no hace falta desenganchar/re-enganchar en cada redibujado.
+          mapRef.current.on("zoomend", () => reposicionarSolapadosRef.current());
         }
 
         markersRef.current?.remove();
         markersRef.current = L.layerGroup().addTo(mapRef.current);
+        markersPorIdRef.current = new Map();
 
         conCoordenadas.forEach((panel) => {
           const selected = panel.id === seleccionado?.id;
           const contratado = esPanelActivoCliente(panel);
           const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
-          const [latMarcador, lngMarcador] = posicionMarcador.get(panel.id) ?? [panel.lat, panel.lng];
-          const marker = L.marker([latMarcador, lngMarcador], {
+          // Siempre arranca en su coordenada REAL -- si comparte punto
+          // con otro panel, reposicionarSolapados() lo corre a un lado
+          // apenas se termina de armar el mapa (y de nuevo cada vez que
+          // cambia el zoom), calculando la separación en píxeles de
+          // pantalla en vez de grados fijos.
+          const marker = L.marker([panel.lat, panel.lng], {
             icon: L.divIcon({
               className: `coverage-leaflet-marker ${selected ? "active" : ""} ${contratado ? "is-contracted" : "is-available"}`,
               html: `<span><img src="${pinUrl}" alt="" /></span>`,
@@ -407,6 +425,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           })
             .addTo(markersRef.current)
             .on("click", () => setSeleccionadoId(panel.id));
+          markersPorIdRef.current.set(panel.id, marker);
           marker.bindPopup(popupHtml(panel, Boolean(onSolicitarPanel)), {
             className: "coverage-popup",
             maxWidth: 320,
@@ -466,6 +485,30 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           );
         }
 
+        // Separa en pantalla los pines que comparten coordenada --
+        // ver el comentario largo junto a gruposSolapados más arriba.
+        // Se llama una vez acá (con el zoom que haya quedado tras
+        // fitBounds/setView de arriba) y de nuevo cada vez que el mapa
+        // cambia de zoom (ver el "zoomend" enganchado más arriba).
+        function reposicionarSolapados() {
+          if (!mapRef.current) return;
+          const zoom = mapRef.current.getZoom();
+          const RADIO_PX = 15;
+          gruposSolapadosRef.current.forEach((grupo) => {
+            const n = grupo.length;
+            grupo.forEach((panel, i) => {
+              const marker = markersPorIdRef.current.get(panel.id);
+              if (!marker) return;
+              const centro = mapRef.current.project([panel.lat, panel.lng], zoom);
+              const angulo = (2 * Math.PI * i) / n;
+              const offset = L.point(Math.cos(angulo) * RADIO_PX, Math.sin(angulo) * RADIO_PX);
+              marker.setLatLng(mapRef.current.unproject(centro.add(offset), zoom));
+            });
+          });
+        }
+        reposicionarSolapadosRef.current = reposicionarSolapados;
+        reposicionarSolapados();
+
         // El mapa nacía GRIS: Leaflet calcula el tamaño del contenedor al
         // crearse, pero para entonces la pantalla todavía está entrando
         // (.screens tiene una animación de 300ms) y el contenedor aún no
@@ -508,7 +551,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
       observadorRef.current?.disconnect();
       observadorRef.current = null;
     };
-  }, [conCoordenadas, posicionMarcador, seleccionado, seleccionadoId]);
+  }, [conCoordenadas, gruposSolapados, seleccionado, seleccionadoId]);
 
   useEffect(() => () => {
     markersRef.current?.remove();
