@@ -380,7 +380,11 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
               <footer>
                 <div><strong>947 957 971 · ochomillas.101@hotmail.com</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
-                <div><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>
+                {/* Antes este recuadro solo tenía una línea (el lema),
+                    quedaba desbalanceado contra el de la izquierda (que
+                    tiene teléfono + lema). Se pidió agregar el número
+                    acá también, centrado junto con el lema. */}
+                <div><strong>947 957 971</strong><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>
               </footer>
             </article>
           </div>

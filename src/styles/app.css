@@ -7169,7 +7169,9 @@ input[type="date"] {
 .quote-document-copy p { margin: 7px 0 0; color: #344054; font-family: Georgia, 'Times New Roman', serif; font-size: 12px; line-height: 1.5; white-space: pre-line; }
 .quote-document footer { margin-top: 32px; padding: 18px 44px; display: flex; justify-content: space-between; align-items: end; gap: 20px; color: #283346; background: #fff; font-family: Georgia, 'Times New Roman', serif; font-size: 10px; }
 .quote-document footer > div { display: grid; gap: 4px; }
-.quote-document footer > div:last-child { padding: 11px 18px; color: #fff; background: #071322; text-align: right; }
+/* Antes alineado a la derecha -- se pidió que el texto quede
+   centrado dentro de su propio recuadro, no pegado a una esquina. */
+.quote-document footer > div:last-child { padding: 11px 18px; color: #fff; background: #071322; text-align: center; }
 .quote-document footer strong { font-size: 10px; letter-spacing: .06em; }
 .quote-document footer span { color: #657083; font-size: 9px; letter-spacing: .05em; }
 .quote-document footer > div:last-child span { color: rgba(255,255,255,.8); }
@@ -7209,7 +7211,7 @@ input[type="date"] {
   .quote-document-table-row > strong, .quote-document-table-row > div { padding: 10px 11px; font-size: 11px; }
   .quote-document-copy { margin: 0 22px; padding: 14px 13px; }
   .quote-document footer { margin-top: 24px; padding: 16px 22px; align-items: stretch; flex-direction: column; gap: 10px; }
-  .quote-document footer > div:last-child { text-align: left; }
+  .quote-document footer > div:last-child { text-align: center; }
 }
 
 @media print {
