@@ -318,13 +318,17 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // no un dibujo por codigo, para que sea exactamente el mismo grafico.
   drawRingAsset(doc, 1001, 0, 599);
 
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 365 });
+  // Logo un poco mas grande (365 -> 410) y el kicker "Reporte mensual"
+  // un poco mas grande (18 -> 20) y mas abajo (212 -> 224), como se
+  // pidio. El titulo grande baja un poco tambien (266/362 -> 278/374)
+  // para mantener el mismo aire respecto al kicker que antes.
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 410 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 212, COLORS.accent, 18);
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 224, COLORS.accent, 20);
 
-  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 266, { characterSpacing: 0.5 });
-  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 362, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 278, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 374, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
