@@ -84,11 +84,6 @@ const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 // azul -- se usa SOLO en paginaPanel(), donde se pidio el logo
 // totalmente blanco (sin nada de azul).
 const LOGO_PLAYER_WHITE_MONO = join(ASSETS_DIR, "logos/vista360-player-white-mono.png");
-// Marca corta "V360" (recortada del icono de la app, sin fondo) --
-// se usa SOLO en cierre(), calcada de la tarjeta de presentacion de
-// referencia (ahi el logo es este mark corto, no el wordmark largo
-// "VISTA360" que se usa en portada/paneles).
-const V360_MARK_WHITE = join(ASSETS_DIR, "logos/v360-mark-white.png");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -254,28 +249,33 @@ function drawFooterLine(doc: PDFKit.PDFDocument, num: string, dark: boolean, sho
     .text(num, PAGE.width - PAGE.margin - 40, y + 12, { width: 40, align: "right" });
 }
 
-/** Pie de pagina de barra: barra oscura de 103px con una linea de
- *  acento configurable de 5px justo encima, a todo el ancho. Color y
- *  grosor de esa linea son parametros (stripColor/stripHeight) -- en
- *  las paginas de evidencia (fondo blanco) es el azul de acento de
- *  siempre; en la divisoria de panel (fondo oscuro) es un degradado
- *  (ver stripGradient) en vez de un color solido. La barra oscura de
- *  abajo NO cambia en ningun caso -- se pidio que esa se quede siempre
- *  negra.
+/** Pie de pagina de barra: barra oscura (103px por defecto) con una
+ *  linea de acento configurable de 5px justo encima, a todo el ancho.
+ *  Color y grosor de esa linea son parametros (stripColor/stripHeight)
+ *  -- en las paginas de evidencia (fondo blanco) es el azul de acento
+ *  de siempre; en la divisoria de panel (fondo oscuro) es un
+ *  degradado (ver stripGradient) en vez de un color solido. La barra
+ *  oscura de abajo NO cambia de color en ningun caso -- se pidio que
+ *  esa se quede siempre negra.
  *
  *  stripGradient (opcional): lista de colores para pintar la linea
  *  como un degradado horizontal en vez de solida -- se pidio para la
  *  divisoria de panel un azul que "empieza oscuro, se aclara al medio
  *  y vuelve oscuro", como un brillo metalico elegante. Si se pasa,
- *  tiene prioridad sobre stripColor. */
+ *  tiene prioridad sobre stripColor.
+ *
+ *  barH (opcional): alto de la barra -- se pidio una version mas
+ *  delgada para las paginas de evidencia (deja mas espacio para la
+ *  foto), sin tocar la de paginaPanel que se queda con el alto
+ *  original. */
 function drawFooterBar(
   doc: PDFKit.PDFDocument,
   num: string,
   stripColor = COLORS.accent,
   stripHeight = 5,
-  stripGradient?: string[]
+  stripGradient?: string[],
+  barH = 103
 ) {
-  const barH = 103;
   const barY = PAGE.height - barH;
   if (stripGradient && stripGradient.length > 1) {
     const gradient = doc.linearGradient(0, 0, PAGE.width, 0);
@@ -408,20 +408,22 @@ async function paginaEvidenciaBlanca(
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62);
+  // Encabezado subido al mismo nivel que el logo "VISTA360 PLAYER"
+  // de la derecha (y:52) -- antes empezaba en y:62, un poco mas abajo
+  // que el logo.
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 52);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
-    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 88, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 128, { width: 760 });
 
-  // Se pidio agrandar la foto para que ocupe mas espacio y subirla
-  // un poco (antes x:74 y:195 w:996 h:546). Se achica el hueco con el
-  // encabezado y se estira mas hacia abajo (footer) y a la derecha
-  // (dejando aire con la tarjeta flotante, que sigue en cardX~1172).
+  // Se pidio agrandar mas la foto todavia y subirla (antes x:74
+  // y:172 w:1040 h:606) -- ahora hay mas espacio arriba (encabezado
+  // subido) y abajo (barra del pie mas delgada, ver drawFooterBar).
   const photoX = 74;
-  const photoY = 172;
-  const photoW = 1040;
-  const photoH = 606;
+  const photoY = 158;
+  const photoW = 1064;
+  const photoH = 660;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
@@ -459,7 +461,11 @@ async function paginaEvidenciaBlanca(
   // vuelve oscura, efecto de brillo elegante en vez de un azul
   // plano. Se pidio ese mismo efecto tambien aca, en las paginas de
   // evidencia (blanca y oscura), no solo en la divisoria.
-  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark]);
+  // Barra mas delgada (66 vs los 103 de siempre) -- se pidio que el
+  // pie de esta pagina sea mas fino, para dejarle mas espacio a la
+  // foto. Solo aca y en la version oscura -- paginaPanel se queda con
+  // el alto original.
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark], 66);
 }
 
 /** Version oscura de paginaEvidenciaBlanca -- misma composicion (foto
@@ -484,16 +490,18 @@ async function paginaEvidenciaOscura(
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
   doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 62, COLORS.accent2);
+  // Mismo ajuste que en la version blanca: encabezado al nivel del
+  // logo (y:52) y foto mas grande/mas arriba.
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 52, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text("Reporte Fotografico", PAGE.margin, 98, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 88, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 128, { width: 760 });
 
   const photoX = 74;
-  const photoY = 172;
-  const photoW = 1040;
-  const photoH = 606;
+  const photoY = 158;
+  const photoW = 1064;
+  const photoH = 660;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
@@ -525,7 +533,8 @@ async function paginaEvidenciaOscura(
   // vuelve oscura, efecto de brillo elegante en vez de un azul
   // plano. Se pidio ese mismo efecto tambien aca, en las paginas de
   // evidencia (blanca y oscura), no solo en la divisoria.
-  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark]);
+  // Misma barra delgada que en la version blanca (66 en vez de 103).
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark], 66);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
@@ -576,9 +585,9 @@ function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: numb
   doc.restore();
 }
 
-/** Cierre del reporte: calcado directo de la tarjeta de presentacion
- *  fisica de referencia -- fondo oscuro solido (sin el anillo
- *  decorativo, que solo va en la portada), el mark corto "V360" a la
+/** Cierre del reporte: calcado de la tarjeta de presentacion fisica
+ *  de referencia -- fondo oscuro solido (sin el anillo decorativo,
+ *  que solo va en la portada), wordmark "VISTA360" + tagline a la
  *  izquierda, raya divisoria vertical, y a la derecha nombre + cargo,
  *  telefono, correo y el rubro del negocio. */
 function cierre(doc: PDFKit.PDFDocument) {
@@ -599,12 +608,30 @@ function cierre(doc: PDFKit.PDFDocument) {
   // dentro de tarjetas), para que se note contra el fondo oscuro.
   const iconColor = "#c7cfdd";
 
-  // ── Columna izquierda: mark corto "V360", centrado en el alto de la raya ──
-  const logoW = 420;
-  const logoH = logoW / (395 / 87);
+  // ── Columna izquierda: wordmark "VISTA360" + tagline, centrados
+  // en el alto de la raya -- se volvio a pedir este logo (el mark
+  // corto "V360" era de un pedido anterior, ya no va aca), calcado
+  // de la imagen de referencia con el wordmark completo. Tagline en
+  // MAYUSCULAS como en esa imagen (antes iba en minuscula/mas chica).
+  const logoW = 380;
+  const logoH = logoW / (1170 / 124);
+  const tag1 = "MÁS QUE VISIBILIDAD.";
+  const tag2 = "PRESENCIA.";
+  const tag1Size = 24;
+  const tag2Size = 16;
+  const gapLogoTag = 36;
+  const gapTags = 12;
+  const blockH = logoH + gapLogoTag + tag1Size + gapTags + tag2Size;
   const logoX = leftColX + (leftColW - logoW) / 2;
-  const logoY = (dividerY1 + dividerY2) / 2 - logoH / 2;
-  doc.image(V360_MARK_WHITE, logoX, logoY, { width: logoW });
+  const logoY = (dividerY1 + dividerY2) / 2 - blockH / 2;
+  doc.image(LOGO_WORDMARK_WHITE, logoX, logoY, { width: logoW });
+
+  const tag1Y = logoY + logoH + gapLogoTag;
+  doc.font("Helvetica-Bold").fontSize(tag1Size).fillColor(COLORS.white)
+    .text(tag1, leftColX, tag1Y, { width: leftColW, align: "center", characterSpacing: 1.2 });
+  const tag2Y = tag1Y + tag1Size + gapTags;
+  doc.font("Helvetica-Bold").fontSize(tag2Size).fillColor(COLORS.white)
+    .text(tag2, leftColX, tag2Y, { width: leftColW, align: "center", characterSpacing: 2 });
 
   // ── Raya divisoria vertical ──
   doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor("#2a3852").stroke();
