@@ -86,7 +86,17 @@ function esPanelContratable(panel: PanelConUso) {
   // Sigue mostrándose con su estado real ("Ocupado" + "Se libera el ...")
   // -- no aparece como si estuviera disponible hoy.
   if (panel.libreDesde) return true;
-  return panel.estado === "Disponible" || panel.estado === "Libre";
+  // Antes esto exigía panel.estado === "Disponible" || "Libre" -- si
+  // el panel no tenía ese campo seteado (undefined/""), quedaba NO
+  // contratable, aunque estadoTexto() (arriba) SÍ lo mostrara como
+  // "Disponible" (su propio fallback es tratar cualquier cosa que no
+  // sea "Ocupado"/"Mantenimiento" como disponible). Esa inconsistencia
+  // hacía que un panel con estado vacío apareciera etiquetado
+  // "Disponible" en su pin/tarjeta, pero el contador "Pantallas que
+  // podrías contratar" igual se quedara en 0 sin incluirlo. Ahora usa
+  // el mismo criterio que estadoTexto para que ambos coincidan
+  // siempre.
+  return panel.estado !== "Ocupado" && panel.estado !== "Mantenimiento";
 }
 
 // Mismo umbral que usa recordatorioVencimientoCampanas (Cloud

@@ -6264,11 +6264,28 @@
   .coverage-leaflet-marker.active {
     filter: drop-shadow(0 14px 18px rgba(2,6,23,.42));
   }
+  /* El pin "disponible" (vista360-map-marker-available.png) es casi
+     blanco -- contra el mapa base (tonos claros/crema de
+     OpenStreetMap) casi no se distingue, sobre todo alejado/con
+     zoom bajo, donde queda chiquito. Antes solo tenía una sombra
+     oscura debajo, que en un fondo claro no aporta casi nada de
+     contraste. Se le suma un contorno azul (el mismo azul de marca
+     que ya se usa para acciones/botones) repitiendo el mismo
+     drop-shadow sin desplazamiento -- ese truco de CSS dibuja un
+     borde alrededor de la silueta del PNG (sigue el canal alfa), así
+     que el pin blanco queda con un aro azul bien visible en
+     cualquier fondo. */
   .coverage-leaflet-marker.is-available {
-    filter: drop-shadow(0 7px 10px rgba(2,6,23,.38));
+    filter:
+      drop-shadow(0 0 1.6px #0877FF)
+      drop-shadow(0 0 1.6px #0877FF)
+      drop-shadow(0 7px 10px rgba(2,6,23,.38));
   }
   .coverage-leaflet-marker.is-available.active {
-    filter: drop-shadow(0 12px 16px rgba(2,6,23,.48));
+    filter:
+      drop-shadow(0 0 1.8px #0877FF)
+      drop-shadow(0 0 1.8px #0877FF)
+      drop-shadow(0 12px 16px rgba(2,6,23,.48));
   }
   .coverage-map-legend {
     position: absolute;
