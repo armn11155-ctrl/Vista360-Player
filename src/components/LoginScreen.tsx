@@ -74,15 +74,11 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
   return (
     <div className="login-shell">
-      {/* Panel izquierdo -- solo aparece en escritorio (CSS,
-          @media min-width:900px). En celular no se renderiza nada
-          distinto: sigue siendo el logo arriba + tarjeta de siempre.
-          A pedido del usuario se sacaron las 3 tarjetas de features
-          que había antes -- ahora es solo el logo, sin estirar. */}
-      <div className="login-left-panel">
-        <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
-      </div>
-
+      {/* Logo arriba de la tarjeta, igual en celular y en escritorio
+          -- a pedido del usuario ya no van separados en 2 columnas.
+          En escritorio este bloque completo se ubica del lado
+          izquierdo de la pantalla (ver .login-shell en app.css),
+          dejando la foto de la ciudad más visible a la derecha. */}
       <div className="login-right-panel">
         <div className="login-logo">
           <img src={LOGO} alt="Vista360 Player" draggable={false} />

@@ -3082,14 +3082,10 @@
       background-position: center center;
     }
   }
-  /* Panel izquierdo con logo + 3 tarjetas de features -- solo existe
-     visualmente en escritorio (ver @media min-width:900px más abajo).
-     En celular queda oculto: no se cambia nada de lo que ya había. */
-  .login-left-panel { display: none; }
-  /* Envoltorio transparente para logo+tarjeta+pie -- en celular se
-     comporta exactamente como antes (columna centrada, mismo ancho
-     máximo en los hijos); en escritorio pasa a ser la columna derecha
-     del layout de 2 columnas. */
+  /* Envoltorio de logo+tarjeta+pie -- en celular se comporta
+     exactamente como antes (columna centrada, mismo ancho máximo en
+     los hijos); en escritorio este mismo bloque se corre hacia la
+     izquierda de la pantalla (ver @media min-width:900px). */
   .login-right-panel { width: 100%; display: flex; flex-direction: column; }
   .login-logo, .login-card, .login-foot {
     width: 100%;
@@ -3281,10 +3277,10 @@
       flex-direction: column;
     }
 
-    /* En escritorio el acceso pasa a 2 columnas: logo a la izquierda
-       (sin tarjetas de features -- se sacaron a pedido del usuario) y
-       la tarjeta de acceso a la derecha, centrados juntos sobre la
-       panorámica. En celular nada de este bloque aplica. */
+    /* En escritorio el logo+tarjeta (mismo bloque que en celular, no
+       2 columnas separadas) se corre hacia el lado izquierdo de la
+       pantalla, dejando la foto de la ciudad más visible a la
+       derecha -- a pedido del usuario. */
     .login-shell::before {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
@@ -3294,38 +3290,15 @@
     .login-shell {
       flex-direction: row;
       align-items: center;
-      justify-content: center;
-      gap: 88px;
-      padding-left: 60px;
+      justify-content: flex-start;
+      padding-left: 100px;
       padding-right: 60px;
     }
-    /* Se sacaron las 3 tarjetas de features a pedido del usuario --
-       el panel izquierdo ahora es solo el logo. object-fit:contain +
-       width/height explícitos evitan que el flex column (align-items
-       por defecto: stretch) lo estire de ancho. */
-    .login-left-panel {
-      display: flex;
-      align-items: flex-start;
-      width: 100%;
-      max-width: 420px;
-    }
-    .login-left-logo {
-      height: 44px;
-      width: auto;
-      max-width: 100%;
-      object-fit: contain;
-      align-self: flex-start;
-      filter: drop-shadow(0 12px 26px rgba(0,0,0,.45));
-    }
-
-    /* El logo grande ya vive en el panel izquierdo -- no hace falta
-       repetirlo arriba de la tarjeta como en celular. */
     .login-right-panel { width: auto; }
-    .login-logo { display: none; }
-    .login-card, .login-foot {
+    .login-logo, .login-card, .login-foot {
       width: 100%;
       max-width: 440px;
-      margin-left: auto;
+      margin-left: 0;
       margin-right: auto;
     }
     /* El botón se queda blanco, igual que en celular -- no se
