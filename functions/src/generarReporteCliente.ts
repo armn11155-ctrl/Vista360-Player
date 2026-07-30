@@ -84,6 +84,11 @@ const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 // azul -- se usa SOLO en paginaPanel(), donde se pidio el logo
 // totalmente blanco (sin nada de azul).
 const LOGO_PLAYER_WHITE_MONO = join(ASSETS_DIR, "logos/vista360-player-white-mono.png");
+// Marca corta "V360" (recortada del icono de la app, sin fondo) --
+// se usa SOLO en cierre(), calcada de la tarjeta de presentacion de
+// referencia (ahi el logo es este mark corto, no el wordmark largo
+// "VISTA360" que se usa en portada/paneles).
+const V360_MARK_WHITE = join(ASSETS_DIR, "logos/v360-mark-white.png");
 
 const pad2 = (n: number) => String(n).padStart(2, "0");
 
@@ -526,88 +531,104 @@ async function paginaEvidenciaOscura(
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
  *  TODO: mover esto a config/Firestore si se necesita cambiar sin
  *  tocar codigo. Por ahora son valores de prueba. */
+const CONTACTO_NOMBRE = "Alan Martínez";
+const CONTACTO_CARGO = "DIRECTOR GENERAL";
 const CONTACTO_EMAIL = "ochomillas.101@hotmail.com";
-const CONTACTO_TELEFONO = "+51 947 957 971";
+// Sin "+51" -- se pidio calcar la tarjeta de presentacion de
+// referencia, ahi el numero va sin el codigo de pais.
+const CONTACTO_TELEFONO = "947 957 971";
 
-/** Icono simple de sobre/correo, dibujado con lineas (sin depender de
- *  fuentes con glifos de icono). */
-function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
-  doc.roundedRect(x, y, w, h, 2.5).lineWidth(2).strokeColor(color).stroke();
-  doc.moveTo(x + 3, y + 4)
-    .lineTo(x + w / 2, y + h / 2 + 3)
-    .lineTo(x + w - 3, y + 4)
-    .lineWidth(2).strokeColor(color).stroke();
+/** Icono de llamada/telefono, trazado con el mismo path SVG del icono
+ *  "phone" de Feather Icons (viewBox 24x24) -- se dibuja con
+ *  doc.path(), que entiende path-data SVG (incluidos los arcos "a"),
+ *  escalado/posicionado con translate+scale. Se cambio del rectangulo
+ *  redondeado anterior a este trazo de auricular porque se pidio
+ *  calcar exactamente el icono de la tarjeta de presentacion de
+ *  referencia. */
+function drawPhoneIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: number, color: string) {
+  doc.save();
+  doc.translate(x, y).scale(size / 24);
+  doc.path(
+    "M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 " +
+      "19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 " +
+      "0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 " +
+      "0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+  )
+    .lineWidth(1.8)
+    .strokeColor(color)
+    .lineJoin("round")
+    .lineCap("round")
+    .stroke();
+  doc.restore();
 }
 
-/** Icono simple de telefono movil (cuerpo redondeado + altavoz arriba). */
-function drawPhoneIcon(doc: PDFKit.PDFDocument, x: number, y: number, w: number, h: number, color: string) {
-  doc.roundedRect(x, y, w, h, h * 0.24).lineWidth(2).strokeColor(color).stroke();
-  doc.moveTo(x + w * 0.32, y + h * 0.16).lineTo(x + w * 0.68, y + h * 0.16).lineWidth(2).strokeColor(color).stroke();
+/** Icono de sobre/correo, mismo enfoque que drawPhoneIcon (path SVG de
+ *  Feather Icons "mail", viewBox 24x24). */
+function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: number, color: string) {
+  doc.save();
+  doc.translate(x, y).scale(size / 24);
+  doc.path("M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z")
+    .lineWidth(1.6)
+    .strokeColor(color)
+    .lineJoin("round")
+    .stroke();
+  doc.path("M22 6l-10 7L2 6").lineWidth(1.6).strokeColor(color).lineJoin("round").lineCap("round").stroke();
+  doc.restore();
 }
 
+/** Cierre del reporte: calcado directo de la tarjeta de presentacion
+ *  fisica de referencia -- fondo oscuro solido (sin el anillo
+ *  decorativo, que solo va en la portada), el mark corto "V360" a la
+ *  izquierda, raya divisoria vertical, y a la derecha nombre + cargo,
+ *  telefono, correo y el rubro del negocio. */
 function cierre(doc: PDFKit.PDFDocument) {
   // Ya no recibe totalPages -- se pidio que el cierre no tenga pie de
   // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
   // de pagina), asi que ese dato ya no hace falta aca.
-  // Cierre: fondo negro solido, SIN el anillo decorativo -- se pidio
-  // que esta pagina (a diferencia de la portada, donde el anillo se
-  // mantiene) quede completamente negra y limpia, sin ese circulo.
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill("#000000");
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
 
-  // Layout de 2 columnas con raya divisoria VERTICAL -- se pidio
-  // inspirarse en la tarjeta de presentacion de referencia (logo a la
-  // izquierda, raya, datos de contacto a la derecha, todo simetrico).
-  // Antes era una sola columna a la izquierda con todo apilado.
-  //
-  // El bloque completo se mantiene a la izquierda del anillo
-  // decorativo (drawRingAsset arranca en x=1001) para no pisarlo.
-  const blockRight = 960;
-  const dividerX = PAGE.margin + (blockRight - PAGE.margin) * 0.42;
+  const dividerX = 680;
   const leftColX = PAGE.margin;
   const leftColW = dividerX - 40 - leftColX;
-  const rightColX = dividerX + 50;
-  const rightColW = blockRight - rightColX;
-  const dividerY1 = 280;
-  const dividerY2 = 620;
+  const rightColX = dividerX + 56;
+  const rightColW = PAGE.width - PAGE.margin - rightColX;
+  const dividerY1 = 300;
+  const dividerY2 = 700;
+  // Mismo gris azulado sutil que usa la referencia para la raya y los
+  // iconos -- mas claro que COLORS.line (pensada para fondos claros
+  // dentro de tarjetas), para que se note contra el fondo oscuro.
+  const iconColor = "#c7cfdd";
 
-  // ── Columna izquierda: logo + tagline, centrados ──
-  // Mismo tagline de marca que ya usan las cotizaciones (pie del PDF)
-  // y el login del portal -- antes esta pagina decia algo distinto
-  // ("Publicidad exterior premium"), se unifica para que sea el mismo
-  // mensaje en todos los documentos de cara al cliente.
-  const logoW = 300;
+  // ── Columna izquierda: mark corto "V360", centrado en el alto de la raya ──
+  const logoW = 420;
+  const logoH = logoW / (395 / 87);
   const logoX = leftColX + (leftColW - logoW) / 2;
-  const logoY = 380;
-  doc.image(LOGO_WORDMARK_WHITE, logoX, logoY, { width: logoW });
-
-  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text("Más que visibilidad.", leftColX, logoY + 95, { width: leftColW, align: "center" });
-  doc.font("Helvetica").fontSize(15).fillColor(COLORS.muted)
-    .text("Presencia.", leftColX, logoY + 129, { width: leftColW, align: "center" });
+  const logoY = (dividerY1 + dividerY2) / 2 - logoH / 2;
+  doc.image(V360_MARK_WHITE, logoX, logoY, { width: logoW });
 
   // ── Raya divisoria vertical ──
-  doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor(COLORS.line).stroke();
+  doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor("#2a3852").stroke();
 
-  // ── Columna derecha: contacto, mas grande, simetrico con la izquierda ──
-  let y = 350;
-  doc.font("Helvetica-Bold").fontSize(15).fillColor(COLORS.accent)
-    .text("CONTACTO", rightColX, y, { characterSpacing: 1.5 });
-  y += 38;
+  // ── Columna derecha: nombre, cargo, raya horizontal y contacto ──
+  doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
+    .text(CONTACTO_NOMBRE, rightColX, 330, { width: rightColW });
+  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.muted)
+    .text(CONTACTO_CARGO, rightColX, 396, { characterSpacing: 1.5, width: rightColW });
 
-  drawPhoneIcon(doc, rightColX + 3, y + 3, 20, 24, COLORS.accent2);
-  doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
-    .text(CONTACTO_TELEFONO, rightColX + 42, y);
-  y += 52;
+  doc.moveTo(rightColX, 454).lineTo(rightColX + rightColW, 454).lineWidth(1).strokeColor("#26324a").stroke();
 
-  drawEmailIcon(doc, rightColX, y + 4, 26, 19, COLORS.accent2);
-  doc.font("Helvetica-Bold").fontSize(24).fillColor(COLORS.white)
-    .text(CONTACTO_EMAIL, rightColX + 42, y, { width: rightColW - 42 });
-  y += 52;
+  drawPhoneIcon(doc, rightColX, 494, 32, iconColor);
+  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
+    .text(CONTACTO_TELEFONO, rightColX + 46, 500, { width: rightColW - 46 });
+
+  drawEmailIcon(doc, rightColX, 560, 32, iconColor);
+  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
+    .text(CONTACTO_EMAIL, rightColX + 46, 566, { width: rightColW - 46 });
 
   // Categoria del negocio, como en la tarjeta de presentacion de
   // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
   doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, y, { characterSpacing: 1, width: rightColW });
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, 632, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
