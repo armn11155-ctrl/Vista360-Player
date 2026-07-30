@@ -253,10 +253,18 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         lng: numeroCoordenada((panel as unknown as Record<string, unknown>).lng),
         contrato: usados.get(panel.id),
       }))
-      // El mapa comercial enseña los paneles del cliente y los que
-      // realmente puede solicitar. Un panel ajeno ocupado o en
-      // mantenimiento no debe aparecer como si estuviera disponible.
-      .filter((panel) => Boolean(panel.contrato) || esPanelContratable(panel))
+      // Antes acá se filtraban los paneles que no eran ni del cliente
+      // ni "contratables" (esPanelContratable) -- en la práctica eso
+      // escondía cualquier panel en Mantenimiento (u ocupado por otro
+      // cliente sin fecha de liberación) aunque el comentario de
+      // arriba dijera explícitamente que Cobertura debía mostrar TODO
+      // el inventario. Ese filtro es justo el que hacía que, con 4
+      // paneles reales, el mapa dijera "3 paneles" y uno quedara
+      // invisible sin ningún aviso. El popup de cada pin ya arma su
+      // propio botón de acción según el estado real del panel (ver
+      // popupHtml más abajo), así que no depende de este filtro para
+      // verse bien -- ahora se muestra el inventario completo, tal
+      // como se pidió.
       .sort((a, b) => (a.ciudad || "").localeCompare(b.ciudad || "") || a.nombre.localeCompare(b.nombre));
   }, [contratos, todosPaneles]);
 

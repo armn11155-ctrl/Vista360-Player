@@ -3997,14 +3997,20 @@
       flex-direction: column;
       justify-content: center;
     }
-    .sidebar-panel .sidebar-head { padding: 34px 14px 16px; }
+    .sidebar-panel .sidebar-head { padding: 34px 14px 22px; }
     .sidebar-panel .sidebar-profile-chip { max-width: 100%; }
-    /* Logo de vuelta, solo en escritorio, arriba del chip de perfil. */
+    /* Pedido explícito: en escritorio el sidebar solo lleva el logo,
+       centrado -- el chip de perfil (foto+nombre) ya no va acá
+       (quedaba redundante con el botón "Perfil" que Inicio ya
+       muestra arriba a la derecha, visible solo en escritorio). En
+       MÓVIL el chip se queda igual que siempre -- ahí no hay ningún
+       botón de perfil equivalente en el header de Inicio. */
+    .sidebar-panel .sidebar-profile-chip-expanded { display: none; }
     .sidebar-panel .sidebar-logo {
       display: block;
-      height: 20px;
+      height: 22px;
       width: auto;
-      margin: 0 auto 18px;
+      margin: 0 auto;
     }
     .sidebar-close { display: none !important; }
     /* Un poco de aire extra arriba de la lista, separándola del logo

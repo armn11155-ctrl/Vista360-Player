@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import BackChevron from "../BackChevron";
 import { fechaCorta } from "../../utils/fechas";
 import { useOcupacion, type FacturaPendiente, type PanelOcupacion, type PorVencer } from "../../hooks/useOcupacion";
@@ -77,6 +77,45 @@ function Kpi({ valor, etiqueta, tono }: { valor: string | number; etiqueta: stri
     </div>
   );
 }
+
+/** Encabezado de sección con insignia de ícono -- mismo patrón que
+ *  .report-admin-icon/.report-admin-title en "Generar reporte", para
+ *  que Ocupación se sienta igual de cuidada que el resto de las
+ *  pantallas "premium" en vez de ser la única con títulos planos. */
+function SeccionTitulo({ icon, titulo, sub }: { icon: ReactNode; titulo: string; sub?: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: sub ? 4 : 10 }}>
+      <span className="report-admin-icon" aria-hidden="true">{icon}</span>
+      <div style={{ paddingTop: 2 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0B1220", margin: 0 }}>{titulo}</h2>
+        {sub && <p style={{ fontSize: 12, color: "#64748B", margin: "3px 0 0", lineHeight: 1.5 }}>{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+const ICONO_COBRO = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5v9M15 9.8c0-1.3-1.3-2.3-3-2.3s-3 .9-3 2.1c0 3 6 1.4 6 4.4 0 1.2-1.3 2.1-3 2.1s-3-1-3-2.3" />
+  </svg>
+);
+const ICONO_LLAMAR = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6.6 10.8c1.4 2.7 3.6 4.9 6.3 6.3l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.8Z" />
+  </svg>
+);
+const ICONO_INVENTARIO = (
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4.5" width="18" height="11" rx="1.6" />
+    <path d="M8.5 20h7M12 15.5V20" />
+  </svg>
+);
+const ICONO_OCUPACION = (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19V10M10 19V5M16 19v-7M20 19H4" />
+  </svg>
+);
 
 /** Una campaña que está por terminar: a quién hay que llamar. */
 function FilaPorVencer({ item }: { item: PorVencer }) {
@@ -250,11 +289,42 @@ export default function Ocupacion({ onBack }: Props) {
 
         {state.status === "ready" && (
           <>
-            <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 4 }}>
-              <Kpi valor={`${state.datos.totales.ocupacionPct}%`} etiqueta="Ocupación de pantallas" />
-              <Kpi valor={state.datos.totales.trabajando} etiqueta="Trabajando ahora" tono="ok" />
-              <Kpi valor={state.datos.totales.libres} etiqueta="Sin anunciante"
-                   tono={state.datos.totales.libres > 0 ? "alerta" : undefined} />
+            {/* Métrica principal en una tarjeta oscura premium, mismo
+               patrón que .report-admin-panel en "Generar reporte" --
+               antes era una caja plana más entre varias del mismo
+               tamaño, así que el número que de verdad importa (qué
+               tan ocupado está el inventario) no resaltaba más que
+               cualquier otro dato secundario. */}
+            <div className="report-admin-panel" style={{ marginTop: 4 }}>
+              <div className="report-admin-header" style={{ marginBottom: 16 }}>
+                <span className="report-admin-icon" aria-hidden="true">{ICONO_OCUPACION}</span>
+                <div className="report-admin-copy">
+                  <div className="report-admin-title">Ocupación de pantallas</div>
+                  <div className="report-admin-sub">Qué parte del inventario está trabajando ahora mismo.</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 46, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+                  {state.datos.totales.ocupacionPct}%
+                </span>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 800, color: "#4ADE80", background: "rgba(34,197,94,0.14)",
+                    border: "1px solid rgba(74,222,128,0.28)", borderRadius: 999, padding: "5px 11px",
+                  }}>
+                    {state.datos.totales.trabajando} trabajando
+                  </span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 800,
+                    color: state.datos.totales.libres > 0 ? "#F87171" : "#94A3B8",
+                    background: state.datos.totales.libres > 0 ? "rgba(239,68,68,0.14)" : "rgba(148,163,184,0.14)",
+                    border: state.datos.totales.libres > 0 ? "1px solid rgba(248,113,113,0.28)" : "1px solid rgba(148,163,184,0.24)",
+                    borderRadius: 999, padding: "5px 11px",
+                  }}>
+                    {state.datos.totales.libres} sin anunciante
+                  </span>
+                </div>
+              </div>
             </div>
             <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
               <Kpi valor={state.datos.totales.anunciantesActivos} etiqueta="Campañas al aire" />
@@ -274,10 +344,8 @@ export default function Ocupacion({ onBack }: Props) {
 
             {state.datos.cobranza.facturas.length > 0 && (
               <section style={{ marginTop: 26 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>
-                  Pendiente de cobro
-                </h2>
-                <p style={{ fontSize: 12, color: "#64748B", margin: "0 0 12px", lineHeight: 1.5 }}>
+                <SeccionTitulo icon={ICONO_COBRO} titulo="Pendiente de cobro" />
+                <p style={{ fontSize: 12, color: "#64748B", margin: "0 0 12px 52px", lineHeight: 1.5 }}>
                   Facturas emitidas que todavía no figuran como pagadas.
                   {state.datos.cobranza.vencidas > 0 && (
                     <> <strong style={{ color: "#DC2626" }}>
@@ -305,8 +373,8 @@ export default function Ocupacion({ onBack }: Props) {
             )}
 
             <section style={{ marginTop: 26 }}>
-              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 4px" }}>A quién llamar</h2>
-              <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 12px", lineHeight: 1.5 }}>
+              <SeccionTitulo icon={ICONO_LLAMAR} titulo="A quién llamar" />
+              <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 12px 52px", lineHeight: 1.5 }}>
                 Campañas que terminan en los próximos {state.datos.ventanaDias} días. Renovar antes de que
                 venza evita que la pantalla quede parada.
               </p>
@@ -327,7 +395,7 @@ export default function Ocupacion({ onBack }: Props) {
             </section>
 
             <section style={{ marginTop: 28 }}>
-              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#0B1220", margin: "0 0 10px" }}>Inventario</h2>
+              <SeccionTitulo icon={ICONO_INVENTARIO} titulo="Inventario" />
               <div style={{ display: "flex", gap: 7, marginBottom: 12, flexWrap: "wrap" }}>
                 {([
                   ["todas", `Todas (${state.datos.totales.paneles})`],
