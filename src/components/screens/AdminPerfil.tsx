@@ -97,33 +97,6 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
-  // ── Editar nombre propio -- un simple prompt() alcanza: es algo
-  // que se toca una sola vez (la cuenta Gerente se creó a mano antes
-  // de que existiera este sistema de roles y su documento nunca tuvo
-  // un campo "nombre", así que caía al nombre del rol), no hace falta
-  // un formulario aparte con Cancelar/Guardar para eso. ──
-  const [guardandoNombre, setGuardandoNombre] = useState(false);
-
-  async function editarNombre() {
-    const valor = window.prompt("Tu nombre", nombre || "");
-    if (valor === null) return;
-    const limpio = valor.trim();
-    if (!limpio || !cloudFunctions) return;
-    setGuardandoNombre(true);
-    try {
-      const fn = httpsCallable<{ nombre: string }, { nombre: string }>(cloudFunctions, "actualizarNombrePropio");
-      await fn({ nombre: limpio });
-      // No hace falta guardar el resultado a mano: usePortalAuth
-      // escucha portalUsers/{uid} en vivo, así que "nombre" (el prop
-      // que llega de App.tsx) se actualiza solo apenas Firestore
-      // confirma el guardado -- mismo mecanismo que el avatar de acá
-      // arriba.
-    } catch (error) {
-      window.alert(mensajeDeError(error, "No se pudo guardar el nombre. Si acabas de actualizar la app, puede que falte desplegar la función en GitHub Actions."));
-    } finally {
-      setGuardandoNombre(false);
-    }
-  }
   const [limpieza, setLimpieza] = useState<LimpiezaEstado>({ fase: "idle" });
   // Fotos de la vieja pantalla de Evidencias: siguen referenciadas desde
   // el contrato, así que la limpieza de huérfanos NO las ve -- pero ya no
@@ -233,19 +206,11 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
               </span>
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => void editarNombre()}
-            disabled={guardandoNombre}
-            style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: guardandoNombre ? "not-allowed" : "pointer", padding: 0 }}
-            aria-label="Editar nombre"
-          >
-            <span className="admin-perfil-nombre">{guardandoNombre ? "Guardando…" : (nombre || rolInterno)}</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z" />
-            </svg>
-          </button>
+          {/* Ya no es editable a mano -- el nombre se resuelve solo
+              (usePortalAuth trae el real de Firestore, o el respaldo
+              conocido por correo si todavía no está guardado). Pedido
+              explícito: sin lápiz ni prompt(), solo el nombre. */}
+          <span className="admin-perfil-nombre">{nombre || rolInterno}</span>
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
             <span className="profile-verified-mark" aria-hidden="true">

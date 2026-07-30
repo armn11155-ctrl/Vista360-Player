@@ -2,7 +2,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { onSchedule } from "firebase-functions/v2/scheduler";
-import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -434,6 +434,44 @@ export const notificarSolicitudCampana = onDocumentCreated("solicitudesCampana/{
     body: esRenovacion
       ? `${nombreCliente} quiere renovar: ${nombreSolicitud.replace(/^Renovación\s*—\s*/, "")}.`
       : `${nombreCliente} solicitó una campaña nueva: ${nombreSolicitud || "sin nombre"}.`,
+    url: "/",
+  }).catch(() => undefined);
+});
+
+/**
+ * Se dispara cuando una solicitud YA EXISTENTE cambia de estado
+ * (Pendiente -> Revisada/Rechazada, que es lo que hace el botón
+ * ✓/✕ de esta pantalla) -- avisa al cliente que la mandó que ya se
+ * resolvió, sin que tenga que volver a entrar para enterarse. Pedido
+ * explícito: "cuando yo acepte esa solicitud, le tiene que llegar una
+ * notificación a ellos también, de que ha sido aprobado o denegado."
+ * Mismo patrón que notificarSolicitudCampana de arriba, pero
+ * onDocumentUpdated en vez de onDocumentCreated, y usa
+ * enviarPushACliente (el que la creó) en vez de enviarPushAAdmin.
+ */
+export const notificarResolucionSolicitud = onDocumentUpdated("solicitudesCampana/{id}", async (event) => {
+  const antes = event.data?.before.data();
+  const despues = event.data?.after.data();
+  if (!antes || !despues) return;
+  // Solo en el cambio real de estado -- este mismo documento se toca
+  // por otros motivos (ej. estadoActualizadoEn en otra escritura) y no
+  // hay que mandar push de nuevo si el estado no cambió.
+  if (antes.estado === despues.estado) return;
+  if (despues.estado !== "Revisada" && despues.estado !== "Rechazada") return;
+
+  const clienteId = String(despues.cliente_id || "");
+  if (!clienteId) return;
+
+  const nombreSolicitud = String(despues.nombre || "").trim();
+  const esRenovacion = nombreSolicitud.startsWith("Renovación");
+  const etiqueta = esRenovacion ? nombreSolicitud.replace(/^Renovación\s*—\s*/, "") : (nombreSolicitud || "tu campaña");
+  const aprobada = despues.estado === "Revisada";
+
+  await enviarPushACliente(clienteId, {
+    title: aprobada ? "Solicitud aprobada" : "Solicitud rechazada",
+    body: aprobada
+      ? `Tu solicitud de ${esRenovacion ? "renovación" : "campaña"} "${etiqueta}" fue aprobada.`
+      : `Tu solicitud de ${esRenovacion ? "renovación" : "campaña"} "${etiqueta}" fue rechazada.`,
     url: "/",
   }).catch(() => undefined);
 });

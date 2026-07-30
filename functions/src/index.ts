@@ -33,7 +33,7 @@ export { contarEvidenciasHuerfanas } from "./contarEvidenciasHuerfanas.js";
 export { crearFacturaAdmin } from "./crearFacturaAdmin.js";
 export { firmarDescargaFactura } from "./firmarDescargaFactura.js";
 export { actualizarNombreFactura } from "./actualizarNombreFactura.js";
-export { recordatorioVencimientoCampanas, recordatorioReportesMensuales, notificarReporteListo, notificarFacturaNueva, notificarSolicitudCampana } from "./notificacionesPush.js";
+export { recordatorioVencimientoCampanas, recordatorioReportesMensuales, notificarReporteListo, notificarFacturaNueva, notificarSolicitudCampana, notificarResolucionSolicitud } from "./notificacionesPush.js";
 export { confirmarActivacionPush } from "./confirmarActivacionPush.js";
 export { guardarTokenPush } from "./guardarTokenPush.js";
 export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
