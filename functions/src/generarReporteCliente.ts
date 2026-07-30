@@ -596,7 +596,12 @@ function cierre(doc: PDFKit.PDFDocument) {
   // de pagina), asi que ese dato ya no hace falta aca.
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
 
-  const dividerX = 680;
+  // La raya divisoria se pidio mas centrada en la pagina -- antes
+  // (680) quedaba corrida a la izquierda (herencia de cuando el
+  // anillo decorativo ocupaba el lado derecho); ahora que ese anillo
+  // ya no esta en esta pagina, se centra en el medio real del ancho
+  // (800 de 1600).
+  const dividerX = PAGE.width / 2;
   const leftColX = PAGE.margin;
   const leftColW = dividerX - 40 - leftColX;
   const rightColX = dividerX + 56;
@@ -609,18 +614,16 @@ function cierre(doc: PDFKit.PDFDocument) {
   const iconColor = "#c7cfdd";
 
   // ── Columna izquierda: wordmark "VISTA360" + tagline, centrados
-  // en el alto de la raya -- se volvio a pedir este logo (el mark
-  // corto "V360" era de un pedido anterior, ya no va aca), calcado
-  // de la imagen de referencia con el wordmark completo. Tagline en
-  // MAYUSCULAS como en esa imagen (antes iba en minuscula/mas chica).
-  const logoW = 380;
+  // en el alto de la raya -- se pidio agrandar tanto el logo como el
+  // tagline, bien centrados dentro de su mitad de la pagina.
+  const logoW = 460;
   const logoH = logoW / (1170 / 124);
   const tag1 = "MÁS QUE VISIBILIDAD.";
   const tag2 = "PRESENCIA.";
-  const tag1Size = 24;
-  const tag2Size = 16;
-  const gapLogoTag = 36;
-  const gapTags = 12;
+  const tag1Size = 30;
+  const tag2Size = 20;
+  const gapLogoTag = 40;
+  const gapTags = 14;
   const blockH = logoH + gapLogoTag + tag1Size + gapTags + tag2Size;
   const logoX = leftColX + (leftColW - logoW) / 2;
   const logoY = (dividerY1 + dividerY2) / 2 - blockH / 2;
@@ -637,25 +640,28 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor("#2a3852").stroke();
 
   // ── Columna derecha: nombre, cargo, raya horizontal y contacto ──
+  // Recentrado dentro de dividerY1..dividerY2 igual que la columna
+  // izquierda (antes quedaba un poco corrido hacia arriba dentro de
+  // ese rango).
   doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
-    .text(CONTACTO_NOMBRE, rightColX, 330, { width: rightColW });
+    .text(CONTACTO_NOMBRE, rightColX, 342, { width: rightColW });
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.muted)
-    .text(CONTACTO_CARGO, rightColX, 396, { characterSpacing: 1.5, width: rightColW });
+    .text(CONTACTO_CARGO, rightColX, 408, { characterSpacing: 1.5, width: rightColW });
 
-  doc.moveTo(rightColX, 454).lineTo(rightColX + rightColW, 454).lineWidth(1).strokeColor("#26324a").stroke();
+  doc.moveTo(rightColX, 466).lineTo(rightColX + rightColW, 466).lineWidth(1).strokeColor("#26324a").stroke();
 
-  drawPhoneIcon(doc, rightColX, 494, 32, iconColor);
+  drawPhoneIcon(doc, rightColX, 506, 32, iconColor);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text(CONTACTO_TELEFONO, rightColX + 46, 500, { width: rightColW - 46 });
+    .text(CONTACTO_TELEFONO, rightColX + 46, 512, { width: rightColW - 46 });
 
-  drawEmailIcon(doc, rightColX, 560, 32, iconColor);
+  drawEmailIcon(doc, rightColX, 572, 32, iconColor);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text(CONTACTO_EMAIL, rightColX + 46, 566, { width: rightColW - 46 });
+    .text(CONTACTO_EMAIL, rightColX + 46, 578, { width: rightColW - 46 });
 
   // Categoria del negocio, como en la tarjeta de presentacion de
   // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
   doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, 632, { characterSpacing: 1, width: rightColW });
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, 644, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
