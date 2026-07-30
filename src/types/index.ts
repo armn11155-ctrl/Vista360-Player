@@ -271,6 +271,7 @@ export interface PersonaInterna {
   uid: string;
   email: string;
   nombre: string;
+  avatarUrl?: string;
   role: "Gerente" | "Trabajador";
   archived: boolean;
 }

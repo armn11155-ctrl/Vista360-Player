@@ -7109,7 +7109,10 @@ input[type="date"] {
   .quote-row-main { padding-right: 16px; }
   .quote-row-actions { padding: 0 13px 13px; }
   .quote-row-actions select { flex: 1; width: auto; }
-  .quote-preview-backdrop { padding: 12px; align-items: start; }
+  /* Antes el padding-top no contaba env(safe-area-inset-top), asi que
+     la barra pegajosa de Cerrar/WhatsApp/Imprimir quedaba debajo del
+     notch/status bar del celular -- se pidio que "no esten comodos ahi". */
+  .quote-preview-backdrop { padding: calc(12px + env(safe-area-inset-top)) 12px 12px; align-items: start; }
   .quote-preview-actions { position: sticky; top: 0; z-index: 2; padding: 8px 0; background: rgba(0,3,9,.88); }
   .quote-preview-actions button { padding: 9px 10px; }
   .quote-letterhead { min-height: 90px; padding: 24px 22px 19px; gap: 14px; }

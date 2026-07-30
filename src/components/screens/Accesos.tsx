@@ -6,6 +6,7 @@ import CampoBusqueda from "../CampoBusqueda";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { BrandThumb } from "../BrandThumb";
+import { nombreConocidoPorEmail } from "../../utils/nombresConocidos";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
 import { cloudFunctions, db } from "../../config/firebase";
@@ -531,12 +532,14 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             )}
             {personalInterno.status === "ready" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {personalInterno.personal.map((p) => (
+                {personalInterno.personal.map((p) => {
+                  const nombreMostrado = p.nombre || nombreConocidoPorEmail(p.email) || p.email;
+                  return (
                   <div key={p.uid} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <BrandThumb name={p.nombre || p.email} size={36} radius={10} />
+                    <BrandThumb name={nombreMostrado} avatarUrl={p.avatarUrl} size={36} radius={10} />
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.nombre || p.email}
+                        {nombreMostrado}
                       </div>
                       <div
                         style={{
@@ -551,7 +554,8 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

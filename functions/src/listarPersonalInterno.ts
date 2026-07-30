@@ -11,6 +11,7 @@ interface PersonaInterna {
   uid: string;
   email: string;
   nombre: string;
+  avatarUrl?: string;
   role: "Gerente" | "Trabajador";
   archived: boolean;
 }
@@ -45,6 +46,9 @@ export const listarPersonalInterno = onCall(async (request) => {
       uid: String(d.uid ?? ""),
       email: String(d.email ?? ""),
       nombre: String(d.nombre ?? ""),
+      // No se traía -- por eso nadie mostraba su foto acá aunque ya
+      // la hubieran subido en "Mi perfil" (actualizarAvatarPropio).
+      ...(d.avatarUrl ? { avatarUrl: String(d.avatarUrl) } : {}),
       role: (d.role === "admin" ? "Gerente" : "Trabajador") as PersonaInterna["role"],
       archived: !!d.archived,
     }))
