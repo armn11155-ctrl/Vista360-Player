@@ -4,8 +4,10 @@ import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./styles/app.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
+import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
 
 setupRealViewportHeight();
+bloquearZoomDeNavegador();
 
 // Vite parte la app en pedazos (un archivo .js por pantalla, que se pide
 // recién cuando el usuario entra a esa pantalla -- "Cobertura", "Paneles",
