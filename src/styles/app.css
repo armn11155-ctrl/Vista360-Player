@@ -3232,6 +3232,15 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
+      /* Sin esto, al llegar arriba/abajo del contenido con la rueda
+         del mouse o el trackpad, el scroll que sobra "se encadena"
+         hacia html/body -- aunque esos ya tienen overflow:hidden (no
+         se ve una barra ni se corre de verdad), el navegador igual
+         dibuja un rebote/elástico en TODA la pantalla (sidebar
+         incluido) durante ese instante, y se siente como que "sube y
+         baja" solo. contain corta la cadena justo acá, en el propio
+         contenedor que se está scrolleando. */
+      overscroll-behavior: contain;
     }
 
     /* Login / estados de carga-error / selector de cliente del admin no
@@ -5704,6 +5713,9 @@
   .sidebar-list {
     flex: 1;
     overflow-y: auto;
+    /* Mismo motivo que .screens en escritorio -- sin esto, el rebote
+       de scroll acá también podía encadenarse hacia toda la pantalla. */
+    overscroll-behavior: contain;
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
