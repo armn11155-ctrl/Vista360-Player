@@ -6841,21 +6841,26 @@
     .admin-picker-badge { display: inline-flex; }
     .admin-picker-actions { display: none; }
     .admin-picker-header { padding-top: 56px; }
+    /* El logo grande (190px) + el padding-top generoso empujaban el
+       encabezado y la grilla muy abajo -- se pidió que suban, al
+       nivel de donde está el botón de perfil (arriba). Se achica el
+       logo y se recorta el padding/margen de arriba para lograrlo,
+       manteniendo el centrado horizontal como estaba. */
     .admin-picker-management-screen {
       background:
         linear-gradient(90deg, rgba(2,6,15,.72), rgba(2,6,15,.46)),
         url('/login-ny-desktop-tailored.jpg') center / cover no-repeat;
-      padding: 34px 48px 48px;
+      padding: 22px 48px 40px;
     }
     .admin-picker-management-logo {
       display: block;
-      width: 190px;
+      width: 128px;
       height: auto;
-      margin: 0 auto 34px;
+      margin: 0 auto 16px;
     }
     .admin-picker-management-head,
     .admin-picker-management-grid {
-      width: min(680px, 100%);
+      width: min(720px, 100%);
       margin-left: auto;
       margin-right: auto;
     }
@@ -6866,15 +6871,31 @@
        ser la caja redondeada centrada de siempre, así que hay que
        anular ese margen negativo y el padding/radio de la base. */
     .admin-picker-management-head {
-      margin: 0 auto 28px;
+      margin: 0 auto 20px;
       padding: 16px 18px;
       border-radius: 18px;
     }
+    /* Grilla y tarjetas un poco más grandes, como se pidió. */
     .admin-picker-management-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
+      gap: 18px;
     }
-    .admin-picker-management-card { min-height: 92px; }
+    .admin-picker-management-card {
+      min-height: 108px;
+      padding: 17px 20px;
+      gap: 14px;
+    }
+    .admin-picker-management-card strong { font-size: 16px; }
+    .admin-picker-management-card small { font-size: 12.5px; }
+    .admin-picker-management-card .admin-picker-action-icon {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+    }
+    .admin-picker-management-card .admin-picker-action-icon svg {
+      width: 22px;
+      height: 22px;
+    }
     .admin-picker-shell {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
