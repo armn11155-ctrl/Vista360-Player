@@ -406,24 +406,24 @@ async function paginaEvidenciaBlanca(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
-  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  // Encabezado (y el logo de la derecha, para que sigan alineados)
+  // subido de nuevo -- tercer pedido de subirlo mas. Antes y:52,
+  // ahora y:32.
+  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
 
-  // Encabezado subido al mismo nivel que el logo "VISTA360 PLAYER"
-  // de la derecha (y:52) -- antes empezaba en y:62, un poco mas abajo
-  // que el logo.
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 52);
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.ink)
-    .text("Reporte Fotografico", PAGE.margin, 88, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 68, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 128, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 108, { width: 760 });
 
-  // Se pidio agrandar mas la foto todavia y subirla (antes x:74
-  // y:172 w:1040 h:606) -- ahora hay mas espacio arriba (encabezado
-  // subido) y abajo (barra del pie mas delgada, ver drawFooterBar).
+  // Foto crece hacia arriba para ocupar el espacio liberado por el
+  // encabezado (antes x:74 y:158 w:1064 h:660) -- el borde de abajo
+  // se queda igual (158+660 = 138+680 = 818), solo sube el de arriba.
   const photoX = 74;
-  const photoY = 158;
+  const photoY = 138;
   const photoW = 1064;
-  const photoH = 660;
+  const photoH = 680;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
@@ -438,7 +438,8 @@ async function paginaEvidenciaBlanca(
   // entre elementos para que no quede un hueco vacio en el medio.
   const cardW = 346;
   const cardH = 190;
-  const cardX = 1518 - cardW;
+  // Un poco mas a la derecha que antes (1518 -> 1534 de referencia).
+  const cardX = 1534 - cardW;
   const cardY = photoY + (photoH - cardH) / 2;
   const cx = cardX + cardW / 2;
   doc.save();
@@ -488,20 +489,20 @@ async function paginaEvidenciaOscura(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 52, { width: 200 });
+  // Mismo ajuste que en la version blanca: encabezado y logo subidos
+  // (y:52 -> y:32) y foto crecida hacia arriba.
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
 
-  // Mismo ajuste que en la version blanca: encabezado al nivel del
-  // logo (y:52) y foto mas grande/mas arriba.
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 52, COLORS.accent2);
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent2);
   doc.font("Helvetica-Bold").fontSize(30).fillColor(COLORS.white)
-    .text("Reporte Fotografico", PAGE.margin, 88, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 68, { width: 760 });
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 128, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 108, { width: 760 });
 
   const photoX = 74;
-  const photoY = 158;
+  const photoY = 138;
   const photoW = 1064;
-  const photoH = 660;
+  const photoH = 680;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
@@ -510,7 +511,8 @@ async function paginaEvidenciaOscura(
   // pero en blanco -- en la pagina blanca es oscura (COLORS.card).
   const cardW = 346;
   const cardH = 190;
-  const cardX = 1518 - cardW;
+  // Un poco mas a la derecha que antes (1518 -> 1534 de referencia).
+  const cardX = 1534 - cardW;
   const cardY = photoY + (photoH - cardH) / 2;
   const cx = cardX + cardW / 2;
   doc.save();
@@ -596,37 +598,44 @@ function cierre(doc: PDFKit.PDFDocument) {
   // de pagina), asi que ese dato ya no hace falta aca.
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
 
-  // La raya divisoria se pidio mas centrada en la pagina -- antes
-  // (680) quedaba corrida a la izquierda (herencia de cuando el
-  // anillo decorativo ocupaba el lado derecho); ahora que ese anillo
-  // ya no esta en esta pagina, se centra en el medio real del ancho
-  // (800 de 1600).
+  // Centro vertical real de la pagina (450 de 900) -- se pidio que
+  // tanto el logo como la raya divisoria queden centrados en el
+  // vertical de la pagina, no solo en el horizontal.
+  const pageCenterY = PAGE.height / 2;
+
+  // La raya divisoria esta centrada en el horizontal (800 de 1600) y
+  // ahora tambien simetrica en el vertical alrededor de pageCenterY
+  // (antes 300-700, centrada en 500, no en el centro real de 450).
   const dividerX = PAGE.width / 2;
   const leftColX = PAGE.margin;
   const leftColW = dividerX - 40 - leftColX;
-  const rightColX = dividerX + 56;
+  // Columna derecha corrida mas a la derecha (separacion de la raya
+  // 56 -> 100) -- se pidio mas espacio ahi, que no quede pegada a la
+  // raya y ocupe mejor su mitad de la pagina.
+  const rightColX = dividerX + 100;
   const rightColW = PAGE.width - PAGE.margin - rightColX;
-  const dividerY1 = 300;
-  const dividerY2 = 700;
+  const dividerY1 = pageCenterY - 230;
+  const dividerY2 = pageCenterY + 230;
   // Mismo gris azulado sutil que usa la referencia para la raya y los
   // iconos -- mas claro que COLORS.line (pensada para fondos claros
   // dentro de tarjetas), para que se note contra el fondo oscuro.
   const iconColor = "#c7cfdd";
 
-  // ── Columna izquierda: wordmark "VISTA360" + tagline, centrados
-  // en el alto de la raya -- se pidio agrandar tanto el logo como el
-  // tagline, bien centrados dentro de su mitad de la pagina.
-  const logoW = 460;
+  // ── Columna izquierda: wordmark "VISTA360" + tagline, mucho mas
+  // grandes que antes y centrados en el centro vertical REAL de la
+  // pagina (pageCenterY), no en el centro de la raya (que antes
+  // quedaba mas abajo, en 500).
+  const logoW = 560;
   const logoH = logoW / (1170 / 124);
   const tag1 = "MÁS QUE VISIBILIDAD.";
   const tag2 = "PRESENCIA.";
-  const tag1Size = 30;
-  const tag2Size = 20;
-  const gapLogoTag = 40;
-  const gapTags = 14;
+  const tag1Size = 38;
+  const tag2Size = 26;
+  const gapLogoTag = 48;
+  const gapTags = 16;
   const blockH = logoH + gapLogoTag + tag1Size + gapTags + tag2Size;
   const logoX = leftColX + (leftColW - logoW) / 2;
-  const logoY = (dividerY1 + dividerY2) / 2 - blockH / 2;
+  const logoY = pageCenterY - blockH / 2;
   doc.image(LOGO_WORDMARK_WHITE, logoX, logoY, { width: logoW });
 
   const tag1Y = logoY + logoH + gapLogoTag;
@@ -640,28 +649,28 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.moveTo(dividerX, dividerY1).lineTo(dividerX, dividerY2).lineWidth(1.5).strokeColor("#2a3852").stroke();
 
   // ── Columna derecha: nombre, cargo, raya horizontal y contacto ──
-  // Recentrado dentro de dividerY1..dividerY2 igual que la columna
-  // izquierda (antes quedaba un poco corrido hacia arriba dentro de
-  // ese rango).
+  // Centrada en pageCenterY igual que la columna izquierda.
+  const rBlockH = 315;
+  const rTop = pageCenterY - rBlockH / 2;
   doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
-    .text(CONTACTO_NOMBRE, rightColX, 342, { width: rightColW });
+    .text(CONTACTO_NOMBRE, rightColX, rTop, { width: rightColW });
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.muted)
-    .text(CONTACTO_CARGO, rightColX, 408, { characterSpacing: 1.5, width: rightColW });
+    .text(CONTACTO_CARGO, rightColX, rTop + 66, { characterSpacing: 1.5, width: rightColW });
 
-  doc.moveTo(rightColX, 466).lineTo(rightColX + rightColW, 466).lineWidth(1).strokeColor("#26324a").stroke();
+  doc.moveTo(rightColX, rTop + 124).lineTo(rightColX + rightColW, rTop + 124).lineWidth(1).strokeColor("#26324a").stroke();
 
-  drawPhoneIcon(doc, rightColX, 506, 32, iconColor);
+  drawPhoneIcon(doc, rightColX, rTop + 164, 32, iconColor);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text(CONTACTO_TELEFONO, rightColX + 46, 512, { width: rightColW - 46 });
+    .text(CONTACTO_TELEFONO, rightColX + 46, rTop + 170, { width: rightColW - 46 });
 
-  drawEmailIcon(doc, rightColX, 572, 32, iconColor);
+  drawEmailIcon(doc, rightColX, rTop + 230, 32, iconColor);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text(CONTACTO_EMAIL, rightColX + 46, 578, { width: rightColW - 46 });
+    .text(CONTACTO_EMAIL, rightColX + 46, rTop + 236, { width: rightColW - 46 });
 
   // Categoria del negocio, como en la tarjeta de presentacion de
   // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
   doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, 644, { characterSpacing: 1, width: rightColW });
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, rTop + 302, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
