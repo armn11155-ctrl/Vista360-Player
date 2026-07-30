@@ -409,11 +409,14 @@ async function paginaEvidenciaBlanca(
   doc.font("Helvetica").fontSize(14).fillColor(COLORS.mutedOnLight)
     .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
 
-  // Medidas calcadas de la referencia: foto x:74 y:212 w:996 h:529 aprox.
+  // Se pidio agrandar la foto para que ocupe mas espacio y subirla
+  // un poco (antes x:74 y:195 w:996 h:546). Se achica el hueco con el
+  // encabezado y se estira mas hacia abajo (footer) y a la derecha
+  // (dejando aire con la tarjeta flotante, que sigue en cardX~1172).
   const photoX = 74;
-  const photoY = 195;
-  const photoW = 996;
-  const photoH = 546;
+  const photoY = 172;
+  const photoW = 1040;
+  const photoH = 606;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
@@ -483,9 +486,9 @@ async function paginaEvidenciaOscura(
     .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 138, { width: 760 });
 
   const photoX = 74;
-  const photoY = 195;
-  const photoW = 996;
-  const photoH = 546;
+  const photoY = 172;
+  const photoW = 1040;
+  const photoH = 606;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
@@ -546,10 +549,10 @@ function cierre(doc: PDFKit.PDFDocument) {
   // Ya no recibe totalPages -- se pidio que el cierre no tenga pie de
   // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
   // de pagina), asi que ese dato ya no hace falta aca.
-  // Cierre: fondo oscuro solido + anillo de marca (diseño original --
-  // se probo un fondo con foto de ciudad y no se queria, se revirtio).
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  drawRingAsset(doc, 1001, 0, 599);
+  // Cierre: fondo negro solido, SIN el anillo decorativo -- se pidio
+  // que esta pagina (a diferencia de la portada, donde el anillo se
+  // mantiene) quede completamente negra y limpia, sin ese circulo.
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill("#000000");
 
   // Layout de 2 columnas con raya divisoria VERTICAL -- se pidio
   // inspirarse en la tarjeta de presentacion de referencia (logo a la
