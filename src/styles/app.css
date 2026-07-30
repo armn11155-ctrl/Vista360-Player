@@ -2313,7 +2313,11 @@
     padding: 0;
     border: none;
     background: transparent;
-    border-radius: 41px;
+    /* Antes 41px (círculo perfecto a 82px) -- tiene que coincidir
+       con el radius:24 que ahora usa el BrandThumb de la foto acá
+       abajo, si no el overlay oscuro del hover (que hereda este
+       radius) se ve redondo tapando una foto cuadrada. */
+    border-radius: 24px;
     cursor: pointer;
   }
   .profile-avatar-hover-btn:disabled {
@@ -4696,7 +4700,10 @@
     overflow: hidden;
     margin: calc(-22px - env(safe-area-inset-top)) -18px 28px;
     padding: calc(24px + env(safe-area-inset-top)) 18px 20px;
-    background: #0B1220;
+    /* Antes usaba #0B1220 (var(--dark), un poco más clara/azulada) --
+       se pidió que el fondo sea exactamente el mismo negro que el
+       header de Usuarios (.detail-header, var(--app-bg)). */
+    background: var(--app-bg);
     display: flex;
     align-items: center;
     gap: 13px;

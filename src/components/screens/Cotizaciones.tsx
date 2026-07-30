@@ -355,7 +355,13 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                 <p>Una campaña diseñada para generar presencia, alcance y resultados.</p>
               </div>
               <div className="quote-document-table" role="table" aria-label="Detalle de la cotización">
-                <div className="quote-document-table-head" role="row"><strong>DETALLE DE LA PROPUESTA</strong><span>{seleccionada.estado}</span></div>
+                {/* "Borrador" es un estado interno (la cotización
+                    todavía no se envió) -- no tiene sentido que
+                    aparezca en el documento que se comparte con el
+                    cliente, así que ese estado puntual no se muestra
+                    acá. Los demás estados (Enviada, Aprobada, etc.)
+                    sí son relevantes y se siguen mostrando normal. */}
+                <div className="quote-document-table-head" role="row"><strong>DETALLE DE LA PROPUESTA</strong>{seleccionada.estado !== "Borrador" && <span>{seleccionada.estado}</span>}</div>
                 <div className="quote-document-table-row" role="row"><span>CLIENTE</span><strong>{seleccionada.clienteNombre}</strong></div>
                 <div className="quote-document-table-row" role="row"><span>PANEL</span><strong>{seleccionada.panelNombre}</strong></div>
                 <div className="quote-document-table-row" role="row"><span>UBICACIÓN</span><strong>{seleccionada.panelCiudad || "Ubicación seleccionada"}</strong></div>

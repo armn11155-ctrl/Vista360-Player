@@ -250,7 +250,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                 disabled={subiendoAvatar}
                 aria-label="Cambiar foto de perfil"
               >
-                <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
+                <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={24} iconScale={0.78} />
                 <span className="profile-avatar-camera-overlay" aria-hidden="true">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
@@ -259,7 +259,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
                 </span>
               </button>
             ) : (
-              <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={41} iconScale={0.78} />
+              <BrandThumb name={empresa} avatarKey={cliente?.avatarKey} avatarUrl={avatarUrl} size={82} radius={24} iconScale={0.78} />
             )}
           </div>
           <div className="profile-company-copy">

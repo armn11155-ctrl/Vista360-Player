@@ -196,12 +196,15 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
             <button
               type="button"
               className="profile-avatar-hover-btn"
-              style={{ borderRadius: "50%" }}
+              // Antes 50% (círculo) -- se pidió cuadrado con bordes
+              // redondeados, igual que el resto de la app. Mismo
+              // radius que el BrandThumb de acá abajo.
+              style={{ borderRadius: 22 }}
               onClick={() => setModalAvatarAbierto(true)}
               aria-label="Cambiar foto de perfil"
             >
-              <BrandThumb name={nombre || rolInterno} avatarUrl={avatarUrl} size={76} radius={38} iconScale={0.72} />
-              <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: "50%" }}>
+              <BrandThumb name={nombre || rolInterno} avatarUrl={avatarUrl} size={76} radius={22} iconScale={0.72} />
+              <span className="profile-avatar-camera-overlay" aria-hidden="true" style={{ borderRadius: 22 }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 8h3l2-2h6l2 2h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
                   <circle cx="12" cy="13" r="3.4" />

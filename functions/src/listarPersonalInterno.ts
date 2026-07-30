@@ -33,9 +33,24 @@ export const listarPersonalInterno = onCall(async (request) => {
   }
 
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
+  const propioRef = db.doc(`portalUsers/${uid}`);
+  const propio = await propioRef.get();
   if (!propio.exists || !esGerente(propio.data()?.role)) {
     throw new HttpsError("permission-denied", "Solo el Gerente puede ver esta lista.");
+  }
+
+  // Cuentas de Gerente creadas a mano antes de que existiera este
+  // sistema de roles nunca tuvieron "email" en portalUsers (solo
+  // las creadas después, vía crearTrabajadorAcceso, sí lo traen) --
+  // por eso esa fila aparecía sin nombre y sin correo acá (el
+  // fallback de nombre por correo, del lado del cliente, tampoco
+  // tenía de qué correo partir). El correo verificado de quien
+  // llama SÍ está siempre disponible en el token de autenticación,
+  // así que se autocompleta la propia fila con eso y se guarda de
+  // una vez en Firestore para no depender de este parche after.
+  const correoPropioToken = String(request.auth?.token.email ?? "").trim();
+  if (correoPropioToken && !String(propio.data()?.email ?? "").trim()) {
+    await propioRef.set({ email: correoPropioToken }, { merge: true });
   }
 
   const snap = await db.collection("portalUsers").get();
@@ -44,7 +59,7 @@ export const listarPersonalInterno = onCall(async (request) => {
     .filter((d) => esPersonalInterno(d.role))
     .map((d) => ({
       uid: String(d.uid ?? ""),
-      email: String(d.email ?? ""),
+      email: String(d.email ?? "") || (String(d.uid ?? "") === uid ? correoPropioToken : ""),
       nombre: String(d.nombre ?? ""),
       // No se traía -- por eso nadie mostraba su foto acá aunque ya
       // la hubieran subido en "Mi perfil" (actualizarAvatarPropio).
