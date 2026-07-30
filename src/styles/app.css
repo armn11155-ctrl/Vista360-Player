@@ -3278,10 +3278,10 @@
       flex-direction: column;
     }
 
-    /* En escritorio el acceso pasa a 2 columnas: panel de marca a la
-       izquierda (logo + tagline + features) y la tarjeta de acceso a
-       la derecha, centradas juntas sobre la panorámica -- referencia
-       que mandó el usuario. En celular nada de este bloque aplica. */
+    /* En escritorio el acceso pasa a 2 columnas: logo a la izquierda
+       (sin tarjetas de features -- se sacaron a pedido del usuario) y
+       la tarjeta de acceso a la derecha, centrados juntos sobre la
+       panorámica. En celular nada de este bloque aplica. */
     .login-shell::before {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
@@ -3296,53 +3296,24 @@
       padding-left: 60px;
       padding-right: 60px;
     }
+    /* Se sacaron las 3 tarjetas de features a pedido del usuario --
+       el panel izquierdo ahora es solo el logo. object-fit:contain +
+       width/height explícitos evitan que el flex column (align-items
+       por defecto: stretch) lo estire de ancho. */
     .login-left-panel {
       display: flex;
-      flex-direction: column;
-      gap: 36px;
+      align-items: flex-start;
       width: 100%;
       max-width: 420px;
-      color: #fff;
     }
     .login-left-logo {
-      height: 40px;
+      height: 44px;
       width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      align-self: flex-start;
       filter: drop-shadow(0 12px 26px rgba(0,0,0,.45));
     }
-    .login-left-tagline {
-      font-size: 23px;
-      font-weight: 750;
-      line-height: 1.32;
-      color: rgba(255,255,255,.9);
-    }
-    .login-left-tagline strong { color: #fff; }
-    /* Más separación entre las 3 tarjetas y más aire adentro de cada
-       una -- se pidió que "respire más", antes quedaban muy pegadas. */
-    .login-feature-list { display: flex; flex-direction: column; gap: 20px; }
-    .login-feature-card {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.13);
-      border-radius: 14px;
-      padding: 18px 20px;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-    }
-    .login-feature-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 11px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #0877FF, #2F6FED);
-      box-shadow: 0 10px 18px rgba(5,10,18,.25);
-    }
-    .login-feature-title { font-size: 14px; font-weight: 750; color: #fff; }
-    .login-feature-sub { font-size: 12px; color: rgba(226,232,240,.7); margin-top: 4px; line-height: 1.5; }
 
     /* El logo grande ya vive en el panel izquierdo -- no hace falta
        repetirlo arriba de la tarjeta como en celular. */
@@ -3354,18 +3325,8 @@
       margin-left: auto;
       margin-right: auto;
     }
-    /* Botón azul (en vez del blanco de celular), igual a la
-       referencia -- mismo azul de marca (--accent) que ya se usa en
-       toda la app. */
-    .login-btn {
-      background: #0877FF;
-      color: #fff;
-      box-shadow: 0 14px 34px rgba(8,119,255,.32), inset 0 -1px 0 rgba(0,0,0,.10);
-    }
-    .login-btn:hover:not(:disabled) {
-      background: #2F6FED;
-      box-shadow: 0 16px 38px rgba(8,119,255,.4);
-    }
+    /* El botón se queda blanco, igual que en celular -- no se
+       necesita ningún override acá (.login-btn base ya es blanco). */
 
     .sidebar-brand {
       display: block;

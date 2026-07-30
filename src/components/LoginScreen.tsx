@@ -32,45 +32,6 @@ function IconoCandado() {
   );
 }
 
-/** Panel izquierdo del login de escritorio -- solo se ve en pantallas
- *  >=900px (ver .login-left-panel en app.css, display:none por
- *  defecto). En celular no cambia nada de lo que ya había. Mismo
- *  criterio de ícono con fondo azul en degradé que ya usan "Generar
- *  reporte" (Reportes.tsx) y las tarjetas de Cotizaciones, para no
- *  inventar un estilo nuevo. */
-const FEATURES = [
-  {
-    titulo: "Reportes en tiempo real",
-    sub: "Descarga el reporte mensual de tu campaña cuando quieras.",
-    icono: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 3v18h18" />
-        <path d="M7 14l4-4 3 3 5-6" />
-      </svg>
-    ),
-  },
-  {
-    titulo: "Cobertura de tus paneles",
-    sub: "Visualiza en el mapa dónde está publicada tu marca.",
-    icono: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z" />
-        <circle cx="12" cy="10" r="2.6" />
-      </svg>
-    ),
-  },
-  {
-    titulo: "Acceso seguro y controlado",
-    sub: "Solo tú y tu equipo entran, con la cuenta que te creamos.",
-    icono: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="4" y="10.5" width="16" height="10" rx="2.2" />
-        <path d="M7.5 10.5V7a4.5 4.5 0 0 1 9 0v3.5" />
-      </svg>
-    ),
-  },
-];
-
 export default function LoginScreen({ onLoggedIn }: Props) {
   const savedRemember = localStorage.getItem(REMEMBER_KEY) !== "false";
   const savedEmail = savedRemember ? (localStorage.getItem(SAVED_EMAIL_KEY) ?? "") : "";
@@ -115,23 +76,11 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     <div className="login-shell">
       {/* Panel izquierdo -- solo aparece en escritorio (CSS,
           @media min-width:900px). En celular no se renderiza nada
-          distinto: sigue siendo el logo arriba + tarjeta de siempre. */}
+          distinto: sigue siendo el logo arriba + tarjeta de siempre.
+          A pedido del usuario se sacaron las 3 tarjetas de features
+          que había antes -- ahora es solo el logo, sin estirar. */}
       <div className="login-left-panel">
         <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
-        <div className="login-left-tagline">
-          Plataforma de <strong>gestión de publicidad exterior</strong>
-        </div>
-        <div className="login-feature-list">
-          {FEATURES.map((f) => (
-            <div className="login-feature-card" key={f.titulo}>
-              <div className="login-feature-icon">{f.icono}</div>
-              <div>
-                <div className="login-feature-title">{f.titulo}</div>
-                <div className="login-feature-sub">{f.sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="login-right-panel">
