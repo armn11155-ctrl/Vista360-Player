@@ -256,10 +256,16 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                   <button
                     onClick={(event) => { event.stopPropagation(); resolver(s.id, "Rechazada"); }}
                     disabled={resolviendo === s.id}
+                    aria-label="Rechazar solicitud"
                     style={{
-                      background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
-                      borderRadius: 12, padding: "10px 14px", color: "var(--red)", fontSize: 12,
-                      fontWeight: 700, cursor: "pointer",
+                      // Antes fondo rojo palido + texto rojo -- casi no
+                      // se veia al lado del boton azul solido de al
+                      // lado. Ahora fondo rojo solido + X blanca y mas
+                      // grande, mismo criterio que ya se uso para los
+                      // badges GERENTE/TRABAJADOR en Usuarios.
+                      background: "var(--red)", border: "none",
+                      borderRadius: 12, padding: "10px 16px", color: "#fff", fontSize: 18,
+                      lineHeight: 1, fontWeight: 800, cursor: resolviendo === s.id ? "not-allowed" : "pointer",
                     }}
                   >
                     ✕
