@@ -53,6 +53,20 @@
     --purple: #8B5CF6;
   }
 
+  /* Sin esto, html/body no tienen background propio -- el navegador usa
+     su blanco/gris por defecto. No se nota en uso normal porque todo
+     queda tapado por .app-shell, PERO en el "rebote" elastico del
+     scroll en iOS (cuando se sube o baja fuerte y pasa del limite) se
+     alcanza a ver ese fondo por defecto durante un instante: un
+     destello gris feo en vez de fundirse con la app. Con el mismo
+     negro profundo de .app-shell acá, ese destello pasa a ser invisible
+     en vez de gris -- se pidió que "en ninguna parte" se vea eso, así
+     que va en html/body (no en una pantalla puntual) para cubrir todos
+     los casos. */
+  html, body {
+    background: var(--app-bg);
+  }
+
   *,
   *::before,
   *::after {
