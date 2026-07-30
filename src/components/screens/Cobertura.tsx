@@ -524,6 +524,18 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         // cambia de verdad: cubre la entrada de la pantalla, el giro del
         // teléfono, el teclado que se abre y el cambio de ventana.
         mapRef.current.invalidateSize();
+        // reposicionarSolapados() ya se había llamado arriba, pero en
+        // ese momento el contenedor todavía podía no tener su tamaño
+        // final (ver comentario de abajo) -- el project()/unproject()
+        // de recién usaba ese tamaño viejo/chico para convertir entre
+        // píxeles y coordenadas, así que el pin superpuesto podía
+        // terminar mal ubicado (pegado al otro de nuevo) justo al
+        // entrar a la pantalla -- recién se corregía solo cuando la
+        // persona tocaba el zoom, porque para entonces el contenedor
+        // ya tenía su tamaño real. Se repite acá, después de
+        // invalidateSize(), para que quede bien desde el primer
+        // instante.
+        reposicionarSolapadosRef.current();
         if (mapEl.current && typeof ResizeObserver !== "undefined") {
           observadorRef.current?.disconnect();
           observadorRef.current = new ResizeObserver((entradas) => {
@@ -532,12 +544,27 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             if (recuadro && mapRef.current) {
               mapRef.current.setMinZoom(zoomMinimoSinGris(recuadro.clientWidth, recuadro.clientHeight));
             }
+            // El tamaño real del contenedor puede terminar de asentarse
+            // acá (recién cuando termina la animación de entrada de la
+            // pantalla) -- se recalcula la separación de pines de nuevo
+            // por la misma razón que arriba.
+            reposicionarSolapadosRef.current();
           });
           observadorRef.current.observe(mapEl.current);
         } else {
           // Navegador sin ResizeObserver: se vuelve al empujón por tiempo.
-          window.setTimeout(() => mapRef.current?.invalidateSize(), 300);
+          window.setTimeout(() => {
+            mapRef.current?.invalidateSize();
+            reposicionarSolapadosRef.current();
+          }, 300);
         }
+        // También en el próximo frame (además de arriba) -- cubre el
+        // caso en que el navegador YA tenía el tamaño correcto en el
+        // primer render (así que el ResizeObserver de arriba no dispara
+        // ningún cambio, nunca llega a recalcular), pero project()
+        // recién queda 100% confiable un frame después de crear el
+        // mapa.
+        requestAnimationFrame(() => reposicionarSolapadosRef.current());
       })
       .catch(() => {
         if (!cancelado) {
