@@ -2919,8 +2919,22 @@
   .form-input::placeholder { color: var(--muted); }
   /* Ojito para mostrar/ocultar la contraseña -- por ahora solo en el
      login (input password de un solo campo, ancho completo). */
+  /* Ícono dentro del campo (persona en Usuario, candado en
+     Contraseña) -- mismo criterio que el toggle de mostrar/ocultar
+     contraseña, que ya vivía acá al lado. */
+  .login-input-wrap { position: relative; }
+  .login-input-wrap .form-input { padding-left: 40px; }
   .login-password-wrap { position: relative; }
-  .login-password-wrap .form-input { padding-right: 42px; }
+  .login-password-wrap .form-input { padding-left: 40px; padding-right: 42px; }
+  .login-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(203,213,225,.55);
+    pointer-events: none;
+    display: flex;
+  }
   .login-password-toggle {
     position: absolute;
     top: 50%;
@@ -3065,6 +3079,15 @@
       background-position: center center;
     }
   }
+  /* Panel izquierdo con logo + 3 tarjetas de features -- solo existe
+     visualmente en escritorio (ver @media min-width:900px más abajo).
+     En celular queda oculto: no se cambia nada de lo que ya había. */
+  .login-left-panel { display: none; }
+  /* Envoltorio transparente para logo+tarjeta+pie -- en celular se
+     comporta exactamente como antes (columna centrada, mismo ancho
+     máximo en los hijos); en escritorio pasa a ser la columna derecha
+     del layout de 2 columnas. */
+  .login-right-panel { width: 100%; display: flex; flex-direction: column; }
   .login-logo, .login-card, .login-foot {
     width: 100%;
     max-width: 320px;
@@ -3252,19 +3275,91 @@
       flex-direction: column;
     }
 
-    /* En escritorio el acceso conserva un ancho compacto y se centra
-       horizontalmente sobre la panorámica. */
+    /* En escritorio el acceso pasa a 2 columnas: panel de marca a la
+       izquierda (logo + tagline + features) y la tarjeta de acceso a
+       la derecha, centradas juntas sobre la panorámica -- referencia
+       que mandó el usuario. En celular nada de este bloque aplica. */
     .login-shell::before {
       background-image: url('/login-ny-desktop-tailored.jpg');
       background-position: center center;
       background-size: cover;
       transform: none;
     }
-    .login-logo, .login-card, .login-foot {
+    .login-shell {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 88px;
+      padding-left: 60px;
+      padding-right: 60px;
+    }
+    .login-left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      width: 100%;
+      max-width: 420px;
+      color: #fff;
+    }
+    .login-left-logo {
+      height: 40px;
+      width: auto;
+      filter: drop-shadow(0 12px 26px rgba(0,0,0,.45));
+    }
+    .login-left-tagline {
+      font-size: 23px;
+      font-weight: 750;
+      line-height: 1.32;
+      color: rgba(255,255,255,.9);
+    }
+    .login-left-tagline strong { color: #fff; }
+    .login-feature-list { display: flex; flex-direction: column; gap: 14px; }
+    .login-feature-card {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 14px;
+      padding: 14px 16px;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .login-feature-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0877FF, #2F6FED);
+      box-shadow: 0 10px 18px rgba(5,10,18,.25);
+    }
+    .login-feature-title { font-size: 14px; font-weight: 750; color: #fff; }
+    .login-feature-sub { font-size: 12px; color: rgba(226,232,240,.68); margin-top: 2px; line-height: 1.4; }
+
+    /* El logo grande ya vive en el panel izquierdo -- no hace falta
+       repetirlo arriba de la tarjeta como en celular. */
+    .login-right-panel { width: auto; }
+    .login-logo { display: none; }
+    .login-card, .login-foot {
       width: 100%;
       max-width: 400px;
       margin-left: auto;
       margin-right: auto;
+    }
+    /* Botón azul (en vez del blanco de celular), igual a la
+       referencia -- mismo azul de marca (--accent) que ya se usa en
+       toda la app. */
+    .login-btn {
+      background: #0877FF;
+      color: #fff;
+      box-shadow: 0 14px 34px rgba(8,119,255,.32), inset 0 -1px 0 rgba(0,0,0,.10);
+    }
+    .login-btn:hover:not(:disabled) {
+      background: #2F6FED;
+      box-shadow: 0 16px 38px rgba(8,119,255,.4);
     }
 
     .sidebar-brand {
