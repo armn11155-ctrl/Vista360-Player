@@ -393,16 +393,36 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
   const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
   const usuariosDelTab = tab === "activos" ? usuariosActivos : usuariosArchivados;
   const [busqueda, setBusqueda] = useState("");
+
+  // Las cuentas de Trabajador en invitacionesPortal nunca guardaron un
+  // nombre (crearTrabajadorAcceso solo guarda uid/email/esTrabajador
+  // ahí -- el nombre real vive en portalUsers), así que esta lista
+  // caía siempre al correo para ellas. "Personal interno" (más arriba
+  // en esta misma pantalla) ya trae el nombre real desde portalUsers
+  // vía listarPersonalInterno -- se reusa ese resultado acá como
+  // segundo intento antes de resignarse al correo.
+  const nombrePorUid = useMemo(() => {
+    const mapa: Record<string, string> = {};
+    if (personalInterno.status === "ready") {
+      for (const p of personalInterno.personal) {
+        if (p.uid && p.nombre) mapa[p.uid] = p.nombre;
+      }
+    }
+    return mapa;
+  }, [personalInterno]);
+  function nombreDeUsuario(inv: InvitacionPortal) {
+    return inv.clienteNombre || (inv.uid && nombrePorUid[inv.uid]) || inv.email;
+  }
   // Por empresa, contacto y correo: son las tres formas en que uno se
   // acuerda de un cliente cuando la lista ya no cabe en una pantalla.
   const usuariosVisibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
     if (!q) return usuariosDelTab;
     return usuariosDelTab.filter((u) =>
-      [u.clienteNombre, u.email, (u as { contacto?: string }).contacto]
+      [u.clienteNombre, u.email, u.uid ? nombrePorUid[u.uid] : undefined, (u as { contacto?: string }).contacto]
         .some((campo) => String(campo ?? "").toLowerCase().includes(q))
     );
-  }, [usuariosDelTab, busqueda]);
+  }, [usuariosDelTab, busqueda, nombrePorUid]);
 
 
   async function administrarUsuario(inv: InvitacionPortal, accion: "archivar" | "restaurar" | "eliminar") {
@@ -411,7 +431,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
       return;
     }
 
-    const nombre = inv.clienteNombre || inv.email;
+    const nombre = nombreDeUsuario(inv);
     const confirmado =
       accion === "archivar"
         ? window.confirm(`¿Seguro que quieres archivar el usuario de ${nombre}? No podrá entrar hasta que lo restaures.`)
@@ -451,7 +471,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
       setErrorCrear("Firebase Functions no está configurado.");
       return;
     }
-    const nombre = inv.clienteNombre || inv.email;
+    const nombre = nombreDeUsuario(inv);
     const confirmado = window.confirm(
       `¿Generar una contraseña nueva para ${nombre}? La contraseña actual dejará de funcionar de inmediato.`
     );
@@ -746,17 +766,17 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                 style={{ padding: 12, position: "relative", cursor: inv.clienteId ? "pointer" : "default" }}
               >
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                  <BrandThumb name={inv.clienteNombre || inv.email} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={42} radius={12} />
+                  <BrandThumb name={nombreDeUsuario(inv)} avatarKey={inv.avatarKey} avatarUrl={inv.avatarUrl} size={42} radius={12} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>
-                      {inv.clienteNombre || inv.email}
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
+                      <span>{nombreDeUsuario(inv)}</span>
                       {inv.esAdmin && (
-                        <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#0B3F8A", background: "rgba(8,119,255,0.12)", padding: "2px 6px", borderRadius: 20 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#0B3F8A", padding: "3px 8px", borderRadius: 20, letterSpacing: ".02em" }}>
                           GERENTE
                         </span>
                       )}
                       {inv.esTrabajador && (
-                        <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: "#6D28D9", background: "rgba(109,40,217,0.12)", padding: "2px 6px", borderRadius: 20 }}>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#6D28D9", padding: "3px 8px", borderRadius: 20, letterSpacing: ".02em" }}>
                           TRABAJADOR
                         </span>
                       )}

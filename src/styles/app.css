@@ -406,6 +406,19 @@
       height: 100vh;
       height: 100dvh;
     }
+    /* Mismo caso que .main-area arriba, pero para las pantallas de
+       herramientas admin (Usuarios, Mi perfil, Paneles, Cotizaciones,
+       etc.) que no pasan por .main-area -- su raiz es .admin-tool-screen
+       directo dentro de este .app-shell. Sin este tope a la altura real
+       de la pantalla, .admin-tool-screen hereda los 160px de mas del
+       shell (con height:100%) y lo que esta al fondo de su content-area
+       (ej. "Cerrar sesion" en Mi perfil) queda renderizado fuera de la
+       pantalla, sin poder llegar por scroll -- se reportó justo eso. */
+    .app-shell.no-bottom-nav > .admin-tool-screen {
+      flex: 0 0 auto;
+      height: 100vh;
+      height: 100dvh;
+    }
     .app-shell.no-bottom-nav::after {
       content: "";
       display: block;
@@ -6964,7 +6977,9 @@ input[type="date"] {
 .quotes-layout {
   width: min(1400px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 0 0 calc(42px + env(safe-area-inset-bottom));
+  /* Antes empezaba pegado a la cabecera (0 arriba) -- la tarjeta
+     quedaba tocando la raya azul de .quotes-header sin nada de aire. */
+  padding: 28px 0 calc(42px + env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: minmax(480px, .92fr) minmax(420px, 1.08fr);
   gap: 22px;
@@ -7085,7 +7100,7 @@ input[type="date"] {
   .quotes-header-inner { width: calc(100% - 30px); padding-top: calc(14px + env(safe-area-inset-top)); grid-template-columns: 42px 1fr; }
   .quotes-header-inner > img { display: none; }
   .quotes-header h1 { font-size: 27px; }
-  .quotes-layout { width: calc(100% - 24px); grid-template-columns: 1fr; padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+  .quotes-layout { width: calc(100% - 24px); grid-template-columns: 1fr; padding-top: 22px; padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
   .quotes-form-card, .quotes-list-card { padding: 18px; border-radius: 20px; }
   .quotes-form-grid { grid-template-columns: 1fr; }
   .quotes-period-summary { align-items: flex-start; flex-direction: column; }

@@ -322,7 +322,16 @@ export default function App() {
     if (!adminClienteId) {
       if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones" || (view === "aprobaciones" && esGerente)) {
         return (
-          <div className="app-shell">
+          // no-bottom-nav: sin esta clase el .app-shell se queda sin la
+          // regla que absorbe los 160px de "sangrado" extra (ver el
+          // comentario grande de app.css sobre Safari/la barra de URL) --
+          // .main-area se estira esos 160px de más y lo que está anclado
+          // abajo (acá, "Cerrar sesión" en Mi perfil) queda renderizado
+          // fuera de la pantalla, sin poder llegar por scroll. Mismo bug
+          // que ya se había resuelto antes para "Enviar solicitud", solo
+          // que a esta rama (pantallas que se abren desde el menú
+          // lateral) nunca le habían puesto la clase.
+          <div className="app-shell no-bottom-nav">
             <OfflineBanner online={online} />
             <Suspense
               fallback={

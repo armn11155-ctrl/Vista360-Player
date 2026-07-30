@@ -95,6 +95,10 @@ export const crearTrabajadorAcceso = onCall<CrearTrabajadorAccesoData>(async (re
     await db.collection("invitacionesPortal").add({
       uid: userRecord.uid,
       email,
+      // Antes no se guardaba nombre acá (solo en portalUsers) -- la
+      // lista de Usuarios lee de esta colección, así que un Trabajador
+      // recién creado aparecía con el correo en vez de su nombre.
+      clienteNombre: nombre,
       esTrabajador: true,
       link: "",
       createdAt: FieldValue.serverTimestamp(),
