@@ -406,26 +406,25 @@ async function paginaEvidenciaBlanca(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
-  // Encabezado (y el logo de la derecha, para que sigan alineados)
-  // subido de nuevo, cuarta vez -- ahora ademas con letra un poco mas
-  // chica en todo el bloque (kicker/titulo/subtitulo), lo que ayuda a
-  // que quepa mas arriba sin verse apretado. Antes y:32, tamanos
-  // 14/30/14.
-  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 22, { width: 200 });
+  // Se pidio bajar un poco el logo "VISTA360 PLAYER" de la derecha
+  // (quedo muy pegado arriba) -- se baja junto con el encabezado para
+  // que sigan alineados a la misma altura, como se pidio antes. Antes
+  // y:22, ahora y:32.
+  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 22, COLORS.accent, 12);
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent, 12);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.ink)
-    .text("Reporte Fotografico", PAGE.margin, 56, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 66, { width: 760 });
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.mutedOnLight)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 92, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 102, { width: 760 });
 
-  // Foto crece hacia arriba para ocupar el espacio liberado por el
-  // encabezado (antes x:74 y:138 w:1064 h:680) -- el borde de abajo
-  // se queda igual (138+680 = 124+694 = 818), solo sube el de arriba.
+  // Foto se achica un poco arriba para dejarle sitio al encabezado
+  // que bajo (antes x:74 y:124 w:1064 h:694) -- el borde de abajo se
+  // queda igual (124+694 = 134+684 = 818).
   const photoX = 74;
-  const photoY = 124;
+  const photoY = 134;
   const photoW = 1064;
-  const photoH = 694;
+  const photoH = 684;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
@@ -491,20 +490,20 @@ async function paginaEvidenciaOscura(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  // Mismo ajuste que en la version blanca: encabezado y logo subidos
-  // de nuevo, con letra un poco mas chica en todo el bloque.
-  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 22, { width: 200 });
+  // Mismo ajuste que en la version blanca: logo y encabezado bajados
+  // un poco (y:22 -> y:32), foto recortada arriba en la misma medida.
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 22, COLORS.accent2, 12);
+  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent2, 12);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text("Reporte Fotografico", PAGE.margin, 56, { width: 760 });
+    .text("Reporte Fotografico", PAGE.margin, 66, { width: 760 });
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 92, { width: 760 });
+    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 102, { width: 760 });
 
   const photoX = 74;
-  const photoY = 124;
+  const photoY = 134;
   const photoW = 1064;
-  const photoH = 694;
+  const photoH = 684;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
