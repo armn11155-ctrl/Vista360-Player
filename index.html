@@ -2,7 +2,17 @@
 <html lang="es" style="background:#050A12;color-scheme:dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <!-- interactive-widget=resizes-content: le dice al navegador que
+         redimensione el area de contenido cuando aparece el teclado
+         en pantalla, en vez de superponerlo sin avisar. Se agrega
+         como intento de arreglar el bug conocido de iOS 18+ donde,
+         en PWAs instaladas (display:standalone) como esta, el input
+         recibe el foco pero el teclado nunca aparece (WebKit bug
+         #279904, sin resolver del lado de Apple). No hay garantia de
+         que esto lo arregle -- es la mitigacion recomendada para este
+         caso puntual (layout fijo con overflow:hidden), pero el bug
+         de fondo sigue siendo de iOS, no de esta app. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="color-scheme" content="dark" />
     <style>
       html,body,#root{width:100%;height:100%;min-height:100%;margin:0;overflow:hidden;background:#050A12}
