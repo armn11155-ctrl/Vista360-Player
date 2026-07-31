@@ -296,6 +296,10 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  @keyframes loginRise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
@@ -3296,6 +3300,22 @@
       background-size: cover;
       transform: none;
     }
+    /* Velo de contraste sobre la foto -- oscurece del lado del texto
+       (columna izquierda) y despeja el centro/derecha para que la
+       ciudad respire. Sin esto el fondo competia demasiado con el
+       texto blanco y las tarjetas de beneficio se sentian "flotando"
+       sin anclaje. Solo escritorio -- en celular el fondo sigue
+       exactamente igual (::after base mas arriba queda en
+       content:none). */
+    .login-shell::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        linear-gradient(108deg, rgba(3,7,17,.85) 0%, rgba(3,7,17,.58) 24%, rgba(3,7,17,.14) 50%, rgba(3,7,17,.34) 100%),
+        linear-gradient(to top, rgba(3,7,17,.5) 0%, rgba(3,7,17,0) 24%);
+    }
     /* Se pidió volver a 2 columnas en escritorio (referencia con foto
        de ciudad, columna de beneficios a la izquierda y la tarjeta de
        acceso a la derecha) -- antes el logo+tagline vivian arriba de
@@ -3327,17 +3347,48 @@
     }
     .login-card {
       padding: 52px 26px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(12,19,34,.62), rgba(4,8,15,.40));
+      border-color: rgba(255,255,255,.14);
+      box-shadow:
+        0 40px 100px -20px rgba(0,0,0,.9),
+        0 30px 70px -30px rgba(21,88,214,.28),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+    .login-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    }
+    /* Barrita de acento sobre "Bienvenido" -- un toque de marca antes
+       del titulo, sin tocar el texto en si (solo escritorio). */
+    .login-title {
+      letter-spacing: -.3px;
+    }
+    .login-title::before {
+      content: "";
+      display: block;
+      width: 34px;
+      height: 3px;
+      border-radius: 3px;
+      margin-bottom: 16px;
+      background: linear-gradient(90deg, #1B63E6, #4F8CFF);
     }
     /* Botón de acceso azul en escritorio (a pedido de la referencia
        enviada) -- en celular se queda blanco, sin tocar nada. */
     .login-btn {
-      background: #1558D6;
+      background: linear-gradient(180deg, #2E74EF, #1558D6);
       color: #FFFFFF;
-      box-shadow: 0 14px 34px rgba(21,88,214,.38), inset 0 -1px 0 rgba(0,0,0,.14);
+      letter-spacing: .2px;
+      box-shadow: 0 14px 34px rgba(21,88,214,.38), inset 0 1px 0 rgba(255,255,255,.30), inset 0 -1px 0 rgba(0,0,0,.16);
     }
     .login-btn:hover:not(:disabled) {
-      background: #1E67F0;
-      box-shadow: 0 16px 38px rgba(21,88,214,.46);
+      background: linear-gradient(180deg, #3B80F5, #1E67F0);
+      box-shadow: 0 18px 42px rgba(21,88,214,.5), inset 0 1px 0 rgba(255,255,255,.34), inset 0 -1px 0 rgba(0,0,0,.16);
     }
 
     /* Columna izquierda -- logo, tagline y lista de beneficios, solo
@@ -3349,6 +3400,18 @@
       width: 100%;
       max-width: 460px;
     }
+    .login-left-logo,
+    .login-left-tagline,
+    .login-feature-item,
+    .login-card {
+      animation: loginRise .55s cubic-bezier(.22,.7,.32,1) both;
+    }
+    .login-left-logo { animation-delay: .02s; }
+    .login-left-tagline { animation-delay: .08s; }
+    .login-feature-item:nth-of-type(1) { animation-delay: .16s; }
+    .login-feature-item:nth-of-type(2) { animation-delay: .23s; }
+    .login-feature-item:nth-of-type(3) { animation-delay: .30s; }
+    .login-card { animation-delay: .1s; }
     .login-left-logo {
       width: 190px;
       height: auto;
@@ -3382,24 +3445,32 @@
       backdrop-filter: blur(8px) saturate(108%);
       -webkit-backdrop-filter: blur(8px) saturate(108%);
       border: 1px solid rgba(255,255,255,.09);
+      box-shadow: 0 10px 26px -14px rgba(0,0,0,.7);
+      transition: transform .18s ease, background .18s ease, border-color .18s ease;
+    }
+    .login-feature-item:hover {
+      transform: translateX(3px);
+      background: rgba(11,18,34,.66);
+      border-color: rgba(255,255,255,.16);
     }
     .login-feature-icon {
       width: 42px;
       height: 42px;
       border-radius: 12px;
-      background: #1558D6;
+      background: linear-gradient(150deg, #2E74EF, #1249B8);
       color: #FFFFFF;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      box-shadow: 0 8px 18px rgba(21,88,214,.35);
+      box-shadow: 0 8px 18px rgba(21,88,214,.4), inset 0 1px 0 rgba(255,255,255,.25);
     }
     .login-feature-title {
       font-size: 14.5px;
       font-weight: 800;
       color: #FFFFFF;
       margin-bottom: 2px;
+      letter-spacing: .1px;
     }
     .login-feature-desc {
       font-size: 12.5px;
