@@ -77,7 +77,6 @@ const COLORS = {
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png");
-const RING_PORTADA = join(ASSETS_DIR, "decor/ring-portada.png");
 const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 // Version del logo con "PLAYER" (y las lineas) en blanco en vez de
@@ -218,13 +217,6 @@ function drawImageCover(doc: PDFKit.PDFDocument, src: Buffer | string, x: number
   doc.restore();
 }
 
-/** Anillo decorativo: recortado directo del PDF de referencia del
- *  cliente (no dibujado por codigo), para que sea exactamente el mismo
- *  gráfico, pixel por pixel. */
-function drawRingAsset(doc: PDFKit.PDFDocument, x: number, y: number, width: number) {
-  doc.image(RING_PORTADA, x, y, { width });
-}
-
 function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent, size = 14) {
   const upper = sinTildes(text.toUpperCase());
   doc.font("Helvetica-Bold").fontSize(size).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
@@ -318,10 +310,18 @@ function tamanoQueEntra(
 
 function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  // El anillo se sale del borde superior-derecho de la pagina (bleed),
-  // tal como en la referencia. Es un recorte real del PDF de referencia,
-  // no un dibujo por codigo, para que sea exactamente el mismo grafico.
-  drawRingAsset(doc, 1001, 0, 599);
+  // Se cambio el anillo decorativo por un brillo suave arriba a la
+  // derecha -- mismo tratamiento elegante que el fondo de cierre()
+  // (degradado radial oscuro y sutil), en vez del grafico de anillo,
+  // que se pidio quitar para que ambas paginas tengan el mismo nivel
+  // de elegancia.
+  const glowX = PAGE.width * 0.92;
+  const glowY = -60;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 750);
+  glow.stop(0, "#17335c");
+  glow.stop(0.45, "#0e1830");
+  glow.stop(1, COLORS.bg);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
   // Logo un poco mas grande (365 -> 410) y el kicker "Reporte mensual"
   // un poco mas grande (18 -> 20) y mas abajo (212 -> 224), como se
