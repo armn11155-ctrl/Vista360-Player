@@ -598,16 +598,15 @@ function cierre(doc: PDFKit.PDFDocument) {
   // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
   // de pagina), asi que ese dato ya no hace falta aca.
   //
-  // Fondo: negro con un brillo suave, un degradado radial oscuro que
-  // se aclara apenas hacia abajo, calcado de la foto de referencia
-  // que se mando (la queja anterior era por el color azul del
-  // tagline, no por esta luz de fondo -- esta parte si es la
-  // pedida). Nada mas cambia en esta pagina, solo el fondo.
+  // Fondo: negro con un brillo suave concentrado abajo -- se pidio
+  // que la luz se vea mas abajo, no repartida en toda la pagina, y
+  // que de la mitad para arriba quede bien negro. Radio mas chico
+  // (650, antes 1100) para que el degradado no llegue tan arriba.
   const glowX = PAGE.width * 0.5;
-  const glowY = PAGE.height * 1.05;
-  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 1100);
+  const glowY = PAGE.height * 1.08;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 650);
   glow.stop(0, "#152544");
-  glow.stop(0.5, "#0e1830");
+  glow.stop(0.45, "#0e1830");
   glow.stop(1, COLORS.bg);
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
