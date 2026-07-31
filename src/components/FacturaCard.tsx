@@ -120,10 +120,40 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [guardandoNombre, setGuardandoNombre] = useState(false);
   const [errorNombre, setErrorNombre] = useState("");
 
+  // ── Menu de tres puntos (Editar / Eliminar) -- antes solo habia un
+  // lapicito que abria directo el editor de nombre; se pidio que en
+  // su lugar haya un menu con las dos opciones, mismo patron que ya
+  // usa Paneles.tsx para su menu de opciones. ──
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState("");
+
   function abrirEdicionNombre() {
+    setMenuAbierto(false);
     setNombreEdit(f.numero_fmt ?? f.serie ?? "");
     setErrorNombre("");
     setEditandoNombre(true);
+  }
+
+  async function eliminarFactura() {
+    if (!cloudFunctions) {
+      setErrorEliminar("Firebase Functions no está configurado.");
+      return;
+    }
+    const confirmado = window.confirm(
+      `¿Eliminar la factura "${f.numero_fmt ?? f.serie ?? "sin número"}"? No se puede deshacer.`
+    );
+    if (!confirmado) return;
+    setMenuAbierto(false);
+    setErrorEliminar("");
+    setEliminando(true);
+    try {
+      const fn = httpsCallable<{ facturaId: string }, { ok: boolean }>(cloudFunctions, "eliminarFactura");
+      await fn({ facturaId: f.id });
+    } catch (err) {
+      setErrorEliminar(err instanceof Error ? err.message : "No se pudo eliminar la factura.");
+      setEliminando(false);
+    }
   }
 
   function cancelarEdicionNombre() {
@@ -221,23 +251,42 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
         <div className="factura-badge-row">
           {isAdmin && !editandoNombre && (
-            <button
-              type="button"
-              className="factura-edit-btn"
-              onClick={abrirEdicionNombre}
-              aria-label="Editar nombre de la factura"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9" />
-                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-              </svg>
-            </button>
+            <div className="factura-menu-wrap">
+              <button
+                type="button"
+                className="factura-menu-btn"
+                onClick={() => setMenuAbierto((v) => !v)}
+                aria-label="Opciones de la factura"
+              >
+                ⋯
+              </button>
+              {menuAbierto && (
+                <>
+                  <div className="factura-menu-overlay" onClick={() => setMenuAbierto(false)} />
+                  <div className="factura-menu-dropdown">
+                    <button type="button" className="factura-menu-item" onClick={abrirEdicionNombre}>
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="factura-menu-item factura-menu-item-eliminar"
+                      onClick={() => void eliminarFactura()}
+                      disabled={eliminando}
+                    >
+                      {eliminando ? "Eliminando..." : "Eliminar"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           )}
           <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
             {f.estado}
           </div>
         </div>
       </div>
+
+      {errorEliminar && <div className="factura-title-error">{errorEliminar}</div>}
 
       {editandoNombre && (
         // El editor va DEBAJO de toda la tarjeta (a todo el ancho), no
