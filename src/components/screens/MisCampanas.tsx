@@ -18,11 +18,11 @@ function WhatsAppIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-// TODO: reemplazar por el número real de WhatsApp del negocio -- sigue
-// siendo un placeholder (era compartido con Contactanos.tsx, que se
-// eliminó por estar inalcanzable desde cualquier menú; este es ahora
-// el único lugar que usa este número).
-const WHATSAPP_NUMERO = "51999999999";
+// Numero real de WhatsApp del negocio (Alan Martinez, Director
+// General) -- mismo numero que ya aparece como contacto en el PDF de
+// reportes. Antes era un placeholder de mentira (51999999999), que
+// nunca llegaba a ningun lado real cuando un cliente lo usaba.
+const WHATSAPP_NUMERO = "51947957971";
 
 interface Props {
   contratos: Contrato[];
