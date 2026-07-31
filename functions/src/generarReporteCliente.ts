@@ -597,17 +597,19 @@ function cierre(doc: PDFKit.PDFDocument) {
   // Ya no recibe totalPages -- se pidio que el cierre no tenga pie de
   // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
   // de pagina), asi que ese dato ya no hace falta aca.
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-
-  // Se pidio de nuevo el anillo decorativo de fondo (el mismo "brillo"
-  // que ya tiene la portada) -- SOLO el fondo, sin tocar ningun color
-  // del contenido. En portada va arriba a la derecha (1001,0,599)
-  // porque ahi esa esquina esta vacia; en cierre esa esquina la ocupa
-  // el nombre/cargo/contacto, asi que se pone en la esquina inferior
-  // derecha en su lugar (unica zona libre de texto), mas chico para
-  // no pisar el pie "PUBLICIDAD EXTERIOR...". Es el mismo asset, sin
-  // recolorear -- solo cambia donde se dibuja.
-  drawRingAsset(doc, 1280, 640, 320);
+  //
+  // Fondo: NO es el anillo de la portada (eso fue un intento anterior
+  // que no era lo pedido) -- es un brillo suave, un degradado radial
+  // oscuro que se aclara apenas hacia abajo, calcado de la foto de
+  // referencia que se mando. Nada mas cambia en esta pagina, solo el
+  // fondo.
+  const glowX = PAGE.width * 0.5;
+  const glowY = PAGE.height * 1.05;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 1100);
+  glow.stop(0, "#152544");
+  glow.stop(0.5, "#0e1830");
+  glow.stop(1, COLORS.bg);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
   // Centro vertical real de la pagina (450 de 900) -- se pidio que
   // tanto el logo como la raya divisoria queden centrados en el
