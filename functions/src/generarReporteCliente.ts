@@ -225,6 +225,18 @@ function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number,
   doc.moveTo(x, lineY).lineTo(x + Math.min(w, 96), lineY).lineWidth(2).strokeColor(color).stroke();
 }
 
+/** Icono de pin de ubicacion (calcado del feather-icons "map-pin"),
+ *  para la tarjeta de ubicacion de la portada -- se pidio que se vea
+ *  igual a la referencia enviada (con su icono al lado del texto). */
+function drawPinIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: number, color: string) {
+  doc.save();
+  doc.translate(x, y).scale(size / 24);
+  doc.path("M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z")
+    .lineWidth(1.8).strokeColor(color).lineJoin("round").lineCap("round").stroke();
+  doc.circle(12, 10, 3).lineWidth(1.8).strokeColor(color).stroke();
+  doc.restore();
+}
+
 /** Pie de pagina fino (portada y paginas oscuras): una linea + texto.
  *  La linea es opcional (showLine) — en las paginas de evidencia oscuras
  *  se quita porque queda recargado con el resto del diseño; en la
@@ -383,14 +395,27 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   const maxCardH2 = PAGE.height - 44 - cardY - 12;
   const cardH2 = Math.min(maxCardH2, Math.max(cardH, contenidoAbajo + 20));
 
+  // Sombra tipo "3D": un par de capas oscuras semitransparentes,
+  // corridas hacia abajo y un poco mas grandes que la tarjeta, para
+  // simular un blur suave -- asi la tarjeta se ve elevada/flotando
+  // sobre el fondo, como se pidio ("que se sobresalga").
+  doc.save();
+  doc.opacity(0.3);
+  doc.roundedRect(cardX2 - 6, cardY + 14, cardW2 + 12, cardH2 + 10, 24).fill("#000000");
+  doc.opacity(0.18);
+  doc.roundedRect(cardX2 - 12, cardY + 22, cardW2 + 24, cardH2 + 18, 28).fill("#000000");
+  doc.restore();
+
   doc.save();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).clip();
   doc.rect(cardX2, cardY, cardW2, cardH2).fill("#182a46");
   doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
   doc.restore();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
+  // Icono de pin junto al label, como en la referencia.
+  drawPinIcon(doc, cardX2 + 30, cardY + 19, 16, COLORS.accent);
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent)
-    .text(cliente.esMultiPanel ? "PANELES" : "UBICACION", cardX2 + 30, cardY + 22, { characterSpacing: 1.5 });
+    .text(cliente.esMultiPanel ? "PANELES" : "UBICACION", cardX2 + 56, cardY + 22, { characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(lugarSize).fillColor(COLORS.white).text(lugar, cardX2 + 30, cardY + lugarY, { width: innerW2 });
   if (resto) {
     doc.font("Helvetica").fontSize(restoSize).fillColor(COLORS.muted).text(resto, cardX2 + 30, cardY + restoY, { width: innerW2 });
