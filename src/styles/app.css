@@ -3391,11 +3391,11 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 1.3px;
-      box-shadow: 0 16px 34px -14px rgba(33,72,168,.6);
+      box-shadow: 0 14px 28px -14px rgba(0,0,0,.55);
     }
     .login-btn:hover:not(:disabled) {
       background: #2A57C4;
-      box-shadow: 0 18px 38px -14px rgba(33,72,168,.7);
+      box-shadow: 0 16px 32px -14px rgba(0,0,0,.6);
     }
 
     /* Columna izquierda -- logo, tagline y lista de beneficios, solo
