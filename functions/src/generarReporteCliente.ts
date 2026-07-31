@@ -598,11 +598,18 @@ function cierre(doc: PDFKit.PDFDocument) {
   // pagina (ni el texto "VISTA360 - REPORTE FOTOGRAFICO" ni el numero
   // de pagina), asi que ese dato ya no hace falta aca.
   //
-  // Fondo solido negro, sin anillo ni degradado -- se probaron ambas
-  // cosas (anillo decorativo y un brillo radial calcado de una foto)
-  // y ninguna era lo que se pedia, asi que queda como estaba
-  // originalmente: todo negro, plano, sin ningun efecto de luz.
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  // Fondo: negro con un brillo suave, un degradado radial oscuro que
+  // se aclara apenas hacia abajo, calcado de la foto de referencia
+  // que se mando (la queja anterior era por el color azul del
+  // tagline, no por esta luz de fondo -- esta parte si es la
+  // pedida). Nada mas cambia en esta pagina, solo el fondo.
+  const glowX = PAGE.width * 0.5;
+  const glowY = PAGE.height * 1.05;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 1100);
+  glow.stop(0, "#152544");
+  glow.stop(0.5, "#0e1830");
+  glow.stop(1, COLORS.bg);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
   // Centro vertical real de la pagina (450 de 900) -- se pidio que
   // tanto el logo como la raya divisoria queden centrados en el
