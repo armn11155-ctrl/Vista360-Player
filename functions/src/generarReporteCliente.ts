@@ -638,28 +638,20 @@ function cierre(doc: PDFKit.PDFDocument) {
   const tag1Size = 38;
   const tag2Size = 26;
   const gapLogoTag = 48;
-  const underlineGap = 6;
   const gapTags = 18;
-  const blockH = logoH + gapLogoTag + tag1Size + underlineGap + gapTags + tag2Size;
+  const blockH = logoH + gapLogoTag + tag1Size + gapTags + tag2Size;
   const logoX = leftColX + (leftColW - logoW) / 2;
   const logoY = pageCenterY - blockH / 2;
   doc.image(LOGO_WORDMARK_WHITE, logoX, logoY, { width: logoW });
 
-  // Se pidio que el tagline tenga "ese tipo de letra" -- el mismo
-  // tratamiento tipografico del kicker azul que ya se usa en portada
-  // ("REPORTE MENSUAL / HUANUCO": mayusculas, negrita, letras
-  // separadas, color de acento, con una rayita corta debajo). Antes
-  // el tagline iba en blanco liso.
+  // Tagline en blanco liso, sin color de acento ni rayita -- se
+  // probo el tratamiento tipo "kicker" en azul y no era lo pedido,
+  // asi que vuelve a como estaba antes.
   const tag1Y = logoY + logoH + gapLogoTag;
-  doc.font("Helvetica-Bold").fontSize(tag1Size).fillColor(COLORS.accent)
+  doc.font("Helvetica-Bold").fontSize(tag1Size).fillColor(COLORS.white)
     .text(tag1, leftColX, tag1Y, { width: leftColW, align: "center", characterSpacing: 1.2 });
-  const tag1W = doc.widthOfString(tag1, { characterSpacing: 1.2 });
-  const tag1UnderlineY = tag1Y + tag1Size + underlineGap;
-  doc.moveTo(leftColX + (leftColW - tag1W) / 2, tag1UnderlineY)
-    .lineTo(leftColX + (leftColW + tag1W) / 2, tag1UnderlineY)
-    .lineWidth(2).strokeColor(COLORS.accent).stroke();
-  const tag2Y = tag1UnderlineY + gapTags;
-  doc.font("Helvetica-Bold").fontSize(tag2Size).fillColor(COLORS.accent)
+  const tag2Y = tag1Y + tag1Size + gapTags;
+  doc.font("Helvetica-Bold").fontSize(tag2Size).fillColor(COLORS.white)
     .text(tag2, leftColX, tag2Y, { width: leftColW, align: "center", characterSpacing: 2 });
 
   // ── Raya divisoria vertical ──
