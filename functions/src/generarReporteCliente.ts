@@ -410,16 +410,19 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.roundedRect(cardX2 - 12, cardY + 22, cardW2 + 24, cardH2 + 18, 28).fill("#000000");
   doc.restore();
 
+  // Colores calcados de la foto de referencia (medidos pixel por pixel):
+  // el interior de la tarjeta es un azul-negro muy oscuro y poco
+  // saturado (~rgb(18,21,30)), bastante mas oscuro que el azul marino
+  // que se usaba antes (#182a46 era demasiado claro/saturado).
   doc.save();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).clip();
-  doc.rect(cardX2, cardY, cardW2, cardH2).fill("#182a46");
-  // Filo superior sutil en vez de la franja solida de antes -- se
-  // pidio que sea mas tenue, un hilo de luz fino (1.5px, semi
+  doc.rect(cardX2, cardY, cardW2, cardH2).fill("#12151e");
+  // Filo superior sutil -- un hilo de luz fino (1.5px, semi
   // transparente), no una barra de acento solida y gruesa.
   doc.opacity(0.55);
   doc.rect(cardX2, cardY, cardW2, 1.5).fill(COLORS.accent);
   doc.restore();
-  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
+  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#232838").stroke();
   // Icono de pin grande, color gris (no azul), centrado verticalmente
   // en la tarjeta, a la izquierda -- igual a la referencia enviada.
   const pinSize = 34;
