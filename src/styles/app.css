@@ -3086,6 +3086,10 @@
      exactamente como antes (columna centrada, mismo ancho máximo en
      los hijos); en escritorio este mismo bloque se corre hacia la
      izquierda de la pantalla (ver @media min-width:900px). */
+  /* Columna de beneficios -- SOLO escritorio, oculta por defecto
+     (celular no cambia nada de lo que ya habia). Se muestra en el
+     media query de escritorio, mas abajo. */
+  .login-left-panel { display: none; }
   .login-right-panel { width: 100%; display: flex; flex-direction: column; }
   .login-logo, .login-card, .login-foot {
     width: 100%;
@@ -3292,42 +3296,117 @@
       background-size: cover;
       transform: none;
     }
-    /* Bloque logo+tarjeta corrido hacia la DERECHA de la pantalla
-       (antes iba a la izquierda) -- se mantiene centrado verticalmente. */
+    /* Se pidió volver a 2 columnas en escritorio (referencia con foto
+       de ciudad, columna de beneficios a la izquierda y la tarjeta de
+       acceso a la derecha) -- antes el logo+tagline vivian arriba de
+       la tarjeta (columna única corrida a la derecha); ahora ese logo
+       y tagline se mudan a .login-left-panel (nueva columna), y aca
+       solo queda la tarjeta. En celular nada de esto se toca. */
     .login-shell {
       flex-direction: row;
       align-items: center;
-      justify-content: flex-end;
-      padding-left: 60px;
+      justify-content: space-between;
+      padding-left: 90px;
       padding-right: 100px;
     }
+    /* El logo+tagline de arriba de la tarjeta (el que ya existia)
+       se oculta en escritorio -- su equivalente ahora vive en
+       .login-left-panel. En celular sigue exactamente igual. */
+    .login-right-panel .login-logo { display: none; }
     .login-right-panel { width: auto; }
-    .login-logo, .login-card, .login-foot {
+    .login-card, .login-foot {
       width: 100%;
       max-width: 440px;
       margin-left: auto;
       margin-right: 0;
     }
-    /* Tarjeta (y logo/pie, para que sigan alineados) más angosta en
+    /* Tarjeta (y pie, para que sigan alineados) más angosta en
        escritorio, y la tarjeta además más alta -- como se pidió. */
-    .login-logo, .login-card, .login-foot {
+    .login-card, .login-foot {
       max-width: 360px;
     }
     .login-card {
       padding: 52px 26px;
     }
-    .login-tagline {
-      display: block;
-      margin-top: 10px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .14em;
-      text-transform: uppercase;
-      color: rgba(226,232,240,.72);
-      text-shadow: 0 1px 4px rgba(0,0,0,.6);
+    /* Botón de acceso azul en escritorio (a pedido de la referencia
+       enviada) -- en celular se queda blanco, sin tocar nada. */
+    .login-btn {
+      background: #1558D6;
+      color: #FFFFFF;
+      box-shadow: 0 14px 34px rgba(21,88,214,.38), inset 0 -1px 0 rgba(0,0,0,.14);
     }
-    /* El botón se queda blanco, igual que en celular -- no se
-       necesita ningún override acá (.login-btn base ya es blanco). */
+    .login-btn:hover:not(:disabled) {
+      background: #1E67F0;
+      box-shadow: 0 16px 38px rgba(21,88,214,.46);
+    }
+
+    /* Columna izquierda -- logo, tagline y lista de beneficios, solo
+       escritorio. Centrada verticalmente junto con la tarjeta
+       (mismo align-items:center del .login-shell). */
+    .login-left-panel {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 460px;
+    }
+    .login-left-logo {
+      width: 190px;
+      height: auto;
+      filter: drop-shadow(0 12px 26px rgba(0,0,0,.52));
+      margin-bottom: 20px;
+    }
+    .login-left-tagline {
+      font-size: 21px;
+      line-height: 1.3;
+      font-weight: 600;
+      color: rgba(226,232,240,.92);
+      margin-bottom: 42px;
+      text-shadow: 0 2px 10px rgba(0,0,0,.55);
+    }
+    .login-left-tagline strong {
+      font-weight: 900;
+      color: #FFFFFF;
+    }
+    .login-feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .login-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(8,14,28,.55);
+      backdrop-filter: blur(8px) saturate(108%);
+      -webkit-backdrop-filter: blur(8px) saturate(108%);
+      border: 1px solid rgba(255,255,255,.09);
+    }
+    .login-feature-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: #1558D6;
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 8px 18px rgba(21,88,214,.35);
+    }
+    .login-feature-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 2px;
+    }
+    .login-feature-desc {
+      font-size: 12.5px;
+      color: rgba(203,213,225,.72);
+      font-weight: 600;
+      line-height: 1.35;
+    }
 
     .sidebar-brand {
       display: block;
