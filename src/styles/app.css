@@ -3359,25 +3359,33 @@
       background: #2F6FEB;
       opacity: .55;
     }
-    /* Etiqueta "PORTAL DE CLIENTES" con subrayado corto -- mismo
-       patrón que el kicker "REPORTE MENSUAL / HUANUCO" del PDF
-       (texto azul, mayúsculas, subrayado angosto debajo). Puro CSS
-       (::before con content de texto), no requiere tocar el JSX. */
+    /* Etiqueta "PORTAL DE CLIENTES" arriba del todo (sin raya propia),
+       y la raya azul corta pasa a ser un subrayado debajo de
+       "Bienvenido" mismo -- se pidió moverla ahí. Puro CSS (::before
+       con content de texto para el kicker, ::after para la raya de
+       abajo), no requiere tocar el JSX. */
     .login-title {
       letter-spacing: -.2px;
     }
     .login-title::before {
       content: "Portal de clientes";
       display: block;
-      width: fit-content;
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 1.6px;
       text-transform: uppercase;
       color: #6FA0F5;
-      padding-bottom: 9px;
-      margin-bottom: 16px;
-      border-bottom: 2px solid rgba(47,111,235,.55);
+      margin-bottom: 10px;
+    }
+    .login-title::after {
+      content: "";
+      display: block;
+      width: 34px;
+      height: 3px;
+      border-radius: 3px;
+      margin-top: 12px;
+      background: #2F6FEB;
+      opacity: .7;
     }
     /* Botón de acceso: azul plano y sólido (sin degradé ni brillo
        interno), esquinas menos redondeadas y texto en mayúsculas
