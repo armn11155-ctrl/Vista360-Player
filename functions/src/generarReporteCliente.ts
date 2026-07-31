@@ -406,11 +406,10 @@ async function paginaEvidenciaBlanca(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
-  // Se pidio bajar un poco el logo "VISTA360 PLAYER" de la derecha
-  // (quedo muy pegado arriba) -- se baja junto con el encabezado para
-  // que sigan alineados a la misma altura, como se pidio antes. Antes
-  // y:22, ahora y:32.
-  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
+  // Se pidio bajar un poco mas el logo "VISTA360 PLAYER", esta vez
+  // SOLO el logo (el encabezado/kicker de la izquierda se queda en su
+  // sitio, ya no se mueven juntos como antes). Antes y:32, ahora y:42.
+  doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent, 12);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.ink)
@@ -490,9 +489,9 @@ async function paginaEvidenciaOscura(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
-  // Mismo ajuste que en la version blanca: logo y encabezado bajados
-  // un poco (y:22 -> y:32), foto recortada arriba en la misma medida.
-  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 32, { width: 200 });
+  // Mismo ajuste que en la version blanca: SOLO el logo baja un poco
+  // mas (y:32 -> y:42), el encabezado/kicker se queda igual.
+  doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent2, 12);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
