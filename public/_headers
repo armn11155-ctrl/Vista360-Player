@@ -41,3 +41,30 @@
 
 /*.svg
   Cache-Control: public, max-age=0, must-revalidate
+
+# Headers de seguridad basicos para TODAS las rutas -- ninguno de estos
+# cambia como se ve o funciona la app, solo le dicen al navegador que
+# sea mas estricto. Los comentarios van ANTES del bloque (no mezclados
+# con los headers) porque la sintaxis de _headers de Cloudflare Pages
+# no documenta comentarios dentro de un bloque de reglas.
+#
+# X-Frame-Options: evita que la app se pueda incrustar en un <iframe>
+# de otro sitio (clickjacking) -- nadie tiene por que embeber el
+# portal de clientes.
+# X-Content-Type-Options: el navegador no debe "adivinar" el tipo de
+# un archivo por su contenido en vez de confiar en el Content-Type real.
+# Referrer-Policy: al navegar a un link externo, manda el origen pero
+# no la URL completa (que podria incluir datos del cliente en la ruta).
+# Permissions-Policy: apaga permisos de navegador que la app nunca pide
+# (camara, microfono, ubicacion, pagos, sensores) -- si algun dia se
+# necesitan de verdad, se habilitan puntualmente aca.
+#
+# No incluye Content-Security-Policy todavia: una CSP mal armada puede
+# romper la carga de Firebase/R2 en silencio y no hay forma de probarla
+# visualmente antes de publicar, asi que se deja para una pasada aparte
+# con mas cuidado.
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
