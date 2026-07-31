@@ -327,7 +327,7 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // un poco mas grande (18 -> 20) y mas abajo (212 -> 224), como se
   // pidio. El titulo grande baja un poco tambien (266/362 -> 278/374)
   // para mantener el mismo aire respecto al kicker que antes.
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 410 });
+  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 450 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
   drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 224, COLORS.accent, 20);
