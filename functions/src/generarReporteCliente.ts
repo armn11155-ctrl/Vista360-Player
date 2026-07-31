@@ -371,7 +371,11 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // exactamente igual que antes.
   const cardX2 = 1012;
   const cardW2 = 418;
-  const innerW2 = cardW2 - 60;
+  // El icono de pin ahora es grande y va a la izquierda del todo (como
+  // en la referencia), asi que el texto arranca mas a la derecha
+  // (textX) en vez de pegado al borde.
+  const textX = 78;
+  const innerW2 = cardW2 - textX - 30;
   const [lugarRaw, ...restoParts] = sinTildes(cliente.ubicacion).split(" - ");
   const lugar = lugarRaw || sinTildes(cliente.ubicacion);
   const resto = restoParts.join(", ");
@@ -412,13 +416,15 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
   doc.restore();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
-  // Icono de pin junto al label, como en la referencia.
-  drawPinIcon(doc, cardX2 + 30, cardY + 19, 16, COLORS.accent);
+  // Icono de pin grande, color gris (no azul), centrado verticalmente
+  // en la tarjeta, a la izquierda -- igual a la referencia enviada.
+  const pinSize = 34;
+  drawPinIcon(doc, cardX2 + 26, cardY + (cardH2 - pinSize) / 2, pinSize, COLORS.muted);
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent)
-    .text(cliente.esMultiPanel ? "PANELES" : "UBICACION", cardX2 + 56, cardY + 22, { characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(lugarSize).fillColor(COLORS.white).text(lugar, cardX2 + 30, cardY + lugarY, { width: innerW2 });
+    .text(cliente.esMultiPanel ? "PANELES" : "UBICACION", cardX2 + textX, cardY + 22, { characterSpacing: 1.5 });
+  doc.font("Helvetica-Bold").fontSize(lugarSize).fillColor(COLORS.white).text(lugar, cardX2 + textX, cardY + lugarY, { width: innerW2 });
   if (resto) {
-    doc.font("Helvetica").fontSize(restoSize).fillColor(COLORS.muted).text(resto, cardX2 + 30, cardY + restoY, { width: innerW2 });
+    doc.font("Helvetica").fontSize(restoSize).fillColor(COLORS.muted).text(resto, cardX2 + textX, cardY + restoY, { width: innerW2 });
   }
 
   drawFooterLine(doc, "01", true);
