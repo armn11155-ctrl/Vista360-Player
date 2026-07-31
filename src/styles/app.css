@@ -4307,7 +4307,7 @@
       min-height: 0;
       max-height: 100dvh;
       overscroll-behavior: none;
-      background-image: url('/login-ny-desktop-tailored.jpg');
+      background-image: url('/gestion-clientes-sf-desktop.jpg');
       background-position: center center;
       background-size: cover;
     }
@@ -7056,7 +7056,7 @@
     .admin-picker-management-screen {
       background:
         linear-gradient(90deg, rgba(2,6,15,.72), rgba(2,6,15,.46)),
-        url('/login-ny-desktop-tailored.jpg') center / cover no-repeat;
+        url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
       padding: 22px 48px 40px;
     }
     .admin-picker-management-logo {
@@ -7104,7 +7104,7 @@
       height: 22px;
     }
     .admin-picker-shell {
-      background-image: url('/login-ny-desktop-tailored.jpg');
+      background-image: url('/gestion-clientes-sf-desktop.jpg');
       background-position: center center;
       background-size: cover;
     }
