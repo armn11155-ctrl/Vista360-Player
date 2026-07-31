@@ -3306,7 +3306,7 @@
       position: absolute;
       inset: 0;
       z-index: -1;
-      background: linear-gradient(100deg, rgba(3,7,17,.86) 0%, rgba(3,7,17,.55) 32%, rgba(3,7,17,.16) 58%, rgba(3,7,17,.36) 100%);
+      background: linear-gradient(100deg, rgba(3,7,17,.86) 0%, rgba(3,7,17,.5) 26%, rgba(3,7,17,.14) 45%, rgba(3,7,17,0) 58%, rgba(3,7,17,0) 100%);
     }
     /* Se pidió volver a 2 columnas en escritorio (referencia con foto
        de ciudad, columna de beneficios a la izquierda y la tarjeta de
