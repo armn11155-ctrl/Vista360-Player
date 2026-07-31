@@ -355,6 +355,14 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // Tarjeta blanca: Cliente / Periodo
   const cardX1 = 74;
   const cardW1 = 865;
+  // Misma sombra "3D" que la tarjeta de ubicacion, para que las dos
+  // se vean con el mismo nivel de elevacion/profundidad.
+  doc.save();
+  doc.opacity(0.3);
+  doc.roundedRect(cardX1 - 6, cardY + 14, cardW1 + 12, cardH + 10, 24).fill("#000000");
+  doc.opacity(0.18);
+  doc.roundedRect(cardX1 - 12, cardY + 22, cardW1 + 24, cardH + 18, 28).fill("#000000");
+  doc.restore();
   doc.roundedRect(cardX1, cardY, cardW1, cardH, 18).fill(COLORS.white);
   doc.font("Helvetica-Bold").fontSize(12).fillColor(COLORS.accent).text("CLIENTE", cardX1 + 42, cardY + 22, { characterSpacing: 1.5 });
   doc.font("Helvetica-Bold").fontSize(22).fillColor(COLORS.ink).text(sinTildes(cliente.nombre), cardX1 + 42, cardY + 46, { width: 380 });
@@ -422,7 +430,9 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.opacity(0.55);
   doc.rect(cardX2, cardY, cardW2, 1.5).fill(COLORS.accent);
   doc.restore();
-  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#232838").stroke();
+  // Borde un poco mas claro que el fondo/tarjeta, para que se note
+  // el contorno (antes casi se perdia por ser tan parecido al fondo).
+  doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#333c54").stroke();
   // Icono de pin grande, color gris (no azul), centrado verticalmente
   // en la tarjeta, a la izquierda -- igual a la referencia enviada.
   const pinSize = 34;
