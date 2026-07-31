@@ -413,7 +413,11 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.save();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).clip();
   doc.rect(cardX2, cardY, cardW2, cardH2).fill("#182a46");
-  doc.rect(cardX2, cardY, cardW2, 4).fill(COLORS.accent);
+  // Filo superior sutil en vez de la franja solida de antes -- se
+  // pidio que sea mas tenue, un hilo de luz fino (1.5px, semi
+  // transparente), no una barra de acento solida y gruesa.
+  doc.opacity(0.55);
+  doc.rect(cardX2, cardY, cardW2, 1.5).fill(COLORS.accent);
   doc.restore();
   doc.roundedRect(cardX2, cardY, cardW2, cardH2, 18).lineWidth(1.3).strokeColor("#2c4468").stroke();
   // Icono de pin grande, color gris (no azul), centrado verticalmente
