@@ -185,33 +185,38 @@ async function imageBuffer(url: string) {
  *  Se probo subir la resolucion (maxWidth) ademas de la calidad, pero
  *  eso es lo que MAS pesa (una foto de prueba con texto/graficos de
  *  color, representativa de un panel real, paso de 40KB a 88-115KB al
- *  subir resolucion Y calidad juntas -- +117% a +182%). El salto
- *  rentable resulto ser otro: dejar de submuestrear el color
- *  (chromaSubsampling "4:2:0" -> "4:4:4"). El 4:2:0 promedia el color
- *  de cada bloque de 2x2 pixeles (guarda la mitad de resolucion de
- *  color) -- en fotos comunes casi no se nota, pero en el contenido
- *  real de estos reportes (texto y lineas de color sobre un panel) se
- *  ve como un halo/sangrado de color en los bordes de las letras.
+ *  subir resolucion Y calidad juntas -- +117% a +182%). No se toco mas
+ *  la resolucion despues de esto.
  *
- *  Sharp/mozjpeg solo permite "4:2:0" o "4:4:4" (no hay un punto medio
- *  tipo 4:2:2). Se probo el nuevo "4:4:4" en un barrido de calidades
- *  (35 a 72) comparando recortes de la foto de prueba de cerca (texto
- *  y una zona con mucho detalle fino, tipo ventanas de un edificio):
- *  de 35 a 72 se ven todas IGUAL de nitidas -- la mejora real la da
- *  sacar el submuestreo de color, no la calidad numerica.
+ *  Una primera ronda (con una foto de prueba SINTETICA, de texto y
+ *  formas limpias) encontro que apagar el submuestreo de color
+ *  (chromaSubsampling "4:2:0" -> "4:4:4") evitaba un halo de color en
+ *  los bordes de las letras, y se quedo en calidad 45 + "4:4:4".
  *
- *  La foto de prueba es sintetica (gradientes y formas limpias) --
- *  MAS facil de comprimir que una foto real de camara (que trae grano
- *  de sensor, ruido, iluminacion pareja o no), asi que en vez de irse
- *  al piso absoluto que aguanto la prueba (35, practicamente gratis:
- *  40.1KB, CASI el mismo peso que el original de antes) se dejo un
- *  colchon de seguridad para fotos reales mas dificiles: calidad 45,
- *  que en la prueba tambien se ve limpia (47.0KB) y sigue pesando
- *  bastante menos que subir la calidad junto con el submuestreo
- *  (54.1KB a 55, 59.5KB a 63) -- +16% contra el original, en vez de
- *  +33% o +46%.
+ *  Pero esa foto sintetica resulto ser mas facil de comprimir sin
+ *  artefactos que una foto real de camara -- una foto real YA trae
+ *  grano de sensor propio, que disimula justo lo que el submuestreo o
+ *  la calidad mas baja podrian perder. Se repitio la prueba con 2
+ *  fotos reales que mando el cliente (una valla de noche, otra de
+ *  dia, mismo tipo de contenido real: texto chico sobre fondo de
+ *  color, cielo con degradado, cables finos), comparando recortes de
+ *  cerca en las zonas mas dificiles (el cielo, y el texto "PISCINAS
+ *  TEMPERADAS" del cartel):
+ *
+ *  - "4:2:0" y "4:4:4" se ven IGUAL en las fotos reales -- el halo de
+ *    la prueba sintetica no aparece con grano real encima. Se volvio
+ *    a "4:2:0" (mas liviano, sin perder nada visible).
+ *  - En calidad, recien se empieza a notar perdida (texto borroso,
+ *    bloques en el cielo) en 20, y ya es clara en 15. Calidad 30 se ve
+ *    limpia en las dos fotos de prueba, con margen arriba del piso
+ *    real (20).
+ *
+ *  Con calidad 30 + "4:2:0", las dos fotos reales de prueba pesaron
+ *  29.5KB y 100.9KB -- unos 36% MENOS que el original de antes de
+ *  todos estos cambios (46.1KB y 156.6KB), con calidad visualmente
+ *  igual en cada comparacion.
  */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 45 };
+const FOTO_CONFIG = { maxWidth: 1200, quality: 30 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
@@ -221,7 +226,7 @@ async function comprimirFoto(buffer: Buffer) {
       .jpeg({
         quality: FOTO_CONFIG.quality,
         mozjpeg: true,
-        chromaSubsampling: "4:4:4",
+        chromaSubsampling: "4:2:0",
       })
       .toBuffer();
   } catch (error) {
