@@ -135,7 +135,17 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
  *  cualquier otra de las ~50 funciones "normales" de este proyecto,
  *  que ya se sabe que funcionan bien con esta cuenta de servicio. */
 export const sincronizarEstadoPaneles = onRequest(
-  { secrets: ["CRON_SYNC_SECRET"] },
+  // "invoker: public" -- es la UNICA funcion onRequest de este
+  // proyecto (todas las demas son onCall, que Firebase hace publicas
+  // solas). Sin esto, la funcion se despliega bien pero Google Cloud
+  // la deja privada por defecto (solo invocable con credenciales de
+  // Google) -- cualquier llamada de afuera sin eso, como el curl del
+  // cron de GitHub Actions, se encuentra con un 403 ANTES de que el
+  // codigo de aca llegue a correr (por eso el 403 no viene con
+  // ningun mensaje propio: no es este código el que lo devuelve). La
+  // seguridad real la sigue dando el secret (CRON_SYNC_SECRET) que se
+  // revisa abajo, no el que la funcion sea publica.
+  { secrets: ["CRON_SYNC_SECRET"], invoker: "public" },
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
