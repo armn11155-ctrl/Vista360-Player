@@ -178,8 +178,25 @@ async function imageBuffer(url: string) {
  *  de cuantizacion 3, que salio mejor que las otras 8 en las pruebas)
  *  aguanta sin artefactos visibles y sin perder el texto incluso muy
  *  por debajo de esta calidad — se dejo un margen de seguridad arriba
- *  del piso real para no arriesgar en fotos con mas ruido de camara. */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 55 };
+ *  del piso real para no arriesgar en fotos con mas ruido de camara.
+ *
+ *  Se pidio mejorar la calidad de la foto sin disparar el peso. Se
+ *  probo subir la resolucion (maxWidth) ademas de la calidad, pero eso
+ *  es lo que MAS pesa (una foto de prueba con texto/graficos de color,
+ *  representativa de un panel real, paso de 40KB a 88-115KB al subir
+ *  resolucion Y calidad juntas -- +117% a +182%). El salto mas
+ *  rentable resulto ser otro: dejar de submuestrear el color
+ *  (chromaSubsampling "4:2:0" -> "4:4:4"). El 4:2:0 promedia el color
+ *  de cada bloque de 2x2 pixeles (guarda la mitad de resolucion de
+ *  color) -- en fotos comunes casi no se nota, pero en el contenido
+ *  real de estos reportes (texto y lineas de color sobre un panel) se
+ *  ve como un halo/sangrado de color en los bordes de las letras. Con
+ *  4:4:4 (color a resolucion completa) mas un empujon de calidad
+ *  (55 -> 63), esa misma foto de prueba paso de 40.6KB a 59.5KB
+ *  (+46%) -- un aumento moderado, sin tocar la resolucion, con una
+ *  mejora clara y visible especifica al tipo de foto que se sube acá.
+ */
+const FOTO_CONFIG = { maxWidth: 1200, quality: 63 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
@@ -189,7 +206,7 @@ async function comprimirFoto(buffer: Buffer) {
       .jpeg({
         quality: FOTO_CONFIG.quality,
         mozjpeg: true,
-        chromaSubsampling: "4:2:0",
+        chromaSubsampling: "4:4:4",
       })
       .toBuffer();
   } catch (error) {
