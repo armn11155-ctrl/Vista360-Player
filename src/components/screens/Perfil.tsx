@@ -283,14 +283,15 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
 
       {modalPasswordAbierto && (
         <div
-          onClick={() => !cambiandoPassword && cerrarModalPassword()}
+          // Se pidio que el modal solo se cierre con el boton "Cancelar"
+          // (o "Listo" tras exito), no al hacer clic afuera -- para que
+          // no se pierda sin querer lo que el cliente ya escribio.
           style={{
             position: "fixed", inset: 0, background: "rgba(13,22,41,0.55)", zIndex: 500,
             display: "flex", alignItems: "flex-end", justifyContent: "center",
           }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
             style={{
               background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px",
               width: "100%", maxWidth: 480, boxShadow: "0 -8px 30px rgba(0,0,0,0.2)", boxSizing: "border-box",
