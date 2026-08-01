@@ -7,6 +7,7 @@ import { useInvitaciones } from "../../hooks/useInvitaciones";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { BrandThumb } from "../BrandThumb";
 import { nombreConocidoPorEmail } from "../../utils/nombresConocidos";
+import { saludoPorHora } from "../../utils/fechas";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
 import { cloudFunctions, db } from "../../config/firebase";
@@ -211,7 +212,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
 
   const mensajeAccesoTrabajador = resultadoTrabajador
     ? [
-        `Hola ${resultadoTrabajador.nombre}, te mando tu acceso a Vista360 Player.`,
+        `${saludoPorHora()} ${resultadoTrabajador.nombre}, te mando tu acceso a Vista360 Player.`,
         "",
         "Ya puedes entrar como parte del equipo interno.",
         "",
@@ -366,7 +367,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
 
   const mensajeAccesoNuevo = nuevoResultado
     ? [
-        `Hola ${nuevoContacto || nuevoResultado.empresa}, te mando tu acceso a Vista360 Player.`,
+        `${saludoPorHora()} ${nuevoContacto || nuevoResultado.empresa}, te mando tu acceso a Vista360 Player.`,
         "",
         "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
         "",
@@ -917,7 +918,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             <div style={{ display: "flex", gap: 8 }}>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
-                  `Hola ${resultadoReset.nombre}, te confirmamos que tu contraseña de Vista360 Player fue restablecida.
+                  `${saludoPorHora()} ${resultadoReset.nombre}, te confirmamos que tu contraseña de Vista360 Player fue restablecida.
 
 Correo: ${resultadoReset.email}
 Contraseña nueva: ${resultadoReset.password}

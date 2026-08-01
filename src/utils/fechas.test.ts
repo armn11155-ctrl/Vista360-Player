@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { diasHasta, fechaCorta, fechaLarga, hoyEnPeru, progresoCampana, soloFecha, sumarDias, sumarMeses } from "./fechas";
+import { diasHasta, fechaCorta, fechaLarga, hoyEnPeru, progresoCampana, saludoPorHora, soloFecha, sumarDias, sumarMeses } from "./fechas";
 import { estadoCampana } from "../types";
 import type { Contrato } from "../types";
 
@@ -34,6 +34,28 @@ describe("hoyEnPeru", () => {
   it("da el día de Lima justo pasada la medianoche", () => {
     enLima("2026-07-31T00:05:00");
     expect(hoyEnPeru()).toBe("2026-07-31");
+  });
+});
+
+describe("saludoPorHora", () => {
+  it("da Buenos días antes del mediodía", () => {
+    enLima("2026-07-31T08:00:00");
+    expect(saludoPorHora()).toBe("Buenos días");
+  });
+
+  it("da Buenas tardes entre el mediodía y las 7pm", () => {
+    enLima("2026-07-31T14:30:00");
+    expect(saludoPorHora()).toBe("Buenas tardes");
+  });
+
+  it("da Buenas noches desde las 7pm", () => {
+    enLima("2026-07-31T20:00:00");
+    expect(saludoPorHora()).toBe("Buenas noches");
+  });
+
+  it("da Buenos días justo a la medianoche (no revienta con el bug de hour12)", () => {
+    enLima("2026-07-31T00:00:00");
+    expect(saludoPorHora()).toBe("Buenos días");
   });
 });
 

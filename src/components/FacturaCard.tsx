@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
+import { saludoPorHora } from "../utils/fechas";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -88,7 +89,7 @@ function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   const numero = f.numero_fmt || f.serie || "tu factura";
   return [
-    `Hola ${nombre}, te comparto la factura ${numero} de Vista360.`,
+    `${saludoPorHora()} ${nombre}, te comparto la factura ${numero} de Vista360.`,
     "",
     `Puedes verla aquí: ${url}`,
   ].join("\n");

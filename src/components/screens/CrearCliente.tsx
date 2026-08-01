@@ -7,6 +7,7 @@ import BackChevron from "../BackChevron";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
+import { saludoPorHora } from "../../utils/fechas";
 
 interface Props {
   cliente: Cliente | null;
@@ -42,7 +43,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
   const mensaje = useMemo(() => {
     if (!resultado) return "";
     return [
-      `Hola ${contacto || resultado.empresa}, te mando tu acceso a Vista360 Player.`,
+      `${saludoPorHora()} ${contacto || resultado.empresa}, te mando tu acceso a Vista360 Player.`,
       "",
       "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
       "",

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
+import { saludoPorHora } from "../utils/fechas";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -42,7 +43,7 @@ function formatoBytes(bytes?: number) {
 function mensajeReporte(mesLabel: string, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   return [
-    `Hola ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
+    `${saludoPorHora()} ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
     "",
     "Lo preparamos con una presentación premium, listo para ver o descargar.",
     "",

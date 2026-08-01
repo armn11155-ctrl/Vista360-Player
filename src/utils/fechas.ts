@@ -24,6 +24,25 @@ export function hoyEnPeru(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: ZONA_PERU }).format(new Date());
 }
 
+/**
+ * Saludo según la hora real en Perú -- "Buenos días" antes del
+ * mediodía, "Buenas tardes" hasta las 7 p.m., "Buenas noches" después.
+ * Se usa en los mensajes de WhatsApp/correo que antes siempre decían
+ * "Hola" fijo, sin importar a qué hora se mandaran.
+ *
+ * hourCycle:"h23" es a propósito: con hour12:false a secas, algunos
+ * motores (por un bug conocido de Intl) devuelven "24" en vez de "0"
+ * justo a la medianoche, y el Number(...) de abajo quedaría mal.
+ */
+export function saludoPorHora(): string {
+  const hora = Number(
+    new Intl.DateTimeFormat("en-US", { timeZone: ZONA_PERU, hour: "numeric", hourCycle: "h23" }).format(new Date())
+  );
+  if (hora < 12) return "Buenos días";
+  if (hora < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
 /** Normaliza cualquier fecha guardada a "YYYY-MM-DD" para comparar. */
 export function soloFecha(valor: string | undefined | null): string {
   return (valor ?? "").slice(0, 10);
