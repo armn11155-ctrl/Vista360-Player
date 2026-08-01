@@ -335,7 +335,13 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             <div className="quote-preview-actions">
               <button type="button" onClick={() => setSeleccionada(null)}>Cerrar</button>
               <button type="button" onClick={() => compartirWhatsApp(seleccionada)}>WhatsApp</button>
-              <button type="button" className="primary" onClick={() => window.print()}>Imprimir / Guardar PDF</button>
+              {/* Se pidio que el boton ya no diga "Imprimir", solo
+                  "Guardar PDF" -- sigue abriendo el dialogo nativo del
+                  navegador (no hay forma de saltarse eso y generar el
+                  PDF directo sin pasar por ahi), pero ahora el boton
+                  deja claro que la idea es elegir "Guardar como PDF"
+                  como destino, no imprimir en papel. */}
+              <button type="button" className="primary" onClick={() => window.print()}>Guardar PDF</button>
             </div>
             <article className="quote-document">
               <header className="quote-letterhead">
@@ -343,7 +349,10 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                   <i aria-hidden="true" />
                   <img src="/vista360-logo-cotizacion.png" alt="Vista360" className="quote-letterhead-logo" />
                 </div>
-                <div className="quote-letterhead-meta"><strong>ALAN MARTÍNEZ</strong><span>DIRECTOR GENERAL</span></div>
+                {/* Antes decia "DIRECTOR GENERAL" debajo del nombre --
+                    se pidio quitarlo, es solo una cotizacion y no hacia
+                    falta ese cargo ahi. */}
+                <div className="quote-letterhead-meta"><strong>ALAN MARTÍNEZ</strong></div>
               </header>
               <div className="quote-document-title">
                 <span>Cotización comercial · {seleccionada.numero}</span>
