@@ -194,17 +194,30 @@ async function imageBuffer(url: string) {
  *  aligerar mas el peso -- en recortes de cerca de 2 fotos reales de
  *  prueba se veia bien, pero el cliente lo probo en el reporte real
  *  (PDF completo, no un recorte ampliado) y SI se notaba perdida de
- *  calidad ahi. Se volvio a esta configuracion (45 + "4:4:4"), que es
- *  la que el cliente ya habia visto y aprobado antes -- prioridad
- *  confirmada: calidad por encima de seguir bajando el peso.
+ *  calidad ahi. Se volvio a 45 + "4:4:4", que es la que el cliente ya
+ *  habia visto y aprobado antes.
+ *
+ *  Ultima ronda: se probo JPEG progresivo (sin ninguna diferencia de
+ *  peso, descartado) y un afilado suave (sharpen) ANTES de comprimir
+ *  -- el resize/compresion ablandan un poco los bordes, y afilarlos
+ *  de vuelta permite bajar la calidad numerica sin que se note tanto
+ *  la perdida. Con sharpen + calidad 35 (en vez de 45), en las 2
+ *  fotos reales de prueba: 47.7KB -> 44.0KB y 147.0KB -> 138.9KB
+ *  (-6% a -8%), sin perdida visible en los mismos 3 recortes de cerca
+ *  ya probados antes (texto del cartel, cielo degradado, textura de
+ *  ventana).
  */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 45 };
+const FOTO_CONFIG = { maxWidth: 1200, quality: 35 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
     return await sharp(buffer)
       .rotate()
       .resize({ width: FOTO_CONFIG.maxWidth, withoutEnlargement: true })
+      // Afilado suave (ver comentario de FOTO_CONFIG arriba) --
+      // contrarresta el ablandado del resize/compresion, para poder
+      // bajar la calidad numerica sin que se note tanto.
+      .sharpen({ sigma: 0.6 })
       .jpeg({
         quality: FOTO_CONFIG.quality,
         mozjpeg: true,
