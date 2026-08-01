@@ -575,6 +575,18 @@ async function paginaEvidenciaOscura(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.bg);
+  // Mismo brillo suave de la portada (ver comentario en portada()),
+  // pero espejado: abajo a la izquierda en vez de arriba a la
+  // derecha -- se pidio el mismo tratamiento elegante tambien aca,
+  // en la pagina de evidencia oscura.
+  const glowX = 0;
+  const glowY = 800;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 950);
+  glow.stop(0, "#17335c");
+  glow.stop(0.45, "#0e1830");
+  glow.stop(1, COLORS.bg);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
+
   // Mismo ajuste que en la version blanca: SOLO el logo baja un poco
   // mas (y:32 -> y:42), el encabezado/kicker se queda igual.
   doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
