@@ -242,7 +242,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   // reciente sin quedar "pegado" a los valores de cuando se enganchó
   // por primera vez.
   const markersPorIdRef = useRef<Map<string, any>>(new Map());
-  const reposicionarSolapadosRef = useRef<() => void>(() => undefined);
+  const reposicionarSolapadosRef = useRef<(zoomObjetivo?: number) => void>(() => undefined);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
 
@@ -396,6 +396,33 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           // más reciente de reposicionarSolapados a través del ref, así
           // no hace falta desenganchar/re-enganchar en cada redibujado.
           mapRef.current.on("zoomend", () => reposicionarSolapadosRef.current());
+
+          // El "zoomend" de arriba solo corrige DESPUÉS de que termina
+          // la animación de acercar/alejar -- mientras esa animación
+          // corre, cada pin se mueve suave hacia donde proyecta su
+          // coordenada actual (que todavía tiene guardado el offset
+          // separado calculado para el ZOOM ANTERIOR). Un offset de 9px
+          // calculado al zoom viejo no son 9px al zoom nuevo (son el
+          // doble al acercar un nivel, la mitad al alejar uno), así que
+          // durante la animación se veía a los pines separarse de más
+          // (o juntarse de más) y recién al terminar "zoomend" los
+          // volvía a poner en su offset correcto -- ese salto final es
+          // el "se abre y se vuelve a apilar" que se reportó.
+          //
+          // Leaflet dispara "zoomanim" UNA vez, al arrancar cada
+          // animación, ya con el zoom de DESTINO (no el actual) en
+          // evento.zoom -- y cada marker, al recibirlo, recalcula su
+          // posición en pantalla proyectando SU coordenada al zoom de
+          // destino antes de deslizarse ahí. Si acá adelantamos la
+          // coordenada del marker a la posición ya separada para el
+          // zoom de destino (en vez de esperar a "zoomend"), el cálculo
+          // interno del marker usa esa coordenada ya correcta y se
+          // desliza en un solo movimiento limpio hacia el lugar final
+          // -- sin pasar por una distancia intermedia equivocada ni dar
+          // el salto al terminar. Se engancha PRIMERO (acá, al crear el
+          // mapa, antes de que exista ningún marker) para que corra
+          // antes que la animación propia de cada marker.
+          mapRef.current.on("zoomanim", (evento: any) => reposicionarSolapadosRef.current(evento.zoom));
         }
 
         markersRef.current?.remove();
@@ -486,9 +513,15 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         // una vez acá (con el zoom que haya quedado tras
         // fitBounds/setView de arriba) y de nuevo cada vez que el mapa
         // cambia de zoom (ver el "zoomend" enganchado más arriba).
-        function reposicionarSolapados() {
+        function reposicionarSolapados(zoomObjetivo?: number) {
           if (!mapRef.current) return;
-          const zoom = mapRef.current.getZoom();
+          // Normalmente se llama sin argumento ("zoomend", primer
+          // dibujado, ResizeObserver) y usa el zoom actual. El
+          // enganche a "zoomanim" de más arriba SÍ manda un zoom
+          // explícito -- el de DESTINO de la animación que recién
+          // arranca, todavía distinto del actual -- para adelantar el
+          // cálculo y evitar el salto visual al terminar.
+          const zoom = zoomObjetivo ?? mapRef.current.getZoom();
           // UMBRAL_PX: a partir de qué distancia en pantalla dos pines
           // cuentan como "pegados". RADIO_PX: qué tan lejos del centro
           // real del grupo se corre cada uno al separarlos.
