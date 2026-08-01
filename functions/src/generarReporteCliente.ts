@@ -350,25 +350,21 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   glow.stop(1, COLORS.bg);
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
-  // Logo un poco mas grande (365 -> 410) y el kicker "Reporte mensual"
-  // un poco mas grande (18 -> 20) y mas abajo (212 -> 224), como se
-  // pidio. El titulo grande baja un poco tambien (266/362 -> 278/374)
-  // para mantener el mismo aire respecto al kicker que antes.
-  // Se pidio centrar tambien el logo horizontalmente (misma altura
-  // de siempre, Y=78 y ancho 450 -- solo cambia el X), igual que ya
-  // se hizo con el kicker y el titulo de abajo.
+  // Logo, kicker y titulo agrandados y reacomodados para un look mas
+  // premium -- se pidio libertad total en tamano/posicion, mientras
+  // se sienta elegante. Todo sigue centrado horizontalmente.
   const centroX = PAGE.width / 2;
-  const logoW = 450;
-  doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 78, { width: logoW });
+  const logoW = 540;
+  doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 68, { width: logoW });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 224, COLORS.accent, 20, { center: true });
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 232, COLORS.accent, 23, { center: true });
 
-  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white);
+  doc.font("Helvetica-Bold").fontSize(104).fillColor(COLORS.white);
   const wReporte = doc.widthOfString("REPORTE", { characterSpacing: 0.5 });
   const wFotografico = doc.widthOfString("FOTOGRAFICO", { characterSpacing: 0.5 });
-  doc.text("REPORTE", centroX - wReporte / 2, 278, { characterSpacing: 0.5 });
-  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 374, { characterSpacing: 0.5 });
+  doc.text("REPORTE", centroX - wReporte / 2, 298, { characterSpacing: 0.5 });
+  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 418, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
