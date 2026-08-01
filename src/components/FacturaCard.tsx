@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
+import { compartirArchivoR2 } from "../utils/compartirArchivo";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -87,9 +88,24 @@ function fechaDeFactura(fecha?: string): Date | null {
  *  mal tanto en la tarjeta como en el mensaje.
  *
  *  Mismo tono y misma estructura que el mensaje de Reporte (premium,
- *  elegante, sin relleno generico) -- y mismo cierre con el link al
- *  portal como puerta de entrada general. */
-function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
+ *  elegante, sin relleno generico), y misma logica de dos variantes:
+ *  con el PDF adjunto de verdad (Web Share, no hace falta el link
+ *  puntual) o con el link como respaldo. Las dos cierran con el link
+ *  al portal. */
+function mensajeFacturaConArchivo(f: Factura, cliente: Cliente | null) {
+  const nombre = nombreCliente(cliente);
+  const numero = f.numero_fmt || f.serie || "tu factura";
+  return [
+    `${saludoPorHora()} ${nombre}, te comparto la factura ${numero} de Vista360.`,
+    "",
+    "Aquí tienes el PDF, listo para revisar cuando gustes.",
+    "",
+    "También disponible en tu portal Vista360 Player:",
+    window.location.origin,
+  ].join("\n");
+}
+
+function mensajeFacturaConLink(f: Factura, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   const numero = f.numero_fmt || f.serie || "tu factura";
   return [
@@ -100,6 +116,13 @@ function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
     "También disponible en tu portal Vista360 Player:",
     window.location.origin,
   ].join("\n");
+}
+
+/** Nombre de archivo para el PDF compartido. */
+function nombreArchivoFactura(f: Factura) {
+  const base = f.numero_fmt || f.serie || "Vista360";
+  const limpio = base.replace(/[^\p{L}\p{N} -]/gu, "").trim().replace(/\s+/g, "-");
+  return `Factura-${limpio || "Vista360"}.pdf`;
 }
 
 /**
@@ -135,6 +158,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState("");
+  const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
 
   function abrirEdicionNombre() {
     setMenuAbierto(false);
@@ -218,9 +242,44 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const badge = BADGE[f.estado] ?? BADGE.Borrador;
   const tamano = formatoBytes(f.pdfPesoBytes);
   const fechaEmisionDate = fechaDeFactura(f.fecha_emision);
-  const mensaje = urlVer ? mensajeFactura(f, cliente, urlVer) : "";
+  const mensajeConArchivo = mensajeFacturaConArchivo(f, cliente);
+  const mensajeConLink = urlVer ? mensajeFacturaConLink(f, cliente, urlVer) : "";
   const emailSubject = `Factura ${f.numero_fmt ?? f.serie ?? ""} - Vista360`;
   const emailTo = cliente?.email ?? "";
+
+  /** Misma logica que ReportCard.tsx: intenta compartir el PDF
+   *  adjunto de verdad (Web Share, sobre todo en celular); si no se
+   *  puede, cae al link. La pestaña de WhatsApp se abre ya mismo,
+   *  dentro del clic, para que no la bloquee el navegador si el
+   *  intento de compartir el archivo tarda (ver el mismo comentario
+   *  largo en ReportCard.tsx). */
+  async function compartirPorCanal(canal: "whatsapp" | "correo") {
+    if (enviando) return;
+    const pestanaWhatsapp = canal === "whatsapp" ? window.open("", "_blank", "noopener,noreferrer") : null;
+    setEnviando(canal);
+    try {
+      const compartido =
+        esKeyR2 && f.pdfUrl
+          ? await compartirArchivoR2({
+              key: f.pdfUrl,
+              nombreArchivo: nombreArchivoFactura(f),
+              texto: mensajeConArchivo,
+              titulo: emailSubject,
+            })
+          : false;
+      if (compartido) {
+        pestanaWhatsapp?.close();
+      } else if (canal === "correo") {
+        window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
+      } else if (pestanaWhatsapp) {
+        pestanaWhatsapp.location.href = `https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`;
+      } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
+      }
+    } finally {
+      setEnviando(null);
+    }
+  }
 
   return (
     <div className="report-card factura-card">
@@ -355,25 +414,27 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           </a>
           {isAdmin && (
             <>
-              <a
+              <button
+                type="button"
                 className="report-action report-action-muted"
-                href={`mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensaje)}`}
+                onClick={() => void compartirPorCanal("correo")}
+                disabled={enviando !== null}
               >
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="m4 7 8 6 8-6" />
                 </svg>
-                Correo
-              </a>
-              <a
+                {enviando === "correo" ? "Enviando…" : "Correo"}
+              </button>
+              <button
+                type="button"
                 className="report-action report-action-muted report-action-whatsapp"
-                href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
-                target="_blank"
-                rel="noreferrer"
+                onClick={() => void compartirPorCanal("whatsapp")}
+                disabled={enviando !== null}
               >
                 <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-                WhatsApp
-              </a>
+                {enviando === "whatsapp" ? "Enviando…" : "WhatsApp"}
+              </button>
             </>
           )}
         </div>

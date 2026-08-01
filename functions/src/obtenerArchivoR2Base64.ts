@@ -25,8 +25,9 @@ if (getApps().length === 0) {
  * por WhatsApp/correo solo existen para el admin en la interfaz, y
  * la key tiene que caer dentro de "clientes/" (el prefijo real que
  * usan los reportes -- ver generarReporteCliente.ts /
- * eliminarReporteCliente.ts) para que esto no se vuelva un proxy de
- * lectura de todo el bucket.
+ * eliminarReporteCliente.ts) o "vista360/facturas/" (el prefijo que
+ * usan las facturas -- ver esCarpetaValida en r2Storage.ts) para que
+ * esto no se vuelva un proxy de lectura de todo el bucket.
  */
 export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
@@ -42,7 +43,8 @@ export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (req
     }
 
     const key = String(request.data?.key ?? "").trim();
-    if (!key || key.includes("..") || key.startsWith("/") || !key.startsWith("clientes/")) {
+    const prefijoValido = key.startsWith("clientes/") || key.startsWith("vista360/facturas/");
+    if (!key || key.includes("..") || key.startsWith("/") || !prefijoValido) {
       throw new HttpsError("invalid-argument", "Key inválida.");
     }
 
