@@ -917,7 +917,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             <div style={{ display: "flex", gap: 8 }}>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(
-                  `Hola, tu contraseña de Vista360 Player se restableció.
+                  `Hola ${resultadoReset.nombre}, te confirmamos que tu contraseña de Vista360 Player fue restablecida.
 
 Correo: ${resultadoReset.email}
 Contraseña nueva: ${resultadoReset.password}

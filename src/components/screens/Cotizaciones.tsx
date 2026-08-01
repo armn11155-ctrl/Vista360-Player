@@ -179,18 +179,14 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     }
   }
 
+  // Se pidio simplificar este mensaje -- antes repetia numero, cliente,
+  // panel, periodo, monto y vigencia, pero ese boton no abre un chat
+  // con un contacto especifico (wa.me sin numero, la persona elige a
+  // quien mandarselo despues) y el PDF que se adjunta a mano ya trae
+  // todos esos datos. Ahora es solo una nota de acompanamiento, breve
+  // y con un tono mas premium.
   function compartirWhatsApp(cotizacion: Cotizacion) {
-    const texto = [
-      "Hola, te comparto la cotización de VISTA360 para tu revisión.",
-      "",
-      `*VISTA360 · ${cotizacion.numero}*`,
-      cotizacion.nombre,
-      `Cliente: ${cotizacion.clienteNombre}`,
-      `Panel: ${cotizacion.panelNombre}${cotizacion.panelCiudad ? ` · ${cotizacion.panelCiudad}` : ""}`,
-      `Periodo: ${fechaVisible(cotizacion.inicio)} al ${fechaVisible(cotizacion.fin)}`,
-      `Inversión: ${dinero(cotizacion.monto, cotizacion.moneda)}${esCotizacionExonerada(cotizacion) ? "" : cotizacion.incluyeIgv ? " (incluye IGV)" : " + IGV"}`,
-      `Vigencia: ${cotizacion.vigenciaDias} días`,
-    ].join("\n");
+    const texto = "Hola, te comparto tu cotización de VISTA360.";
     window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
   }
 
