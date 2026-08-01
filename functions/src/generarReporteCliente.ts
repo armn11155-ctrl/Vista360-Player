@@ -188,35 +188,17 @@ async function imageBuffer(url: string) {
  *  subir resolucion Y calidad juntas -- +117% a +182%). No se toco mas
  *  la resolucion despues de esto.
  *
- *  Una primera ronda (con una foto de prueba SINTETICA, de texto y
- *  formas limpias) encontro que apagar el submuestreo de color
- *  (chromaSubsampling "4:2:0" -> "4:4:4") evitaba un halo de color en
- *  los bordes de las letras, y se quedo en calidad 45 + "4:4:4".
- *
- *  Pero esa foto sintetica resulto ser mas facil de comprimir sin
- *  artefactos que una foto real de camara -- una foto real YA trae
- *  grano de sensor propio, que disimula justo lo que el submuestreo o
- *  la calidad mas baja podrian perder. Se repitio la prueba con 2
- *  fotos reales que mando el cliente (una valla de noche, otra de
- *  dia, mismo tipo de contenido real: texto chico sobre fondo de
- *  color, cielo con degradado, cables finos), comparando recortes de
- *  cerca en las zonas mas dificiles (el cielo, y el texto "PISCINAS
- *  TEMPERADAS" del cartel):
- *
- *  - "4:2:0" y "4:4:4" se ven IGUAL en las fotos reales -- el halo de
- *    la prueba sintetica no aparece con grano real encima. Se volvio
- *    a "4:2:0" (mas liviano, sin perder nada visible).
- *  - En calidad, recien se empieza a notar perdida (texto borroso,
- *    bloques en el cielo) en 20, y ya es clara en 15. Calidad 30 se ve
- *    limpia en las dos fotos de prueba, con margen arriba del piso
- *    real (20).
- *
- *  Con calidad 30 + "4:2:0", las dos fotos reales de prueba pesaron
- *  29.5KB y 100.9KB -- unos 36% MENOS que el original de antes de
- *  todos estos cambios (46.1KB y 156.6KB), con calidad visualmente
- *  igual en cada comparacion.
+ *  Apagar el submuestreo de color (chromaSubsampling "4:2:0" ->
+ *  "4:4:4") evita un halo de color en los bordes de las letras. Se
+ *  probo despues bajar mas la calidad (30, con "4:2:0" de nuevo) para
+ *  aligerar mas el peso -- en recortes de cerca de 2 fotos reales de
+ *  prueba se veia bien, pero el cliente lo probo en el reporte real
+ *  (PDF completo, no un recorte ampliado) y SI se notaba perdida de
+ *  calidad ahi. Se volvio a esta configuracion (45 + "4:4:4"), que es
+ *  la que el cliente ya habia visto y aprobado antes -- prioridad
+ *  confirmada: calidad por encima de seguir bajando el peso.
  */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 30 };
+const FOTO_CONFIG = { maxWidth: 1200, quality: 45 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
@@ -226,7 +208,7 @@ async function comprimirFoto(buffer: Buffer) {
       .jpeg({
         quality: FOTO_CONFIG.quality,
         mozjpeg: true,
-        chromaSubsampling: "4:2:0",
+        chromaSubsampling: "4:4:4",
       })
       .toBuffer();
   } catch (error) {
