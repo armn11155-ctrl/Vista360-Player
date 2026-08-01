@@ -7528,6 +7528,23 @@ input[type="date"] {
   html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .quote-document, .quote-document * { visibility: visible !important; }
+  /* Toda la app esta armada como una "app de pantalla completa": html,
+     body, #root, .app-shell y .main-area son todos overflow:hidden con
+     su alto clavado a 100vh/100dvh (cada pantalla, como .quotes-screen,
+     maneja su propio scroll interno por separado). Eso funciona bien
+     en uso normal, pero en impresion ese recorte de altura-de-viewport
+     se hereda en cadena por TODOS los ancestros del documento --
+     resetear solo .quotes-screen (como se hizo antes) no alcanza,
+     porque html/body/#root/.app-shell/.main-area siguen recortando por
+     encima. El resultado era una hoja en blanco (el contenido real
+     quedaba fuera del recorte) y ademas mucho mas lento, porque el
+     navegador reintenta acomodar ese recorte en cada pagina. Se
+     resetean todos a "fluye normal, sin recorte" solo para impresion. */
+  html, body, #root, .app-shell, .main-area {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
   /* .quotes-screen (el contenedor de toda la pantalla) es
      position:fixed + inset:0 + overflow-y:auto -- eso lo deja
      "clavado" al tamano de la ventana con scroll propio. Como es el
@@ -7538,7 +7555,7 @@ input[type="date"] {
      el contenido mas alla de una pantalla). Se resetea a estatico y
      sin recorte para que fluya como documento normal. */
   .quotes-screen {
-    position: static; inset: auto; overflow: visible; height: auto; background: #fff;
+    position: static !important; inset: auto !important; overflow: visible !important; height: auto !important; background: #fff;
   }
   /* Antes .quote-document quedaba position:fixed en impresion -- eso lo
      ancla al viewport y en paginas de mas de una hoja (cotizaciones con
