@@ -180,23 +180,31 @@ async function imageBuffer(url: string) {
  *  por debajo de esta calidad — se dejo un margen de seguridad arriba
  *  del piso real para no arriesgar en fotos con mas ruido de camara.
  *
- *  Se pidio mejorar la calidad de la foto sin disparar el peso. Se
- *  probo subir la resolucion (maxWidth) ademas de la calidad, pero eso
- *  es lo que MAS pesa (una foto de prueba con texto/graficos de color,
- *  representativa de un panel real, paso de 40KB a 88-115KB al subir
- *  resolucion Y calidad juntas -- +117% a +182%). El salto mas
+ *  Se pidio mejorar la calidad de la foto sin disparar el peso -- y
+ *  despues, la version MAS liviana que se pueda sin perder esa mejora.
+ *  Se probo subir la resolucion (maxWidth) ademas de la calidad, pero
+ *  eso es lo que MAS pesa (una foto de prueba con texto/graficos de
+ *  color, representativa de un panel real, paso de 40KB a 88-115KB al
+ *  subir resolucion Y calidad juntas -- +117% a +182%). El salto
  *  rentable resulto ser otro: dejar de submuestrear el color
  *  (chromaSubsampling "4:2:0" -> "4:4:4"). El 4:2:0 promedia el color
  *  de cada bloque de 2x2 pixeles (guarda la mitad de resolucion de
  *  color) -- en fotos comunes casi no se nota, pero en el contenido
  *  real de estos reportes (texto y lineas de color sobre un panel) se
- *  ve como un halo/sangrado de color en los bordes de las letras. Con
- *  4:4:4 (color a resolucion completa) mas un empujon de calidad
- *  (55 -> 63), esa misma foto de prueba paso de 40.6KB a 59.5KB
- *  (+46%) -- un aumento moderado, sin tocar la resolucion, con una
- *  mejora clara y visible especifica al tipo de foto que se sube acá.
+ *  ve como un halo/sangrado de color en los bordes de las letras.
+ *
+ *  Sharp/mozjpeg solo permite "4:2:0" o "4:4:4" (no hay un punto medio
+ *  tipo 4:2:2). Se probo el nuevo "4:4:4" en un barrido de calidades
+ *  (50 a 72) comparando recortes de la foto de prueba de cerca (texto
+ *  y una zona con mucho detalle fino, tipo ventanas de un edificio):
+ *  la calidad 50 con 4:4:4 (50.4KB) se veia IGUAL de nitida que la 63
+ *  (59.5KB) -- la mejora real la da sacar el submuestreo de color, no
+ *  subir la calidad. Por eso la calidad se queda en el mismo 55 de
+ *  siempre (ya probado en produccion, sin arriesgar de mas) y SOLO se
+ *  cambia el submuestreo -- esa misma foto de prueba paso de 40.6KB a
+ *  54.1KB (+33%, contra el +46% de subir tambien la calidad a 63).
  */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 63 };
+const FOTO_CONFIG = { maxWidth: 1200, quality: 55 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
