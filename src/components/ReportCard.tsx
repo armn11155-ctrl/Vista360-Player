@@ -42,7 +42,9 @@ function formatoBytes(bytes?: number) {
 }
 
 /** Mensaje cuando el PDF va adjunto de verdad (Web Share) -- no hace
- *  falta un link, el archivo ya viene con el mensaje. */
+ *  falta un link al PDF, el archivo ya viene con el mensaje. Se pidió
+ *  que igual quede el link al portal, abajo, como respaldo/consulta
+ *  general (no es el link del PDF puntual, es la puerta de entrada). */
 function mensajeReporteConArchivo(mesLabel: string, cliente: Cliente | null) {
   const nombre = nombreCliente(cliente);
   return [
@@ -50,12 +52,14 @@ function mensajeReporteConArchivo(mesLabel: string, cliente: Cliente | null) {
     "",
     "Aquí tienes el PDF, listo para revisar cuando gustes.",
     "",
-    "También queda disponible en tu portal Vista360 Player para consultarlo cuando lo necesites.",
+    "También disponible en tu portal Vista360 Player:",
+    window.location.origin,
   ].join("\n");
 }
 
 /** Mensaje de respaldo cuando no se pudo adjuntar el archivo (por
- *  ejemplo, en computadora) -- ahí sí hace falta el link para verlo. */
+ *  ejemplo, en computadora) -- ahí sí hace falta el link puntual al
+ *  PDF, además del link al portal. */
 function mensajeReporteConLink(mesLabel: string, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   return [
@@ -63,7 +67,8 @@ function mensajeReporteConLink(mesLabel: string, cliente: Cliente | null, url: s
     "",
     `Puedes revisarlo aquí: ${url}`,
     "",
-    "También queda disponible en tu portal Vista360 Player para consultarlo cuando lo necesites.",
+    "También disponible en tu portal Vista360 Player:",
+    window.location.origin,
   ].join("\n");
 }
 

@@ -84,14 +84,21 @@ function fechaDeFactura(fecha?: string): Date | null {
 
 /** No se menciona el monto en el mensaje -- todavia no se registra un
  *  monto real por factura subida desde aca, y decir "$ 0.00" se veia
- *  mal tanto en la tarjeta como en el mensaje. */
+ *  mal tanto en la tarjeta como en el mensaje.
+ *
+ *  Mismo tono y misma estructura que el mensaje de Reporte (premium,
+ *  elegante, sin relleno generico) -- y mismo cierre con el link al
+ *  portal como puerta de entrada general. */
 function mensajeFactura(f: Factura, cliente: Cliente | null, url: string) {
   const nombre = nombreCliente(cliente);
   const numero = f.numero_fmt || f.serie || "tu factura";
   return [
     `${saludoPorHora()} ${nombre}, te comparto la factura ${numero} de Vista360.`,
     "",
-    `Puedes verla aquí: ${url}`,
+    `Puedes revisarla aquí: ${url}`,
+    "",
+    "También disponible en tu portal Vista360 Player:",
+    window.location.origin,
   ].join("\n");
 }
 
