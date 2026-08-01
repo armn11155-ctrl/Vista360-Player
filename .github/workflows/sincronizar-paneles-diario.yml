@@ -1,0 +1,34 @@
+# Llama todos los dias a sincronizarEstadoPaneles -- reemplaza al
+# "onSchedule" (Cloud Scheduler) que tenia antes esta funcion, que
+# necesitaba un permiso de IAM que la cuenta de servicio del deploy
+# automatico no puede otorgarse a si misma en este proyecto (ver el
+# comentario largo en functions/src/sincronizarEstadoPaneles.ts).
+#
+# Ahora sincronizarEstadoPaneles es una funcion HTTPS normal, protegida
+# por el secret CRON_SYNC_SECRET (mismo valor guardado como secret de
+# GitHub y como secret de Secret Manager en Google Cloud -- lo
+# configura setup-r2-secrets-and-deploy.yml). Este workflow solo la
+# llama una vez al dia, a la hora que antes tenia el cron de Cloud
+# Scheduler.
+name: 🔄 Sincronizar estado de paneles (diario)
+
+on:
+  schedule:
+    # 00:20 hora de Lima = 05:20 UTC (Lima no tiene horario de verano,
+    # siempre es UTC-5 todo el año).
+    - cron: "20 5 * * *"
+  # Para poder probarlo a mano desde GitHub Actions sin esperar al cron.
+  workflow_dispatch: {}
+
+jobs:
+  sincronizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar a sincronizarEstadoPaneles
+        run: |
+          curl --fail --show-error --silent \
+            --max-time 120 \
+            --retry 2 --retry-delay 5 \
+            -X POST \
+            -H "x-cron-secret: ${{ secrets.CRON_SYNC_SECRET }}" \
+            https://us-central1-base-de-datos-vista360.cloudfunctions.net/sincronizarEstadoPaneles

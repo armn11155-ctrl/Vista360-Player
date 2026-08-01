@@ -1,13 +1,17 @@
 /**
  * set-r2-secrets-direct.mjs
  *
- * Crea/actualiza los 4 secrets de R2 directo por la API de Secret
- * Manager, sin pasar por 'firebase functions:secrets:set' — ese
- * comando hace un chequeo previo de "¿está habilitada la API de
- * Secret Manager?" que necesita un permiso que la credencial del
- * Admin SDK no tiene, aunque sí pueda crear/leer secrets (mismo caso
- * que deploy-rules-direct.mjs con la API de Firestore Rules, en el
- * repo Vista360).
+ * Crea/actualiza los secrets directo por la API de Secret Manager, sin
+ * pasar por 'firebase functions:secrets:set' — ese comando hace un
+ * chequeo previo de "¿está habilitada la API de Secret Manager?" que
+ * necesita un permiso que la credencial del Admin SDK no tiene, aunque
+ * sí pueda crear/leer secrets (mismo caso que deploy-rules-direct.mjs
+ * con la API de Firestore Rules, en el repo Vista360).
+ *
+ * Empezó con los 4 de R2; se le sumó CRON_SYNC_SECRET (lo usa
+ * sincronizarEstadoPaneles para validar que quien la llama es el cron
+ * de GitHub Actions y no cualquiera en internet — ver
+ * sincronizar-paneles-diario.yml).
  */
 import { GoogleAuth } from 'google-auth-library';
 
@@ -19,6 +23,7 @@ const SECRETS = {
   R2_ACCESS_KEY_ID: process.env.VAL_R2_ACCESS_KEY_ID,
   R2_SECRET_ACCESS_KEY: process.env.VAL_R2_SECRET_ACCESS_KEY,
   R2_BUCKET: process.env.VAL_R2_BUCKET,
+  CRON_SYNC_SECRET: process.env.VAL_CRON_SYNC_SECRET,
 };
 
 const auth = new GoogleAuth({
@@ -85,4 +90,4 @@ if (failed) {
   process.exit(1);
 }
 
-console.log('\n✅ Los 4 secrets de R2 quedaron configurados en Secret Manager.');
+console.log(`\n✅ Los ${Object.keys(SECRETS).length} secrets quedaron configurados en Secret Manager.`);

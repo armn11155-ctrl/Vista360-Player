@@ -1,5 +1,4 @@
-import { onSchedule } from "firebase-functions/v2/scheduler";
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esPanelExclusivo } from "./modalidadPanel.js";
@@ -115,17 +114,43 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }
 
-/** Corre solo, todos los días a las 00:20 de Lima -- apenas cambia el
- *  día, para que un panel cuya campaña venció ayer aparezca libre desde
- *  temprano. */
-export const sincronizarEstadoPaneles = onSchedule(
-  { schedule: "20 0 * * *", timeZone: "America/Lima" },
-  async () => {
+/** Se pidio que corriera sola, todos los dias a las 00:20 de Lima, apenas
+ *  cambia el dia -- para que un panel cuya campana vencio ayer aparezca
+ *  libre desde temprano, sin que nadie tenga que entrar a la app.
+ *
+ *  Antes esto era un "onSchedule" (Cloud Scheduler nativo de Google).
+ *  Cloud Scheduler necesita que, la primera vez, alguien le otorgue
+ *  permisos de IAM extra a un servicio interno de Google -- y la
+ *  cuenta de servicio que usa el deploy automatico (GitHub Actions) no
+ *  tiene autorizacion para otorgarse esos permisos a si misma en este
+ *  proyecto, asi que el deploy de esta funcion fallaba siempre (ver
+ *  historial de este archivo).
+ *
+ *  Ahora es una funcion HTTPS normal (como cualquier otra callable),
+ *  protegida por un secret compartido -- y es un workflow de GitHub
+ *  Actions con horario (cron) el que la llama una vez al dia, en vez
+ *  de que Google Cloud la dispare solo. Mismo resultado (corre sola,
+ *  sin que nadie toque nada), pero sin el problema de permisos: una
+ *  funcion HTTPS con secret se despliega exactamente igual que
+ *  cualquier otra de las ~50 funciones "normales" de este proyecto,
+ *  que ya se sabe que funcionan bien con esta cuenta de servicio. */
+export const sincronizarEstadoPaneles = onRequest(
+  { secrets: ["CRON_SYNC_SECRET"] },
+  async (req, res) => {
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
+    if (req.get("x-cron-secret") !== process.env.CRON_SYNC_SECRET) {
+      res.status(401).send("Unauthorized");
+      return;
+    }
     const resultado = await sincronizar();
     console.log(
       `Paneles revisados: ${resultado.revisados}, actualizados: ${resultado.actualizados}.`,
       resultado.detalle
     );
+    res.status(200).json(resultado);
   }
 );
 
