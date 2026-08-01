@@ -113,10 +113,19 @@ export function agruparPorCercania<T extends PuntoConId>(puntos: T[], umbralPx: 
  * Para un grupo de N pines que comparten (o casi) el mismo lugar,
  * calcula el offset en pixeles (dx, dy) que le toca a cada uno para
  * separarlos en un círculo parejo alrededor del centro del grupo.
+ *
+ * anguloInicialRad (opcional, default 0 = empieza hacia la derecha)
+ * gira todo el círculo -- se usa para que el par quede apilado en
+ * diagonal (arriba a la derecha) en vez de lado a lado, como se pidió
+ * calcando una referencia.
  */
-export function offsetsCirculares(n: number, radioPx: number): Array<{ dx: number; dy: number }> {
+export function offsetsCirculares(
+  n: number,
+  radioPx: number,
+  anguloInicialRad = 0
+): Array<{ dx: number; dy: number }> {
   return Array.from({ length: n }, (_, i) => {
-    const angulo = (2 * Math.PI * i) / n;
+    const angulo = anguloInicialRad + (2 * Math.PI * i) / n;
     return { dx: Math.cos(angulo) * radioPx, dy: Math.sin(angulo) * radioPx };
   });
 }

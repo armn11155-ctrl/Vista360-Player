@@ -491,15 +491,27 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           const zoom = mapRef.current.getZoom();
           // UMBRAL_PX: a partir de qué distancia en pantalla dos pines
           // cuentan como "pegados". RADIO_PX: qué tan lejos del centro
-          // real del grupo se corre cada uno al separarlos -- con 2
-          // pines quedan a 2*RADIO_PX entre sí (52px), suficiente para
-          // que no se toquen ni el icono más grande (el seleccionado,
-          // de 48px de ancho). El agrupamiento en sí (agruparPorCercania)
-          // y el cálculo de los offsets (offsetsCirculares) son
-          // funciones puras en utils/leaflet.ts, con sus propios tests
-          // -- acá solo se los alimenta con pixeles reales del mapa.
+          // real del grupo se corre cada uno al separarlos.
+          //
+          // Antes esto separaba del todo (52px entre 2 pines) para que
+          // no se pisaran los íconos -- pero se pidió lo contrario: si
+          // dos paneles están cerca de verdad, que SE VEAN cerca (uno
+          // apilado detrás del otro, como una referencia que mandó el
+          // usuario), no separados como si estuvieran lejos (eso
+          // "engaña"). Ahora el offset es chico (9px, 18px entre los
+          // dos) y en diagonal hacia arriba-derecha (ANGULO_INICIAL),
+          // para que se vean apilados/asomando uno detrás del otro en
+          // vez de lado a lado -- alcanza para que ninguno quede 100%
+          // tapado (el bug original en Guadalupe), sin dar la
+          // impresión de que están lejos.
+          //
+          // El agrupamiento en sí (agruparPorCercania) y el cálculo de
+          // los offsets (offsetsCirculares) son funciones puras en
+          // utils/leaflet.ts, con sus propios tests -- acá solo se los
+          // alimenta con pixeles reales del mapa.
           const UMBRAL_PX = 40;
-          const RADIO_PX = 26;
+          const RADIO_PX = 9;
+          const ANGULO_INICIAL = -Math.PI / 4; // arriba a la derecha
 
           const puntos = conCoordenadas.map((panel) => {
             const px = mapRef.current.project([panel.lat, panel.lng], zoom);
@@ -521,7 +533,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             const centroLat = grupo.reduce((suma, p) => suma + p.panel.lat, 0) / grupo.length;
             const centroLng = grupo.reduce((suma, p) => suma + p.panel.lng, 0) / grupo.length;
             const centroPx = mapRef.current.project([centroLat, centroLng], zoom);
-            const offsets = offsetsCirculares(grupo.length, RADIO_PX);
+            const offsets = offsetsCirculares(grupo.length, RADIO_PX, ANGULO_INICIAL);
             grupo.forEach((punto, i) => {
               const marker = markersPorIdRef.current.get(punto.panel.id);
               if (!marker) return;

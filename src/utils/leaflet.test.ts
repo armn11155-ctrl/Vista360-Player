@@ -118,3 +118,26 @@ describe("offsetsCirculares", () => {
     expect(Math.sqrt(offsets[0].dx ** 2 + offsets[0].dy ** 2)).toBeCloseTo(26, 5);
   });
 });
+
+describe("offsetsCirculares con anguloInicialRad", () => {
+  it("sin angulo inicial, empieza hacia la derecha (comportamiento de siempre)", () => {
+    const [o] = offsetsCirculares(4, 10);
+    expect(o.dx).toBeCloseTo(10, 5);
+    expect(o.dy).toBeCloseTo(0, 5);
+  });
+
+  it("gira el circulo entero segun el angulo inicial (ej. arriba-derecha a -45°)", () => {
+    const [o] = offsetsCirculares(2, 10, -Math.PI / 4);
+    expect(o.dx).toBeCloseTo(10 * Math.SQRT1_2, 5); // derecha
+    expect(o.dy).toBeCloseTo(-10 * Math.SQRT1_2, 5); // arriba (y negativo en pixeles)
+  });
+
+  it("el angulo inicial no cambia la distancia entre puntos, solo la rota", () => {
+    const radio = 9;
+    const sinGirar = offsetsCirculares(2, radio);
+    const girado = offsetsCirculares(2, radio, -Math.PI / 4);
+    const distSinGirar = Math.hypot(sinGirar[0].dx - sinGirar[1].dx, sinGirar[0].dy - sinGirar[1].dy);
+    const distGirado = Math.hypot(girado[0].dx - girado[1].dx, girado[0].dy - girado[1].dy);
+    expect(distGirado).toBeCloseTo(distSinGirar, 5);
+  });
+});
