@@ -354,10 +354,14 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // un poco mas grande (18 -> 20) y mas abajo (212 -> 224), como se
   // pidio. El titulo grande baja un poco tambien (266/362 -> 278/374)
   // para mantener el mismo aire respecto al kicker que antes.
-  doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 450 });
+  // Se pidio centrar tambien el logo horizontalmente (misma altura
+  // de siempre, Y=78 y ancho 450 -- solo cambia el X), igual que ya
+  // se hizo con el kicker y el titulo de abajo.
+  const centroX = PAGE.width / 2;
+  const logoW = 450;
+  doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 78, { width: logoW });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  const centroX = PAGE.width / 2;
   drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 224, COLORS.accent, 20, { center: true });
 
   doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white);
