@@ -2917,6 +2917,24 @@
   }
   .form-input:focus { border-color: #0877FF; color: var(--text); }
   .form-input::placeholder { color: var(--muted); }
+  /* El navegador (sobre todo Chrome) pinta de amarillo cualquier
+     campo que autocompleta (usuario/contraseña guardados) -- no hay
+     forma de "apagar" ese color con background normal, se necesita
+     este truco: una inset box-shadow gigante del mismo color que el
+     fondo real del input, que tapa el amarillo por completo. Aplica
+     a TODOS los .form-input (no solo login), porque el navegador
+     autocompleta cualquier formulario, no solo el de acceso. */
+  .form-input:-webkit-autofill,
+  .form-input:-webkit-autofill:hover,
+  .form-input:-webkit-autofill:focus,
+  .form-input:-webkit-autofill:active,
+  .form-input:autofill {
+    -webkit-box-shadow: 0 0 0 1000px var(--card) inset !important;
+    box-shadow: 0 0 0 1000px var(--card) inset !important;
+    -webkit-text-fill-color: var(--text) !important;
+    caret-color: var(--text);
+    transition: background-color 9999s ease-in-out 0s;
+  }
   /* Ojito para mostrar/ocultar la contraseña -- por ahora solo en el
      login (input password de un solo campo, ancho completo). */
   /* Ícono dentro del campo (persona en Usuario, candado en
