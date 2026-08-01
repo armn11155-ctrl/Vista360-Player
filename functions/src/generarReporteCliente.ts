@@ -195,16 +195,23 @@ async function imageBuffer(url: string) {
  *
  *  Sharp/mozjpeg solo permite "4:2:0" o "4:4:4" (no hay un punto medio
  *  tipo 4:2:2). Se probo el nuevo "4:4:4" en un barrido de calidades
- *  (50 a 72) comparando recortes de la foto de prueba de cerca (texto
+ *  (35 a 72) comparando recortes de la foto de prueba de cerca (texto
  *  y una zona con mucho detalle fino, tipo ventanas de un edificio):
- *  la calidad 50 con 4:4:4 (50.4KB) se veia IGUAL de nitida que la 63
- *  (59.5KB) -- la mejora real la da sacar el submuestreo de color, no
- *  subir la calidad. Por eso la calidad se queda en el mismo 55 de
- *  siempre (ya probado en produccion, sin arriesgar de mas) y SOLO se
- *  cambia el submuestreo -- esa misma foto de prueba paso de 40.6KB a
- *  54.1KB (+33%, contra el +46% de subir tambien la calidad a 63).
+ *  de 35 a 72 se ven todas IGUAL de nitidas -- la mejora real la da
+ *  sacar el submuestreo de color, no la calidad numerica.
+ *
+ *  La foto de prueba es sintetica (gradientes y formas limpias) --
+ *  MAS facil de comprimir que una foto real de camara (que trae grano
+ *  de sensor, ruido, iluminacion pareja o no), asi que en vez de irse
+ *  al piso absoluto que aguanto la prueba (35, practicamente gratis:
+ *  40.1KB, CASI el mismo peso que el original de antes) se dejo un
+ *  colchon de seguridad para fotos reales mas dificiles: calidad 45,
+ *  que en la prueba tambien se ve limpia (47.0KB) y sigue pesando
+ *  bastante menos que subir la calidad junto con el submuestreo
+ *  (54.1KB a 55, 59.5KB a 63) -- +16% contra el original, en vez de
+ *  +33% o +46%.
  */
-const FOTO_CONFIG = { maxWidth: 1200, quality: 55 };
+const FOTO_CONFIG = { maxWidth: 1200, quality: 45 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
