@@ -217,12 +217,27 @@ function drawImageCover(doc: PDFKit.PDFDocument, src: Buffer | string, x: number
   doc.restore();
 }
 
-function drawKicker(doc: PDFKit.PDFDocument, text: string, x: number, y: number, color = COLORS.accent, size = 14) {
+function drawKicker(
+  doc: PDFKit.PDFDocument,
+  text: string,
+  x: number,
+  y: number,
+  color = COLORS.accent,
+  size = 14,
+  options: { center?: boolean } = {}
+) {
   const upper = sinTildes(text.toUpperCase());
-  doc.font("Helvetica-Bold").fontSize(size).fillColor(color).text(upper, x, y, { characterSpacing: 2 });
+  doc.font("Helvetica-Bold").fontSize(size).fillColor(color);
   const w = doc.widthOfString(upper, { characterSpacing: 2 });
+  // Centrado: x pasa a ser el CENTRO horizontal deseado (no el borde
+  // izquierdo) -- se usa en la portada, donde se pidió centrar el
+  // kicker y el título en vez de pegarlos al margen izquierdo.
+  const drawX = options.center ? x - w / 2 : x;
+  doc.text(upper, drawX, y, { characterSpacing: 2 });
   const lineY = y + size + 8;
-  doc.moveTo(x, lineY).lineTo(x + Math.min(w, 96), lineY).lineWidth(2).strokeColor(color).stroke();
+  const lineW = Math.min(w, 96);
+  const lineX = options.center ? x - lineW / 2 : drawX;
+  doc.moveTo(lineX, lineY).lineTo(lineX + lineW, lineY).lineWidth(2).strokeColor(color).stroke();
 }
 
 /** Icono de pin de ubicacion (calcado del feather-icons "map-pin"),
@@ -342,10 +357,14 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   doc.image(LOGO_WORDMARK_WHITE, PAGE.margin, 78, { width: 450 });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, PAGE.margin, 224, COLORS.accent, 20);
+  const centroX = PAGE.width / 2;
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 224, COLORS.accent, 20, { center: true });
 
-  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("REPORTE", PAGE.margin, 278, { characterSpacing: 0.5 });
-  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white).text("FOTOGRAFICO", PAGE.margin, 374, { characterSpacing: 0.5 });
+  doc.font("Helvetica-Bold").fontSize(86).fillColor(COLORS.white);
+  const wReporte = doc.widthOfString("REPORTE", { characterSpacing: 0.5 });
+  const wFotografico = doc.widthOfString("FOTOGRAFICO", { characterSpacing: 0.5 });
+  doc.text("REPORTE", centroX - wReporte / 2, 278, { characterSpacing: 0.5 });
+  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 374, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
