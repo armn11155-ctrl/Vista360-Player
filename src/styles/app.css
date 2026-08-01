@@ -4396,6 +4396,13 @@
     font-family: inherit;
     cursor: pointer;
   }
+  /* Correo/WhatsApp pasaron de <a> a <button> (para poder intentar
+     compartir el PDF adjunto antes de caer al link) -- se deshabilitan
+     mientras se resuelve el intento, para evitar doble clic. */
+  .report-action:disabled {
+    opacity: .6;
+    cursor: default;
+  }
   .report-action-outline {
     color: #0877FF;
     border-color: rgba(8,119,255,.3);

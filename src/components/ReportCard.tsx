@@ -3,6 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
+import { compartirArchivoR2 } from "../utils/compartirArchivo";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -40,17 +41,37 @@ function formatoBytes(bytes?: number) {
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
-function mensajeReporte(mesLabel: string, cliente: Cliente | null, url: string) {
+/** Mensaje cuando el PDF va adjunto de verdad (Web Share) -- no hace
+ *  falta un link, el archivo ya viene con el mensaje. */
+function mensajeReporteConArchivo(mesLabel: string, cliente: Cliente | null) {
   const nombre = nombreCliente(cliente);
   return [
     `${saludoPorHora()} ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
     "",
-    "Lo preparamos con una presentación premium, listo para ver o descargar.",
+    "Aquí tienes el PDF, listo para revisar cuando gustes.",
     "",
-    `Puedes verlo aquí: ${url}`,
-    "",
-    "También queda disponible en tu portal Vista360 para consultarlo cuando lo necesites.",
+    "También queda disponible en tu portal Vista360 Player para consultarlo cuando lo necesites.",
   ].join("\n");
+}
+
+/** Mensaje de respaldo cuando no se pudo adjuntar el archivo (por
+ *  ejemplo, en computadora) -- ahí sí hace falta el link para verlo. */
+function mensajeReporteConLink(mesLabel: string, cliente: Cliente | null, url: string) {
+  const nombre = nombreCliente(cliente);
+  return [
+    `${saludoPorHora()} ${nombre}, te comparto tu reporte de ${mesLabel} de Vista360.`,
+    "",
+    `Puedes revisarlo aquí: ${url}`,
+    "",
+    "También queda disponible en tu portal Vista360 Player para consultarlo cuando lo necesites.",
+  ].join("\n");
+}
+
+/** Nombre de archivo para el PDF compartido -- mismo mesLabel que se
+ *  muestra en la tarjeta ("17 Jun 2026"), sin caracteres raros. */
+function nombreArchivoReporte(mesLabel: string) {
+  const limpio = mesLabel.replace(/[^\p{L}\p{N} -]/gu, "").trim().replace(/\s+/g, "-");
+  return `Reporte-${limpio || "Vista360"}.pdf`;
 }
 
 /**
@@ -62,15 +83,56 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [error, setError] = useState("");
+  const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const url = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
 
-  const mensaje = mensajeReporte(informe.mesLabel, cliente, url);
+  const mensajeConArchivo = mensajeReporteConArchivo(informe.mesLabel, cliente);
+  const mensajeConLink = mensajeReporteConLink(informe.mesLabel, cliente, url);
   const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
   const emailTo = cliente?.email ?? "";
   const tamano = formatoBytes(informe.digitalBytes);
+
+  /** Intenta mandar el PDF adjunto de verdad (Web Share, sobre todo en
+   *  celular); si no se puede (sin soporte, sin r2Keys, falló el
+   *  pedido, etc.), cae al comportamiento de siempre: abrir
+   *  WhatsApp/correo con el link. Ver utils/compartirArchivo.ts para
+   *  el por qué de esta doble vía.
+   *
+   *  Para WhatsApp la pestaña se abre ACÁ, todavía dentro del clic --
+   *  si se espera a saber si se pudo compartir el archivo (con un
+   *  await de por medio) para recién ahí llamar a window.open(), el
+   *  navegador puede bloquearlo como pop-up. Se abre en blanco ya
+   *  mismo y se le asigna destino (o se cierra) después. */
+  async function compartirPorCanal(canal: "whatsapp" | "correo") {
+    if (enviando) return;
+    const pestanaWhatsapp = canal === "whatsapp" ? window.open("", "_blank", "noopener,noreferrer") : null;
+    setEnviando(canal);
+    try {
+      const key = informe.r2Keys?.digital;
+      const compartido = key
+        ? await compartirArchivoR2({
+            key,
+            nombreArchivo: nombreArchivoReporte(informe.mesLabel),
+            texto: mensajeConArchivo,
+            titulo: emailSubject,
+          })
+        : false;
+      if (compartido) {
+        pestanaWhatsapp?.close();
+      } else if (canal === "correo") {
+        window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
+      } else if (pestanaWhatsapp) {
+        pestanaWhatsapp.location.href = `https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`;
+      } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
+      }
+    } finally {
+      setEnviando(null);
+    }
+  }
 
   /** El admin pidió que un solo botón haga las dos cosas: descargar el
    *  PDF Y también llevarlo a la página donde se ve en el navegador.
@@ -196,25 +258,27 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </a>
         {isAdmin && (
           <>
-            <a
+            <button
+              type="button"
               className="report-action report-action-muted"
-              href={`mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensaje)}`}
+              onClick={() => void compartirPorCanal("correo")}
+              disabled={enviando !== null}
             >
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="m4 7 8 6 8-6" />
               </svg>
-              Correo
-            </a>
-            <a
+              {enviando === "correo" ? "Enviando…" : "Correo"}
+            </button>
+            <button
+              type="button"
               className="report-action report-action-muted report-action-whatsapp"
-              href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
-              target="_blank"
-              rel="noreferrer"
+              onClick={() => void compartirPorCanal("whatsapp")}
+              disabled={enviando !== null}
             >
               <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-              WhatsApp
-            </a>
+              {enviando === "whatsapp" ? "Enviando…" : "WhatsApp"}
+            </button>
           </>
         )}
       </div>

@@ -12,6 +12,7 @@ export { generarReporteCliente } from "./generarReporteCliente.js";
 export { listarReportesCliente } from "./listarReportesCliente.js";
 export { eliminarReporteCliente } from "./eliminarReporteCliente.js";
 export { marcarReporteVisto } from "./marcarReporteVisto.js";
+export { obtenerArchivoR2Base64 } from "./obtenerArchivoR2Base64.js";
 export { crearClienteAcceso } from "./crearClienteAcceso.js";
 export { crearTrabajadorAcceso } from "./crearTrabajadorAcceso.js";
 export { listarSolicitudesAccion } from "./listarSolicitudesAccion.js";
