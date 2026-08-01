@@ -7528,6 +7528,18 @@ input[type="date"] {
   html, body { background: #fff !important; }
   body * { visibility: hidden !important; }
   .quote-document, .quote-document * { visibility: visible !important; }
+  /* .quotes-screen (el contenedor de toda la pantalla) es
+     position:fixed + inset:0 + overflow-y:auto -- eso lo deja
+     "clavado" al tamano de la ventana con scroll propio. Como es el
+     padre de .quote-preview-backdrop, si se queda asi en impresion el
+     navegador intenta paginar un cuadro fijo con scroll (lo que en
+     Chrome se traduce en que tarda muchisimo calculando la impresion
+     y termina sacando la hoja en blanco, porque no puede "desenrollar"
+     el contenido mas alla de una pantalla). Se resetea a estatico y
+     sin recorte para que fluya como documento normal. */
+  .quotes-screen {
+    position: static; inset: auto; overflow: visible; height: auto; background: #fff;
+  }
   /* Antes .quote-document quedaba position:fixed en impresion -- eso lo
      ancla al viewport y en paginas de mas de una hoja (cotizaciones con
      condiciones/observaciones largas) el contenido que no entraba en la
