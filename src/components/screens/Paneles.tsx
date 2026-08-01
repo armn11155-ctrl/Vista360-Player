@@ -176,7 +176,10 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
           mapRef.current = L.map(mapEl.current, {
             zoomControl: false,
             attributionControl: false,
-            scrollWheelZoom: false,
+            // Mismo motivo que en Cobertura.tsx: zoom con rueda/pad
+            // habilitado para escritorio -- Leaflet ya lo limita solo
+            // al recuadro del mapa.
+            scrollWheelZoom: true,
             doubleClickZoom: false,
             minZoom: zoomMinimoSinGris(mapEl.current.clientWidth, mapEl.current.clientHeight),
             maxBounds: [[-85, -180], [85, 180]],

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { zoomMinimoSinGris } from "./leaflet";
+import { agruparPorCercania, offsetsCirculares, zoomMinimoSinGris } from "./leaflet";
 
 describe("zoomMinimoSinGris", () => {
   it("nunca deja el mundo mas chico que el lado mas largo del recuadro", () => {
@@ -36,5 +36,85 @@ describe("zoomMinimoSinGris", () => {
     expect(zoomMinimoSinGris(-50, -50)).toBeGreaterThanOrEqual(0);
     expect(zoomMinimoSinGris(NaN, 500)).toBeGreaterThanOrEqual(0);
     expect(Number.isFinite(zoomMinimoSinGris(NaN, NaN))).toBe(true);
+  });
+});
+
+describe("agruparPorCercania", () => {
+  it("agrupa dos puntos con coordenadas EXACTAMENTE iguales (caso Lima)", () => {
+    const puntos = [
+      { id: "a", x: 100, y: 100 },
+      { id: "b", x: 100, y: 100 },
+    ];
+    const grupos = agruparPorCercania(puntos, 40);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0]).toHaveLength(2);
+  });
+
+  it("agrupa dos puntos CERCANOS pero no identicos (caso Guadalupe: a pocos metros reales, pero pegados en pantalla)", () => {
+    const puntos = [
+      { id: "a", x: 100, y: 100 },
+      { id: "b", x: 112, y: 108 }, // ~14px de distancia, distinto pero "pegado"
+    ];
+    const grupos = agruparPorCercania(puntos, 40);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0]).toHaveLength(2);
+  });
+
+  it("NO agrupa puntos lejos entre si", () => {
+    const puntos = [
+      { id: "a", x: 0, y: 0 },
+      { id: "b", x: 500, y: 500 },
+    ];
+    const grupos = agruparPorCercania(puntos, 40);
+    expect(grupos).toHaveLength(2);
+    expect(grupos.every((g) => g.length === 1)).toBe(true);
+  });
+
+  it("encadena grupos de mas de 2 (A cerca de B, B cerca de C, A lejos de C)", () => {
+    const puntos = [
+      { id: "a", x: 0, y: 0 },
+      { id: "b", x: 30, y: 0 },
+      { id: "c", x: 60, y: 0 },
+    ];
+    // A-B a 30px, B-C a 30px (ambos <= umbral), pero A-C a 60px (> umbral)
+    const grupos = agruparPorCercania(puntos, 40);
+    expect(grupos).toHaveLength(1);
+    expect(grupos[0].map((p) => p.id).sort()).toEqual(["a", "b", "c"]);
+  });
+
+  it("no deja ningun punto sin grupo, y no repite ninguno", () => {
+    const puntos = [
+      { id: "a", x: 0, y: 0 },
+      { id: "b", x: 5, y: 5 },
+      { id: "c", x: 900, y: 900 },
+      { id: "d", x: 905, y: 895 },
+      { id: "e", x: 2000, y: 2000 },
+    ];
+    const grupos = agruparPorCercania(puntos, 40);
+    const idsVistos = grupos.flat().map((p) => p.id).sort();
+    expect(idsVistos).toEqual(["a", "b", "c", "d", "e"]);
+  });
+});
+
+describe("offsetsCirculares", () => {
+  it("separa 2 puntos a 2*radio de distancia entre si (en lados opuestos)", () => {
+    const [o1, o2] = offsetsCirculares(2, 26);
+    const dist = Math.sqrt((o1.dx - o2.dx) ** 2 + (o1.dy - o2.dy) ** 2);
+    expect(dist).toBeCloseTo(52, 5);
+  });
+
+  it("cada offset queda exactamente a radioPx del centro", () => {
+    const radio = 26;
+    for (const n of [2, 3, 4, 5]) {
+      offsetsCirculares(n, radio).forEach((o) => {
+        expect(Math.sqrt(o.dx ** 2 + o.dy ** 2)).toBeCloseTo(radio, 5);
+      });
+    }
+  });
+
+  it("devuelve exactamente un offset para n=1 (aunque en la práctica ese caso ni se llama -- un grupo de 1 vuelve a su coordenada real sin pasar por acá)", () => {
+    const offsets = offsetsCirculares(1, 26);
+    expect(offsets).toHaveLength(1);
+    expect(Math.sqrt(offsets[0].dx ** 2 + offsets[0].dy ** 2)).toBeCloseTo(26, 5);
   });
 });

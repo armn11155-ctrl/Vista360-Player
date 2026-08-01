@@ -63,3 +63,60 @@ export function zoomMinimoSinGris(anchoPx: number, altoPx: number): number {
   if (!Number.isFinite(lado) || lado <= 0) return 2;
   return Math.max(0, Math.ceil(Math.log2(lado / 256)));
 }
+
+/** Un punto en pantalla (pixeles) identificado, para agrupar por cercania. */
+export interface PuntoConId {
+  id: string;
+  x: number;
+  y: number;
+}
+
+/**
+ * Agrupa puntos por cercanía en pantalla (pixeles), encadenado: si A
+ * está cerca de B y B está cerca de C, los tres quedan en el mismo
+ * grupo aunque A y C no estén cerca entre sí -- evita que, tras
+ * separar a dos pines de un vecino común, esos dos queden pegados
+ * entre sí.
+ *
+ * Se usa para detectar pines de mapa que quedan visualmente pegados a
+ * un zoom dado, sin depender de que sus coordenadas geográficas
+ * coincidan de forma exacta: dos paneles a pocos metros reales de
+ * distancia (un poste distinto, la vereda de enfrente) pueden caer
+ * sobre los mismos pixeles con el mapa alejado, y agrupar solo por
+ * coordenada EXACTA los dejaba pasar -- un pin tapaba al otro por
+ * completo sin que nada los separara.
+ */
+export function agruparPorCercania<T extends PuntoConId>(puntos: T[], umbralPx: number): T[][] {
+  const visitados = new Set<string>();
+  const grupos: T[][] = [];
+  puntos.forEach((punto) => {
+    if (visitados.has(punto.id)) return;
+    const grupo = [punto];
+    visitados.add(punto.id);
+    for (let i = 0; i < grupo.length; i++) {
+      puntos.forEach((otro) => {
+        if (visitados.has(otro.id)) return;
+        const dx = grupo[i].x - otro.x;
+        const dy = grupo[i].y - otro.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= umbralPx) {
+          grupo.push(otro);
+          visitados.add(otro.id);
+        }
+      });
+    }
+    grupos.push(grupo);
+  });
+  return grupos;
+}
+
+/**
+ * Para un grupo de N pines que comparten (o casi) el mismo lugar,
+ * calcula el offset en pixeles (dx, dy) que le toca a cada uno para
+ * separarlos en un círculo parejo alrededor del centro del grupo.
+ */
+export function offsetsCirculares(n: number, radioPx: number): Array<{ dx: number; dy: number }> {
+  return Array.from({ length: n }, (_, i) => {
+    const angulo = (2 * Math.PI * i) / n;
+    return { dx: Math.cos(angulo) * radioPx, dy: Math.sin(angulo) * radioPx };
+  });
+}
