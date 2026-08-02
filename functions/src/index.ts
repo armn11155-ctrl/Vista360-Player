@@ -46,3 +46,4 @@ export { administrarUsuarioPortal } from "./administrarUsuarioPortal.js";
 export { restablecerPasswordCliente } from "./restablecerPasswordCliente.js";
 export { administrarCotizaciones } from "./administrarCotizaciones.js";
 export { enviarCorreoConPdf } from "./enviarCorreoConPdf.js";
+export { administrarRecordatorioDominio } from "./administrarRecordatorioDominio.js";

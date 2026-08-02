@@ -3,7 +3,8 @@ import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
-import { fechaCorta } from "../../utils/fechas";
+import { diasHasta, fechaCorta, fechaLarga } from "../../utils/fechas";
+import { useRecordatorioDominio } from "../../hooks/useRecordatorioDominio";
 import { db, cloudFunctions } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
@@ -65,6 +66,7 @@ interface Props {
 
 export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const state = useSolicitudesCampana(true);
+  const { respuesta: recordatorioDominio, aceptar: aceptarRecordatorioDominio, aceptando: aceptandoRecordatorioDominio } = useRecordatorioDominio(true);
   const clientesState = useClientesAdmin();
   const [resolviendo, setResolviendo] = useState<string | null>(null);
   const [seleccionada, setSeleccionada] = useState<SolicitudCampana | null>(null);
@@ -148,6 +150,55 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
       </div>
 
       <div className="content-area solicitudes-area">
+        {recordatorioDominio.status === "listo" && (() => {
+          const estado = recordatorioDominio.estado;
+          if (!estado.vence || estado.aceptadoParaVence === estado.vence) return null;
+          const dias = diasHasta(estado.vence);
+          if (dias > estado.diasAntes) return null;
+          return (
+            <div
+              className="card"
+              style={{
+                background: "rgba(220,38,38,0.08)",
+                border: "1px solid rgba(220,38,38,0.25)",
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+                marginBottom: 10,
+              }}
+            >
+              <div style={{
+                width: 36, height: 36, borderRadius: 12, flexShrink: 0,
+                background: "#FEE2E2", display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#0D1629" }}>Renovación de dominio</div>
+                <div style={{ fontSize: 12, color: "#64748B", marginTop: 3, lineHeight: 1.4 }}>
+                  {estado.nombre || "Tu dominio"} vence el {fechaLarga(estado.vence)}
+                  {dias >= 0 ? ` (falta${dias === 1 ? "" : "n"} ${dias} día${dias === 1 ? "" : "s"}).` : " -- ya venció."}
+                  {" "}Renuévalo para que el correo y el sitio sigan funcionando.
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void aceptarRecordatorioDominio()}
+                  disabled={aceptandoRecordatorioDominio}
+                  style={{
+                    marginTop: 10, background: aceptandoRecordatorioDominio ? "#FCA5A5" : "#DC2626", color: "#fff",
+                    border: "none", borderRadius: 12, padding: "9px 14px", fontSize: 12, fontWeight: 800,
+                    cursor: aceptandoRecordatorioDominio ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {aceptandoRecordatorioDominio ? "Guardando…" : "Ya renové"}
+                </button>
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="card" style={{ background: "rgba(8,119,255,0.12)" }}>
           <div style={{ fontSize: 12, color: "#6D28D9", lineHeight: 1.5 }}>
             Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
