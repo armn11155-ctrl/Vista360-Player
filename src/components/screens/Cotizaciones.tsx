@@ -5,7 +5,6 @@ import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import type { Cotizacion, CotizacionEstado } from "../../types";
 import BackChevron from "../BackChevron";
-import PremiumToast from "../PremiumToast";
 import { dinero, esCotizacionExonerada, esUbicacionExonerada, fechaVisible } from "../../utils/cotizaciones";
 import { generarCotizacionPdf } from "../../utils/cotizacionPdf";
 import { compartirArchivoPrecargado, puedeCompartirEsteArchivo } from "../../utils/compartirArchivo";
@@ -64,7 +63,6 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   const [mensaje, setMensaje] = useState("");
   const [seleccionada, setSeleccionada] = useState<Cotizacion | null>(null);
   const [accionCotizacion, setAccionCotizacion] = useState<"pdf" | "whatsapp" | null>(null);
-  const [copiadoWhatsapp, setCopiadoWhatsapp] = useState(false);
   const fin = useMemo(() => sumarMeses(form.inicio, form.duracionMeses), [form.inicio, form.duracionMeses]);
   const panelElegido = paneles.find((panel) => panel.id === form.panelId);
   const exoneradaIgv = esUbicacionExonerada(panelElegido?.ciudad);
@@ -179,17 +177,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
       console.warn("No se pudo generar/compartir el PDF de la cotización, se usa el link.", error);
     }
     setAccionCotizacion(null);
-    if (compartido) {
-      // WhatsApp no muestra el texto como leyenda cuando lo que se
-      // comparte es un documento/PDF (a diferencia de una foto) -- es
-      // un comportamiento de WhatsApp, no de este codigo (ver nota en
-      // utils/compartirArchivo.ts). Como el mensaje ya se copio solo
-      // al portapapeles antes de compartir, se avisa para que se
-      // pegue como mensaje aparte en el chat.
-      setCopiadoWhatsapp(true);
-      setTimeout(() => setCopiadoWhatsapp(false), 5000);
-      return;
-    }
+    if (compartido) return;
     window.open(`https://wa.me/?text=${encodeURIComponent(saludo)}`, "_blank", "noopener,noreferrer");
   }
 
@@ -220,10 +208,6 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="quotes-screen">
-      <PremiumToast
-        visible={copiadoWhatsapp}
-        message="No olvides pegar el mensaje — ya se copió a tu portapapeles antes de enviar el PDF."
-      />
       <header className="quotes-header">
         <div className="quotes-header-inner">
           <button type="button" onClick={onBack} aria-label="Volver"><BackChevron /></button>
@@ -369,7 +353,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             <div className="quote-preview-actions">
               <button type="button" onClick={() => setSeleccionada(null)} disabled={accionCotizacion !== null}>Cerrar</button>
               <button type="button" onClick={() => void compartirWhatsApp(seleccionada)} disabled={accionCotizacion !== null}>
-                {accionCotizacion === "whatsapp" ? "Enviando…" : copiadoWhatsapp ? "Mensaje copiado ✓" : "WhatsApp"}
+                {accionCotizacion === "whatsapp" ? "Enviando…" : "WhatsApp"}
               </button>
               <button type="button" className="primary" onClick={() => void guardarPdfCotizacion(seleccionada)} disabled={accionCotizacion !== null}>
                 {accionCotizacion === "pdf" ? "Generando…" : "Guardar PDF"}

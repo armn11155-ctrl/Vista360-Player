@@ -113,22 +113,6 @@ export function motivoSinCompartirArchivo(archivo: File | null): string {
  * - false: falló de verdad -- quien llama debe caer al link.
  */
 export async function compartirArchivoPrecargado(archivo: File, texto: string, titulo: string): Promise<boolean> {
-  // WhatsApp (confirmado por varios reportes, incluye issues abiertos
-  // en proyectos que envuelven el share nativo) NO muestra ningun
-  // cuadro de "leyenda"/caption cuando el archivo compartido es un
-  // documento (PDF) -- ese cuadro SI existe para fotos/videos, pero
-  // no para documentos. Es un comportamiento de la app de WhatsApp al
-  // recibir el archivo, no de este codigo: el "text" que se manda en
-  // navigator.share() simplemente no tiene donde mostrarse ahi. Como
-  // respaldo, se copia el mensaje al portapapeles ANTES de compartir
-  // (asi la actiavcion sigue fresca para el share que viene despues),
-  // para que se pueda pegar como mensaje aparte apenas se manda el PDF.
-  try {
-    await navigator.clipboard?.writeText?.(texto);
-  } catch {
-    // Sin permiso o sin soporte -- no es grave, el archivo se
-    // comparte igual, solo no queda copiado de antemano.
-  }
   try {
     await navigator.share({ files: [archivo], text: texto, title: titulo });
     return true;

@@ -4,7 +4,6 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
-import PremiumToast from "./PremiumToast";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -162,7 +161,6 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
-  const [copiado, setCopiado] = useState<"whatsapp" | "correo" | null>(null);
 
   /** Precarga el PDF apenas se puede (no en el clic) -- mismo motivo
    *  que ReportCard.tsx: ver el comentario largo en
@@ -289,19 +287,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       setEnviando(canal);
       compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
         .then((compartido) => {
-          if (compartido) {
-            // Mismo motivo que ReportCard.tsx: WhatsApp no muestra
-            // texto como leyenda cuando lo compartido es un PDF (si
-            // funciona con fotos) -- comportamiento de WhatsApp, no
-            // de este codigo. El mensaje ya se copio solo al
-            // portapapeles antes de compartir.
-            if (canal === "whatsapp") {
-              setCopiado("whatsapp");
-              setTimeout(() => setCopiado(null), 5000);
-            }
-            return;
-          }
-          irAlLink(canal);
+          if (!compartido) irAlLink(canal);
         })
         .finally(() => setEnviando(null));
       return;
@@ -319,10 +305,6 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   return (
     <div className="report-card factura-card">
-      <PremiumToast
-        visible={copiado === "whatsapp"}
-        message="No olvides pegar el mensaje — ya se copió a tu portapapeles antes de enviar el PDF."
-      />
       <div className="report-card-main">
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
           <svg width="56" height="70" viewBox="0 0 56 70" fill="none">
@@ -473,7 +455,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
                 disabled={enviando !== null}
               >
                 <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-                {enviando === "whatsapp" ? "Enviando…" : copiado === "whatsapp" ? "Mensaje copiado ✓" : "WhatsApp"}
+                {enviando === "whatsapp" ? "Enviando…" : "WhatsApp"}
               </button>
             </>
           )}

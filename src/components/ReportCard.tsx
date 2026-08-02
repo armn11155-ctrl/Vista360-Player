@@ -4,7 +4,6 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
-import PremiumToast from "./PremiumToast";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -92,7 +91,6 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
-  const [copiado, setCopiado] = useState<"whatsapp" | "correo" | null>(null);
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -140,21 +138,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
       setEnviando(canal);
       compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
         .then((compartido) => {
-          if (compartido) {
-            // WhatsApp no muestra el texto como leyenda cuando se
-            // comparte un documento/PDF (si funciona con fotos) --
-            // comportamiento de WhatsApp, no de este codigo. El
-            // mensaje ya se copio solo al portapapeles antes de
-            // compartir (ver utils/compartirArchivo.ts), asi que se
-            // avisa para pegarlo aparte. El correo si suele llevar el
-            // texto en el cuerpo, asi que ahi no hace falta avisar.
-            if (canal === "whatsapp") {
-              setCopiado("whatsapp");
-              setTimeout(() => setCopiado(null), 5000);
-            }
-            return;
-          }
-          irAlLink(canal);
+          if (!compartido) irAlLink(canal);
         })
         .finally(() => setEnviando(null));
       return;
@@ -221,10 +205,6 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
 
   return (
     <div className="report-card">
-      <PremiumToast
-        visible={copiado === "whatsapp"}
-        message="No olvides pegar el mensaje — ya se copió a tu portapapeles antes de enviar el PDF."
-      />
       {isAdmin && (
         <div className="report-card-menu">
           <button
@@ -317,7 +297,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
               disabled={enviando !== null}
             >
               <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-              {enviando === "whatsapp" ? "Enviando…" : copiado === "whatsapp" ? "Mensaje copiado ✓" : "WhatsApp"}
+              {enviando === "whatsapp" ? "Enviando…" : "WhatsApp"}
             </button>
           </>
         )}
