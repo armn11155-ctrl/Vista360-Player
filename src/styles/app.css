@@ -7465,6 +7465,7 @@ input[type="date"] {
 .quote-preview-actions button { border: 1px solid rgba(255,255,255,.16); border-radius: 11px; padding: 10px 14px; color: #fff; background: #101827; font-size: 11px; font-weight: 800; cursor: pointer; }
 .quote-preview-actions button.primary { color: #06101d; background: #fff; }
 .quote-preview-actions button:disabled, .quote-row-actions button:disabled { opacity: .6; cursor: default; }
+  .quote-preview-hint { margin: -3px 0 12px; color: #9AA7BD; font-size: 11px; line-height: 1.5; text-align: right; }
 .quote-document { border-radius: 3px; overflow: hidden; color: #141d2c; background: #fff; box-shadow: 0 30px 100px rgba(0,0,0,.4); }
 .quote-letterhead { min-height: 112px; padding: 32px 44px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; background: #fff; }
 .quote-letterhead-brand { display: flex; align-items: center; gap: 23px; }

@@ -91,6 +91,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
+  const [copiado, setCopiado] = useState<"whatsapp" | "correo" | null>(null);
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -139,7 +140,21 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
       setEnviando(canal);
       compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
         .then((compartido) => {
-          if (!compartido) irAlLink(canal);
+          if (compartido) {
+            // WhatsApp no muestra el texto como leyenda cuando se
+            // comparte un documento/PDF (si funciona con fotos) --
+            // comportamiento de WhatsApp, no de este codigo. El
+            // mensaje ya se copio solo al portapapeles antes de
+            // compartir (ver utils/compartirArchivo.ts), asi que se
+            // avisa para pegarlo aparte. El correo si suele llevar el
+            // texto en el cuerpo, asi que ahi no hace falta avisar.
+            if (canal === "whatsapp") {
+              setCopiado("whatsapp");
+              setTimeout(() => setCopiado(null), 5000);
+            }
+            return;
+          }
+          irAlLink(canal);
         })
         .finally(() => setEnviando(null));
       return;
@@ -298,13 +313,16 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
               disabled={enviando !== null}
             >
               <img className="report-whatsapp-icon" src="/whatsapp-svgrepo-com.svg" alt="" aria-hidden="true" />
-              {enviando === "whatsapp" ? "Enviando…" : "WhatsApp"}
+              {enviando === "whatsapp" ? "Enviando…" : copiado === "whatsapp" ? "Mensaje copiado ✓" : "WhatsApp"}
             </button>
           </>
         )}
       </div>
       {isAdmin && diagnosticoCompartir && (
         <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
+      )}
+      {copiado === "whatsapp" && (
+        <div className="report-share-diagnostico">Mensaje copiado al portapapeles — pégalo aparte en el chat (WhatsApp no deja poner texto junto a un PDF).</div>
       )}
     </div>
   );

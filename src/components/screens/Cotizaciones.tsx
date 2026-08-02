@@ -63,6 +63,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   const [mensaje, setMensaje] = useState("");
   const [seleccionada, setSeleccionada] = useState<Cotizacion | null>(null);
   const [accionCotizacion, setAccionCotizacion] = useState<"pdf" | "whatsapp" | null>(null);
+  const [copiadoWhatsapp, setCopiadoWhatsapp] = useState(false);
   const fin = useMemo(() => sumarMeses(form.inicio, form.duracionMeses), [form.inicio, form.duracionMeses]);
   const panelElegido = paneles.find((panel) => panel.id === form.panelId);
   const exoneradaIgv = esUbicacionExonerada(panelElegido?.ciudad);
@@ -167,16 +168,26 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     if (accionCotizacion) return;
     setAccionCotizacion("whatsapp");
     const saludo = `${saludoPorHora()} ${cotizacion.clienteNombre}, te comparto tu cotización comercial de Vista360.`;
+    let compartido = false;
     try {
       const archivo = await generarCotizacionPdf(cotizacion);
       if (puedeCompartirEsteArchivo(archivo)) {
-        const compartido = await compartirArchivoPrecargado(archivo, saludo, `Cotización ${cotizacion.numero}`);
-        if (compartido) return;
+        compartido = await compartirArchivoPrecargado(archivo, saludo, `Cotización ${cotizacion.numero}`);
       }
     } catch (error) {
       console.warn("No se pudo generar/compartir el PDF de la cotización, se usa el link.", error);
-    } finally {
-      setAccionCotizacion(null);
+    }
+    setAccionCotizacion(null);
+    if (compartido) {
+      // WhatsApp no muestra el texto como leyenda cuando lo que se
+      // comparte es un documento/PDF (a diferencia de una foto) -- es
+      // un comportamiento de WhatsApp, no de este codigo (ver nota en
+      // utils/compartirArchivo.ts). Como el mensaje ya se copio solo
+      // al portapapeles antes de compartir, se avisa para que se
+      // pegue como mensaje aparte en el chat.
+      setCopiadoWhatsapp(true);
+      setTimeout(() => setCopiadoWhatsapp(false), 5000);
+      return;
     }
     window.open(`https://wa.me/?text=${encodeURIComponent(saludo)}`, "_blank", "noopener,noreferrer");
   }
@@ -351,12 +362,20 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
             <div className="quote-preview-actions">
               <button type="button" onClick={() => setSeleccionada(null)} disabled={accionCotizacion !== null}>Cerrar</button>
               <button type="button" onClick={() => void compartirWhatsApp(seleccionada)} disabled={accionCotizacion !== null}>
-                {accionCotizacion === "whatsapp" ? "Enviando…" : "WhatsApp"}
+                {accionCotizacion === "whatsapp" ? "Enviando…" : copiadoWhatsapp ? "Mensaje copiado ✓" : "WhatsApp"}
               </button>
               <button type="button" className="primary" onClick={() => void guardarPdfCotizacion(seleccionada)} disabled={accionCotizacion !== null}>
                 {accionCotizacion === "pdf" ? "Generando…" : "Guardar PDF"}
               </button>
             </div>
+            {copiadoWhatsapp && (
+              // WhatsApp no deja escribir un mensaje/leyenda cuando lo
+              // que se adjunta es un PDF (si funciona con fotos) -- es
+              // asi de parte de WhatsApp, no algo que se pueda forzar
+              // desde aca. El mensaje ya quedo copiado al portapapeles
+              // antes de abrir el panel de compartir.
+              <div className="quote-preview-hint">Mensaje copiado al portapapeles — pégalo como mensaje aparte en el chat (WhatsApp no deja poner texto junto a un PDF).</div>
+            )}
             <article className="quote-document">
               <header className="quote-letterhead">
                 <div className="quote-letterhead-brand">
