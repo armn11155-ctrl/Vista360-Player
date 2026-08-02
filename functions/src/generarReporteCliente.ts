@@ -405,18 +405,24 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // Logo, kicker y titulo agrandados y reacomodados para un look mas
   // premium -- se pidio libertad total en tamano/posicion, mientras
   // se sienta elegante. Todo sigue centrado horizontalmente.
+  // El logo estaba a solo 68px del borde superior, mientras que el
+  // espacio entre el logo y el kicker de abajo era de ~107px -- se
+  // notaba desequilibrado (muy pegado arriba). Se baja el bloque
+  // completo 40px (mismo espaciado interno entre logo/kicker/titulo,
+  // nada mas se mueve el conjunto) para que el margen de arriba se
+  // sienta mas parecido al de abajo.
   const centroX = PAGE.width / 2;
   const logoW = 540;
-  doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 68, { width: logoW });
+  doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 108, { width: logoW });
 
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 232, COLORS.accent, 23, { center: true });
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 272, COLORS.accent, 23, { center: true });
 
   doc.font("Helvetica-Bold").fontSize(104).fillColor(COLORS.white);
   const wReporte = doc.widthOfString("REPORTE", { characterSpacing: 0.5 });
   const wFotografico = doc.widthOfString("FOTOGRAFICO", { characterSpacing: 0.5 });
-  doc.text("REPORTE", centroX - wReporte / 2, 298, { characterSpacing: 0.5 });
-  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 418, { characterSpacing: 0.5 });
+  doc.text("REPORTE", centroX - wReporte / 2, 338, { characterSpacing: 0.5 });
+  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 458, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
