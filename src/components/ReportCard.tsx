@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoPrecargado, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -90,6 +90,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
+  const [archivoError, setArchivoError] = useState("");
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -110,14 +111,23 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     const key = informe.r2Keys?.digital;
     if (!key) return;
     let cancelado = false;
-    precargarArchivoR2(key, nombreArchivoReporte(informe.mesLabel)).then((archivo) => {
-      if (!cancelado) setArchivoCompartir(archivo);
+    precargarArchivoR2(key, nombreArchivoReporte(informe.mesLabel)).then(({ archivo, error }) => {
+      if (cancelado) return;
+      setArchivoCompartir(archivo);
+      setArchivoError(error ?? "");
     });
     return () => {
       cancelado = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, informe.r2Keys?.digital]);
+
+  // Diagnostico visible SOLO para el admin -- para saber sin entrar a
+  // la consola del navegador por que un dispositivo en particular cae
+  // al link en vez de adjuntar el PDF de verdad.
+  const diagnosticoCompartir = !archivoCompartir
+    ? archivoError
+    : motivoSinCompartirArchivo(archivoCompartir);
 
   /** El clic llama a compartir de inmediato (síncrono, sin await
    *  antes) si el archivo ya está precargado y el navegador lo
@@ -293,6 +303,9 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           </>
         )}
       </div>
+      {isAdmin && diagnosticoCompartir && (
+        <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
+      )}
     </div>
   );
 }

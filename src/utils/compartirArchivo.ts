@@ -35,20 +35,30 @@ import { cloudFunctions } from "../config/firebase";
  * ningún await de red de por medio, así la activación sigue "fresca".
  */
 
+export interface ArchivoPrecargado {
+  archivo: File | null;
+  /** Motivo por el que NO se pudo dejar el archivo listo (falla del
+   *  pedido al servidor) -- se guarda el mensaje real del error para
+   *  poder mostrarlo en pantalla y diagnosticar sin acceso a la
+   *  consola del navegador (el admin lo puede leer y avisar). */
+  error?: string;
+}
+
 /** Pide el archivo al servidor y arma el File -- se llama al montar
  * la tarjeta, NO en el clic, para que el archivo ya esté listo. */
-export async function precargarArchivoR2(key: string, nombreArchivo: string): Promise<File | null> {
-  if (!cloudFunctions) return null;
+export async function precargarArchivoR2(key: string, nombreArchivo: string): Promise<ArchivoPrecargado> {
+  if (!cloudFunctions) return { archivo: null, error: "Firebase Functions no está configurado." };
   try {
     const obtenerArchivo = httpsCallable<{ key: string }, { base64: string }>(cloudFunctions, "obtenerArchivoR2Base64");
     const { data } = await obtenerArchivo({ key });
     const binario = atob(data.base64);
     const bytes = new Uint8Array(binario.length);
     for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-    return new File([bytes], nombreArchivo, { type: "application/pdf" });
+    return { archivo: new File([bytes], nombreArchivo, { type: "application/pdf" }) };
   } catch (error) {
+    const mensaje = error instanceof Error ? error.message : "Error desconocido al pedir el archivo.";
     console.warn("No se pudo precargar el archivo para compartir; se usará el link.", error);
-    return null;
+    return { archivo: null, error: mensaje };
   }
 }
 
@@ -62,6 +72,22 @@ export function puedeCompartirEsteArchivo(archivo: File | null): archivo is File
   } catch {
     return false;
   }
+}
+
+/** Motivo, en texto, de por qué el archivo ya precargado NO se puede
+ *  compartir con el panel nativo en este navegador -- para mostrar en
+ *  pantalla y diagnosticar sin acceso a la consola. */
+export function motivoSinCompartirArchivo(archivo: File | null): string {
+  if (!archivo) return "no se pudo preparar el archivo";
+  if (typeof navigator === "undefined" || typeof navigator.canShare !== "function") {
+    return "este navegador no tiene panel nativo de compartir con archivos";
+  }
+  try {
+    if (!navigator.canShare({ files: [archivo] })) return "este navegador/app no acepta compartir este archivo";
+  } catch (error) {
+    return error instanceof Error ? error.message : "error al comprobar si se puede compartir";
+  }
+  return "";
 }
 
 /**

@@ -4447,6 +4447,17 @@
     display: block;
     flex-shrink: 0;
   }
+  /* Texto chiquito de diagnostico -- solo lo ve el admin, cuando el
+     PDF no se pudo dejar listo para adjuntar de verdad (o el
+     navegador/app no acepta compartir archivos) y Correo/WhatsApp
+     caen al link. Sirve para saber el motivo exacto sin entrar a la
+     consola del navegador. */
+  .report-share-diagnostico {
+    margin-top: 8px;
+    color: #94A3B8;
+    font-size: 10px;
+    line-height: 1.4;
+  }
   /* Factura: mismo layout que report-action, pero en azul oscuro
      (mas oscuro que el azul de reportes), no rojo ni naranja, para
      que se note a simple vista que es otro tipo de tarjeta. */

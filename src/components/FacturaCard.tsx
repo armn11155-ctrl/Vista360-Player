@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoPrecargado, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -160,21 +160,37 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [errorEliminar, setErrorEliminar] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
+  const [archivoError, setArchivoError] = useState("");
 
   /** Precarga el PDF apenas se puede (no en el clic) -- mismo motivo
    *  que ReportCard.tsx: ver el comentario largo en
    *  utils/compartirArchivo.ts. */
   useEffect(() => {
-    if (!isAdmin || !esKeyR2 || !f.pdfUrl) return;
+    if (!isAdmin) return;
+    if (!esKeyR2 || !f.pdfUrl) {
+      // Facturas viejas con pdfUrl como URL http directa (no key de R2)
+      // no tienen forma de precargarse para Web Share -- se avisa por
+      // que, en vez de quedar en silencio.
+      if (isAdmin && f.pdfUrl) setArchivoError("esta factura no esta guardada en R2 (URL externa), no se puede adjuntar de verdad");
+      return;
+    }
     let cancelado = false;
-    precargarArchivoR2(f.pdfUrl, nombreArchivoFactura(f)).then((archivo) => {
-      if (!cancelado) setArchivoCompartir(archivo);
+    precargarArchivoR2(f.pdfUrl, nombreArchivoFactura(f)).then(({ archivo, error }) => {
+      if (cancelado) return;
+      setArchivoCompartir(archivo);
+      setArchivoError(error ?? "");
     });
     return () => {
       cancelado = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, esKeyR2, f.pdfUrl]);
+
+  // Diagnostico visible SOLO para el admin -- mismo motivo que en
+  // ReportCard.tsx.
+  const diagnosticoCompartir = !archivoCompartir
+    ? archivoError
+    : motivoSinCompartirArchivo(archivoCompartir);
 
   function abrirEdicionNombre() {
     setMenuAbierto(false);
@@ -447,6 +463,9 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
             </>
           )}
         </div>
+      )}
+      {isAdmin && diagnosticoCompartir && (
+        <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
       )}
     </div>
   );
