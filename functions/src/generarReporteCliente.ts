@@ -505,6 +505,23 @@ async function paginaEvidenciaBlanca(
   indice: number
 ) {
   doc.rect(0, 0, PAGE.width, PAGE.height).fill(COLORS.white);
+  // Mismo brillo de la version oscura (ver paginaEvidenciaOscura),
+  // adaptado a fondo blanco: un lavado azul MUY suave (opacity baja)
+  // en vez del degradado oscuro -- un glow tan marcado como el de la
+  // portada se veria mal sobre blanco, esto es la version "premium
+  // discreta" para que la pagina blanca tambien tenga el mismo
+  // detalle en la esquina inferior izquierda.
+  doc.save();
+  doc.opacity(0.12);
+  const glowX = 0;
+  const glowY = 800;
+  const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 950);
+  glow.stop(0, COLORS.accent2);
+  glow.stop(0.5, COLORS.accent2);
+  glow.stop(1, COLORS.white);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
+  doc.restore();
+
   // Se pidio bajar un poco mas el logo "VISTA360 PLAYER", esta vez
   // SOLO el logo (el encabezado/kicker de la izquierda se queda en su
   // sitio, ya no se mueven juntos como antes). Antes y:32, ahora y:42.
