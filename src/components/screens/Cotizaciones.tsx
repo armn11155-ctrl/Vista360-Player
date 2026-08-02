@@ -382,10 +382,9 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                   <i aria-hidden="true" />
                   <img src="/vista360-logo-cotizacion.png" alt="Vista360" className="quote-letterhead-logo" />
                 </div>
-                {/* Antes decia "DIRECTOR GENERAL" debajo del nombre --
-                    se pidio quitarlo, es solo una cotizacion y no hacia
-                    falta ese cargo ahi. */}
-                <div className="quote-letterhead-meta"><strong>ALAN MARTÍNEZ</strong></div>
+                {/* Antes decia "ALAN MARTINEZ" (ya sin "DIRECTOR
+                    GENERAL", que se habia quitado antes) -- se pidio
+                    sacar tambien el nombre, el logo solo alcanza. */}
               </header>
               <div className="quote-document-title">
                 <span>Cotización comercial · {seleccionada.numero}</span>

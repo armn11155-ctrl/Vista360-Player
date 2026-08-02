@@ -57,10 +57,9 @@ export async function generarCotizacionPdf(cotizacion: Cotizacion): Promise<File
     const ancho = alto * (940 / 103);
     doc.addImage(logo, "PNG", MARGIN, y - 6, ancho, alto);
   }
-  doc.setFont("times", "bold");
-  doc.setFontSize(10);
-  doc.setTextColor(TEXT);
-  doc.text("ALAN MARTÍNEZ", PAGE_W - MARGIN, y - 2, { align: "right" });
+  // Antes decia "ALAN MARTINEZ" a la derecha del logo -- se pidio
+  // sacarlo, el logo solo alcanza (mismo cambio que en la vista
+  // previa de Cotizaciones.tsx).
   y += 14;
 
   doc.setDrawColor(BORDER);
