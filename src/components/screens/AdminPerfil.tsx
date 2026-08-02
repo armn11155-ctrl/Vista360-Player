@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
-import { cloudFunctions, logout } from "../../config/firebase";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
+import { auth, cloudFunctions, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useAvatarPropio } from "../../hooks/useAvatarPropio";
@@ -99,6 +100,77 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
       : 0;
   const avatarUrl = useAvatarPropio(uid);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
+
+  // Cambiar contraseña -- se pidio que el admin/trabajador pueda
+  // cambiar la suya propia desde aca (antes esta pantalla no tenia
+  // ninguna opcion para eso). Misma logica exacta que usa Perfil.tsx
+  // para el cliente: reautenticar con la contraseña actual y recien
+  // ahi actualizar, todo sobre auth.currentUser (la sesion real de
+  // quien esta conectado).
+  const [modalPasswordAbierto, setModalPasswordAbierto] = useState(false);
+  const [passwordActual, setPasswordActual] = useState("");
+  const [passwordNueva, setPasswordNueva] = useState("");
+  const [passwordConfirmar, setPasswordConfirmar] = useState("");
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordExito, setPasswordExito] = useState(false);
+
+  function cerrarModalPassword() {
+    setModalPasswordAbierto(false);
+    setPasswordActual("");
+    setPasswordNueva("");
+    setPasswordConfirmar("");
+    setPasswordError("");
+    setPasswordExito(false);
+  }
+
+  function passwordValida(password: string) {
+    return password.length >= 8 && /[A-Za-z]/.test(password) && /\d/.test(password);
+  }
+
+  async function cambiarPassword() {
+    setPasswordError("");
+    if (!passwordActual) {
+      setPasswordError("Ingresa tu contraseña actual.");
+      return;
+    }
+    if (!passwordValida(passwordNueva)) {
+      setPasswordError("La nueva contraseña debe tener mínimo 8 caracteres, con letras y números.");
+      return;
+    }
+    if (passwordNueva !== passwordConfirmar) {
+      setPasswordError("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+    const usuario = auth?.currentUser;
+    if (!auth || !usuario || !usuario.email) {
+      setPasswordError("No se pudo identificar tu sesión. Vuelve a iniciar sesión e intenta de nuevo.");
+      return;
+    }
+
+    setCambiandoPassword(true);
+    try {
+      const credencial = EmailAuthProvider.credential(usuario.email, passwordActual);
+      await reauthenticateWithCredential(usuario, credencial);
+      await updatePassword(usuario, passwordNueva);
+      setPasswordExito(true);
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? "";
+      if (code.includes("wrong-password") || code.includes("invalid-credential")) {
+        setPasswordError("La contraseña actual no es correcta.");
+      } else if (code.includes("weak-password")) {
+        setPasswordError("La nueva contraseña es muy débil.");
+      } else if (code.includes("too-many-requests")) {
+        setPasswordError("Demasiados intentos. Espera un momento y vuelve a intentar.");
+      } else if (code.includes("requires-recent-login")) {
+        setPasswordError("Tu sesión es muy antigua. Cierra sesión, vuelve a entrar e intenta de nuevo.");
+      } else {
+        setPasswordError("No se pudo cambiar la contraseña. Intenta de nuevo.");
+      }
+    } finally {
+      setCambiandoPassword(false);
+    }
+  }
 
   const [limpieza, setLimpieza] = useState<LimpiezaEstado>({ fase: "idle" });
   // Fotos de la vieja pantalla de Evidencias: siguen referenciadas desde
@@ -458,12 +530,128 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
         <section className="profile-section">
           <h2>Cuenta</h2>
           <div className="profile-card-list">
+            <button type="button" className="profile-row clickable" onClick={() => setModalPasswordAbierto(true)}>
+              <span className="profile-row-label">Cambiar contraseña</span>
+            </button>
             <button type="button" className="profile-row danger clickable" onClick={() => logout()}>
               <span className="profile-row-label">Cerrar sesión</span>
             </button>
           </div>
         </section>
       </div>
+
+      {modalPasswordAbierto && (
+        <div
+          // Mismo criterio que en Perfil.tsx: el modal solo se cierra
+          // con "Cancelar" (o "Listo" tras exito), no al hacer clic
+          // afuera -- para no perder sin querer lo ya escrito.
+          style={{
+            position: "fixed", inset: 0, background: "rgba(13,22,41,0.55)", zIndex: 500,
+            display: "flex", alignItems: "flex-end", justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              background: "#fff", borderRadius: "20px 20px 0 0", padding: "22px 20px",
+              width: "100%", maxWidth: 480, boxShadow: "0 -8px 30px rgba(0,0,0,0.2)", boxSizing: "border-box",
+            }}
+          >
+            {passwordExito ? (
+              <>
+                <div style={{ textAlign: "center", marginBottom: 6 }}>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
+                    display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px",
+                  }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6, textAlign: "center" }}>
+                    Contraseña actualizada
+                  </div>
+                  <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 20, textAlign: "center" }}>
+                    Tu contraseña se cambió correctamente. La próxima vez que inicies sesión, usa la nueva.
+                  </div>
+                </div>
+                <button
+                  onClick={cerrarModalPassword}
+                  style={{
+                    width: "100%", padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,
+                    color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  }}
+                >
+                  Listo
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 6 }}>
+                  Cambiar contraseña
+                </div>
+                <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5, marginBottom: 16 }}>
+                  Por seguridad, primero confirma tu contraseña actual.
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: passwordError ? 10 : 18 }}>
+                  <input
+                    type="password"
+                    value={passwordActual}
+                    onChange={(e) => setPasswordActual(e.target.value)}
+                    placeholder="Contraseña actual"
+                    autoComplete="current-password"
+                    disabled={cambiandoPassword}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                  />
+                  <input
+                    type="password"
+                    value={passwordNueva}
+                    onChange={(e) => setPasswordNueva(e.target.value)}
+                    placeholder="Nueva contraseña (mín. 8, letras y números)"
+                    autoComplete="new-password"
+                    disabled={cambiandoPassword}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                  />
+                  <input
+                    type="password"
+                    value={passwordConfirmar}
+                    onChange={(e) => setPasswordConfirmar(e.target.value)}
+                    placeholder="Confirmar nueva contraseña"
+                    autoComplete="new-password"
+                    disabled={cambiandoPassword}
+                    style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
+                  />
+                </div>
+                {passwordError && (
+                  <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, lineHeight: 1.4 }}>{passwordError}</div>
+                )}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={cerrarModalPassword}
+                    disabled={cambiandoPassword}
+                    style={{
+                      flex: 1, padding: "14px", background: "#F3F4F6", border: "none", borderRadius: 12,
+                      color: "#374151", fontWeight: 600, fontSize: 14, cursor: "pointer",
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={cambiarPassword}
+                    disabled={cambiandoPassword}
+                    style={{
+                      flex: 1, padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,
+                      color: "#fff", fontWeight: 700, fontSize: 14,
+                      cursor: cambiandoPassword ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {cambiandoPassword ? "Guardando…" : "Guardar contraseña"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
