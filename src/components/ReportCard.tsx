@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -134,16 +134,62 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  nunca hay una espera de red DENTRO del clic. */
   function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
+    if (canal === "correo") {
+      void enviarCorreoAutomatico();
+      return;
+    }
     if (puedeCompartirEsteArchivo(archivoCompartir)) {
-      setEnviando(canal);
+      setEnviando("whatsapp");
       compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
         .then((compartido) => {
-          if (!compartido) irAlLink(canal);
+          if (!compartido) irAlLink("whatsapp");
         })
         .finally(() => setEnviando(null));
       return;
     }
-    irAlLink(canal);
+    irAlLink("whatsapp");
+  }
+
+  /** A diferencia de WhatsApp (que SIEMPRE depende de que la persona
+   *  elija un contacto/app a mano, sin excepción -- ver la nota larga
+   *  en utils/compartirArchivo.ts), el correo SÍ se puede mandar
+   *  armado del todo desde el backend: destinatario, asunto, mensaje
+   *  y PDF adjunto en un solo clic, sin panel nativo ni pasos
+   *  manuales. Usa el PDF ya precargado (mismo que WhatsApp), solo
+   *  que convertido a base64 para poder mandarlo en el body de la
+   *  Cloud Function callable. Si algo falla (sin correo guardado, sin
+   *  PDF listo, error de red/SMTP) cae al link de mailto: de siempre. */
+  async function enviarCorreoAutomatico() {
+    if (!cloudFunctions) {
+      irAlLink("correo");
+      return;
+    }
+    if (!emailTo) {
+      setError("Este cliente no tiene un correo guardado.");
+      return;
+    }
+    if (!archivoCompartir) {
+      irAlLink("correo");
+      return;
+    }
+    setEnviando("correo");
+    setError("");
+    try {
+      const archivoBase64 = await archivoABase64(archivoCompartir);
+      const enviar = httpsCallable(cloudFunctions, "enviarCorreoConPdf");
+      await enviar({
+        destinatario: emailTo,
+        asunto: emailSubject,
+        mensaje: mensajeConArchivo,
+        archivoBase64,
+        nombreArchivo: archivoCompartir.name,
+      });
+    } catch (err) {
+      console.warn("No se pudo enviar el correo automático, se usa el link como respaldo.", err);
+      irAlLink("correo");
+    } finally {
+      setEnviando(null);
+    }
   }
 
   function irAlLink(canal: "whatsapp" | "correo") {

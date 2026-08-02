@@ -45,3 +45,4 @@ export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
 export { administrarUsuarioPortal } from "./administrarUsuarioPortal.js";
 export { restablecerPasswordCliente } from "./restablecerPasswordCliente.js";
 export { administrarCotizaciones } from "./administrarCotizaciones.js";
+export { enviarCorreoConPdf } from "./enviarCorreoConPdf.js";

@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -158,6 +158,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState("");
+  const [errorCorreo, setErrorCorreo] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
@@ -283,16 +284,57 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
    *  utils/compartirArchivo.ts para el por que). */
   function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
+    if (canal === "correo") {
+      void enviarCorreoAutomatico();
+      return;
+    }
     if (puedeCompartirEsteArchivo(archivoCompartir)) {
-      setEnviando(canal);
+      setEnviando("whatsapp");
       compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
         .then((compartido) => {
-          if (!compartido) irAlLink(canal);
+          if (!compartido) irAlLink("whatsapp");
         })
         .finally(() => setEnviando(null));
       return;
     }
-    irAlLink(canal);
+    irAlLink("whatsapp");
+  }
+
+  /** Mismo motivo que ReportCard.tsx: el correo (a diferencia de
+   *  WhatsApp) sí se puede mandar armado del todo desde el backend --
+   *  destinatario, asunto, mensaje y PDF adjunto en un clic, sin panel
+   *  nativo ni pasos manuales. Cae al link de mailto: si algo falla. */
+  async function enviarCorreoAutomatico() {
+    if (!cloudFunctions) {
+      irAlLink("correo");
+      return;
+    }
+    if (!emailTo) {
+      setErrorCorreo("Este cliente no tiene un correo guardado.");
+      return;
+    }
+    if (!archivoCompartir) {
+      irAlLink("correo");
+      return;
+    }
+    setEnviando("correo");
+    setErrorCorreo("");
+    try {
+      const archivoBase64 = await archivoABase64(archivoCompartir);
+      const enviar = httpsCallable(cloudFunctions, "enviarCorreoConPdf");
+      await enviar({
+        destinatario: emailTo,
+        asunto: emailSubject,
+        mensaje: mensajeConArchivo,
+        archivoBase64,
+        nombreArchivo: archivoCompartir.name,
+      });
+    } catch (err) {
+      console.warn("No se pudo enviar el correo automático, se usa el link como respaldo.", err);
+      irAlLink("correo");
+    } finally {
+      setEnviando(null);
+    }
   }
 
   function irAlLink(canal: "whatsapp" | "correo") {
@@ -464,6 +506,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       {isAdmin && diagnosticoCompartir && (
         <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
       )}
+      {isAdmin && errorCorreo && <div className="report-share-diagnostico">{errorCorreo}</div>}
     </div>
   );
 }

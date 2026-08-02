@@ -112,6 +112,27 @@ export function motivoSinCompartirArchivo(archivo: File | null): string {
  *   elegir nada (cancelar no es un error, no hay que caer al link).
  * - false: falló de verdad -- quien llama debe caer al link.
  */
+/**
+ * Convierte un archivo ya en memoria a base64, para mandarlo como
+ * adjunto real en un correo desde el backend (ver
+ * functions/src/enviarCorreoConPdf.ts) -- las Cloud Functions
+ * callable solo pueden llevar datos serializables (JSON), no un
+ * objeto File/Blob directo. Se arma en trozos de 32KB para no romper
+ * con archivos grandes (pasarle un array gigante a
+ * String.fromCharCode de una sola vez puede reventar el límite de
+ * argumentos del motor de JS).
+ */
+export async function archivoABase64(archivo: File): Promise<string> {
+  const buffer = await archivo.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binario = "";
+  const TAMANO_TROZO = 0x8000;
+  for (let i = 0; i < bytes.length; i += TAMANO_TROZO) {
+    binario += String.fromCharCode(...bytes.subarray(i, i + TAMANO_TROZO));
+  }
+  return btoa(binario);
+}
+
 export async function compartirArchivoPrecargado(archivo: File, texto: string, titulo: string): Promise<boolean> {
   try {
     await navigator.share({ files: [archivo], text: texto, title: titulo });
