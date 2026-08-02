@@ -165,18 +165,15 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   /** Precarga el PDF apenas se puede (no en el clic) -- mismo motivo
    *  que ReportCard.tsx: ver el comentario largo en
-   *  utils/compartirArchivo.ts. */
+   *  utils/compartirArchivo.ts. Usa urlVer tal cual -- ya sea la url
+   *  firmada de R2 o (facturas viejas) la url externa de
+   *  facturacion-web; si esa segunda no tiene CORS habilitado el
+   *  fetch() va a fallar solo, y cae al link con el motivo mostrado
+   *  en el diagnostico, en vez de descartarse de antemano. */
   useEffect(() => {
-    if (!isAdmin) return;
-    if (!esKeyR2 || !f.pdfUrl) {
-      // Facturas viejas con pdfUrl como URL http directa (no key de R2)
-      // no tienen forma de precargarse para Web Share -- se avisa por
-      // que, en vez de quedar en silencio.
-      if (isAdmin && f.pdfUrl) setArchivoError("esta factura no esta guardada en R2 (URL externa), no se puede adjuntar de verdad");
-      return;
-    }
+    if (!isAdmin || !urlVer) return;
     let cancelado = false;
-    precargarArchivoR2(f.pdfUrl, nombreArchivoFactura(f)).then(({ archivo, error }) => {
+    precargarArchivoR2(urlVer, nombreArchivoFactura(f)).then(({ archivo, error }) => {
       if (cancelado) return;
       setArchivoCompartir(archivo);
       setArchivoError(error ?? "");
@@ -185,7 +182,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       cancelado = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, esKeyR2, f.pdfUrl]);
+  }, [isAdmin, urlVer]);
 
   // Diagnostico visible SOLO para el admin -- mismo motivo que en
   // ReportCard.tsx.

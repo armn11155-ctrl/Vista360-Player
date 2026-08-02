@@ -1,6 +1,3 @@
-import { httpsCallable } from "firebase/functions";
-import { cloudFunctions } from "../config/firebase";
-
 /**
  * Comparte un archivo de verdad (adjunto, no un link) usando el panel
  * nativo de "compartir" del sistema operativo (Web Share API con
@@ -44,17 +41,29 @@ export interface ArchivoPrecargado {
   error?: string;
 }
 
-/** Pide el archivo al servidor y arma el File -- se llama al montar
- * la tarjeta, NO en el clic, para que el archivo ya esté listo. */
-export async function precargarArchivoR2(key: string, nombreArchivo: string): Promise<ArchivoPrecargado> {
-  if (!cloudFunctions) return { archivo: null, error: "Firebase Functions no está configurado." };
+/**
+ * Trae el archivo con un fetch() DIRECTO del navegador a la URL YA
+ * FIRMADA (la misma que ya usan los botones "Ver"/"Descargar" -- ver
+ * useSignedUrls) -- sin pasar por ningún Cloud Function. Esto es lo
+ * que hace que compartir el PDF real sea tan simple y confiable en
+ * Reporte/Factura como ya lo es en Cotización (que arma el PDF
+ * enteramente en el navegador y nunca dependió de ningún servidor
+ * para esto).
+ *
+ * Requiere que el bucket de R2 tenga CORS habilitado para GET (ver
+ * scripts/set-r2-cors.mjs) -- si no, este fetch() falla con un
+ * TypeError de red (no es un 403: el navegador ni deja leer la
+ * respuesta) y se cae al link, igual que antes.
+ */
+export async function precargarArchivoR2(urlFirmada: string, nombreArchivo: string): Promise<ArchivoPrecargado> {
+  if (!urlFirmada) return { archivo: null, error: "No hay URL del archivo todavía." };
   try {
-    const obtenerArchivo = httpsCallable<{ key: string }, { base64: string }>(cloudFunctions, "obtenerArchivoR2Base64");
-    const { data } = await obtenerArchivo({ key });
-    const binario = atob(data.base64);
-    const bytes = new Uint8Array(binario.length);
-    for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-    return { archivo: new File([bytes], nombreArchivo, { type: "application/pdf" }) };
+    const respuesta = await fetch(urlFirmada);
+    if (!respuesta.ok) {
+      return { archivo: null, error: `El servidor respondió ${respuesta.status} al pedir el archivo.` };
+    }
+    const blob = await respuesta.blob();
+    return { archivo: new File([blob], nombreArchivo, { type: "application/pdf" }) };
   } catch (error) {
     const mensaje = error instanceof Error ? error.message : "Error desconocido al pedir el archivo.";
     console.warn("No se pudo precargar el archivo para compartir; se usará el link.", error);

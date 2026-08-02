@@ -104,15 +104,14 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const tamano = formatoBytes(informe.digitalBytes);
 
   /** Precarga el PDF apenas se puede (no en el clic) -- ver el
-   *  comentario largo en utils/compartirArchivo.ts sobre por qué:
-   *  pedirlo recién en el clic dejaba el share() (y su respaldo)
-   *  sin activación fresca en celular, y se quedaban sin hacer nada. */
+   *  comentario largo en utils/compartirArchivo.ts sobre por qué.
+   *  Usa la MISMA url firmada que ya usan "Ver"/"Descargar" (fetch()
+   *  directo, sin Cloud Function -- necesita CORS habilitado en el
+   *  bucket, ver scripts/set-r2-cors.mjs). */
   useEffect(() => {
-    if (!isAdmin) return;
-    const key = informe.r2Keys?.digital;
-    if (!key) return;
+    if (!isAdmin || !url) return;
     let cancelado = false;
-    precargarArchivoR2(key, nombreArchivoReporte(informe.mesLabel)).then(({ archivo, error }) => {
+    precargarArchivoR2(url, nombreArchivoReporte(informe.mesLabel)).then(({ archivo, error }) => {
       if (cancelado) return;
       setArchivoCompartir(archivo);
       setArchivoError(error ?? "");
@@ -121,7 +120,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
       cancelado = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, informe.r2Keys?.digital]);
+  }, [isAdmin, url]);
 
   // Diagnostico visible SOLO para el admin -- para saber sin entrar a
   // la consola del navegador por que un dispositivo en particular cae
