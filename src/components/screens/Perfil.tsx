@@ -131,11 +131,12 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
   const [subiendoAvatar, setSubiendoAvatar] = useState(false);
   const [modalAvatarAbierto, setModalAvatarAbierto] = useState(false);
 
-  // "Cambiar contraseña" -- solo para el cliente cambiando su propia
-  // sesion (ver mas abajo, isAdmin no la ve: cuando el admin navega
-  // "como" un cliente, la sesion de Firebase Auth activa sigue siendo
-  // la del admin, asi que reautenticar/actualizar aqui cambiaria la
-  // contraseña del admin, no la del cliente).
+  // "Cambiar contraseña" -- cada quien cambia SU PROPIA sesion (el
+  // cliente la suya, el admin la suya en su propio perfil). Se
+  // esconde solo cuando el admin esta navegando "como" un cliente
+  // (ver mas abajo): ahi la sesion de Firebase Auth activa sigue
+  // siendo la del admin, asi que reautenticar/actualizar aqui
+  // cambiaria la contraseña del admin, no la del cliente.
   const [modalPasswordAbierto, setModalPasswordAbierto] = useState(false);
   const [passwordActual, setPasswordActual] = useState("");
   const [passwordNueva, setPasswordNueva] = useState("");
@@ -406,14 +407,18 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
         <ProfileSection title="Información de la empresa">
           <ProfileRow icon="company" label="RUC cliente" value={ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
-          {/* Se pidio que esto NO aparezca en modo "ver como cliente" del
-              admin -- ahi isAdmin ya es false (para que se vea la
-              pantalla de cliente), pero la sesion de Firebase Auth
-              sigue siendo la del admin: si se dejaba, "cambiar
-              contraseña" cambiaba la del admin, no la de ningun
-              cliente. esInterno detecta ese modo aunque isAdmin diga
-              false. */}
-          {!isAdmin && !esInterno && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
+          {/* Se muestra para el cliente real, y tambien para el admin en
+              SU PROPIO perfil (para que pueda cambiar su propia
+              contraseña). Lo unico que se esconde es el modo "ver
+              como cliente" del admin -- ahi isAdmin pasa a false
+              (para que se vea la pantalla de cliente), pero la sesion
+              de Firebase Auth activa sigue siendo la del admin: si se
+              dejara, "cambiar contraseña" cambiaria la del admin
+              creyendo que se cambia la de un cliente. esInterno
+              detecta ese modo aunque isAdmin diga false; isAdmin
+              true dentro de esInterno es justamente "admin viendo su
+              propio perfil", asi que ahi si se muestra. */}
+          {(!esInterno || isAdmin) && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
 

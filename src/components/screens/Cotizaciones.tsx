@@ -5,6 +5,10 @@ import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import type { Cotizacion, CotizacionEstado } from "../../types";
 import BackChevron from "../BackChevron";
+import { dinero, esCotizacionExonerada, esUbicacionExonerada, fechaVisible } from "../../utils/cotizaciones";
+import { generarCotizacionPdf } from "../../utils/cotizacionPdf";
+import { compartirArchivoPrecargado, puedeCompartirEsteArchivo } from "../../utils/compartirArchivo";
+import { saludoPorHora } from "../../utils/fechas";
 
 type Formulario = {
   nombre: string;
@@ -33,34 +37,6 @@ function sumarMeses(fecha: string, meses: number) {
   return new Date(Date.UTC(anio, mes - 1 + meses, Math.min(dia, ultimoDia))).toISOString().slice(0, 10);
 }
 
-function fechaVisible(fecha: string) {
-  if (!fecha) return "—";
-  return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "long", year: "numeric", timeZone: "UTC" })
-    .format(new Date(`${fecha}T12:00:00Z`));
-}
-
-function dinero(monto: number, moneda: "PEN" | "USD") {
-  return new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency: moneda,
-    minimumFractionDigits: 2,
-  }).format(monto);
-}
-
-// "huanuco" sin tilde a propósito: se normaliza el texto antes de
-// comparar (quitando tildes) para que agarre "Huánuco" y "Huanuco" por
-// igual. Antes decía "guanajuato" (una ciudad de México) -- un error
-// de dictado por voz de hace tiempo que nadie había notado, ya que
-// "Huánuco" nunca coincidía y por lo tanto nunca se exoneraba del IGV.
-function esUbicacionExonerada(ciudad?: string) {
-  const normalizado = (ciudad ?? "").toLocaleLowerCase("es").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  return normalizado.includes("huanuco");
-}
-
-function esCotizacionExonerada(cotizacion: Cotizacion) {
-  return Boolean(cotizacion.exoneradaIgv) || esUbicacionExonerada(cotizacion.panelCiudad);
-}
-
 const inicial: Formulario = {
   nombre: "",
   clienteId: "",
@@ -86,6 +62,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [seleccionada, setSeleccionada] = useState<Cotizacion | null>(null);
+  const [accionCotizacion, setAccionCotizacion] = useState<"pdf" | "whatsapp" | null>(null);
   const fin = useMemo(() => sumarMeses(form.inicio, form.duracionMeses), [form.inicio, form.duracionMeses]);
   const panelElegido = paneles.find((panel) => panel.id === form.panelId);
   const exoneradaIgv = esUbicacionExonerada(panelElegido?.ciudad);
@@ -179,15 +156,54 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     }
   }
 
-  // Se pidio simplificar este mensaje -- antes repetia numero, cliente,
-  // panel, periodo, monto y vigencia, pero ese boton no abre un chat
-  // con un contacto especifico (wa.me sin numero, la persona elige a
-  // quien mandarselo despues) y el PDF que se adjunta a mano ya trae
-  // todos esos datos. Ahora es solo una nota de acompanamiento, breve
-  // y con un tono mas premium.
-  function compartirWhatsApp(cotizacion: Cotizacion) {
-    const texto = "Hola, te comparto tu cotización de VISTA360.";
-    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
+  // Antes esto abria WhatsApp solo con texto -- wa.me nunca puede
+  // adjuntar un archivo, es una limitacion del link, no del codigo.
+  // Cotizacion no tiene PDF generado en el servidor (a diferencia de
+  // Reporte/Factura), asi que ahora se arma el PDF en el navegador
+  // con jsPDF (rapido, sin red de por medio, pesa unos KB) y se
+  // intenta mandar adjunto de verdad con el panel nativo de compartir;
+  // si el dispositivo no lo soporta, cae al link de siempre.
+  async function compartirWhatsApp(cotizacion: Cotizacion) {
+    if (accionCotizacion) return;
+    setAccionCotizacion("whatsapp");
+    const saludo = `${saludoPorHora()} ${cotizacion.clienteNombre}, te comparto tu cotización comercial de Vista360.`;
+    try {
+      const archivo = await generarCotizacionPdf(cotizacion);
+      if (puedeCompartirEsteArchivo(archivo)) {
+        const compartido = await compartirArchivoPrecargado(archivo, saludo, `Cotización ${cotizacion.numero}`);
+        if (compartido) return;
+      }
+    } catch (error) {
+      console.warn("No se pudo generar/compartir el PDF de la cotización, se usa el link.", error);
+    } finally {
+      setAccionCotizacion(null);
+    }
+    window.open(`https://wa.me/?text=${encodeURIComponent(saludo)}`, "_blank", "noopener,noreferrer");
+  }
+
+  // "Guardar PDF" antes llamaba a window.print() -- en varios
+  // celulares el dialogo nativo de impresion no aparecia visiblemente
+  // o tardaba demasiado. Ahora genera el PDF real en el navegador y lo
+  // descarga directo, sin pasar por el dialogo de impresion del
+  // sistema.
+  async function guardarPdfCotizacion(cotizacion: Cotizacion) {
+    if (accionCotizacion) return;
+    setAccionCotizacion("pdf");
+    try {
+      const archivo = await generarCotizacionPdf(cotizacion);
+      const url = URL.createObjectURL(archivo);
+      const enlace = document.createElement("a");
+      enlace.href = url;
+      enlace.download = archivo.name;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+    } catch (error) {
+      setMensaje(error instanceof Error ? error.message : "No se pudo generar el PDF de la cotización.");
+    } finally {
+      setAccionCotizacion(null);
+    }
   }
 
   return (
@@ -320,7 +336,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                   <select value={cotizacion.estado} onChange={(e) => void cambiarEstado(cotizacion, e.target.value as CotizacionEstado)} aria-label={`Estado de ${cotizacion.numero}`}>
                     {ESTADOS.map((estado) => <option key={estado}>{estado}</option>)}
                   </select>
-                  <button type="button" onClick={() => compartirWhatsApp(cotizacion)} aria-label="Compartir por WhatsApp">WA</button>
+                  <button type="button" onClick={() => void compartirWhatsApp(cotizacion)} disabled={accionCotizacion !== null} aria-label="Compartir por WhatsApp">WA</button>
                   <button type="button" className="danger" onClick={() => void eliminar(cotizacion)} aria-label="Eliminar cotización">×</button>
                 </div>
               </article>
@@ -333,15 +349,13 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
         <div className="quote-preview-backdrop" onClick={() => setSeleccionada(null)}>
           <div className="quote-preview-shell" onClick={(e) => e.stopPropagation()}>
             <div className="quote-preview-actions">
-              <button type="button" onClick={() => setSeleccionada(null)}>Cerrar</button>
-              <button type="button" onClick={() => compartirWhatsApp(seleccionada)}>WhatsApp</button>
-              {/* Se pidio que el boton ya no diga "Imprimir", solo
-                  "Guardar PDF" -- sigue abriendo el dialogo nativo del
-                  navegador (no hay forma de saltarse eso y generar el
-                  PDF directo sin pasar por ahi), pero ahora el boton
-                  deja claro que la idea es elegir "Guardar como PDF"
-                  como destino, no imprimir en papel. */}
-              <button type="button" className="primary" onClick={() => window.print()}>Guardar PDF</button>
+              <button type="button" onClick={() => setSeleccionada(null)} disabled={accionCotizacion !== null}>Cerrar</button>
+              <button type="button" onClick={() => void compartirWhatsApp(seleccionada)} disabled={accionCotizacion !== null}>
+                {accionCotizacion === "whatsapp" ? "Enviando…" : "WhatsApp"}
+              </button>
+              <button type="button" className="primary" onClick={() => void guardarPdfCotizacion(seleccionada)} disabled={accionCotizacion !== null}>
+                {accionCotizacion === "pdf" ? "Generando…" : "Guardar PDF"}
+              </button>
             </div>
             <article className="quote-document">
               <header className="quote-letterhead">
