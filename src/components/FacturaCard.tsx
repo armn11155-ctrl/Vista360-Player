@@ -249,13 +249,11 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   /** Misma logica que ReportCard.tsx: intenta compartir el PDF
    *  adjunto de verdad (Web Share, sobre todo en celular); si no se
-   *  puede, cae al link. La pestaña de WhatsApp se abre ya mismo,
-   *  dentro del clic, para que no la bloquee el navegador si el
-   *  intento de compartir el archivo tarda (ver el mismo comentario
-   *  largo en ReportCard.tsx). */
+   *  puede, cae al link. Ya no se pre-abre una pestaña en blanco para
+   *  WhatsApp (en iOS Safari se quedaba trabada en "about:blank") --
+   *  window.open() se llama recien cuando ya se sabe que hace falta. */
   async function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
-    const pestanaWhatsapp = canal === "whatsapp" ? window.open("", "_blank", "noopener,noreferrer") : null;
     setEnviando(canal);
     try {
       const compartido =
@@ -267,12 +265,9 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
               titulo: emailSubject,
             })
           : false;
-      if (compartido) {
-        pestanaWhatsapp?.close();
-      } else if (canal === "correo") {
+      if (compartido) return;
+      if (canal === "correo") {
         window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
-      } else if (pestanaWhatsapp) {
-        pestanaWhatsapp.location.href = `https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`;
       } else {
         window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
       }

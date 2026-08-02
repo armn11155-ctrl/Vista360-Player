@@ -106,14 +106,14 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  WhatsApp/correo con el link. Ver utils/compartirArchivo.ts para
    *  el por qué de esta doble vía.
    *
-   *  Para WhatsApp la pestaña se abre ACÁ, todavía dentro del clic --
-   *  si se espera a saber si se pudo compartir el archivo (con un
-   *  await de por medio) para recién ahí llamar a window.open(), el
-   *  navegador puede bloquearlo como pop-up. Se abre en blanco ya
-   *  mismo y se le asigna destino (o se cierra) después. */
+   *  Antes se abría una pestaña en blanco ACÁ (antes del await) para
+   *  esquivar el bloqueo de pop-ups del navegador -- pero en iOS
+   *  Safari esa pestaña se quedaba trabada en "about:blank" (asignarle
+   *  destino después de un await no funciona ahí de forma confiable).
+   *  Se saca ese truco: se abre window.open() recién cuando ya se sabe
+   *  que hace falta, directo con el destino final. */
   async function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
-    const pestanaWhatsapp = canal === "whatsapp" ? window.open("", "_blank", "noopener,noreferrer") : null;
     setEnviando(canal);
     try {
       const key = informe.r2Keys?.digital;
@@ -125,12 +125,9 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
             titulo: emailSubject,
           })
         : false;
-      if (compartido) {
-        pestanaWhatsapp?.close();
-      } else if (canal === "correo") {
+      if (compartido) return;
+      if (canal === "correo") {
         window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
-      } else if (pestanaWhatsapp) {
-        pestanaWhatsapp.location.href = `https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`;
       } else {
         window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
       }
