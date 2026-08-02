@@ -231,6 +231,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
         </div>
       </header>
 
+      <div className="quotes-scroll">
       <main className="quotes-layout">
         <form className="quotes-form-card" onSubmit={guardar}>
           <div className="quotes-card-heading">
@@ -355,6 +356,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
           </div>
         </section>
       </main>
+      </div>
 
       {seleccionada && (
         <div className="quote-preview-backdrop" onClick={() => setSeleccionada(null)}>

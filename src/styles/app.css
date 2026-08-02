@@ -7318,14 +7318,29 @@ input[type="date"] {
   position: fixed;
   inset: 0;
   z-index: 20;
-  overflow-y: auto;
-  /* A .content-area (Usuarios y demas admin-tool-screen) ya le pusimos
-     esto -- acá faltaba, por eso el rebote/scroll se sentía "suelto",
-     dejaba subir y bajar de más comparado con esas pantallas. */
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
+  /* Antes ESTE elemento (fixed, pantalla completa) era el que
+     scrolleaba (overflow-y:auto acá mismo) -- a diferencia de Usuarios
+     y demas .admin-tool-screen, donde el contenedor fijo NO scrollea y
+     un HIJO interno (.content-area) es el que sí. Con el scroll en el
+     mismo nivel que position:fixed, el rebote elástico (sobre todo en
+     Mac/trackpad) se sentía "suelto" y dejaba subir de más mostrando
+     el fondo gris de acá abajo -- overscroll-behavior:contain sola no
+     alcanzaba para eso. Ahora este contenedor es rígido (flex column,
+     sin overflow propio) y el que scrollea es .quotes-scroll, un hijo
+     interno -- mismo patrón que .content-area. */
+  display: flex;
+  flex-direction: column;
   color: #fff;
   background: #EEF2F7;
+}
+/* El que de verdad scrollea -- envuelve a .quotes-layout. Ver nota
+   larga en .quotes-screen de por qué se movió el scroll para acá. */
+.quotes-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 /* Cabecera oscura con la misma raya azul animada que Usuarios/Solicitudes/
    Analitica/Paneles (.detail-header) -- se agrego .quotes-header al grupo
@@ -7566,15 +7581,18 @@ input[type="date"] {
     min-height: 0 !important;
   }
   /* .quotes-screen (el contenedor de toda la pantalla) es
-     position:fixed + inset:0 + overflow-y:auto -- eso lo deja
-     "clavado" al tamano de la ventana con scroll propio. Como es el
-     padre de .quote-preview-backdrop, si se queda asi en impresion el
-     navegador intenta paginar un cuadro fijo con scroll (lo que en
-     Chrome se traduce en que tarda muchisimo calculando la impresion
-     y termina sacando la hoja en blanco, porque no puede "desenrollar"
-     el contenido mas alla de una pantalla). Se resetea a estatico y
-     sin recorte para que fluya como documento normal. */
-  .quotes-screen {
+     position:fixed + inset:0 -- eso lo deja "clavado" al tamano de la
+     ventana. Como es el padre de .quote-preview-backdrop, si se queda
+     asi en impresion el navegador intenta paginar un cuadro fijo (lo
+     que en Chrome se traduce en que tarda muchisimo calculando la
+     impresion y termina sacando la hoja en blanco, porque no puede
+     "desenrollar" el contenido mas alla de una pantalla). Se resetea a
+     estatico y sin recorte para que fluya como documento normal.
+     .quotes-scroll (el que de verdad tiene overflow-y:auto ahora,
+     desde que el scroll se movio ahi -- ver nota en la regla base) se
+     resetea igual, si no el mismo problema de pagina en blanco vuelve
+     a aparecer ahi en vez de en .quotes-screen. */
+  .quotes-screen, .quotes-scroll {
     position: static !important; inset: auto !important; overflow: visible !important; height: auto !important; background: #fff;
   }
   /* Antes .quote-document quedaba position:fixed en impresion -- eso lo
