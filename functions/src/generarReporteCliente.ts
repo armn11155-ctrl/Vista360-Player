@@ -374,13 +374,32 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // (degradado radial oscuro y sutil), en vez del grafico de anillo,
   // que se pidio quitar para que ambas paginas tengan el mismo nivel
   // de elegancia.
+  // OJO: cada .fill(gradiente) sobre un rect pinta el rect ENTERO,
+  // incluida el area lejos del centro (que en la ultima parada del
+  // degradado ya es exactamente COLORS.bg) -- si los dos brillos
+  // rellenaran la pagina COMPLETA, el segundo taparia por completo al
+  // primero (incluida su esquina) al repintar todo de bg encima. Por
+  // eso cada uno se limita a su mitad de la pagina (arriba/abajo): a
+  // esa distancia del centro el degradado ya se perdio contra el
+  // fondo de todas formas, asi que no se nota el corte.
   const glowX = PAGE.width * 0.92;
   const glowY = -60;
   const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 750);
   glow.stop(0, "#17335c");
   glow.stop(0.45, "#0e1830");
   glow.stop(1, COLORS.bg);
-  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
+  doc.rect(0, 0, PAGE.width, PAGE.height / 2).fill(glow);
+
+  // Mismo brillo, espejado: abajo a la izquierda -- se pidio el
+  // mismo tratamiento tambien en esa esquina de la portada, para que
+  // queden los dos (arriba-derecha y abajo-izquierda).
+  const glow2X = PAGE.width * 0.08;
+  const glow2Y = PAGE.height + 60;
+  const glow2 = doc.radialGradient(glow2X, glow2Y, 0, glow2X, glow2Y, 750);
+  glow2.stop(0, "#17335c");
+  glow2.stop(0.45, "#0e1830");
+  glow2.stop(1, COLORS.bg);
+  doc.rect(0, PAGE.height / 2, PAGE.width, PAGE.height / 2).fill(glow2);
 
   // Logo, kicker y titulo agrandados y reacomodados para un look mas
   // premium -- se pidio libertad total en tamano/posicion, mientras
