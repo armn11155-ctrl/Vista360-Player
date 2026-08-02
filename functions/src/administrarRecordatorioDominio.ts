@@ -24,6 +24,18 @@ interface RecordatorioDominioEstado {
 const DOC_REF = "configuracion/dominio";
 const DEFAULT_ESTADO: RecordatorioDominioEstado = { nombre: "", vence: "", diasAntes: 4, aceptadoParaVence: "" };
 
+// Semilla inicial -- así la función se autoconfigura sola la primera
+// vez que se lee, sin necesitar un paso manual aparte para dejarla
+// funcionando apenas se despliega. Si más adelante se renueva el
+// dominio con otra fecha, se actualiza con accion:"configurar" (eso
+// pisa este valor inicial).
+const SEMILLA_INICIAL: RecordatorioDominioEstado = {
+  nombre: "vista360player.pe",
+  vence: "2027-08-01",
+  diasAntes: 4,
+  aceptadoParaVence: "",
+};
+
 /**
  * Recordatorio de renovación del dominio propio (vista360player.pe),
  * para que no se venza por descuido -- si eso pasa, se cae el correo
@@ -77,7 +89,11 @@ export const administrarRecordatorioDominio = onCall<AdministrarRecordatorioDomi
     throw new HttpsError("invalid-argument", "Acción no reconocida.");
   }
 
-  const finalSnap = await ref.get();
+  let finalSnap = await ref.get();
+  if (!finalSnap.exists && accion === "leer") {
+    await ref.set(SEMILLA_INICIAL);
+    finalSnap = await ref.get();
+  }
   const data = finalSnap.exists ? finalSnap.data() : {};
   const estado: RecordatorioDominioEstado = {
     nombre: String(data?.nombre ?? DEFAULT_ESTADO.nombre),
