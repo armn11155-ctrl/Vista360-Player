@@ -37,6 +37,29 @@ import { cloudFunctions } from "../config/firebase";
  * - false: no se pudo (sin soporte, sin sesión, la Cloud Function
  *   falló, etc.) -- quien llama debe caer al mensaje con link.
  */
+/** Si pedir el archivo al servidor se cuelga (red lenta, la Cloud
+ * Function tardando, etc.), no hay que dejar el botón trabado en
+ * "Enviando..." para siempre -- a los 12 segundos se da por vencido y
+ * cae al link, en vez de colgarse. (Esto NO limita el tiempo que la
+ * persona se toma eligiendo algo en el panel nativo de compartir --
+ * ese panel ya reemplazó a nuestra pantalla, el límite es solo para
+ * la espera de ANTES de que se abra.) */
+function conTiempoLimite<T>(promesa: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error("Se agotó el tiempo de espera.")), ms);
+    promesa.then(
+      (valor) => {
+        clearTimeout(id);
+        resolve(valor);
+      },
+      (error) => {
+        clearTimeout(id);
+        reject(error);
+      }
+    );
+  });
+}
+
 export async function compartirArchivoR2(opts: {
   key: string;
   nombreArchivo: string;
@@ -49,7 +72,7 @@ export async function compartirArchivoR2(opts: {
   }
   try {
     const obtenerArchivo = httpsCallable<{ key: string }, { base64: string }>(cloudFunctions, "obtenerArchivoR2Base64");
-    const { data } = await obtenerArchivo({ key: opts.key });
+    const { data } = await conTiempoLimite(obtenerArchivo({ key: opts.key }), 12000);
     const binario = atob(data.base64);
     const bytes = new Uint8Array(binario.length);
     for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
