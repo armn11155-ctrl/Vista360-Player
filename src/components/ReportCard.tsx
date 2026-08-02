@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoR2 } from "../utils/compartirArchivo";
+import { compartirArchivoPrecargado, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -89,6 +89,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [eliminando, setEliminando] = useState(false);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
+  const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -100,39 +101,47 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const emailTo = cliente?.email ?? "";
   const tamano = formatoBytes(informe.digitalBytes);
 
-  /** Intenta mandar el PDF adjunto de verdad (Web Share, sobre todo en
-   *  celular); si no se puede (sin soporte, sin r2Keys, falló el
-   *  pedido, etc.), cae al comportamiento de siempre: abrir
-   *  WhatsApp/correo con el link. Ver utils/compartirArchivo.ts para
-   *  el por qué de esta doble vía.
-   *
-   *  Antes se abría una pestaña en blanco ACÁ (antes del await) para
-   *  esquivar el bloqueo de pop-ups del navegador -- pero en iOS
-   *  Safari esa pestaña se quedaba trabada en "about:blank" (asignarle
-   *  destino después de un await no funciona ahí de forma confiable).
-   *  Se saca ese truco: se abre window.open() recién cuando ya se sabe
-   *  que hace falta, directo con el destino final. */
-  async function compartirPorCanal(canal: "whatsapp" | "correo") {
+  /** Precarga el PDF apenas se puede (no en el clic) -- ver el
+   *  comentario largo en utils/compartirArchivo.ts sobre por qué:
+   *  pedirlo recién en el clic dejaba el share() (y su respaldo)
+   *  sin activación fresca en celular, y se quedaban sin hacer nada. */
+  useEffect(() => {
+    if (!isAdmin) return;
+    const key = informe.r2Keys?.digital;
+    if (!key) return;
+    let cancelado = false;
+    precargarArchivoR2(key, nombreArchivoReporte(informe.mesLabel)).then((archivo) => {
+      if (!cancelado) setArchivoCompartir(archivo);
+    });
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, informe.r2Keys?.digital]);
+
+  /** El clic llama a compartir de inmediato (síncrono, sin await
+   *  antes) si el archivo ya está precargado y el navegador lo
+   *  soporta; si no, cae directo al link, también de inmediato --
+   *  nunca hay una espera de red DENTRO del clic. */
+  function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
-    setEnviando(canal);
-    try {
-      const key = informe.r2Keys?.digital;
-      const compartido = key
-        ? await compartirArchivoR2({
-            key,
-            nombreArchivo: nombreArchivoReporte(informe.mesLabel),
-            texto: mensajeConArchivo,
-            titulo: emailSubject,
-          })
-        : false;
-      if (compartido) return;
-      if (canal === "correo") {
-        window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
-      } else {
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
-      }
-    } finally {
-      setEnviando(null);
+    if (puedeCompartirEsteArchivo(archivoCompartir)) {
+      setEnviando(canal);
+      compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
+        .then((compartido) => {
+          if (!compartido) irAlLink(canal);
+        })
+        .finally(() => setEnviando(null));
+      return;
+    }
+    irAlLink(canal);
+  }
+
+  function irAlLink(canal: "whatsapp" | "correo") {
+    if (canal === "correo") {
+      window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
     }
   }
 

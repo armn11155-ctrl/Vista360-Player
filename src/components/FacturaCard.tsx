@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
-import { compartirArchivoR2 } from "../utils/compartirArchivo";
+import { compartirArchivoPrecargado, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -159,6 +159,22 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const [eliminando, setEliminando] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
+  const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
+
+  /** Precarga el PDF apenas se puede (no en el clic) -- mismo motivo
+   *  que ReportCard.tsx: ver el comentario largo en
+   *  utils/compartirArchivo.ts. */
+  useEffect(() => {
+    if (!isAdmin || !esKeyR2 || !f.pdfUrl) return;
+    let cancelado = false;
+    precargarArchivoR2(f.pdfUrl, nombreArchivoFactura(f)).then((archivo) => {
+      if (!cancelado) setArchivoCompartir(archivo);
+    });
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, esKeyR2, f.pdfUrl]);
 
   function abrirEdicionNombre() {
     setMenuAbierto(false);
@@ -247,32 +263,30 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const emailSubject = `Factura ${f.numero_fmt ?? f.serie ?? ""} - Vista360`;
   const emailTo = cliente?.email ?? "";
 
-  /** Misma logica que ReportCard.tsx: intenta compartir el PDF
-   *  adjunto de verdad (Web Share, sobre todo en celular); si no se
-   *  puede, cae al link. Ya no se pre-abre una pestaña en blanco para
-   *  WhatsApp (en iOS Safari se quedaba trabada en "about:blank") --
-   *  window.open() se llama recien cuando ya se sabe que hace falta. */
-  async function compartirPorCanal(canal: "whatsapp" | "correo") {
+  /** Misma logica que ReportCard.tsx: el clic comparte de inmediato
+   *  (sin await antes) si el archivo ya esta precargado y el
+   *  navegador lo soporta; si no, cae directo al link, tambien de
+   *  inmediato -- nunca hay una espera de red DENTRO del clic (ver
+   *  utils/compartirArchivo.ts para el por que). */
+  function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
-    setEnviando(canal);
-    try {
-      const compartido =
-        esKeyR2 && f.pdfUrl
-          ? await compartirArchivoR2({
-              key: f.pdfUrl,
-              nombreArchivo: nombreArchivoFactura(f),
-              texto: mensajeConArchivo,
-              titulo: emailSubject,
-            })
-          : false;
-      if (compartido) return;
-      if (canal === "correo") {
-        window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
-      } else {
-        window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
-      }
-    } finally {
-      setEnviando(null);
+    if (puedeCompartirEsteArchivo(archivoCompartir)) {
+      setEnviando(canal);
+      compartirArchivoPrecargado(archivoCompartir, mensajeConArchivo, emailSubject)
+        .then((compartido) => {
+          if (!compartido) irAlLink(canal);
+        })
+        .finally(() => setEnviando(null));
+      return;
+    }
+    irAlLink(canal);
+  }
+
+  function irAlLink(canal: "whatsapp" | "correo") {
+    if (canal === "correo") {
+      window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
     }
   }
 

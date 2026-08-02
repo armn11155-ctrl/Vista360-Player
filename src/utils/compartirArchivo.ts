@@ -10,81 +10,78 @@ import { cloudFunctions } from "../config/firebase";
  *
  * Sobre todo funciona en celular (iOS Safari, Chrome Android). En
  * computadora depende del sistema: en Mac, WhatsApp Desktop no se
- * integra con el panel de Compartir (aunque Finder sí lo muestre para
- * otros tipos de archivo); en Windows 11 con WhatsApp actualizado, sí
- * puede aparecer. Por eso quien llama a esto SIEMPRE tiene que tener
- * un mensaje con link como respaldo para cuando compartirArchivoR2()
- * devuelva false.
+ * integra con el panel de Compartir; en Windows 11 con WhatsApp
+ * actualizado, sí puede aparecer.
  *
- * OJO: antes había una función puedeCompartirArchivo() que probaba el
- * soporte armando un File VACÍO (0 bytes) de prueba y pasándoselo a
- * navigator.canShare() -- eso daba falso negativo en algunos
- * navegadores de celular (un archivo de 0 bytes no es lo mismo que un
- * PDF real, y canShare() podía rechazarlo aunque el archivo real sí
- * se hubiera compartido bien), haciendo que TODO cayera siempre al
- * link sin ni siquiera intentar el panel nativo. Ahora el chequeo de
- * soporte real se hace con el ARCHIVO DE VERDAD, después de bajarlo
- * -- el único chequeo previo (barato, sin red) es que las funciones
- * existan en el navegador.
+ * IMPORTANTE -- por qué esto está partido en "precargar" + "compartir"
+ * en vez de una sola función que hace todo en el clic:
+ *
+ * navigator.share() (y su respaldo, window.open()) necesitan
+ * "activación transitoria" -- básicamente, tienen que dispararse muy
+ * cerca del toque/clic real de la persona. La primera versión de esto
+ * pedía el archivo al servidor (una llamada de red) DENTRO del clic, y
+ * recién cuando esa respuesta llegaba, intentaba compartir. En
+ * computadora esa espera es de milisegundos y no se nota, pero en
+ * celular con red mas lenta esa espera podía ser de varios segundos --
+ * tiempo suficiente para que el navegador considerara "vencida" la
+ * activación del toque, y entonces TANTO share() como el link de
+ * respaldo se quedaban sin hacer nada, en silencio (ni error ni panel
+ * ni link -- exactamente el "se queda enviando y no pasa nada" que se
+ * reportó).
+ *
+ * La solución: precargar el archivo ANTES de que la persona toque el
+ * botón (apenas se abre la tarjeta del reporte/factura), y que el
+ * clic solo llame a share() con el archivo YA en memoria -- sin
+ * ningún await de red de por medio, así la activación sigue "fresca".
  */
 
-/** Intenta compartir un archivo de R2 adjunto de verdad (pide los
- * bytes por la Cloud Function obtenerArchivoR2Base64, arma un File y
- * abre el panel nativo de compartir). Devuelve:
- * - true: se abrió el panel de compartir (haya elegido mandarlo o
- *   cancelar -- cancelar no es un error, la persona decidió no
- *   mandarlo, no hay que caer al link en ese caso).
- * - false: no se pudo (sin soporte, sin sesión, la Cloud Function
- *   falló, etc.) -- quien llama debe caer al mensaje con link.
- */
-/** Si pedir el archivo al servidor se cuelga (red lenta, la Cloud
- * Function tardando, etc.), no hay que dejar el botón trabado en
- * "Enviando..." para siempre -- a los 12 segundos se da por vencido y
- * cae al link, en vez de colgarse. (Esto NO limita el tiempo que la
- * persona se toma eligiendo algo en el panel nativo de compartir --
- * ese panel ya reemplazó a nuestra pantalla, el límite es solo para
- * la espera de ANTES de que se abra.) */
-function conTiempoLimite<T>(promesa: Promise<T>, ms: number): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const id = setTimeout(() => reject(new Error("Se agotó el tiempo de espera.")), ms);
-    promesa.then(
-      (valor) => {
-        clearTimeout(id);
-        resolve(valor);
-      },
-      (error) => {
-        clearTimeout(id);
-        reject(error);
-      }
-    );
-  });
-}
-
-export async function compartirArchivoR2(opts: {
-  key: string;
-  nombreArchivo: string;
-  texto: string;
-  titulo: string;
-}): Promise<boolean> {
-  if (!cloudFunctions) return false;
-  if (typeof navigator === "undefined" || typeof navigator.share !== "function" || typeof navigator.canShare !== "function") {
-    return false;
-  }
+/** Pide el archivo al servidor y arma el File -- se llama al montar
+ * la tarjeta, NO en el clic, para que el archivo ya esté listo. */
+export async function precargarArchivoR2(key: string, nombreArchivo: string): Promise<File | null> {
+  if (!cloudFunctions) return null;
   try {
     const obtenerArchivo = httpsCallable<{ key: string }, { base64: string }>(cloudFunctions, "obtenerArchivoR2Base64");
-    const { data } = await conTiempoLimite(obtenerArchivo({ key: opts.key }), 12000);
+    const { data } = await obtenerArchivo({ key });
     const binario = atob(data.base64);
     const bytes = new Uint8Array(binario.length);
     for (let i = 0; i < binario.length; i++) bytes[i] = binario.charCodeAt(i);
-    const archivo = new File([bytes], opts.nombreArchivo, { type: "application/pdf" });
+    return new File([bytes], nombreArchivo, { type: "application/pdf" });
+  } catch (error) {
+    console.warn("No se pudo precargar el archivo para compartir; se usará el link.", error);
+    return null;
+  }
+}
 
-    // Chequeo de soporte con el archivo REAL, no uno de prueba vacío.
-    if (!navigator.canShare({ files: [archivo] })) return false;
-    await navigator.share({ files: [archivo], text: opts.texto, title: opts.titulo });
+/** ¿Este archivo (ya precargado) se puede compartir de verdad en este
+ * navegador? Chequeo síncrono, sin red -- seguro de llamar en el clic. */
+export function puedeCompartirEsteArchivo(archivo: File | null): archivo is File {
+  if (!archivo) return false;
+  if (typeof navigator === "undefined" || typeof navigator.canShare !== "function") return false;
+  try {
+    return navigator.canShare({ files: [archivo] });
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Comparte un archivo YA precargado. Se debe llamar de forma
+ * SÍNCRONA respecto al clic (sin ningún await antes) -- lo que pasa
+ * ADENTRO de esta función es async (navigator.share() devuelve una
+ * promesa que se resuelve cuando la persona termina en el panel
+ * nativo), pero la LLAMADA a navigator.share() en sí ocurre de
+ * inmediato, en el mismo tick del clic.
+ *
+ * Devuelve:
+ * - true: se abrió el panel y se compartió, o la persona lo cerró sin
+ *   elegir nada (cancelar no es un error, no hay que caer al link).
+ * - false: falló de verdad -- quien llama debe caer al link.
+ */
+export async function compartirArchivoPrecargado(archivo: File, texto: string, titulo: string): Promise<boolean> {
+  try {
+    await navigator.share({ files: [archivo], text: texto, title: titulo });
     return true;
   } catch (error) {
-    // AbortError = la persona cerró el panel sin elegir nada -- no es
-    // un error real, no hay que caer al link en ese caso tampoco.
     if (error instanceof DOMException && error.name === "AbortError") return true;
     console.warn("No se pudo compartir el archivo adjunto, se usa el link como respaldo.", error);
     return false;

@@ -374,21 +374,22 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   // (degradado radial oscuro y sutil), en vez del grafico de anillo,
   // que se pidio quitar para que ambas paginas tengan el mismo nivel
   // de elegancia.
-  // OJO: cada .fill(gradiente) sobre un rect pinta el rect ENTERO,
-  // incluida el area lejos del centro (que en la ultima parada del
-  // degradado ya es exactamente COLORS.bg) -- si los dos brillos
-  // rellenaran la pagina COMPLETA, el segundo taparia por completo al
-  // primero (incluida su esquina) al repintar todo de bg encima. Por
-  // eso cada uno se limita a su mitad de la pagina (arriba/abajo): a
-  // esa distancia del centro el degradado ya se perdio contra el
-  // fondo de todas formas, asi que no se nota el corte.
+  // OJO: el primer intento de tener los dos brillos partia la pagina
+  // a la mitad (uno arriba, otro abajo) para que el segundo .fill()
+  // no tapara al primero -- pero eso dejaba una linea recta visible
+  // justo en el corte (un degradado que se interrumpe de golpe no es
+  // un degradado). El fix real: la ultima parada de cada gradiente
+  // ahora es TRANSPARENTE (opacity 0, tercer parametro de .stop())
+  // en vez de solida -- asi el area lejos del centro no tapa nada de
+  // lo que haya debajo, y los dos brillos se pueden pintar sobre la
+  // pagina COMPLETA sin que ninguno borre al otro.
   const glowX = PAGE.width * 0.92;
   const glowY = -60;
   const glow = doc.radialGradient(glowX, glowY, 0, glowX, glowY, 750);
   glow.stop(0, "#17335c");
   glow.stop(0.45, "#0e1830");
-  glow.stop(1, COLORS.bg);
-  doc.rect(0, 0, PAGE.width, PAGE.height / 2).fill(glow);
+  glow.stop(1, COLORS.bg, 0);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow);
 
   // Mismo brillo, espejado: abajo a la izquierda -- se pidio el
   // mismo tratamiento tambien en esa esquina de la portada, para que
@@ -398,8 +399,8 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   const glow2 = doc.radialGradient(glow2X, glow2Y, 0, glow2X, glow2Y, 750);
   glow2.stop(0, "#17335c");
   glow2.stop(0.45, "#0e1830");
-  glow2.stop(1, COLORS.bg);
-  doc.rect(0, PAGE.height / 2, PAGE.width, PAGE.height / 2).fill(glow2);
+  glow2.stop(1, COLORS.bg, 0);
+  doc.rect(0, 0, PAGE.width, PAGE.height).fill(glow2);
 
   // Logo, kicker y titulo agrandados y reacomodados para un look mas
   // premium -- se pidio libertad total en tamano/posicion, mientras
