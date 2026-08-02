@@ -666,6 +666,7 @@ function AuthenticatedApp({
             contratos={contratos}
             email={email}
             isAdmin={isAdmin}
+            esInterno={esInterno}
             onCambiarCliente={onCambiarCliente}
             onNotifClick={() => setView("notificaciones")}
             totalNotifs={totalNotifs}

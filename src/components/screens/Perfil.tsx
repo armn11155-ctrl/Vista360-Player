@@ -15,6 +15,14 @@ interface Props {
   contratos?: Contrato[];
   email: string;
   isAdmin?: boolean;
+  /** true cuando quien está REALMENTE conectado es un Gerente/Trabajador
+   *  interno, incluso si en este momento está en modo "ver como
+   *  cliente" (isAdmin pasa a false en ese modo, pero la sesión de
+   *  Firebase Auth sigue siendo la del admin). Sirve para ocultar
+   *  "Cambiar contraseña" en ese modo: si se dejara, cambiaría la
+   *  contraseña del admin, no la del cliente que está simulando ver
+   *  -- un cliente real nunca manda este prop (queda undefined). */
+  esInterno?: boolean;
   onCambiarCliente?: () => void;
   onNotifClick?: () => void;
   totalNotifs?: number;
@@ -109,7 +117,7 @@ function ProfileMetricRow({ icon, label, value, tone }: {
   );
 }
 
-export default function Perfil({ cliente, contratos = [], email, isAdmin, onCambiarCliente, onNotifClick, totalNotifs = 0 }: Props) {
+export default function Perfil({ cliente, contratos = [], email, isAdmin, esInterno, onCambiarCliente, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc);
@@ -398,7 +406,14 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, onCamb
         <ProfileSection title="Información de la empresa">
           <ProfileRow icon="company" label="RUC cliente" value={ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
-          {!isAdmin && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
+          {/* Se pidio que esto NO aparezca en modo "ver como cliente" del
+              admin -- ahi isAdmin ya es false (para que se vea la
+              pantalla de cliente), pero la sesion de Firebase Auth
+              sigue siendo la del admin: si se dejaba, "cambiar
+              contraseña" cambiaba la del admin, no la de ningun
+              cliente. esInterno detecta ese modo aunque isAdmin diga
+              false. */}
+          {!isAdmin && !esInterno && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
 
