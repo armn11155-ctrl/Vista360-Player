@@ -4,6 +4,7 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import PremiumToast from "./PremiumToast";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 
 interface Props {
@@ -318,6 +319,10 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   return (
     <div className="report-card factura-card">
+      <PremiumToast
+        visible={copiado === "whatsapp"}
+        message="No olvides pegar el mensaje — ya se copió a tu portapapeles antes de enviar el PDF."
+      />
       <div className="report-card-main">
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
           <svg width="56" height="70" viewBox="0 0 56 70" fill="none">
@@ -476,9 +481,6 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       )}
       {isAdmin && diagnosticoCompartir && (
         <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
-      )}
-      {copiado === "whatsapp" && (
-        <div className="report-share-diagnostico">Mensaje copiado al portapapeles — pégalo aparte en el chat (WhatsApp no deja poner texto junto a un PDF).</div>
       )}
     </div>
   );

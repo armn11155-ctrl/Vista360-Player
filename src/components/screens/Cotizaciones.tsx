@@ -5,6 +5,7 @@ import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import type { Cotizacion, CotizacionEstado } from "../../types";
 import BackChevron from "../BackChevron";
+import PremiumToast from "../PremiumToast";
 import { dinero, esCotizacionExonerada, esUbicacionExonerada, fechaVisible } from "../../utils/cotizaciones";
 import { generarCotizacionPdf } from "../../utils/cotizacionPdf";
 import { compartirArchivoPrecargado, puedeCompartirEsteArchivo } from "../../utils/compartirArchivo";
@@ -219,6 +220,10 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
 
   return (
     <div className="quotes-screen">
+      <PremiumToast
+        visible={copiadoWhatsapp}
+        message="No olvides pegar el mensaje — ya se copió a tu portapapeles antes de enviar el PDF."
+      />
       <header className="quotes-header">
         <div className="quotes-header-inner">
           <button type="button" onClick={onBack} aria-label="Volver"><BackChevron /></button>
@@ -370,14 +375,6 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
                 {accionCotizacion === "pdf" ? "Generando…" : "Guardar PDF"}
               </button>
             </div>
-            {copiadoWhatsapp && (
-              // WhatsApp no deja escribir un mensaje/leyenda cuando lo
-              // que se adjunta es un PDF (si funciona con fotos) -- es
-              // asi de parte de WhatsApp, no algo que se pueda forzar
-              // desde aca. El mensaje ya quedo copiado al portapapeles
-              // antes de abrir el panel de compartir.
-              <div className="quote-preview-hint">Mensaje copiado al portapapeles — pégalo como mensaje aparte en el chat (WhatsApp no deja poner texto junto a un PDF).</div>
-            )}
             <article className="quote-document">
               <header className="quote-letterhead">
                 <div className="quote-letterhead-brand">

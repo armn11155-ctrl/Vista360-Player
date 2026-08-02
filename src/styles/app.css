@@ -198,6 +198,70 @@
     to   { transform: translateY(0);      opacity: 1; }
   }
 
+  /* Aviso flotante "premium" que aparece al compartir un PDF por WhatsApp,
+     recordando pegar el mensaje (que ya se copió solo al portapapeles,
+     porque WhatsApp no deja poner texto junto a un documento). Se queda
+     siempre montado en el DOM y solo cambia de clase (.is-visible) para
+     poder animar tanto la entrada como la salida con una transición. */
+  .premium-toast-wrap {
+    position: fixed;
+    top: max(18px, env(safe-area-inset-top));
+    left: 50%;
+    z-index: 999;
+    width: min(380px, calc(100vw - 32px));
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -14px) scale(.98);
+    transition: opacity .3s ease, transform .35s cubic-bezier(.16, 1, .3, 1);
+  }
+  .premium-toast-wrap.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  .premium-toast {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #FFFFFF;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, .24), 0 2px 10px rgba(15, 23, 42, .1);
+  }
+  .premium-toast-bar {
+    height: 3px;
+    background: linear-gradient(90deg, rgba(47, 125, 251, 0) 0%, #2F7DFB 45%, #7AB2FF 55%, rgba(47, 125, 251, 0) 100%);
+    background-size: 220% 100%;
+    animation: premiumToastShimmer 1.6s linear infinite;
+  }
+  @keyframes premiumToastShimmer {
+    0%   { background-position: 220% 0; }
+    100% { background-position: -20% 0; }
+  }
+  .premium-toast-head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 16px 7px;
+    background: #F2F6FF;
+  }
+  .premium-toast-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2F7DFB;
+    box-shadow: 0 0 0 4px rgba(47, 125, 251, .16);
+  }
+  .premium-toast-head span:last-child {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #2F5FAE;
+  }
+  .premium-toast-body {
+    padding: 4px 16px 14px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #1E2635;
+  }
+
   .retry-btn {
     margin-top: 14px;
     padding: 10px 20px;
