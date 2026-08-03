@@ -6563,6 +6563,21 @@
        a la derecha de esta columna. */
     padding-right: 16px;
   }
+  /* Tipo de soporte (Lona, Mural, LED, ...) -- pedido explicito: al
+     tocar un pin, ademas del estado (Disponible/Ocupado) hay que ver
+     de que TIPO es el soporte, no solo donde queda. */
+  .coverage-popup-tipo {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: #0877FF;
+    background: rgba(8,119,255,.10);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-bottom: 7px;
+  }
   .coverage-popup-address {
     display: flex;
     align-items: flex-start;
@@ -7021,6 +7036,18 @@
   }
   .coverage-selected-name { color: #050A12; font-size: 14px; font-weight: 900; }
   .coverage-selected-address { color: #64748B; font-size: 11px; margin-top: 3px; line-height: 1.35; }
+  .coverage-selected-tipo {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: #0877FF;
+    background: rgba(8,119,255,.10);
+    border-radius: 6px;
+    padding: 2px 7px;
+    margin-top: 6px;
+  }
   .coverage-selected-status {
     display: inline-flex;
     align-items: center;

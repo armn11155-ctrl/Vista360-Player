@@ -220,6 +220,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
       </div>
       <div class="coverage-popup-body">
         <div class="coverage-popup-name">${nombre}</div>
+        ${panel.tipo ? `<div class="coverage-popup-tipo">${escapeHtml(panel.tipo)}</div>` : ""}
         <div class="coverage-popup-address">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" stroke="#64748B" stroke-width="1.6"/><circle cx="12" cy="10" r="1.8" stroke="#64748B" stroke-width="1.6"/></svg>
           <span>${direccion}</span>
@@ -765,6 +766,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
               <div className="coverage-selected-address">
                 {[seleccionado.direccion, seleccionado.ciudad].filter(Boolean).join(" · ") || "Sin dirección registrada"}
               </div>
+              {seleccionado.tipo && <div className="coverage-selected-tipo">{seleccionado.tipo}</div>}
             </div>
             <div className="coverage-selected-actions">
               <div className="coverage-selected-status" style={{ color: estadoColor(estadoTexto(seleccionado)) }}>
