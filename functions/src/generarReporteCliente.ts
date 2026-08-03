@@ -415,14 +415,20 @@ function portada(doc: PDFKit.PDFDocument, cliente: ClienteReporte) {
   const logoW = 540;
   doc.image(LOGO_WORDMARK_WHITE, centroX - logoW / 2, 108, { width: logoW });
 
+  // Se pidio subir este bloque (kicker + "REPORTE FOTOGRAFICO") un poco
+  // -- quedaba mucho mas espacio vacio arriba (entre el logo y este
+  // bloque) que abajo (entre "FOTOGRAFICO" y la fila de tarjetas). Se
+  // sube el bloque completo 40pt (mismo espaciado interno entre
+  // kicker/REPORTE/FOTOGRAFICO, nada mas se mueve el conjunto), el
+  // logo se queda donde estaba.
   const ciudad = sinTildes(cliente.ciudad || "Peru");
-  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 272, COLORS.accent, 23, { center: true });
+  drawKicker(doc, `Reporte mensual / ${ciudad}`, centroX, 232, COLORS.accent, 23, { center: true });
 
   doc.font("Helvetica-Bold").fontSize(104).fillColor(COLORS.white);
   const wReporte = doc.widthOfString("REPORTE", { characterSpacing: 0.5 });
   const wFotografico = doc.widthOfString("FOTOGRAFICO", { characterSpacing: 0.5 });
-  doc.text("REPORTE", centroX - wReporte / 2, 338, { characterSpacing: 0.5 });
-  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 458, { characterSpacing: 0.5 });
+  doc.text("REPORTE", centroX - wReporte / 2, 298, { characterSpacing: 0.5 });
+  doc.text("FOTOGRAFICO", centroX - wFotografico / 2, 418, { characterSpacing: 0.5 });
 
   // Tarjetas mas compactas (menos espacio vacio que el primer calco de
   // la referencia — el hueco se notaba mucho con textos cortos reales).
@@ -554,50 +560,36 @@ async function paginaEvidenciaBlanca(
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent, 12);
+  // El encabezado decia "Reporte Fotografico" -- se cambio a
+  // "Registro N" (con el mismo pad2 de dos digitos que ya usa el pie
+  // de pagina) para que diga cual evidencia es esta, sin repetir la
+  // palabra "Evidencia" que ya esta arriba en el kicker ("02 /
+  // EVIDENCIA" + "Evidencia 01" se leia redundante).
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.ink)
-    .text("Reporte Fotografico", PAGE.margin, 66, { width: 760 });
+    .text(`Registro ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
+  // Antes decia siempre el mismo texto fijo ("Fotografia enviada como
+  // evidencia de campaña.") -- se pidio que en su lugar diga la fecha
+  // en que se registro esa foto.
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.mutedOnLight)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 102, { width: 760 });
+    .text(`Fecha de registro: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
 
-  // Foto se achica un poco arriba para dejarle sitio al encabezado
-  // que bajo (antes x:74 y:124 w:1064 h:694) -- el borde de abajo se
-  // queda igual (124+694 = 134+684 = 818).
-  const photoX = 74;
+  // Se saco la tarjeta flotante de la derecha (antes mostraba
+  // "Evidencia N" y la fecha, ahora esa info ya esta arriba en el
+  // encabezado) -- la foto ahora ocupa todo el ancho disponible,
+  // centrada entre los mismos margenes que el resto de la pagina, en
+  // vez de quedar achicada a la izquierda para dejarle sitio a la
+  // tarjeta.
+  // Un poco menos ancha que el ancho completo -- se probo primero a
+  // todo el ancho (borde a borde con el margen de la pagina) y se
+  // pidio achicarla un poco, que quede con mas aire a los costados.
+  const photoInset = 130;
+  const photoX = photoInset;
   const photoY = 134;
-  const photoW = 1064;
+  const photoW = PAGE.width - photoInset * 2;
   const photoH = 684;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.lineLight).stroke();
-
-  // Tarjeta oscura flotante, centrada verticalmente frente a la foto,
-  // con todo el contenido centrado (calcado de x:1172-1518 y:386-655),
-  // con la linea de acento azul arriba (recortada al radio de la tarjeta).
-  // Se saco la linea "Presencia confirmada en punto de exhibicion." --
-  // se repetia igual en cada pagina de evidencia y quedaba redundante
-  // (ya lo dice "Evidencia N" arriba). Sin esa linea la tarjeta
-  // tambien se hizo mas baja (269 -> 190) y se reacomodo el espaciado
-  // entre elementos para que no quede un hueco vacio en el medio.
-  const cardW = 346;
-  const cardH = 190;
-  // Un poco mas a la derecha que antes (1518 -> 1534 de referencia).
-  const cardX = 1534 - cardW;
-  const cardY = photoY + (photoH - cardH) / 2;
-  const cx = cardX + cardW / 2;
-  doc.save();
-  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
-  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.card);
-  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
-  doc.restore();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
-    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.white)
-    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
-  doc.moveTo(cx - 60, cardY + 96).lineTo(cx + 60, cardY + 96).lineWidth(1.5).strokeColor(COLORS.accent2).stroke();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent2)
-    .text("FECHA DE REGISTRO", cardX, cardY + 116, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.white)
-    .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
 
   // Misma linea de acento en degradado que ya usa la divisoria de
   // panel (paginaPanel) -- empieza oscura, se aclara al medio y
@@ -648,41 +640,29 @@ async function paginaEvidenciaOscura(
   doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
   drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent2, 12);
+  // Mismo cambio que en la version blanca (ver comentario ahi): dice
+  // "Registro N" en vez de "Reporte Fotografico", para no repetir la
+  // palabra "Evidencia" que ya esta en el kicker de arriba.
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text("Reporte Fotografico", PAGE.margin, 66, { width: 760 });
+    .text(`Registro ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
+  // Mismo cambio que en la version blanca (ver comentario ahi):
+  // ahora muestra la fecha de registro en vez del texto fijo.
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted)
-    .text("Fotografia enviada como evidencia de campaña.", PAGE.margin, 102, { width: 760 });
+    .text(`Fecha de registro: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
 
-  const photoX = 74;
+  // Mismo cambio que en la version blanca (ver comentario ahi): sin
+  // tarjeta flotante, la foto ocupa todo el ancho disponible.
+  // Un poco menos ancha que el ancho completo -- se probo primero a
+  // todo el ancho (borde a borde con el margen de la pagina) y se
+  // pidio achicarla un poco, que quede con mas aire a los costados.
+  const photoInset = 130;
+  const photoX = photoInset;
   const photoY = 134;
-  const photoW = 1064;
+  const photoW = PAGE.width - photoInset * 2;
   const photoH = 684;
   const buffer = await cargarFotoComprimida(foto.url);
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
-
-  // Misma tarjeta que en la pagina blanca (mismas medidas/posicion),
-  // pero en blanco -- en la pagina blanca es oscura (COLORS.card).
-  const cardW = 346;
-  const cardH = 190;
-  // Un poco mas a la derecha que antes (1518 -> 1534 de referencia).
-  const cardX = 1534 - cardW;
-  const cardY = photoY + (photoH - cardH) / 2;
-  const cx = cardX + cardW / 2;
-  doc.save();
-  doc.roundedRect(cardX, cardY, cardW, cardH, 18).clip();
-  doc.rect(cardX, cardY, cardW, cardH).fill(COLORS.white);
-  doc.rect(cardX, cardY, cardW, 5).fill(COLORS.accent);
-  doc.restore();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
-    .text("REPORTE FOTOGRAFICO", cardX, cardY + 30, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.ink)
-    .text(`Evidencia ${indice}`, cardX, cardY + 58, { width: cardW, align: "center" });
-  doc.moveTo(cx - 60, cardY + 96).lineTo(cx + 60, cardY + 96).lineWidth(1.5).strokeColor(COLORS.accent).stroke();
-  doc.font("Helvetica-Bold").fontSize(11.5).fillColor(COLORS.accent)
-    .text("FECHA DE REGISTRO", cardX, cardY + 116, { width: cardW, align: "center", characterSpacing: 1.5 });
-  doc.font("Helvetica-Bold").fontSize(17).fillColor(COLORS.ink)
-    .text(fechaCorta(foto.fecha), cardX, cardY + 140, { width: cardW, align: "center" });
 
   // Misma linea de acento en degradado que ya usa la divisoria de
   // panel (paginaPanel) -- empieza oscura, se aclara al medio y
