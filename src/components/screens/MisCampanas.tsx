@@ -265,7 +265,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
       {/* Tabs */}
       <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
-        {(["Todas","Activa","Programada","Finalizada"] as const).map((f) => (
+        {(["Activa","Programada","Finalizada","Todas"] as const).map((f) => (
           <div key={f} onClick={() => setFiltro(f)} style={{
             flex: 1, textAlign: "center",
             padding: "12px 6px", fontSize: 13, fontWeight: filtro === f ? 600 : 400,
