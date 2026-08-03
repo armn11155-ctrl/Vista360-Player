@@ -11,9 +11,9 @@
  * Empezó con los 4 de R2; se le sumó CRON_SYNC_SECRET (lo usa
  * sincronizarEstadoPaneles para validar que quien la llama es el cron
  * de GitHub Actions y no cualquiera en internet — ver
- * sincronizar-paneles-diario.yml). Despues se sumaron SMTP_USER/
- * SMTP_PASS, que usa enviarCorreoConPdf para mandar correos con PDF
- * adjunto de verdad por el Hotmail de la empresa.
+ * sincronizar-paneles-diario.yml). Despues se sumo RESEND_API_KEY,
+ * que usa enviarCorreoConPdf para mandar correos con PDF adjunto de
+ * verdad por la API de Resend.
  */
 import { GoogleAuth } from 'google-auth-library';
 
@@ -26,14 +26,14 @@ const SECRETS = {
   R2_SECRET_ACCESS_KEY: process.env.VAL_R2_SECRET_ACCESS_KEY,
   R2_BUCKET: process.env.VAL_R2_BUCKET,
   CRON_SYNC_SECRET: process.env.VAL_CRON_SYNC_SECRET,
-  // Credenciales SMTP del Hotmail de la empresa, para que
-  // enviarCorreoConPdf pueda mandar el correo con el PDF adjunto de
-  // verdad, sin depender de que el admin elija un contacto/app a mano
-  // (ver el comentario largo en functions/src/enviarCorreoConPdf.ts).
-  // SMTP_PASS es una "contraseña de aplicación" generada en
-  // account.microsoft.com, NO la contraseña normal de la cuenta.
-  SMTP_USER: process.env.VAL_SMTP_USER,
-  SMTP_PASS: process.env.VAL_SMTP_PASS,
+  // API key de Resend, para que enviarCorreoConPdf pueda mandar el
+  // correo con el PDF adjunto de verdad, sin depender de que el admin
+  // elija un contacto/app a mano (ver el comentario largo en
+  // functions/src/enviarCorreoConPdf.ts). Reemplazo del SMTP de
+  // Hotmail que se uso al principio -- una cuenta personal no esta
+  // pensada para envio automatizado y arriesgaba que Microsoft la
+  // marcara como sospechosa.
+  RESEND_API_KEY: process.env.VAL_RESEND_API_KEY,
 };
 
 const auth = new GoogleAuth({
