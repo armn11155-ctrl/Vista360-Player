@@ -5169,7 +5169,15 @@
   .admin-picker-management-head > div { display: grid; gap: 3px; text-align: left; }
   .admin-picker-management-head strong { color: #fff; font-size: 19px; }
   .admin-picker-management-head span { color: rgba(255,255,255,.58); font-size: 11px; }
-  .admin-picker-management-grid { display: grid; gap: 12px; }
+  /* Pedido: en mobile estas tarjetas quedaban de punta a punta (una
+     sola columna), muy largas y con mucho espacio oscuro -- en
+     desktop, mas abajo, ya es una grilla de 2 columnas y ahi se ve
+     bien ("cuadraditos"), asi que se lleva el mismo criterio acá. */
+  .admin-picker-management-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
   .admin-picker-management-card {
     width: 100%;
     min-height: 76px;
@@ -7198,10 +7206,13 @@
        nivel de donde está el botón de perfil (arriba). Se achica el
        logo y se recorta el padding/margen de arriba para lograrlo,
        manteniendo el centrado horizontal como estaba. */
+    /* Antes tenía una capa gris/negra encima de la foto (gradiente
+       rgba(2,6,15,.72→.46)) que la apagaba -- se pidió que se vea la
+       foto clara, sin esa capa. El header y las tarjetas de abajo ya
+       tienen su propio fondo sólido (no dependen de que la foto esté
+       oscurecida para leerse), así que sacarla no afecta la lectura. */
     .admin-picker-management-screen {
-      background:
-        linear-gradient(90deg, rgba(2,6,15,.72), rgba(2,6,15,.46)),
-        url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
+      background: url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
       padding: 22px 48px 40px;
     }
     .admin-picker-management-logo {
