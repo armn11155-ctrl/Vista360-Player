@@ -48,37 +48,35 @@ const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.p
 
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
- * marca -- a pantalla completa (sin tarjeta centrada ni fondo gris
- * alrededor): header negro con el logo de Vista360 en blanco, una
- * línea de acento azul con efecto de brillo, cuerpo en blanco con el
- * mensaje, y pie negro con teléfono/correo (mismos datos que ya lleva
- * el pie del PDF de Cotización, ver cotizacionPdf.ts) arriba y el
- * eslogan "MÁS QUE VISIBILIDAD. PRESENCIA." debajo. Se manda como
- * `html` ADEMÁS de `text` (nunca en reemplazo) -- `text` sigue siendo
- * el respaldo para los pocos clientes de correo que no rendericen
- * HTML.
+ * marca -- se pidio calcar la elegancia de la portada del PDF de
+ * reporte (ver portada() en generarReporteCliente.ts): fondo azul
+ * marino oscuro de punta a punta (mismo #0A0F1C que COLORS.bg alla)
+ * con los mismos dos brillos suaves de esquina que la portada (arriba
+ * a la derecha y abajo a la izquierda, via radial-gradient con
+ * background-color plano de respaldo), logo alineado a la izquierda
+ * arriba con una rayita azul corta justo debajo (eco del subrayado de
+ * "REPORTE MENSUAL" en la portada, pero pegada al logo en vez de
+ * centrada), una tarjeta BLANCA flotante con el mensaje (eco de la
+ * tarjeta CLIENTE/PERIODO de la portada) y el contacto/eslogan abajo,
+ * directo sobre el fondo oscuro (mismos datos que ya lleva el pie del
+ * PDF de Cotización, ver cotizacionPdf.ts). Se manda como `html`
+ * ADEMÁS de `text` (nunca en reemplazo) -- `text` sigue siendo el
+ * respaldo para los pocos clientes de correo que no rendericen HTML.
  *
  * Todo en tablas HTML con estilos inline a propósito, nada de
  * flexbox/grid -- Outlook de escritorio renderiza el correo con el
  * motor de Word, que ignora casi todo el CSS moderno; tablas +
  * estilos inline es lo único que se ve igual en Gmail, Outlook, Apple
- * Mail y Yahoo a la vez. La línea de acento usa
- * "background-image: linear-gradient(...)" con background-color
- * plano como respaldo -- en los clientes que no soportan gradiente
- * (Apple Mail en iOS, por ejemplo) simplemente se ve azul sólido, sin
- * roturas. Se probó primero armando el degradado a mano con varias
- * celdas de tabla de colores sólidos pegadas una junto a otra, pero
- * varios clientes reales no respetan bien el ancho en porcentaje de
- * celdas vacías (quedan celdas angostas con su ancho mínimo en vez de
- * repartirse el 100%) y además se ven bordes oscuros entre celda y
- * celda -- por eso se volvió a un solo bloque con degradado CSS +
- * respaldo, que no tiene ninguna costura posible porque es un solo
- * elemento.
+ * Mail y Yahoo a la vez. El fondo oscuro se pone tanto en el <body>
+ * como en bgcolor="#0A0F1C" de la tabla (algunos clientes viejos
+ * ignoran el background por CSS del <body> y se quedan en blanco).
  *
- * La línea va DENTRO de la misma celda del header (no en una fila de
- * tabla aparte) -- en una fila separada quedaba una línea blanca de
- * unos px entre el negro del header y el azul de la línea, por el
- * espaciado por defecto entre filas de algunos clientes de correo.
+ * La rayita de acento es un solo bloque con degradado CSS + color
+ * solido de respaldo -- se probo antes armando degradados a mano con
+ * celdas de tabla pegadas una junto a otra y varios clientes reales
+ * no repartian bien el ancho en porcentaje entre celdas vacias
+ * (quedaban celdas angostas, con bordes oscuros entre celda y celda).
+ * Un solo elemento no tiene ninguna costura posible.
  *
  * El pie va en una sola columna (contacto arriba, eslogan abajo) en
  * vez de dos columnas lado a lado -- en pantallas angostas (celular)
@@ -90,7 +88,10 @@ const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.p
  */
 function construirHtmlCorreo(mensaje: string): string {
   const cuerpoHtml = escapeHtml(mensaje).split("\n").join("<br>");
-  const fuente = "Georgia,'Times New Roman',serif";
+  const fuente = "Arial,Helvetica,sans-serif";
+  const bg = "#0A0F1C";
+  const accent = "#2F6FED";
+  const accent2 = "#5B93FF";
   return `<!DOCTYPE html>
 <html>
   <head>
@@ -108,26 +109,36 @@ function construirHtmlCorreo(mensaje: string): string {
       }
     </style>
   </head>
-  <body style="margin:0;padding:0;background:#FFFFFF;">
-    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background:#FFFFFF;font-family:${fuente};border-collapse:collapse;">
+  <body style="margin:0;padding:0;background-color:${bg};">
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" style="background-color:${bg};background-image:radial-gradient(circle at 92% -10%, #17335C 0%, #0E1830 45%, transparent 70%), radial-gradient(circle at 8% 110%, #17335C 0%, #0E1830 45%, transparent 70%);font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td style="background-color:#050A12;padding:0;font-size:0;line-height:0;">
-          <div style="padding:20px 24px 14px;">
-            <img src="${LOGO_BLANCO_URL}" width="150" alt="VISTA360" style="display:block;width:150px;max-width:150px;border:0;outline:none;" />
-          </div>
-          <div style="height:3px;line-height:3px;font-size:0;background-color:#2F6FED;background-image:linear-gradient(90deg,#2F6FED 0%,#7FB0FF 50%,#2F6FED 100%);">&nbsp;</div>
+        <td align="left" style="padding:48px 24px 0 32px;">
+          <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
         </td>
       </tr>
       <tr>
-        <td style="padding:20px 24px 22px;color:#172235;font-size:13px;line-height:1.6;font-family:${fuente};">
-          ${cuerpoHtml}
+        <td align="left" style="padding:14px 24px 34px 32px;">
+          <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;">
+            <tr><td height="3" style="height:3px;line-height:3px;font-size:0;background-color:${accent};background-image:linear-gradient(90deg,${accent} 0%,${accent2} 50%,${accent} 100%);">&nbsp;</td></tr>
+          </table>
         </td>
       </tr>
       <tr>
-        <td align="center" style="background-color:#050A12;padding:5px 24px;text-align:center;font-family:${fuente};">
-          <div style="text-align:center;line-height:1.15;font-weight:bold;font-size:11px;color:#FFFFFF;"><span x-apple-data-detectors="false" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
-          <div style="text-align:center;line-height:1.15;font-size:8px;letter-spacing:.04em;color:#8B95A5;margin-top:2px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
-          <div style="text-align:center;line-height:1.15;border-top:1px solid rgba(255,255,255,.14);margin-top:3px;padding-top:2px;font-weight:bold;font-size:8.5px;letter-spacing:.03em;color:#FFFFFF;">MAS QUE VISIBILIDAD. PRESENCIA.</div>
+        <td align="center" style="padding:0 24px 40px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;">
+            <tr>
+              <td style="padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
+                ${cuerpoHtml}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding:0 24px 46px;font-family:${fuente};">
+          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FFFFFF;"><span x-apple-data-detectors="false" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
+          <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
+          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;">MAS QUE VISIBILIDAD. PRESENCIA.</div>
         </td>
       </tr>
     </table>
