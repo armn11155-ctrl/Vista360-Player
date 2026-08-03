@@ -7,6 +7,12 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
+interface ConfirmarActivacionPushData {
+  /** El token FCM recién guardado por ESTE dispositivo (ver
+   *  activarNotificacionesPush en pushNotifications.ts). */
+  token?: string;
+}
+
 /**
  * Se llama una sola vez, justo después de que activarNotificacionesPush
  * (frontend) terminó de guardar el token FCM nuevo -- manda un push de
@@ -17,22 +23,34 @@ if (getApps().length === 0) {
  * correctamente" tiene que llegar como notificación push, no solo como
  * texto dentro de la app.
  *
- * A propósito manda solo a los tokens de ESTA cuenta (portalUsers/uid),
- * no a todos los que compartan el mismo cliente_id -- si un cliente
- * tiene el portal abierto en dos celulares, activar en uno no debería
- * mandarle un push de "activaste" al otro que ya lo tenía activado.
+ * A propósito manda SOLO al token que se acaba de activar, no a todos
+ * los guardados en portalUsers/uid.fcmTokens -- si una cuenta tiene el
+ * portal abierto en el celular Y la laptop, activar en una no debería
+ * mandarle un push de "activaste" a la otra que ya lo tenía activado
+ * de antes. (Antes SÍ mandaba a todos los tokens de la cuenta -- este
+ * era justo el bug: activar en la laptop mandaba la confirmación
+ * también al celular.)
  */
-export const confirmarActivacionPush = onCall(async (request) => {
+export const confirmarActivacionPush = onCall<ConfirmarActivacionPushData>(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+
+  const tokenNuevo = String(request.data?.token ?? "").trim();
 
   const db = getFirestore();
   const snap = await db.doc(`portalUsers/${uid}`).get();
   if (!snap.exists) throw new HttpsError("not-found", "Cuenta no encontrada.");
 
-  const tokens: string[] = Array.isArray(snap.data()?.fcmTokens)
+  const tokensGuardados: string[] = Array.isArray(snap.data()?.fcmTokens)
     ? snap.data()!.fcmTokens.filter((t: unknown) => typeof t === "string" && t)
     : [];
+
+  // Si el frontend mandó el token nuevo Y de verdad está guardado en la
+  // cuenta, se manda SOLO a ese. Si no (llamadas viejas sin el dato, o
+  // el token todavía no propagó), se cae al comportamiento anterior
+  // como respaldo -- mejor mandar de más una vez que dejar a alguien
+  // sin su confirmación.
+  const tokens = tokenNuevo && tokensGuardados.includes(tokenNuevo) ? [tokenNuevo] : tokensGuardados;
   if (tokens.length === 0) return { ok: false };
 
   try {

@@ -98,8 +98,12 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
     // activación -- el token ya quedó guardado, solo no llegó el
     // aviso de bienvenida esta vez.
     if (cloudFunctions) {
-      const confirmar = httpsCallable<void, { ok: boolean }>(cloudFunctions, "confirmarActivacionPush");
-      void confirmar().catch(() => undefined);
+      // Le pasa el token de ESTE dispositivo -- sin esto, la Cloud
+      // Function no sabe cuál es "el que se acaba de activar" y termina
+      // mandando la confirmación a TODOS los dispositivos de la cuenta
+      // (ver el comentario largo en confirmarActivacionPush.ts).
+      const confirmar = httpsCallable<{ token: string }, { ok: boolean }>(cloudFunctions, "confirmarActivacionPush");
+      void confirmar({ token }).catch(() => undefined);
     }
 
     marcarRegistradoEnEsteNavegador(uid);
