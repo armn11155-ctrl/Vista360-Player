@@ -4,6 +4,7 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { mensajeDeError } from "../utils/errores";
 import type { Cliente, InformeCliente } from "../types";
 
 interface Props {
@@ -91,6 +92,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
+  const [previaCorreo, setPreviaCorreo] = useState(false);
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -135,7 +137,8 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   function compartirPorCanal(canal: "whatsapp" | "correo") {
     if (enviando) return;
     if (canal === "correo") {
-      void enviarCorreoAutomatico();
+      setError("");
+      setPreviaCorreo(true);
       return;
     }
     if (puedeCompartirEsteArchivo(archivoCompartir)) {
@@ -157,11 +160,17 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  y PDF adjunto en un solo clic, sin panel nativo ni pasos
    *  manuales. Usa el PDF ya precargado (mismo que WhatsApp), solo
    *  que convertido a base64 para poder mandarlo en el body de la
-   *  Cloud Function callable. Si algo falla (sin correo guardado, sin
-   *  PDF listo, error de red/SMTP) cae al link de mailto: de siempre. */
-  async function enviarCorreoAutomatico() {
+   *  Cloud Function callable.
+   *
+   *  Antes, si algo fallaba (sin correo guardado, sin PDF listo, error
+   *  de la función), caía en SILENCIO al link de mailto: -- se abría
+   *  el correo PERSONAL de quien lo usaba, sin ningún aviso de que
+   *  algo había fallado ni por qué. Ahora, si falla, se muestra el
+   *  motivo real acá mismo y la persona decide: reintentar, o usar el
+   *  link a propósito con el botón de abajo -- nunca de sorpresa. */
+  async function confirmarEnvioCorreo() {
     if (!cloudFunctions) {
-      irAlLink("correo");
+      setError("Firebase Functions no está configurado.");
       return;
     }
     if (!emailTo) {
@@ -169,7 +178,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
       return;
     }
     if (!archivoCompartir) {
-      irAlLink("correo");
+      setError(diagnosticoCompartir || "El PDF todavía no está listo. Espera un momento e intenta de nuevo.");
       return;
     }
     setEnviando("correo");
@@ -184,12 +193,17 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         archivoBase64,
         nombreArchivo: archivoCompartir.name,
       });
+      setPreviaCorreo(false);
     } catch (err) {
-      console.warn("No se pudo enviar el correo automático, se usa el link como respaldo.", err);
-      irAlLink("correo");
-    } finally {
-      setEnviando(null);
+      setError(mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento."));
     }
+    setEnviando(null);
+  }
+
+  function usarLinkComoRespaldo() {
+    setPreviaCorreo(false);
+    setError("");
+    irAlLink("correo");
   }
 
   function irAlLink(canal: "whatsapp" | "correo") {
@@ -348,7 +362,28 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           </>
         )}
       </div>
-      {isAdmin && diagnosticoCompartir && (
+      {isAdmin && previaCorreo && (
+        <div className="report-email-preview">
+          <div className="report-email-preview-row"><span>Para</span><strong>{emailTo || "(sin correo guardado)"}</strong></div>
+          <div className="report-email-preview-row"><span>Asunto</span><strong>{emailSubject}</strong></div>
+          <div className="report-email-preview-row report-email-preview-mensaje"><span>Mensaje</span><p>{mensajeConArchivo}</p></div>
+          <div className={`report-email-preview-chip ${archivoCompartir ? "is-ok" : "is-warn"}`}>
+            {archivoCompartir ? "PDF adjunto listo" : "PDF todavía no está listo"}
+          </div>
+          <div className="report-email-preview-actions">
+            <button type="button" className="cancelar" onClick={() => { setPreviaCorreo(false); setError(""); }} disabled={enviando !== null}>
+              Cancelar
+            </button>
+            <button type="button" className="enviar" onClick={() => void confirmarEnvioCorreo()} disabled={enviando !== null}>
+              {enviando === "correo" ? "Enviando…" : "Enviar"}
+            </button>
+          </div>
+          <button type="button" className="report-email-preview-fallback" onClick={usarLinkComoRespaldo}>
+            Prefiero mandar solo el link
+          </button>
+        </div>
+      )}
+      {isAdmin && !previaCorreo && diagnosticoCompartir && (
         <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
       )}
     </div>

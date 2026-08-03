@@ -4459,6 +4459,92 @@
     font-size: 10px;
     line-height: 1.4;
   }
+
+  /* Previa del correo automatico -- antes "Correo" mandaba de una vez
+     sin mostrar nada; ahora abre esta cajita con Para/Asunto/Mensaje
+     y un chip de si el PDF esta listo, para que el admin vea que se
+     va a mandar ANTES de mandarlo, con un boton "Enviar" aparte. */
+  .report-email-preview {
+    margin-top: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #F6F8FB;
+    border: 1px solid #E3E8F0;
+  }
+  .report-email-preview-row {
+    display: flex;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .report-email-preview-row span {
+    flex-shrink: 0;
+    width: 52px;
+    color: #94A3B8;
+    font-weight: 700;
+  }
+  .report-email-preview-row strong {
+    color: #0D1629;
+    font-weight: 600;
+    word-break: break-word;
+  }
+  .report-email-preview-mensaje p {
+    margin: 0;
+    color: #334155;
+  }
+  .report-email-preview-chip {
+    display: inline-block;
+    margin-top: 2px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+  }
+  .report-email-preview-chip.is-ok {
+    color: #16A34A;
+    background: rgba(34,197,94,.12);
+  }
+  .report-email-preview-chip.is-warn {
+    color: #B45309;
+    background: rgba(180,83,9,.12);
+  }
+  .report-email-preview-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .report-email-preview-actions button {
+    flex: 1;
+    border: none;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font-size: 12.5px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .report-email-preview-actions button.cancelar {
+    background: #E9EDF3;
+    color: #475569;
+  }
+  .report-email-preview-actions button.enviar {
+    background: #0877FF;
+    color: #fff;
+  }
+  .report-email-preview-actions button:disabled {
+    opacity: .6;
+    cursor: default;
+  }
+  .report-email-preview-fallback {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #94A3B8;
+    font-size: 11px;
+    text-decoration: underline;
+    cursor: pointer;
+  }
   /* Factura: mismo layout que report-action, pero en azul oscuro
      (mas oscuro que el azul de reportes), no rojo ni naranja, para
      que se note a simple vista que es otro tipo de tarjeta. */
