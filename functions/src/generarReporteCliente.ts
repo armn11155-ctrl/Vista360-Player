@@ -559,19 +559,17 @@ async function paginaEvidenciaBlanca(
   // sitio, ya no se mueven juntos como antes). Antes y:32, ahora y:42.
   doc.image(LOGO_PLAYER_BLACK, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent, 12);
-  // El encabezado decia "Reporte Fotografico" -- se cambio a
-  // "Registro N" (con el mismo pad2 de dos digitos que ya usa el pie
-  // de pagina) para que diga cual evidencia es esta, sin repetir la
-  // palabra "Evidencia" que ya esta arriba en el kicker ("02 /
-  // EVIDENCIA" + "Evidencia 01" se leia redundante).
+  // El kicker dice "REGISTRO" (antes "EVIDENCIA") y el encabezado de
+  // abajo dice "Evidencia N" (antes "Registro N") -- se pidio dar
+  // vuelta cual de las dos palabras va arriba chico y cual abajo
+  // grande.
+  drawKicker(doc, `${pad2(pageNum)} / REGISTRO`, PAGE.margin, 32, COLORS.accent, 12);
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.ink)
-    .text(`Registro ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
-  // Antes decia siempre el mismo texto fijo ("Fotografia enviada como
-  // evidencia de campaña.") -- se pidio que en su lugar diga la fecha
-  // en que se registro esa foto.
+    .text(`Evidencia ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
+  // Antes decia "Fecha de registro: ..." -- se pidio dejarlo mas
+  // corto, solo "Fecha: ...".
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.mutedOnLight)
-    .text(`Fecha de registro: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
+    .text(`Fecha: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
 
   // Se saco la tarjeta flotante de la derecha (antes mostraba
   // "Evidencia N" y la fecha, ahora esa info ya esta arriba en el
@@ -632,16 +630,15 @@ async function paginaEvidenciaOscura(
   // mas (y:32 -> y:42), el encabezado/kicker se queda igual.
   doc.image(LOGO_PLAYER_WHITE_MONO, PAGE.width - PAGE.margin - 200, 42, { width: 200 });
 
-  drawKicker(doc, `${pad2(pageNum)} / EVIDENCIA`, PAGE.margin, 32, COLORS.accent2, 12);
-  // Mismo cambio que en la version blanca (ver comentario ahi): dice
-  // "Registro N" en vez de "Reporte Fotografico", para no repetir la
-  // palabra "Evidencia" que ya esta en el kicker de arriba.
-  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
-    .text(`Registro ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
   // Mismo cambio que en la version blanca (ver comentario ahi):
-  // ahora muestra la fecha de registro en vez del texto fijo.
+  // kicker "REGISTRO" arriba, "Evidencia N" abajo.
+  drawKicker(doc, `${pad2(pageNum)} / REGISTRO`, PAGE.margin, 32, COLORS.accent2, 12);
+  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
+    .text(`Evidencia ${pad2(indice)}`, PAGE.margin, 66, { width: 760 });
+  // Mismo cambio que en la version blanca (ver comentario ahi):
+  // "Fecha: ..." en vez de "Fecha de registro: ...".
   doc.font("Helvetica").fontSize(13).fillColor(COLORS.muted)
-    .text(`Fecha de registro: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
+    .text(`Fecha: ${fechaCorta(foto.fecha)}`, PAGE.margin, 102, { width: 760 });
 
   // Mismo cambio que en la version blanca (ver comentario ahi): sin
   // tarjeta flotante, la foto ocupa todo el ancho disponible.
@@ -657,13 +654,13 @@ async function paginaEvidenciaOscura(
   drawImageCover(doc, buffer, photoX, photoY, photoW, photoH, 22);
   doc.roundedRect(photoX, photoY, photoW, photoH, 22).lineWidth(1).strokeColor(COLORS.line).stroke();
 
-  // Misma linea de acento en degradado que ya usa la divisoria de
-  // panel (paginaPanel) -- empieza oscura, se aclara al medio y
-  // vuelve oscura, efecto de brillo elegante en vez de un azul
-  // plano. Se pidio ese mismo efecto tambien aca, en las paginas de
-  // evidencia (blanca y oscura), no solo en la divisoria.
-  // Misma barra delgada que en la version blanca (66 en vez de 103).
-  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 5, [COLORS.accentDark, COLORS.accent2, COLORS.accentDark], 66);
+  // Antes tenia la misma linea de acento en degradado que la pagina
+  // blanca de evidencia -- se pidio sacarla SOLO aca (evidencia
+  // oscura), que el pie se quede plano/oscuro sin ninguna linea
+  // azul, a diferencia de la pagina blanca (que si la mantiene).
+  // stripHeight en 0 deja la franja de color invisible sin tener que
+  // tocar el resto de drawFooterBar.
+  drawFooterBar(doc, pad2(pageNum), COLORS.accentDark, 0, undefined, 66);
 }
 
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
