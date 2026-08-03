@@ -46,14 +46,38 @@ function escapeHtml(value: string): string {
  *  tablas + estilos inline ya cubren el resto del diseño. */
 const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.png";
 
+/** Imagenes del "brillo" azul de esquina (mismo tratamiento que la
+ *  portada del PDF, ver portada() en generarReporteCliente.ts) --
+ *  ACA son imagenes PNG de verdad (radial ya "horneado" en los
+ *  pixeles), no un CSS radial-gradient: el primer intento fue un
+ *  radial-gradient() en el background-image de la tabla, pero varios
+ *  clientes reales (Apple Mail entre ellos, se confirmo probando en
+ *  un correo real) recortan silenciosamente cualquier gradiente en
+ *  background-image y solo dejan el color plano de respaldo -- ahi
+ *  el fondo se veia todo oscuro parejo, sin ninguna luz. Una imagen
+ *  normal (background-image: url(...)) si la respetan.
+ *
+ *  Son DOS imagenes (no una reusada) porque el punto mas brillante
+ *  esta pegado a una esquina exacta de la imagen -- asi, sin importar
+ *  cuanto mida la celda de header/pie en cada cliente de correo,
+ *  "background-position: top right" / "bottom left" siempre deja ese
+ *  punto brillante justo en la esquina visible. El primer intento
+ *  tenia el brillo centrado en el medio de una imagen cuadrada
+ *  (como el radial-gradient original) y quedaba invisible en el pie
+ *  de pagina, mas bajito que el header: la parte visible de esa
+ *  celda no llegaba a alcanzar la zona brillante del centro. */
+const GLOW_URL_TR = "https://vista360player.pe/vista360-correo-glow.png";
+const GLOW_URL_BL = "https://vista360player.pe/vista360-correo-glow-bl.png";
+
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
  * marca -- se pidio calcar la elegancia de la portada del PDF de
  * reporte (ver portada() en generarReporteCliente.ts): fondo azul
  * marino oscuro de punta a punta (mismo #0A0F1C que COLORS.bg alla)
  * con los mismos dos brillos suaves de esquina que la portada (arriba
- * a la derecha y abajo a la izquierda, via radial-gradient con
- * background-color plano de respaldo), logo alineado a la izquierda
+ * a la derecha en el header, abajo a la izquierda en el pie -- via
+ * GLOW_URL, una imagen PNG real, ver comentario ahi de por que no es
+ * un radial-gradient CSS), logo alineado a la izquierda
  * arriba con una rayita azul corta justo debajo (eco del subrayado de
  * "REPORTE MENSUAL" en la portada, pero pegada al logo en vez de
  * centrada), una tarjeta BLANCA flotante con el mensaje (eco de la
@@ -110,15 +134,11 @@ function construirHtmlCorreo(mensaje: string): string {
     </style>
   </head>
   <body style="margin:0;padding:0;background-color:${bg};">
-    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" style="background-color:${bg};background-image:radial-gradient(circle at 92% -10%, #17335C 0%, #0E1830 45%, transparent 70%), radial-gradient(circle at 8% 110%, #17335C 0%, #0E1830 45%, transparent 70%);font-family:${fuente};border-collapse:collapse;">
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td align="left" style="padding:48px 24px 0 32px;">
+        <td align="left" background="${GLOW_URL_TR}" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:280px 280px;padding:48px 24px 34px 32px;">
           <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
-        </td>
-      </tr>
-      <tr>
-        <td align="left" style="padding:14px 24px 34px 32px;">
-          <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;">
+          <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;margin-top:14px;">
             <tr><td height="3" style="height:3px;line-height:3px;font-size:0;background-color:${accent};background-image:linear-gradient(90deg,${accent} 0%,${accent2} 50%,${accent} 100%);">&nbsp;</td></tr>
           </table>
         </td>
@@ -135,7 +155,7 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" style="padding:0 24px 46px;font-family:${fuente};">
+        <td align="center" background="${GLOW_URL_BL}" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
           <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FFFFFF;"><span x-apple-data-detectors="false" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
           <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
           <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;">MAS QUE VISIBILIDAD. PRESENCIA.</div>
