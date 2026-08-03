@@ -399,7 +399,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
               {seleccionada.condiciones && <div className="quote-document-copy"><span>Condiciones de pago</span><p>{seleccionada.condiciones}</p></div>}
               {seleccionada.observaciones && <div className="quote-document-copy"><span>Consideraciones</span><p>{seleccionada.observaciones}</p></div>}
               <footer>
-                <div><strong>947 957 971 · ochomillas.101@hotmail.com</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
+                <div><strong>947 957 971 · gestion@vista360player.pe</strong><span>PUBLICIDAD EXTERIOR · PANELES PREMIUM</span></div>
                 {/* El numero ya aparece a la izquierda junto al correo --
                     se quito de aca porque quedaba repetido sin razon. */}
                 <div><span>MÁS QUE VISIBILIDAD. PRESENCIA.</span></div>

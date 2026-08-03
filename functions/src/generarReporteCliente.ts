@@ -698,7 +698,7 @@ async function paginaEvidenciaOscura(
  *  tocar codigo. Por ahora son valores de prueba. */
 const CONTACTO_NOMBRE = "Alan Martínez";
 const CONTACTO_CARGO = "DIRECTOR GENERAL";
-const CONTACTO_EMAIL = "ochomillas.101@hotmail.com";
+const CONTACTO_EMAIL = "gestion@vista360player.pe";
 // Sin "+51" -- se pidio calcar la tarjeta de presentacion de
 // referencia, ahi el numero va sin el codigo de pais.
 const CONTACTO_TELEFONO = "947 957 971";

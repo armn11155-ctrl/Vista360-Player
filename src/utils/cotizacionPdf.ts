@@ -192,7 +192,7 @@ export async function generarCotizacionPdf(cotizacion: Cotizacion): Promise<File
   doc.setFont("times", "bold");
   doc.setFontSize(9);
   doc.setTextColor(TEXT);
-  doc.text("947 957 971 · ochomillas.101@hotmail.com", MARGIN, footerY);
+  doc.text("947 957 971 · gestion@vista360player.pe", MARGIN, footerY);
   doc.setFont("times", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(GRAY_MUTED);
