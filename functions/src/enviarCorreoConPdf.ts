@@ -49,56 +49,85 @@ const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.p
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
  * marca -- a pantalla completa (sin tarjeta centrada ni fondo gris
- * alrededor, a pedido explícito): header negro con el logo de
- * Vista360 en blanco, una línea con degradado azul (mismo azul de
- * marca que el resto de la app), cuerpo en blanco con el mensaje, y
- * pie negro con teléfono/correo (mismos datos que ya lleva el pie
- * del PDF de Cotización, ver cotizacionPdf.ts) a la izquierda y el
- * eslogan "MÁS QUE VISIBILIDAD. PRESENCIA." a la derecha. Se manda
- * como `html` ADEMÁS de `text` (nunca en reemplazo) -- `text` sigue
- * siendo el respaldo para los pocos clientes de correo que no
- * rendericen HTML.
+ * alrededor): header negro con el logo de Vista360 en blanco, una
+ * línea de acento azul con efecto de brillo, cuerpo en blanco con el
+ * mensaje, y pie negro con teléfono/correo (mismos datos que ya lleva
+ * el pie del PDF de Cotización, ver cotizacionPdf.ts) arriba y el
+ * eslogan "MÁS QUE VISIBILIDAD. PRESENCIA." debajo. Se manda como
+ * `html` ADEMÁS de `text` (nunca en reemplazo) -- `text` sigue siendo
+ * el respaldo para los pocos clientes de correo que no rendericen
+ * HTML.
  *
  * Todo en tablas HTML con estilos inline a propósito, nada de
- * flexbox/grid ni <style> en el <head> -- Outlook de escritorio
- * renderiza el correo con el motor de Word, que ignora casi todo el
- * CSS moderno; tablas + estilos inline (y el degradado con
- * background-color de respaldo) es lo único que se ve igual en
- * Gmail, Outlook, Apple Mail y Yahoo a la vez.
+ * flexbox/grid -- Outlook de escritorio renderiza el correo con el
+ * motor de Word, que ignora casi todo el CSS moderno; tablas +
+ * estilos inline es lo único que se ve igual en Gmail, Outlook, Apple
+ * Mail y Yahoo a la vez. La línea de acento usa
+ * "background-image: linear-gradient(...)" con background-color
+ * plano como respaldo -- en los clientes que no soportan gradiente
+ * (Apple Mail en iOS, por ejemplo) simplemente se ve azul sólido, sin
+ * roturas. Se probó primero armando el degradado a mano con varias
+ * celdas de tabla de colores sólidos pegadas una junto a otra, pero
+ * varios clientes reales no respetan bien el ancho en porcentaje de
+ * celdas vacías (quedan celdas angostas con su ancho mínimo en vez de
+ * repartirse el 100%) y además se ven bordes oscuros entre celda y
+ * celda -- por eso se volvió a un solo bloque con degradado CSS +
+ * respaldo, que no tiene ninguna costura posible porque es un solo
+ * elemento.
+ *
+ * La línea va DENTRO de la misma celda del header (no en una fila de
+ * tabla aparte) -- en una fila separada quedaba una línea blanca de
+ * unos px entre el negro del header y el azul de la línea, por el
+ * espaciado por defecto entre filas de algunos clientes de correo.
+ *
+ * El pie va en una sola columna (contacto arriba, eslogan abajo) en
+ * vez de dos columnas lado a lado -- en pantallas angostas (celular)
+ * dos columnas con este texto no entran sin amontonarse.
+ *
+ * El bloque <style> en el head SOLO desactiva el auto-detector de
+ * Apple Mail (convierte teléfonos/correos en links azules subrayados
+ * que pisan el color blanco del diseño) -- no se usa para layout.
  */
 function construirHtmlCorreo(mensaje: string): string {
   const cuerpoHtml = escapeHtml(mensaje).split("\n").join("<br>");
   const fuente = "Georgia,'Times New Roman',serif";
   return `<!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,date=no,address=no,email=no" />
+    <style type="text/css">
+      a[x-apple-data-detectors] {
+        color: inherit !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+      }
+    </style>
+  </head>
   <body style="margin:0;padding:0;background:#FFFFFF;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;font-family:${fuente};">
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background:#FFFFFF;font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td style="background-color:#050A12;padding:28px 32px 20px;">
-          <img src="${LOGO_BLANCO_URL}" width="200" alt="VISTA360" style="display:block;width:200px;max-width:200px;border:0;outline:none;" />
+        <td style="background-color:#050A12;padding:0;font-size:0;line-height:0;">
+          <div style="padding:20px 24px 14px;">
+            <img src="${LOGO_BLANCO_URL}" width="150" alt="VISTA360" style="display:block;width:150px;max-width:150px;border:0;outline:none;" />
+          </div>
+          <div style="height:3px;line-height:3px;font-size:0;background-color:#2F6FED;background-image:linear-gradient(90deg,#2F6FED 0%,#7FB0FF 50%,#2F6FED 100%);">&nbsp;</div>
         </td>
       </tr>
       <tr>
-        <td height="3" style="height:3px;line-height:3px;font-size:0;background-color:#2F6FED;background-image:linear-gradient(90deg,#2F6FED 0%,#7FB0FF 50%,#2F6FED 100%);">&nbsp;</td>
-      </tr>
-      <tr>
-        <td style="padding:24px 32px 26px;color:#172235;font-size:14px;line-height:1.7;font-family:${fuente};">
+        <td style="padding:20px 24px 22px;color:#172235;font-size:13px;line-height:1.6;font-family:${fuente};">
           ${cuerpoHtml}
         </td>
       </tr>
       <tr>
-        <td style="background-color:#050A12;padding:20px 32px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td align="left" valign="middle" style="font-family:${fuente};">
-                <div style="font-weight:bold;font-size:13px;color:#FFFFFF;">947 957 971 &middot; gestion@vista360player.pe</div>
-                <div style="font-size:9.5px;letter-spacing:.06em;color:#8B95A5;margin-top:3px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
-              </td>
-              <td align="right" valign="middle" style="font-family:${fuente};font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;white-space:nowrap;">
-                MAS QUE VISIBILIDAD.<br/>PRESENCIA.
-              </td>
-            </tr>
-          </table>
+        <td align="center" style="background-color:#050A12;padding:5px 24px;text-align:center;font-family:${fuente};">
+          <div style="text-align:center;line-height:1.15;font-weight:bold;font-size:11px;color:#FFFFFF;"><span x-apple-data-detectors="false" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
+          <div style="text-align:center;line-height:1.15;font-size:8px;letter-spacing:.04em;color:#8B95A5;margin-top:2px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
+          <div style="text-align:center;line-height:1.15;border-top:1px solid rgba(255,255,255,.14);margin-top:3px;padding-top:2px;font-weight:bold;font-size:8.5px;letter-spacing:.03em;color:#FFFFFF;">MAS QUE VISIBILIDAD. PRESENCIA.</div>
         </td>
       </tr>
     </table>
