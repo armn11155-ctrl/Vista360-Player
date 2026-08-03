@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import BackChevron from "../BackChevron";
 import CampoBusqueda from "../CampoBusqueda";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
+import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import type { InvitacionPortal } from "../../hooks/useInvitaciones";
 import { BrandThumb } from "../BrandThumb";
 import { nombreConocidoPorEmail } from "../../utils/nombresConocidos";
@@ -156,6 +157,90 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
   const [creandoTrabajador, setCreandoTrabajador] = useState(false);
   const [errorTrabajador, setErrorTrabajador] = useState("");
   const [resultadoTrabajador, setResultadoTrabajador] = useState<{ nombre: string; email: string; password: string } | null>(null);
+
+  // ── Dar acceso a un cliente que YA existe pero no tiene login --
+  // pasa esto cuando se le borró el acceso con "Eliminar definitivo"
+  // (que borra SOLO invitacionesPortal/portalUsers/auth, nunca el
+  // registro de clientes/{id} -- ver ejecutarAdministrarUsuarioPortal
+  // en administrarUsuarioPortal.ts) o cuando el cliente se creó sin
+  // acceso desde un principio. Antes esto solo se podía hacer desde
+  // la pantalla CrearCliente.tsx, pero no hay ningún botón en toda la
+  // app que lleve ahí para un cliente ya existente -- quedó huérfana.
+  // Este formulario llama al mismo crearClienteAcceso que esa pantalla. ──
+  const clientesAdmin = useClientesAdmin();
+  const [mostrarFormAcceso, setMostrarFormAcceso] = useState(false);
+  const [clienteAccesoId, setClienteAccesoId] = useState("");
+  const [nuevoAccesoEmail, setNuevoAccesoEmail] = useState("");
+  const [nuevoAccesoPassword, setNuevoAccesoPassword] = useState("");
+  const [creandoAcceso, setCreandoAcceso] = useState(false);
+  const [errorAcceso, setErrorAcceso] = useState("");
+  const [resultadoAcceso, setResultadoAcceso] = useState<{ empresa: string; email: string; password: string } | null>(null);
+
+  function limpiarFormAcceso() {
+    setClienteAccesoId("");
+    setNuevoAccesoEmail("");
+    setNuevoAccesoPassword("");
+    setErrorAcceso("");
+    setResultadoAcceso(null);
+  }
+
+  function toggleFormAcceso() {
+    if (mostrarFormAcceso) {
+      setMostrarFormAcceso(false);
+      limpiarFormAcceso();
+    } else {
+      limpiarFormAcceso();
+      setMostrarFormAcceso(true);
+    }
+  }
+
+  async function crearAccesoExistente() {
+    if (!cloudFunctions) {
+      setErrorAcceso("Firebase Functions no está configurado.");
+      return;
+    }
+    if (!clienteAccesoId) {
+      setErrorAcceso("Elige a qué cliente le vas a dar acceso.");
+      return;
+    }
+    if (!nuevoAccesoEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nuevoAccesoEmail.trim())) {
+      setErrorAcceso("El correo no es válido. Revisa que esté bien escrito (ejemplo: nombre@correo.com).");
+      return;
+    }
+    setCreandoAcceso(true);
+    setErrorAcceso("");
+    setResultadoAcceso(null);
+    try {
+      const fn = httpsCallable<
+        { clienteId: string; email: string; password?: string },
+        { clienteId: string; empresa: string; email: string; password: string }
+      >(cloudFunctions, "crearClienteAcceso");
+      const res = await fn({
+        clienteId: clienteAccesoId,
+        email: nuevoAccesoEmail.trim(),
+        password: nuevoAccesoPassword.trim() || undefined,
+      });
+      setResultadoAcceso(res.data);
+    } catch (err) {
+      setErrorAcceso(mensajeDeError(err, "No se pudo crear el acceso."));
+    } finally {
+      setCreandoAcceso(false);
+    }
+  }
+
+  const mensajeAccesoExistente = resultadoAcceso
+    ? [
+        `${saludoPorHora()} te mando tu acceso a Vista360 Player.`,
+        "",
+        "Ya puedes entrar a tu portal para ver campañas, cobertura, reportes y descargas.",
+        "",
+        `Portal: ${window.location.origin}`,
+        `Correo: ${resultadoAcceso.email}`,
+        `Contraseña temporal: ${resultadoAcceso.password}`,
+        "",
+        "Por seguridad, te recomendamos cambiar la contraseña después del primer ingreso.",
+      ].join("\n")
+    : "";
 
   function limpiarFormTrabajador() {
     setNuevoTrabajadorNombre("");
@@ -391,6 +476,14 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
   }
 
   const invitaciones = state.status === "ready" ? state.invitaciones : [];
+  // Clientes que existen en clientes/{id} pero no tienen NINGUNA
+  // invitación (activa o archivada) -- o nunca se les creó acceso, o
+  // se les borró con "Eliminar definitivo" (que borra la invitación
+  // pero nunca el cliente). Se usa para poblar el selector de "Dar
+  // acceso a cliente existente" más abajo.
+  const clientesConAcceso = new Set(invitaciones.map((inv) => inv.clienteId).filter(Boolean));
+  const clientesSinAcceso = (clientesAdmin.status === "ready" ? clientesAdmin.clientes : [])
+    .filter((c) => !c.archived && !clientesConAcceso.has(c.id));
   const usuariosActivos = invitaciones.filter((inv) => !inv.archived);
   const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
   const usuariosDelTab = tab === "activos" ? usuariosActivos : usuariosArchivados;
@@ -615,6 +708,86 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             </button>
           )}
         </div>
+
+        {esGerente && (
+          <div className="accesos-create-btn-row" style={{ margin: "0 0 12px" }}>
+            <button
+              className="accesos-create-btn"
+              onClick={toggleFormAcceso}
+              style={{
+                width: "100%", background: mostrarFormAcceso ? "#0B1220" : "#0EA5A5", color: "#fff",
+                border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
+                fontWeight: 800, cursor: "pointer",
+              }}
+            >
+              {mostrarFormAcceso ? "Cerrar formulario" : "+ Dar acceso a un cliente que ya existe"}
+            </button>
+          </div>
+        )}
+
+        {mostrarFormAcceso && esGerente && (
+          <div className="card" style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 2 }}>
+              Dar acceso a un cliente existente
+            </div>
+            <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 10, lineHeight: 1.4 }}>
+              Para un cliente que ya está registrado (aparece en Reportes/Cotizaciones) pero no
+              tiene con qué entrar al portal -- por ejemplo, si se le borró el acceso con
+              &quot;Eliminar definitivo&quot; y necesita uno nuevo.
+            </div>
+            {clientesAdmin.status === "loading" && (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>Cargando clientes…</div>
+            )}
+            {clientesAdmin.status === "ready" && clientesSinAcceso.length === 0 && (
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                Todos los clientes registrados ya tienen acceso al portal.
+              </div>
+            )}
+            {clientesAdmin.status === "ready" && clientesSinAcceso.length > 0 && (
+              <div style={{ display: "grid", gap: 10 }}>
+                <select
+                  value={clienteAccesoId}
+                  onChange={(e) => {
+                    const id = e.target.value;
+                    setClienteAccesoId(id);
+                    const c = clientesSinAcceso.find((cl) => cl.id === id);
+                    setNuevoAccesoEmail(c?.email ?? "");
+                  }}
+                  style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box", background: "#fff" }}
+                >
+                  <option value="">Elige un cliente…</option>
+                  {clientesSinAcceso.map((c) => (
+                    <option key={c.id} value={c.id}>{c.empresa}</option>
+                  ))}
+                </select>
+                <input value={nuevoAccesoEmail} onChange={(e) => setNuevoAccesoEmail(e.target.value)} placeholder="Correo para el login" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                <input value={nuevoAccesoPassword} onChange={(e) => setNuevoAccesoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              </div>
+            )}
+            {errorAcceso && (
+              <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorAcceso}</div>
+            )}
+            {clientesSinAcceso.length > 0 && (
+              <button
+                onClick={crearAccesoExistente}
+                disabled={creandoAcceso}
+                style={{ width: "100%", marginTop: 12, background: creandoAcceso ? "#99F6E4" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creandoAcceso ? "not-allowed" : "pointer" }}
+              >
+                {creandoAcceso ? "Creando..." : "Crear acceso"}
+              </button>
+            )}
+            {resultadoAcceso && (
+              <div style={{ marginTop: 12, background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.18)", borderRadius: 12, padding: 12 }}>
+                <div style={{ fontSize: 12, color: "#16A34A", fontWeight: 800, marginBottom: 8 }}>Acceso creado para {resultadoAcceso.empresa}</div>
+                <div style={{ fontSize: 12, whiteSpace: "pre-wrap", color: "var(--text)", lineHeight: 1.45 }}>{mensajeAccesoExistente}</div>
+                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(mensajeAccesoExistente)}`} target="_blank" rel="noreferrer" style={{ flex: 1, textAlign: "center", background: "#22C55E", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>WhatsApp</a>
+                  <a href={`mailto:${resultadoAcceso.email}?subject=${encodeURIComponent("Acceso a Vista360 Player")}&body=${encodeURIComponent(mensajeAccesoExistente)}`} style={{ flex: 1, textAlign: "center", background: "#0877FF", color: "#fff", borderRadius: 12, padding: "10px", fontWeight: 800, fontSize: 12, textDecoration: "none" }}>Correo</a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {mostrarFormTrabajador && esGerente && (
           <div className="card" style={{ marginBottom: 12 }}>
