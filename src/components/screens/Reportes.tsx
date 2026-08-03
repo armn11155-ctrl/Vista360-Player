@@ -128,16 +128,33 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
 
   /** Casos propios de la generación de PDF, que merecen un texto más
    *  concreto que el genérico. Todo lo demás cae en mensajeDeError, que ya
-   *  sabe traducir permisos, sesión vencida y falta de red. */
+   *  sabe traducir permisos, sesión vencida y falta de red.
+   *
+   *  Se le pega el código/mensaje técnico crudo al final entre paréntesis
+   *  A PROPOSITO -- mensajeDeError() puede mostrar "Sin conexión" incluso
+   *  cuando el celular SÍ tiene señal (navigator.onLine da falsos negativos
+   *  en algunos navegadores, y ese chequeo pisa cualquier otro motivo real
+   *  si el error no trae un código reconocido). Sin el detalle crudo no hay
+   *  forma de saber si de verdad fue la red o algo distinto se estaba
+   *  disfrazando de "sin conexión". */
 function mensajeErrorReporte(error: unknown) {
     const raw = error instanceof Error ? error.message.toLowerCase() : "";
+    const codigo = (error as { code?: unknown })?.code;
+    const crudo =
+      typeof codigo === "string"
+        ? codigo
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    const detalle = crudo ? ` (detalle técnico: ${crudo})` : "";
+
     if (raw.includes("not-found")) {
-      return "No encuentro la función para generar PDFs. Falta desplegar las Functions.";
+      return `No encuentro la función para generar PDFs. Falta desplegar las Functions.${detalle}`;
     }
     if (raw.includes("internal")) {
-      return mensajeDeError(error, "No se pudo generar el PDF. Revisa la configuración de almacenamiento.");
+      return `${mensajeDeError(error, "No se pudo generar el PDF. Revisa la configuración de almacenamiento.")}${detalle}`;
     }
-    return mensajeDeError(error, "No se pudo generar el reporte.");
+    return `${mensajeDeError(error, "No se pudo generar el reporte.")}${detalle}`;
   }
 
   function agregarFotos(files: FileList | null, panelId: string) {
