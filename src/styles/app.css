@@ -4459,6 +4459,20 @@
     font-size: 10px;
     line-height: 1.4;
   }
+  /* Confirmacion de que el correo SI salio -- antes, al mandarlo, la
+     cajita de previa se cerraba en silencio sin ningun aviso, asi que
+     no habia forma de saber (sin entrar a Resend) si de verdad se
+     mando. Incluye el peso del PDF adjunto para poder notar de un
+     vistazo si viajo vacio o roto. */
+  .report-email-enviado-ok {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(34, 225, 125, 0.12);
+    color: #16A34A;
+    font-size: 11px;
+    line-height: 1.4;
+  }
 
   /* Previa del correo automatico -- antes "Correo" mandaba de una vez
      sin mostrar nada; ahora abre esta cajita con Para/Asunto/Mensaje

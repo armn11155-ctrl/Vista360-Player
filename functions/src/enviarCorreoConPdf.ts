@@ -88,6 +88,22 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
       throw new HttpsError("failed-precondition", "El envío de correo no está configurado todavía (falta RESEND_API_KEY).");
     }
 
+    // Se arma en una variable (no inline en el fetch) para poder loguear
+    // el tamaño EXACTO de lo que se manda -- sin esto, si Resend acepta
+    // el pedido (200) pero el correo llega sin adjunto, no hay forma de
+    // saber si el problema es que nunca se mandó bien el archivo desde
+    // acá, o si es solo cómo Resend lo muestra en su propio dashboard.
+    const cuerpo = {
+      from: REMITENTE,
+      to: destinatario,
+      subject: asunto,
+      text: mensaje,
+      attachments: [{ filename: nombreArchivo, content: archivoBase64 }],
+    };
+    console.log(
+      `enviarCorreoConPdf: mandando a Resend -- destinatario=${destinatario}, archivo=${nombreArchivo}, bytesAdjunto=${bufferBytes}, largoBase64=${archivoBase64.length}, largoBodyJSON=${JSON.stringify(cuerpo).length}`
+    );
+
     try {
       const respuesta = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -95,13 +111,7 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          from: REMITENTE,
-          to: destinatario,
-          subject: asunto,
-          text: mensaje,
-          attachments: [{ filename: nombreArchivo, content: archivoBase64 }],
-        }),
+        body: JSON.stringify(cuerpo),
       });
       if (!respuesta.ok) {
         const detalle = await respuesta.text().catch(() => "");
@@ -113,6 +123,10 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
       throw new HttpsError("internal", "No se pudo enviar el correo. Intenta de nuevo en un momento.");
     }
 
-    return { ok: true };
+    // Se le devuelve el tamaño del adjunto a quien llamó -- así se ve
+    // en la app misma, sin tener que entrar a los logs de Cloud
+    // Functions ni al dashboard de Resend para confirmar que sí se
+    // mandó un PDF de verdad y no uno vacío o roto.
+    return { ok: true, bytesAdjunto: bufferBytes };
   }
 );

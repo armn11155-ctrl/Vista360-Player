@@ -93,6 +93,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
   const [archivoError, setArchivoError] = useState("");
   const [previaCorreo, setPreviaCorreo] = useState(false);
+  const [correoEnviadoOk, setCorreoEnviadoOk] = useState("");
 
   const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -138,6 +139,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     if (enviando) return;
     if (canal === "correo") {
       setError("");
+      setCorreoEnviadoOk("");
       setPreviaCorreo(true);
       return;
     }
@@ -185,14 +187,19 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     setError("");
     try {
       const archivoBase64 = await archivoABase64(archivoCompartir);
-      const enviar = httpsCallable(cloudFunctions, "enviarCorreoConPdf");
-      await enviar({
+      const enviar = httpsCallable<
+        { destinatario: string; asunto: string; mensaje: string; archivoBase64: string; nombreArchivo: string },
+        { ok: boolean; bytesAdjunto?: number }
+      >(cloudFunctions, "enviarCorreoConPdf");
+      const resultado = await enviar({
         destinatario: emailTo,
         asunto: emailSubject,
         mensaje: mensajeConArchivo,
         archivoBase64,
         nombreArchivo: archivoCompartir.name,
       });
+      const bytesTexto = formatoBytes(resultado.data?.bytesAdjunto);
+      setCorreoEnviadoOk(`Correo enviado a ${emailTo}${bytesTexto ? ` con el PDF adjunto (${bytesTexto})` : ""}.`);
       setPreviaCorreo(false);
     } catch (err) {
       setError(mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento."));
@@ -382,6 +389,9 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
             Prefiero mandar solo el link
           </button>
         </div>
+      )}
+      {isAdmin && !previaCorreo && correoEnviadoOk && (
+        <div className="report-email-enviado-ok">{correoEnviadoOk}</div>
       )}
       {isAdmin && !previaCorreo && diagnosticoCompartir && (
         <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
