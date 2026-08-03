@@ -37,54 +37,65 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/** URL pública del logo de Vista360 en blanco, para el header negro del
+ *  correo -- vive en /public (mismo dominio que sirve el resto de la
+ *  app, se despliega solo con el push a main). Tiene que ser una URL
+ *  y NO un data:URI: Outlook de escritorio no renderiza imágenes en
+ *  base64 incrustadas en el HTML, así que un logo inline se vería
+ *  como un ícono roto justo en el cliente donde más importa que las
+ *  tablas + estilos inline ya cubren el resto del diseño. */
+const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.png";
+
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
- * marca -- header negro con "VISTA360", una rayita azul (mismo azul
- * de marca que el resto de la app, var(--premium-rule-gradient) en
- * app.css) y un pie con telefono/correo/web (mismos datos que ya
- * lleva el pie del PDF de Cotización, ver cotizacionPdf.ts). Se
- * manda como `html` ADEMÁS de `text` (nunca en reemplazo) -- `text`
- * sigue siendo el respaldo para los pocos clientes de correo que no
+ * marca -- a pantalla completa (sin tarjeta centrada ni fondo gris
+ * alrededor, a pedido explícito): header negro con el logo de
+ * Vista360 en blanco, una línea con degradado azul (mismo azul de
+ * marca que el resto de la app), cuerpo en blanco con el mensaje, y
+ * pie negro con teléfono/correo (mismos datos que ya lleva el pie
+ * del PDF de Cotización, ver cotizacionPdf.ts) a la izquierda y el
+ * eslogan "MÁS QUE VISIBILIDAD. PRESENCIA." a la derecha. Se manda
+ * como `html` ADEMÁS de `text` (nunca en reemplazo) -- `text` sigue
+ * siendo el respaldo para los pocos clientes de correo que no
  * rendericen HTML.
  *
  * Todo en tablas HTML con estilos inline a propósito, nada de
  * flexbox/grid ni <style> en el <head> -- Outlook de escritorio
  * renderiza el correo con el motor de Word, que ignora casi todo el
- * CSS moderno; tablas + estilos inline es lo único que se ve igual
- * en Gmail, Outlook, Apple Mail y Yahoo a la vez.
+ * CSS moderno; tablas + estilos inline (y el degradado con
+ * background-color de respaldo) es lo único que se ve igual en
+ * Gmail, Outlook, Apple Mail y Yahoo a la vez.
  */
 function construirHtmlCorreo(mensaje: string): string {
   const cuerpoHtml = escapeHtml(mensaje).split("\n").join("<br>");
+  const fuente = "Georgia,'Times New Roman',serif";
   return `<!DOCTYPE html>
 <html>
-  <body style="margin:0;padding:0;background:#F1F5F9;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F5F9;padding:32px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <body style="margin:0;padding:0;background:#FFFFFF;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;font-family:${fuente};">
       <tr>
-        <td align="center">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#FFFFFF;border-radius:16px;overflow:hidden;">
+        <td style="background-color:#050A12;padding:28px 32px 20px;">
+          <img src="${LOGO_BLANCO_URL}" width="200" alt="VISTA360" style="display:block;width:200px;max-width:200px;border:0;outline:none;" />
+        </td>
+      </tr>
+      <tr>
+        <td height="3" style="height:3px;line-height:3px;font-size:0;background-color:#2F6FED;background-image:linear-gradient(90deg,#2F6FED 0%,#7FB0FF 50%,#2F6FED 100%);">&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding:24px 32px 26px;color:#172235;font-size:14px;line-height:1.7;font-family:${fuente};">
+          ${cuerpoHtml}
+        </td>
+      </tr>
+      <tr>
+        <td style="background-color:#050A12;padding:20px 32px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="background:#050A12;padding:30px 28px 22px;text-align:center;">
-                <div style="font-size:22px;font-weight:800;letter-spacing:.05em;color:#FFFFFF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-                  VISTA<span style="color:#5B93FF;">360</span>
-                </div>
-                <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:5px;">
-                  Publicidad Exterior
-                </div>
+              <td align="left" valign="middle" style="font-family:${fuente};">
+                <div style="font-weight:bold;font-size:13px;color:#FFFFFF;">947 957 971 &middot; gestion@vista360player.pe</div>
+                <div style="font-size:9.5px;letter-spacing:.06em;color:#8B95A5;margin-top:3px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
               </td>
-            </tr>
-            <tr>
-              <td style="height:3px;line-height:3px;font-size:0;background-color:#2F6FED;">&nbsp;</td>
-            </tr>
-            <tr>
-              <td style="padding:30px 28px;color:#0F172A;font-size:14px;line-height:1.65;">
-                ${cuerpoHtml}
-              </td>
-            </tr>
-            <tr>
-              <td style="background:#F8FAFC;border-top:1px solid #E2E8F0;padding:18px 28px;text-align:center;">
-                <div style="font-size:11px;color:#475569;font-weight:600;">
-                  947 957 971&nbsp;&nbsp;·&nbsp;&nbsp;gestion@vista360player.pe&nbsp;&nbsp;·&nbsp;&nbsp;vista360player.pe
-                </div>
+              <td align="right" valign="middle" style="font-family:${fuente};font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;white-space:nowrap;">
+                MAS QUE VISIBILIDAD.<br/>PRESENCIA.
               </td>
             </tr>
           </table>
