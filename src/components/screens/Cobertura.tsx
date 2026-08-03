@@ -432,7 +432,18 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         conCoordenadas.forEach((panel) => {
           const selected = panel.id === seleccionado?.id;
-          const contratado = esPanelActivoCliente(panel);
+          // OJO: antes acá usaba esPanelActivoCliente(panel), que solo
+          // pregunta "¿ESTE cliente tiene un contrato acá?" -- eso hacía
+          // que un panel exclusivo (lona/mural) ya tomado por OTRO
+          // cliente se pintara BLANCO (como si estuviera libre) para
+          // cualquiera que no fuera el dueño del contrato, aunque el
+          // popup del mismo pin sí mostrara "Ocupado" bien (ese usa
+          // estadoTexto/estadoColor, que sí revisa panel.estado). Con
+          // !esPanelContratable(panel) el pin refleja lo mismo que ya
+          // dice el popup: negro si de verdad no se puede contratar
+          // (sea porque es mío y sigue vigente, o porque lo tiene
+          // alguien más), blanco solo si de verdad está disponible.
+          const contratado = !esPanelContratable(panel);
           const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
           // Siempre arranca en su coordenada REAL -- si comparte punto
           // con otro panel, reposicionarSolapados() lo corre a un lado
