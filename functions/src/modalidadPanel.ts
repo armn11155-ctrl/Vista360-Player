@@ -16,10 +16,31 @@ export type PanelModalidad = "led" | "lona" | "unipolar";
 const PISTAS_UNIPOLAR = ["unipolar"];
 const PISTAS_LONA = ["lona", "mural", "paradero", "banner", "impres", "valla", "gigantograf", "panel tradicional"];
 
+/** Las 4 opciones EXACTAS del selector de Tipo en Paneles.tsx (Mural,
+ *  Unipolar, Paradero, LED), cada una con su modalidad ya resuelta.
+ *  Si el tipo calza EXACTO con una de estas, manda sobre cualquier
+ *  `modalidad` guardada -- necesario porque el selector viejo arrancaba
+ *  en "led" por defecto, así que hay paneles con tipo real (p. ej.
+ *  "Mural") pero modalidad guardada mal ("led") de cuando nadie tocó
+ *  ese selector. Con el selector nuevo, tipo y modalidad siempre se
+ *  guardan juntos y ya no pueden volver a desalinearse -- pero esto
+ *  arregla de una a los que quedaron mal ANTES, apenas alguien deja el
+ *  tipo puesto en una de estas 4 opciones (aunque sea texto suelto en
+ *  Firestore de antes de que existiera el selector). */
+const TIPOS_EXACTOS: Record<string, PanelModalidad> = {
+  mural: "lona",
+  paradero: "lona",
+  unipolar: "unipolar",
+  led: "led",
+};
+
 export function modalidadDePanel(panel: { modalidad?: unknown; tipo?: unknown }): PanelModalidad {
+  const t = String(panel.tipo ?? "").trim().toLowerCase();
+  const exacto = TIPOS_EXACTOS[t];
+  if (exacto) return exacto;
+
   const m = panel.modalidad;
   if (m === "led" || m === "lona" || m === "unipolar") return m;
-  const t = String(panel.tipo ?? "").toLowerCase();
   if (PISTAS_UNIPOLAR.some((pista) => t.includes(pista))) return "unipolar";
   if (t.includes("led") || t.includes("digital") || t.includes("pantalla")) return "led";
   if (PISTAS_LONA.some((pista) => t.includes(pista))) return "lona";

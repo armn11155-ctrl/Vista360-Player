@@ -189,17 +189,37 @@ export interface Cotizacion {
 const PISTAS_UNIPOLAR = ["unipolar"];
 const PISTAS_LONA = ["lona", "mural", "paradero", "banner", "impres", "valla", "gigantograf", "panel tradicional"];
 
+/** Las 4 opciones EXACTAS del selector de Tipo en Paneles.tsx (Mural,
+ *  Unipolar, Paradero, LED). Si el tipo calza EXACTO con una de estas,
+ *  manda sobre cualquier `modalidad` guardada -- necesario porque el
+ *  selector viejo arrancaba en "led" por defecto, así que hay paneles
+ *  con tipo real (p. ej. "Mural") pero modalidad guardada mal ("led")
+ *  de cuando nadie tocó ese selector. Con el selector nuevo, tipo y
+ *  modalidad siempre se guardan juntos y ya no pueden desalinearse --
+ *  pero esto corrige de una a los que quedaron mal ANTES. */
+const TIPOS_EXACTOS: Record<string, PanelModalidad> = {
+  mural: "lona",
+  paradero: "lona",
+  unipolar: "unipolar",
+  led: "led",
+};
+
 /**
- * Modalidad efectiva de un panel. Si el admin ya la eligió a mano, manda
- * esa. Si no, se deduce del texto libre de `tipo` -- imperfecto a
- * propósito, pero mejor que asumir: al deducir "lona"/"unipolar" el
- * sistema es MÁS restrictivo (exige cupo limitado), así que el peor
- * caso de una deducción equivocada es que avise de un cruce que en
- * realidad se podía permitir, y no que se venda de más un soporte físico.
+ * Modalidad efectiva de un panel. Si el tipo calza EXACTO con una de
+ * las 4 opciones fijas, esa manda. Si no, y el admin ya eligió una
+ * modalidad a mano, manda esa. Si tampoco, se deduce del texto libre de
+ * `tipo` -- imperfecto a propósito, pero mejor que asumir: al deducir
+ * "lona"/"unipolar" el sistema es MÁS restrictivo (exige cupo
+ * limitado), así que el peor caso de una deducción equivocada es que
+ * avise de un cruce que en realidad se podía permitir, y no que se
+ * venda de más un soporte físico.
  */
 export function modalidadDePanel(panel: Pick<Panel, "modalidad" | "tipo">): PanelModalidad {
+  const t = (panel.tipo ?? "").trim().toLowerCase();
+  const exacto = TIPOS_EXACTOS[t];
+  if (exacto) return exacto;
+
   if (panel.modalidad === "led" || panel.modalidad === "lona" || panel.modalidad === "unipolar") return panel.modalidad;
-  const t = (panel.tipo ?? "").toLowerCase();
   if (PISTAS_UNIPOLAR.some((pista) => t.includes(pista))) return "unipolar";
   if (t.includes("led") || t.includes("digital") || t.includes("pantalla")) return "led";
   if (PISTAS_LONA.some((pista) => t.includes(pista))) return "lona";
