@@ -1,40 +1,14 @@
 import type { Firestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
+import { estadoDesdeActivos, hoyEnLima, sumarUnDia } from "./reglasOcupacion.js";
 
-/** "Hoy" en Lima como "YYYY-MM-DD" -- mismo criterio que hoyEnLima() en
- *  notificacionesPush.ts y que hoyEnPeru() en el frontend (src/utils/fechas.ts). */
-export function hoyEnLima(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
-}
-
-/** Día siguiente a una "YYYY-MM-DD" -- el soporte queda libre recién
- *  cuando termina la campaña que lo ocupa, no el mismo día. */
-export function sumarUnDia(fecha: string): string {
-  const [a, m, d] = fecha.slice(0, 10).split("-").map(Number);
-  if (!a || !m || !d) return fecha;
-  return new Date(Date.UTC(a, m - 1, d + 1)).toISOString().slice(0, 10);
-}
-
-/**
- * A partir de las fechas de fin de los contratos VIGENTES HOY en un
- * panel y su cupo (1 en lona/mural/paradero, 2 en unipolar, Infinity en
- * LED), decide si el panel está lleno y desde cuándo se libera un cupo.
- *
- * Con cupo > 1 (unipolar) el próximo cupo se libera cuando termina el
- * MÁS CERCANO de los contratos activos que sobran para volver a estar
- * bajo el cupo -- no el que termina más lejos (ese era el bug binario
- * de antes: con 2 caras ocupadas, alcanza con que UNA se libere).
- */
-export function estadoDesdeActivos(
-  cupos: number,
-  finsActivos: string[]
-): { ocupado: boolean; libreDesde: string | null } {
-  if (!Number.isFinite(cupos)) return { ocupado: false, libreDesde: null };
-  if (finsActivos.length < cupos) return { ocupado: false, libreDesde: null };
-  const ordenados = [...finsActivos].sort();
-  const idx = finsActivos.length - cupos;
-  return { ocupado: true, libreDesde: sumarUnDia(ordenados[idx]) };
-}
+// Las reglas puras de ocupación se mudaron a reglasOcupacion.ts (ver el
+// comentario grande de ese archivo: se importan desde los tests del
+// frontend, y arrastrar hasta allá el `import ... firebase-admin` de
+// este archivo rompía el build de despliegue). Se siguen re-exportando
+// desde acá para que los 8 archivos que ya las importaban de
+// "./estadoPaneles.js" no tengan que cambiar.
+export { estadoDesdeActivos, hoyEnLima, sumarUnDia };
 
 /**
  * Recalcula y escribe el estado (Ocupado/Disponible) de un puñado de

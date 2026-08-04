@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { estadoDesdeActivos, sumarUnDia } from "../../functions/src/estadoPaneles";
+// Se importa de reglasOcupacion (cálculo puro, sin dependencias del
+// backend) y NO de estadoPaneles: ese arrastra firebase-admin y rompía
+// el build de despliegue del frontend. Sigue siendo la copia REAL que
+// corre en producción, no una reimplementación.
+import { estadoDesdeActivos, sumarUnDia } from "../../functions/src/reglasOcupacion";
 import { cuposPanel } from "../types";
 
 /**
