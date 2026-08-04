@@ -1,0 +1,23 @@
+❌ No se pudo configurar CORS: AccessDenied: Access Denied
+    at S3RestXmlProtocol.handleError (/home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/core/dist-cjs/submodules/protocols/index.js:2834:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async S3RestXmlProtocol.deserializeResponse (/home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@smithy/core/dist-cjs/submodules/protocols/index.js:357:13)
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@smithy/core/dist-cjs/submodules/schema/index.js:23:24
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/submodules/s3/index.js:365:20
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@smithy/core/dist-cjs/submodules/retry/index.js:171:50
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/checksums/dist-cjs/submodules/flexible-checksums/index.js:234:24
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/submodules/s3/index.js:62:28
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/middleware-sdk-s3/dist-cjs/submodules/s3/index.js:89:20
+    at async /home/runner/work/Vista360-Player/Vista360-Player/scripts/node_modules/@aws-sdk/core/dist-cjs/submodules/client/index.js:125:26 {
+  '$fault': 'client',
+  '$retryable': undefined,
+  '$metadata': {
+    httpStatusCode: 403,
+    requestId: undefined,
+    extendedRequestId: undefined,
+    cfId: undefined,
+    attempts: 1,
+    totalRetryDelay: 0
+  },
+  Code: 'AccessDenied'
+}
