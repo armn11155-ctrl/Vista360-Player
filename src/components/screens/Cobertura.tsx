@@ -228,38 +228,25 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
   const label = estadoTexto(panel);
   const color = estadoColor(label);
-  const contrato = panel.contrato;
+  // Se pidió, explícitamente y varias veces, que una campaña propia ya
+  // Finalizada "no tenga nada que ver" con lo que se muestra en el pin
+  // -- ni su fecha de fin, ni un botón de "volver a contratar" ligado a
+  // ella, nada. Antes acá se guardaba igual (para mostrar "Finalizó
+  // [fecha]" + "Volver a contratar" como mensaje informativo/nostálgico)
+  // aunque ya no afectara el color -- pero eso es justo lo que se pidió
+  // sacar: mezclaba la fecha en que ESTE cliente terminó con la fecha en
+  // que se libera el panel para QUIEN SEA que lo tenga ahora (a veces
+  // otro cliente entero), y se veía como si todavía hubiera alguna
+  // relación vigente cuando no la hay. Por eso, para todo lo que sigue
+  // (foto, fecha de vigencia, botón), un contrato propio Finalizado se
+  // trata exactamente IGUAL que no tener ningún contrato: como si esta
+  // campaña nunca hubiera existido para efectos de lo que se muestra hoy.
+  const contrato = panel.contrato && estadoCampana(panel.contrato) !== "Finalizada" ? panel.contrato : undefined;
   const fotoUrl = campaignCityImage(contrato?.id ?? panel.id);
 
-  // Si la campaña PROPIA en este panel ya terminó -- esto es solo
-  // informativo (fecha en que "Finalizó" y el botón "Volver a
-  // contratar" más abajo). A propósito NO se usa para decidir si el
-  // panel está libre ahora mismo -- eso lo dice panel.estado a través
-  // de `label` (ver el comentario largo en estadoTexto()/
-  // esPanelDisponibleAhora() sobre el bug real que causaba mezclar
-  // ambas cosas: un cliente con una campaña vieja finalizada en un
-  // panel exclusivo lo veía como libre aunque otro cliente lo tuviera
-  // ocupado ahora mismo).
-  const miContratoFinalizado = Boolean(contrato && estadoCampana(contrato) === "Finalizada");
-
-  // Sin contrato de ESTE cliente en este panel -- se pidió que se
-  // pueda "Solicitar disponibilidad" directo desde el pin, en vez de
-  // solo mostrar el estado sin poder hacer nada.
-  //
-  // Con contrato Activo y cerca de vencer -- se pidió que también
-  // aparezca "Solicitar renovación", además de la fecha de vigencia
-  // (no en reemplazo).
-  //
-  // Y con contrato YA FINALIZADO también: antes ese caso se quedaba sin
-  // ningún botón (no entraba en "sin contrato" porque el contrato existe,
-  // ni en "por vencer" porque ya no estaba activo), así que un cliente
-  // cuya campaña acababa de terminar no tenía forma de volver a
-  // contratar desde el mapa -- justo cuando más sentido tiene ofrecérselo.
-  const enRenovacion = Boolean(
-    contrato &&
-      (miContratoFinalizado ||
-        (label === "Activo" && diasHasta(contrato.fin) <= DIAS_AVISO_RENOVACION))
-  );
+  // Con contrato Activo y cerca de vencer -- se pidió que además de la
+  // fecha de vigencia aparezca "Solicitar renovación" (no en reemplazo).
+  const enRenovacion = Boolean(contrato && label === "Activo" && diasHasta(contrato.fin) <= DIAS_AVISO_RENOVACION);
 
   const vigenciaHtml = contrato
     ? `
@@ -267,7 +254,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
         <div class="coverage-popup-until">
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#64748B" stroke-width="1.6"/><path d="M3 9h18M8 2v4M16 2v4" stroke="#64748B" stroke-width="1.6" stroke-linecap="round"/></svg>
           <div class="coverage-popup-until-body">
-            <span class="coverage-popup-until-label">${miContratoFinalizado ? "Finalizó" : "Vigente hasta"}</span>
+            <span class="coverage-popup-until-label">Vigente hasta</span>
             <span class="coverage-popup-until-value">${escapeHtml(fechaLarga(contrato.fin))}</span>
           </div>
         </div>
@@ -275,11 +262,12 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
     : "";
 
   // Cuándo se libera un soporte exclusivo ocupado -- por otro cliente,
-  // o (caso de arriba) por alguien más aunque la campaña propia de este
-  // cliente en el mismo panel ya haya terminado. Es la pregunta que más
-  // se hace al ver un pin ocupado ("¿y para noviembre?"), y hasta ahora
-  // no había dónde responderla.
-  const libreDesde = (!contrato || miContratoFinalizado) && panel.libreDesde ? String(panel.libreDesde) : "";
+  // o por alguien más aunque este cliente haya tenido antes (ya
+  // Finalizada, así que para esta pantalla es como si no la hubiera
+  // tenido) una campaña acá. Es la pregunta que más se hace al ver un
+  // pin ocupado ("¿y para noviembre?"), y hasta ahora no había dónde
+  // responderla.
+  const libreDesde = !contrato && panel.libreDesde ? String(panel.libreDesde) : "";
   const libreDesdeHtml = libreDesde
     ? `
         <div class="coverage-popup-divider"></div>
@@ -304,7 +292,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
     : enRenovacion
     ? `
         <button type="button" class="coverage-popup-action" data-cobertura-accion="renovacion" data-panel-id="${panel.id}">
-          ${miContratoFinalizado ? (libreDesde ? "Reservar para cuando se libere" : "Volver a contratar") : "Solicitar renovación"}
+          Solicitar renovación
         </button>
       `
     : "";
