@@ -46,32 +46,38 @@ function escapeHtml(value: string): string {
  *  tablas + estilos inline ya cubren el resto del diseño. */
 const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.png";
 
-// Antes habia aca dos imagenes PNG con un "brillo" azul horneado en
-// los pixeles, puestas de fondo en las esquinas del header/pie (ver
-// historial de este archivo) -- se sacaron. El problema no era el
-// correo en si ni el diseno en general: era la combinacion de esa
-// imagen con la inversion automatica de modo oscuro de Apple Mail
-// (que este correo acepta a proposito, ver el comentario grande de
-// construirHtmlCorreo). Apple Mail invierte el COLOR de fondo plano
-// (bgcolor/background-color) pero NO recolorea una imagen real -- asi
-// que, invertido, el fondo pasaba de navy a gris claro pero el brillo
-// PNG (pensado para mezclarse con navy) seguia con su tinte navy
-// original encima, y donde terminaba el cuadro de la imagen (280x280)
-// quedaba una costura visible entre "navy traslucido sobre gris" y
-// "gris liso" -- la raya reportada, sin difuminado. Un color plano
-// (bgcolor solo, sin ninguna imagen encima) invierte como una sola
-// pieza pareja, sin nada que pueda desalinearse: ya no hay ninguna
-// costura posible.
+/** Imagenes del "brillo" azul de esquina (mismo tratamiento que la
+ *  portada del PDF, ver portada() en generarReporteCliente.ts) --
+ *  ACA son imagenes PNG de verdad (radial ya "horneado" en los
+ *  pixeles), no un CSS radial-gradient: el primer intento fue un
+ *  radial-gradient() en el background-image de la tabla, pero varios
+ *  clientes reales (Apple Mail entre ellos, se confirmo probando en
+ *  un correo real) recortan silenciosamente cualquier gradiente en
+ *  background-image y solo dejan el color plano de respaldo -- ahi
+ *  el fondo se veia todo oscuro parejo, sin ninguna luz. Una imagen
+ *  normal (background-image: url(...)) si la respetan.
+ *
+ *  Son DOS imagenes (no una reusada) porque el punto mas brillante
+ *  esta pegado a una esquina exacta de la imagen -- asi, sin importar
+ *  cuanto mida la celda de header/pie en cada cliente de correo,
+ *  "background-position: top right" / "bottom left" siempre deja ese
+ *  punto brillante justo en la esquina visible. El primer intento
+ *  tenia el brillo centrado en el medio de una imagen cuadrada
+ *  (como el radial-gradient original) y quedaba invisible en el pie
+ *  de pagina, mas bajito que el header: la parte visible de esa
+ *  celda no llegaba a alcanzar la zona brillante del centro. */
+const GLOW_URL_TR = "https://vista360player.pe/vista360-correo-glow.png";
+const GLOW_URL_BL = "https://vista360player.pe/vista360-correo-glow-bl.png";
 
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
  * marca -- se pidio calcar la elegancia de la portada del PDF de
  * reporte (ver portada() en generarReporteCliente.ts): fondo azul
- * marino oscuro de punta a punta (mismo #0A0F1C que COLORS.bg alla),
- * SIN los brillos de esquina que tiene la portada del PDF (se sacaron
- * de aca, ver comentario de GLOW_URL* mas arriba, sobre por que no
- * sobreviven bien a la inversion de modo oscuro de un correo real),
- * logo alineado a la izquierda
+ * marino oscuro de punta a punta (mismo #0A0F1C que COLORS.bg alla)
+ * con los mismos dos brillos suaves de esquina que la portada (arriba
+ * a la derecha en el header, abajo a la izquierda en el pie -- via
+ * GLOW_URL, una imagen PNG real, ver comentario ahi de por que no es
+ * un radial-gradient CSS), logo alineado a la izquierda
  * arriba con una rayita blanca corta justo debajo (eco del subrayado de
  * "REPORTE MENSUAL" en la portada, pero pegada al logo en vez de
  * centrada), una tarjeta BLANCA flotante con el mensaje (eco de la
@@ -168,7 +174,7 @@ function construirHtmlCorreo(mensaje: string): string {
   <body style="margin:0;padding:0;background-color:${bg};">
     <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" class="vp-bg-navy" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td align="left" class="vp-bg-navy" style="background-color:${bg};padding:48px 24px 34px 32px;">
+        <td align="left" background="${GLOW_URL_TR}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:280px 280px;padding:48px 24px 34px 32px;">
           <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
           <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;margin-top:14px;">
             <tr><td height="3" style="height:3px;line-height:3px;font-size:0;background-color:#FEFEFE;" class="vp-white-text">&nbsp;</td></tr>
@@ -187,7 +193,7 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" class="vp-bg-navy" style="background-color:${bg};padding:0 24px 46px;font-family:${fuente};">
+        <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
           <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FEFEFE;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FEFEFE !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
           <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
           <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FEFEFE;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
