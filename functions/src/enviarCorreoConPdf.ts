@@ -126,15 +126,19 @@ function construirHtmlCorreo(mensaje: string): string {
          del cliente de correo (Apple Mail, Outlook.com, Gmail, etc.)
          "adivina" qué es fondo y qué es texto y reinvierte colores por
          su cuenta -- eso era lo que volvía negra la tarjeta blanca del
-         mensaje (texto oscuro sobre fondo oscuro, ilegible). Estos dos
-         metas le dicen al cliente "este correo ya eligió sus colores,
-         no los toques", que es soporte estándar de color-scheme para
-         email (no tiene nada que ver con prefers-color-scheme de CSS
-         normal, que los clientes de correo no respetan igual). -->
-    <meta name="color-scheme" content="light" />
-    <meta name="supported-color-schemes" content="light" />
+         mensaje (texto oscuro sobre fondo oscuro, ilegible). "light
+         dark" (no solo "light") declara soporte para AMBOS y deja que
+         las reglas @media (prefers-color-scheme: dark) de abajo manden
+         -- con "light" a secas, algunas versiones de Apple Mail igual
+         invierten por su cuenta el blanco/negro PURO (#FFFFFF/#000000)
+         con una heurística vieja que no depende de este meta en
+         absoluto (por eso además se cambió el blanco puro del diseño a
+         #FEFEFE en todo el correo -- ver comentario de Litmus/Email on
+         Acid sobre esto: es un bug histórico de Apple Mail, no algo
+         que un meta tag por sí solo alcance a arreglar). -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
     <style type="text/css">
-      :root { color-scheme: light; supported-color-schemes: light; }
       a[x-apple-data-detectors] {
         color: inherit !important;
         text-decoration: none !important;
@@ -154,15 +158,15 @@ function construirHtmlCorreo(mensaje: string): string {
          de Litmus/Email on Acid sobre esto, no es un invento). */
       @media (prefers-color-scheme: dark) {
         .vp-bg-navy { background-color: #0A0F1C !important; }
-        .vp-card { background-color: #FFFFFF !important; }
+        .vp-card { background-color: #FEFEFE !important; }
         .vp-card-text { color: #172235 !important; }
-        .vp-white-text { color: #FFFFFF !important; }
+        .vp-white-text { color: #FEFEFE !important; }
         .vp-muted-text { color: #8B96AD !important; }
       }
       [data-ogsc] .vp-bg-navy, [data-ogsb] .vp-bg-navy { background-color: #0A0F1C !important; }
-      [data-ogsc] .vp-card, [data-ogsb] .vp-card { background-color: #FFFFFF !important; }
+      [data-ogsc] .vp-card, [data-ogsb] .vp-card { background-color: #FEFEFE !important; }
       [data-ogsc] .vp-card-text, [data-ogsb] .vp-card-text { color: #172235 !important; }
-      [data-ogsc] .vp-white-text, [data-ogsb] .vp-white-text { color: #FFFFFF !important; }
+      [data-ogsc] .vp-white-text, [data-ogsb] .vp-white-text { color: #FEFEFE !important; }
       [data-ogsc] .vp-muted-text, [data-ogsb] .vp-muted-text { color: #8B96AD !important; }
     </style>
   </head>
@@ -178,9 +182,9 @@ function construirHtmlCorreo(mensaje: string): string {
       </tr>
       <tr>
         <td align="center" class="vp-bg-navy" style="background-color:${bg};padding:0 24px 40px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="vp-card" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="vp-card" style="max-width:480px;background-color:#FEFEFE;border-radius:16px;">
             <tr>
-              <td class="vp-card vp-card-text" style="background-color:#FFFFFF;padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
+              <td class="vp-card vp-card-text" style="background-color:#FEFEFE;padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
                 ${cuerpoHtml}
               </td>
             </tr>
@@ -189,9 +193,9 @@ function construirHtmlCorreo(mensaje: string): string {
       </tr>
       <tr>
         <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
-          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FFFFFF;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
+          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FEFEFE;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FEFEFE !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
           <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
-          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
+          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FEFEFE;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
         </td>
       </tr>
     </table>
