@@ -803,7 +803,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
               </div>
               <div>
                 <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Ocupados por otro cliente</span>
+                <span>Paneles ocupados</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>
             </div>
@@ -866,7 +866,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             </div>
             <div>
               <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Ocupados por otro cliente</span>
+              <span>Paneles ocupados</span>
               <strong>{panelesOcupadosPorOtros}</strong>
             </div>
           </div>
