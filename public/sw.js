@@ -1,4 +1,4 @@
-const CACHE = "v360player-shell-v8";
+const CACHE = "v360player-shell-v9";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -65,6 +65,29 @@ self.addEventListener("fetch", (event) => {
       caches.match(event.request).then((cacheado) => {
         if (cacheado) return cacheado;
         return fetch(event.request).then((res) => {
+          // Cloudflare Pages resuelve CUALQUIER ruta que no reconoce
+          // devolviendo el index.html de la app (200, text/html) en vez
+          // de un 404 -- es su modo "single-page-application" normal.
+          // Un /assets/*.js viejo, referenciado por un index.html
+          // desactualizado que alguien todavia tenia abierto o en
+          // cache, cae justo en ese caso despues de un despliegue
+          // nuevo (el archivo con ese hash ya no existe). Antes esa
+          // respuesta se guardaba en cache IGUAL (un 200 es un 200 sin
+          // mirar el contenido) -- quedaba ese "JS" con HTML adentro
+          // cacheado PARA SIEMPRE bajo esa URL. El navegador lo volvia
+          // a pedir, lo recibia del cache, e intentaba ejecutarlo como
+          // modulo ("'text/html' is not a valid JavaScript MIME
+          // type") -- y como ya estaba en cache, ni cerrar y volver a
+          // abrir la pestana lo arreglaba, se repetia para siempre.
+          // Ahora se verifica que la respuesta sea realmente JS/CSS
+          // antes de guardarla o de darla por buena; si no, se trata
+          // como una falla real de red (undefined/rechazada), asi el
+          // navegador la reintenta en vez de quedarse pegado con la
+          // copia envenenada.
+          const tipo = res.headers.get("content-type") || "";
+          if (!res.ok || tipo.includes("text/html")) {
+            throw new Error("Respuesta inesperada (no JS/CSS) para " + event.request.url);
+          }
           const copy = res.clone();
           caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
           return res;

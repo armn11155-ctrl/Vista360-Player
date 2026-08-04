@@ -18,19 +18,50 @@ bloquearZoomDeNavegador();
 // de "algo se rompió" del ErrorBoundary, aunque no hubiera ningún error
 // real en el código: era una pestaña desactualizada, nada más.
 //
-// Vite avisa este caso puntual con el evento "vite:preloadError". Ahí la
-// solución real es tan simple como recargar la página (así se trae la
-// versión nueva, con los nombres de archivo correctos) -- por eso se hace
-// solo, en vez de dejar que el usuario se quede mirando una pantalla rota
-// sin saber que un F5 lo arreglaba. El guard de sessionStorage evita un
-// bucle infinito si por algún otro motivo la recarga no alcanza a
-// resolverlo.
-window.addEventListener("vite:preloadError", () => {
+// Se vio también como "'text/html' is not a valid JavaScript MIME type":
+// Cloudflare Pages responde CUALQUIER ruta que no reconoce con el
+// index.html de la app (200, no 404) -- si el navegador pide un chunk
+// viejo que ya no existe, recibe HTML donde esperaba JS y truena al
+// intentar ejecutarlo como módulo. sw.js ya no guarda esa respuesta mala
+// en cache (ver el comentario ahí), pero la pestaña que ya la recibió
+// igual necesita recargar para pedir la versión nueva.
+//
+// Recargar sola es la solución real en los dos casos -- por eso se hace
+// automático, en vez de dejar a la persona mirando una pantalla rota sin
+// saber que un F5 la arreglaba. Antes de recargar se le pide al Service
+// Worker que vacíe su cache (mismo mensaje que usa logout() en
+// firebase.ts) para no volver a toparse con una copia vieja guardada. El
+// guard de sessionStorage evita un bucle infinito si por algún otro
+// motivo la recarga no alcanza a resolverlo.
+function recargarPorVersionDesactualizada() {
   const YA_RECARGO = "vista360_recargo_por_chunk_viejo";
   if (sessionStorage.getItem(YA_RECARGO)) return;
   sessionStorage.setItem(YA_RECARGO, "1");
-  window.location.reload();
-});
+  navigator.serviceWorker?.ready
+    .then((registro) => registro.active?.postMessage({ tipo: "limpiar-cache" }))
+    .catch(() => {})
+    .finally(() => window.location.reload());
+}
+
+window.addEventListener("vite:preloadError", recargarPorVersionDesactualizada);
+
+// Red de seguridad para el caso de arriba cuando NO pasa por un import()
+// que Vite esté vigilando -- por ejemplo el propio <script type="module">
+// de entrada que Vite inyecta en index.html, o una hoja de estilos. Esos
+// fallan con un evento "error" en el elemento <script>/<link>, que no
+// burbujea (por eso el listener va con capture:true en window) y que
+// "vite:preloadError" no cubre.
+window.addEventListener(
+  "error",
+  (event) => {
+    const el = event.target as HTMLElement | null;
+    if (!el || (el.tagName !== "SCRIPT" && el.tagName !== "LINK")) return;
+    const src = (el as HTMLScriptElement).src || (el as HTMLLinkElement).href || "";
+    if (!src || new URL(src, location.href).origin !== location.origin) return;
+    recargarPorVersionDesactualizada();
+  },
+  true
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
