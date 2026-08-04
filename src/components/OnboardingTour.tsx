@@ -141,7 +141,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
 
         <div style={{ display: "flex", gap: 10 }}>
           {!esUltimo && (
-            <button
+            <button type="button"
               onClick={cerrar}
               style={{
                 flex: 1, padding: "14px", background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12,
@@ -151,7 +151,7 @@ export default function OnboardingTour({ uid, onClose }: Props) {
               Saltar
             </button>
           )}
-          <button
+          <button type="button"
             onClick={() => (esUltimo ? cerrar() : setPaso((p) => p + 1))}
             style={{
               flex: 1, padding: "13px", background: "#0877FF", border: "none", borderRadius: 12,

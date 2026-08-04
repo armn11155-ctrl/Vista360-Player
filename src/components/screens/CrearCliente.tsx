@@ -176,7 +176,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           )}
 
           {!resultado && (
-            <button onClick={crear} disabled={creando || subiendoAvatar} style={{
+            <button type="button" onClick={crear} disabled={creando || subiendoAvatar} style={{
               width: "100%", marginTop: 16, padding: "14px", border: "none", borderRadius: 12,
               background: creando || subiendoAvatar ? "#93C5FD" : "#0877FF", color: "#fff", fontWeight: 800, fontSize: 14,
               cursor: creando || subiendoAvatar ? "not-allowed" : "pointer",
@@ -203,7 +203,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
                 Enviar correo
               </a>
             </div>
-            <button onClick={onBack} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: "pointer" }}>
+            <button type="button" onClick={onBack} style={{ width: "100%", marginTop: 10, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: "pointer" }}>
               Volver al cliente
             </button>
           </div>

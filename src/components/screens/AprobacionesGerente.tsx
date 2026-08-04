@@ -160,7 +160,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
                       }}
                     />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button
+                      <button type="button"
                         onClick={() => void resolver(s.id, "rechazar", motivoRechazo.trim() || undefined)}
                         disabled={resolviendoId === s.id}
                         style={{
@@ -171,7 +171,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
                       >
                         {resolviendoId === s.id ? "Guardando…" : "Confirmar rechazo"}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => { setRechazandoId(null); setMotivoRechazo(""); }}
                         disabled={resolviendoId === s.id}
                         style={{
@@ -185,7 +185,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
                   </div>
                 ) : (
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button
+                    <button type="button"
                       onClick={() => void resolver(s.id, "aprobar")}
                       disabled={resolviendoId === s.id}
                       style={{
@@ -196,7 +196,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
                     >
                       {resolviendoId === s.id ? "Guardando…" : "✓ Aprobar"}
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => setRechazandoId(s.id)}
                       disabled={resolviendoId === s.id}
                       style={{

@@ -608,7 +608,7 @@ function AuthenticatedApp({
       <div className="state-screen">
         <div className="state-title">No se pudieron cargar las campañas</div>
         <div className="state-sub">{contratosState.message}</div>
-        <button className="retry-btn" onClick={contratosState.retry}>
+        <button type="button" className="retry-btn" onClick={contratosState.retry}>
           Reintentar
         </button>
       </div>

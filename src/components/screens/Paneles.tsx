@@ -392,7 +392,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
       </div>
 
       <div className="content-area">
-        <button
+        <button type="button"
           onClick={() => {
             if (mostrarForm) {
               limpiarForm();
@@ -517,7 +517,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
               </div>
             </div>
             {error && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{error}</div>}
-            <button
+            <button type="button"
               onClick={guardarPanel}
               disabled={creando}
               style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}

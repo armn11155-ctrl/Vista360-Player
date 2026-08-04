@@ -494,7 +494,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         <div style={{ textAlign: "center", color: "#64748B", fontSize: 13, marginTop: 8, marginBottom: 8 }}>
           ¿Quieres lanzar una nueva campaña?
         </div>
-        <button onClick={onNueva} style={{
+        <button type="button" onClick={onNueva} style={{
           width: "100%", padding: "14px", background: "#0877FF", color: "#fff", fontWeight: 600,
           fontSize: 14, border: "none", borderRadius: 16, cursor: "pointer", marginBottom: 16,
           display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
@@ -640,7 +640,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   un mes más. Nuestro equipo te contactará para coordinar el pago.
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button
+                  <button type="button"
                     onClick={() => setModal(null)}
                     disabled={modal.estado === "enviando"}
                     style={{
@@ -650,7 +650,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   >
                     Cancelar
                   </button>
-                  <button
+                  <button type="button"
                     onClick={confirmarRenovacion}
                     disabled={modal.estado === "enviando"}
                     style={{
@@ -698,7 +698,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   <WhatsAppIcon /> Escríbenos para coordinar el pago
                 </a>
 
-                <button
+                <button type="button"
                   onClick={() => setModal(null)}
                   style={{
                     width: "100%", padding: "12px", background: "none", border: "none",
@@ -719,7 +719,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   {modal.error ?? "Revisa tu conexión e intenta de nuevo, o escríbenos directo."}
                 </div>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button
+                  <button type="button"
                     onClick={() => setModal(null)}
                     style={{
                       flex: 1, padding: "13px", background: "#F3F4F6", border: "none", borderRadius: 12,
@@ -728,7 +728,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   >
                     Cerrar
                   </button>
-                  <button
+                  <button type="button"
                     onClick={confirmarRenovacion}
                     style={{
                       flex: 1, padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,

@@ -324,7 +324,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                     Tu contraseña se cambió correctamente. La próxima vez que inicies sesión, usa la nueva.
                   </div>
                 </div>
-                <button
+                <button type="button"
                   onClick={cerrarModalPassword}
                   style={{
                     width: "100%", padding: "14px", background: "#0877FF", border: "none", borderRadius: 12,
@@ -375,7 +375,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                   <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, lineHeight: 1.4 }}>{passwordError}</div>
                 )}
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button
+                  <button type="button"
                     onClick={cerrarModalPassword}
                     disabled={cambiandoPassword}
                     style={{
@@ -385,7 +385,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                   >
                     Cancelar
                   </button>
-                  <button
+                  <button type="button"
                     onClick={cambiarPassword}
                     disabled={cambiandoPassword}
                     style={{

@@ -303,7 +303,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         </div>
 
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-          <button onClick={crearContrato} disabled={creando} style={{
+          <button type="button" onClick={crearContrato} disabled={creando} style={{
             width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#0877FF", color: "#fff",
             fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: creando ? "default" : "pointer",
           }}>
@@ -345,7 +345,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           </div>
         </div>
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-          <button onClick={onEnviada} style={{
+          <button type="button" onClick={onEnviada} style={{
             width: "100%", padding: "14px", background: "#0877FF", color: "#fff",
             fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: "pointer",
           }}>
@@ -456,7 +456,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
 
       {/* Footer */}
       <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-        <button onClick={enviar} disabled={enviando} style={{
+        <button type="button" onClick={enviar} disabled={enviando} style={{
           width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#0877FF", color: "#fff",
           fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: enviando ? "default" : "pointer",
         }}>

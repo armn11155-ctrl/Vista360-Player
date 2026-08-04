@@ -700,7 +700,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
         </div>
 
         <div className="accesos-create-btn-row" style={{ margin: "12px 0", display: "flex", gap: 8 }}>
-          <button
+          <button type="button"
             className="accesos-create-btn"
             onClick={toggleFormNuevo}
             style={{
@@ -712,7 +712,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             {mostrarFormNuevo ? "Cerrar formulario" : "+ Crear cliente"}
           </button>
           {esGerente && (
-            <button
+            <button type="button"
               className="accesos-create-btn"
               onClick={toggleFormTrabajador}
               style={{
@@ -728,7 +728,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
 
         {esGerente && (
           <div className="accesos-create-btn-row" style={{ margin: "0 0 12px" }}>
-            <button
+            <button type="button"
               className="accesos-create-btn"
               onClick={toggleFormAcceso}
               style={{
@@ -785,7 +785,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorAcceso}</div>
             )}
             {clientesSinAcceso.length > 0 && (
-              <button
+              <button type="button"
                 onClick={crearAccesoExistente}
                 disabled={creandoAcceso}
                 style={{ width: "100%", marginTop: 12, background: creandoAcceso ? "#99F6E4" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creandoAcceso ? "not-allowed" : "pointer" }}
@@ -823,7 +823,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             {errorTrabajador && (
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorTrabajador}</div>
             )}
-            <button
+            <button type="button"
               onClick={crearTrabajador}
               disabled={creandoTrabajador}
               style={{ width: "100%", marginTop: 12, background: creandoTrabajador ? "#C4B5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creandoTrabajador ? "not-allowed" : "pointer" }}
@@ -897,7 +897,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             {nuevoError && (
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{nuevoError}</div>
             )}
-            <button
+            <button type="button"
               onClick={guardarClienteNuevo}
               disabled={nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion}
               style={{ width: "100%", marginTop: 12, background: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: nuevoCreando || nuevoSubiendoAvatar || cargandoEdicion ? "not-allowed" : "pointer" }}
@@ -1068,7 +1068,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             }}
           >
             <div style={{ color: "#DC2626", fontSize: 14, fontWeight: 700, marginBottom: 16 }}>{errorReset}</div>
-            <button
+            <button type="button"
               onClick={() => setErrorReset("")}
               style={{ width: "100%", padding: "13px", background: "#0B1220", border: "none", borderRadius: 12, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
             >
@@ -1121,7 +1121,7 @@ Por seguridad, te recomendamos cambiarla después de entrar (Perfil > Cambiar co
               >
                 WhatsApp
               </a>
-              <button
+              <button type="button"
                 onClick={() => setResultadoReset(null)}
                 style={{ flex: 1, background: "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "12px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}
               >

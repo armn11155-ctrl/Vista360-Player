@@ -300,7 +300,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                   />
                 )}
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button
+                  <button type="button"
                     onClick={(event) => { event.stopPropagation(); resolver(s.id, "Revisada"); }}
                     disabled={resolviendo === s.id}
                     style={{
@@ -311,7 +311,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                   >
                     {resolviendo === s.id ? "Guardando…" : "✓ Marcar revisada"}
                   </button>
-                  <button
+                  <button type="button"
                     onClick={(event) => { event.stopPropagation(); resolver(s.id, "Rechazada"); }}
                     disabled={resolviendo === s.id}
                     aria-label="Rechazar solicitud"
@@ -403,7 +403,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 <div className="solicitud-detail-kicker">{nombreCliente(seleccionada.cliente_id)}</div>
                 <div className="solicitud-detail-title">{seleccionada.nombre}</div>
               </div>
-              <button className="solicitud-detail-close" onClick={() => setSeleccionada(null)}>×</button>
+              <button type="button" className="solicitud-detail-close" onClick={() => setSeleccionada(null)}>×</button>
             </div>
 
             <div className="solicitud-detail-grid">
@@ -475,11 +475,11 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                 </a>
               )}
               {seleccionada.estado === "Pendiente" && (
-                <button className="solicitud-action secondary" onClick={() => resolver(seleccionada.id, "Revisada")}>
+                <button type="button" className="solicitud-action secondary" onClick={() => resolver(seleccionada.id, "Revisada")}>
                   Marcar revisada
                 </button>
               )}
-              <button
+              <button type="button"
                 className="solicitud-action primary"
                 onClick={() => {
                   setSeleccionada(null);

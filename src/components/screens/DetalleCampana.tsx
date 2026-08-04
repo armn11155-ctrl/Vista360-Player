@@ -210,7 +210,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
       {/* Header */}
       <div className="campaign-detail-hero" style={{ ...cityStyle, padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <button onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
+          <button type="button" onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Detalle de campaña</div>

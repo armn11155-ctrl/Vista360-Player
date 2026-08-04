@@ -562,7 +562,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       )}
 
       <div className="admin-picker-footer">
-        <button onClick={() => logout()} className="admin-picker-logout">
+        <button type="button" onClick={() => logout()} className="admin-picker-logout">
           Cerrar sesión
         </button>
       </div>
