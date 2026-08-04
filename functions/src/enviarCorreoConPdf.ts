@@ -143,12 +143,33 @@ function construirHtmlCorreo(mensaje: string): string {
         font-weight: inherit !important;
         line-height: inherit !important;
       }
+      /* Los metas de arriba (color-scheme/supported-color-schemes) NO
+         los respetan todos los clientes -- Gmail en particular corre su
+         propio algoritmo de modo oscuro casi siempre, meta o no. Esta
+         es la segunda capa: mismos colores, pero reforzados con
+         !important bajo dark mode, en vez de confiar en que el cliente
+         se abstenga solo. [data-ogsc]/[data-ogsb] son los atributos que
+         Gmail agrega él mismo a los elementos que decidió "oscurecer" --
+         es el gancho oficial para revertirlo (ver documentación pública
+         de Litmus/Email on Acid sobre esto, no es un invento). */
+      @media (prefers-color-scheme: dark) {
+        .vp-bg-navy { background-color: #0A0F1C !important; }
+        .vp-card { background-color: #FFFFFF !important; }
+        .vp-card-text { color: #172235 !important; }
+        .vp-white-text { color: #FFFFFF !important; }
+        .vp-muted-text { color: #8B96AD !important; }
+      }
+      [data-ogsc] .vp-bg-navy, [data-ogsb] .vp-bg-navy { background-color: #0A0F1C !important; }
+      [data-ogsc] .vp-card, [data-ogsb] .vp-card { background-color: #FFFFFF !important; }
+      [data-ogsc] .vp-card-text, [data-ogsb] .vp-card-text { color: #172235 !important; }
+      [data-ogsc] .vp-white-text, [data-ogsb] .vp-white-text { color: #FFFFFF !important; }
+      [data-ogsc] .vp-muted-text, [data-ogsb] .vp-muted-text { color: #8B96AD !important; }
     </style>
   </head>
   <body style="margin:0;padding:0;background-color:${bg};">
-    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" class="vp-bg-navy" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td align="left" background="${GLOW_URL_TR}" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:280px 280px;padding:48px 24px 34px 32px;">
+        <td align="left" background="${GLOW_URL_TR}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:280px 280px;padding:48px 24px 34px 32px;">
           <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
           <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;margin-top:14px;">
             <tr><td height="3" style="height:3px;line-height:3px;font-size:0;background-color:${accent};background-image:linear-gradient(90deg,${accent} 0%,${accent2} 50%,${accent} 100%);">&nbsp;</td></tr>
@@ -156,10 +177,10 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" style="padding:0 24px 40px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;">
+        <td align="center" class="vp-bg-navy" style="background-color:${bg};padding:0 24px 40px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="vp-card" style="max-width:480px;background-color:#FFFFFF;border-radius:16px;">
             <tr>
-              <td style="padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
+              <td class="vp-card vp-card-text" style="background-color:#FFFFFF;padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
                 ${cuerpoHtml}
               </td>
             </tr>
@@ -167,10 +188,10 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" background="${GLOW_URL_BL}" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
-          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FFFFFF;"><span x-apple-data-detectors="false" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
-          <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
-          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;">MAS QUE VISIBILIDAD. PRESENCIA.</div>
+        <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
+          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FFFFFF;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FFFFFF !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
+          <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
+          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FFFFFF;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
         </td>
       </tr>
     </table>
