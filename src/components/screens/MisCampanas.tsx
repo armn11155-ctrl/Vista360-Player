@@ -300,7 +300,45 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         )}
 
         {filtradas.length === 0 && (
-          <div className="mis-campanas-empty" style={{ textAlign: "center", color: "#64748B", fontSize: 14, marginTop: 48 }}>No tienes campañas en esta categoría.</div>
+          <div className="mis-campanas-empty" style={{
+            display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+            padding: "56px 28px 40px", marginTop: 12,
+          }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: "50%", flexShrink: 0,
+              background: "radial-gradient(circle at 32% 28%, rgba(8,119,255,0.16), rgba(8,119,255,0.06))",
+              display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 18,
+            }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 11v2a1 1 0 0 0 1 1h2l4.2 4.2a1 1 0 0 0 1.7-.7V6.5a1 1 0 0 0-1.7-.7L6 10H4a1 1 0 0 0-1 1Z" />
+                <path d="M17 8c1.3 1.1 2 2.6 2 4s-.7 2.9-2 4" />
+                <path d="M19.5 5.5c2.1 1.8 3.3 4 3.3 6.5s-1.2 4.7-3.3 6.5" />
+              </svg>
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#0B1220" }}>
+              {filtro === "Todas"
+                ? "Todavía no tienes campañas"
+                : filtro === "Activa"
+                ? "No tienes campañas activas"
+                : filtro === "Programada"
+                ? "No tienes campañas programadas"
+                : "No tienes campañas finalizadas"}
+            </div>
+            <div style={{ fontSize: 13, color: "#64748B", marginTop: 6, maxWidth: 260, lineHeight: 1.5 }}>
+              Anímate a lanzar tu próxima campaña y dale visibilidad a tu marca en los mejores paneles.
+            </div>
+            <button
+              type="button"
+              onClick={onNueva}
+              style={{
+                marginTop: 20, padding: "11px 22px", borderRadius: 999, border: "none",
+                background: "#0877FF", color: "#fff", fontSize: 13.5, fontWeight: 700,
+                cursor: "pointer", boxShadow: "0 6px 16px rgba(8,119,255,0.28)",
+              }}
+            >
+              Lanzar nueva campaña
+            </button>
+          </div>
         )}
 
         {filtradas.map((c, index) => {

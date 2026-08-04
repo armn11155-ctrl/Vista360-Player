@@ -101,6 +101,8 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
   }
 
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [sincronizando, setSincronizando] = useState(false);
+  const [mensajeSync, setMensajeSync] = useState("");
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
   const [nombre, setNombre] = useState("");
   // Tipo: ahora una lista fija (antes texto libre -- terminaba con
@@ -373,6 +375,36 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
     }
   }
 
+  /** Recalcula el estado (Ocupado/Disponible) de TODO el inventario de
+   *  una sola vez -- normalmente esto lo hace solo la tarea diaria (o,
+   *  puntualmente, crear/editar/eliminar una campaña), pero un panel
+   *  que quedó con un estado viejo de ANTES de este cambio (por
+   *  ejemplo, marcado "Ocupado" para siempre por un bug ya corregido)
+   *  se queda mal hasta que algo lo toque -- este botón evita esperar
+   *  a la madrugada para verlo corregido. Mismo Cloud Function que usa
+   *  el cron (sincronizarEstadoPanelesAhora), solo que a pedido. */
+  async function sincronizarAhora() {
+    if (!cloudFunctions || sincronizando) return;
+    setSincronizando(true);
+    setMensajeSync("");
+    try {
+      const fn = httpsCallable<Record<string, never>, { revisados: number; actualizados: number }>(
+        cloudFunctions,
+        "sincronizarEstadoPanelesAhora"
+      );
+      const res = await fn();
+      setMensajeSync(
+        res.data.actualizados > 0
+          ? `Listo: ${res.data.actualizados} de ${res.data.revisados} paneles corregidos.`
+          : `Listo: los ${res.data.revisados} paneles ya estaban al día.`
+      );
+    } catch (err) {
+      setMensajeSync(mensajeDeError(err, "No se pudo sincronizar. Intenta de nuevo."));
+    } finally {
+      setSincronizando(false);
+    }
+  }
+
   return (
     <div className="admin-tool-screen paneles-screen">
       <div className="detail-header">
@@ -404,6 +436,27 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
         >
           {mostrarForm ? "Cerrar formulario" : "+ Crear panel"}
         </button>
+
+        {esGerente && (
+          <div style={{ margin: "0 0 12px" }}>
+            <button
+              type="button"
+              onClick={sincronizarAhora}
+              disabled={sincronizando}
+              style={{
+                width: "100%", background: "#fff", color: "#0877FF",
+                border: "1.5px solid #0877FF", borderRadius: 12, padding: "10px",
+                fontSize: 12.5, fontWeight: 700, cursor: sincronizando ? "default" : "pointer",
+                opacity: sincronizando ? 0.6 : 1,
+              }}
+            >
+              {sincronizando ? "Sincronizando…" : "Sincronizar estado de paneles ahora"}
+            </button>
+            {mensajeSync && (
+              <div style={{ fontSize: 11.5, color: "#64748B", marginTop: 6, textAlign: "center" }}>{mensajeSync}</div>
+            )}
+          </div>
+        )}
 
         {mostrarForm && (
           <div className="card">
