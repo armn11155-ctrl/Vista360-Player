@@ -535,6 +535,17 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                   <option key={e} value={e}>{e}</option>
                 ))}
               </select>
+              {/* Disponible/Ocupado ya no se guarda tal cual se elija
+                  acá -- el sistema lo recalcula solo a partir de los
+                  contratos vigentes apenas se guarda el panel, así que
+                  elegir uno de esos dos acá no tiene efecto real (queda
+                  como está el panel de verdad). Mantenimiento sí sigue
+                  siendo 100% manual. */}
+              {estado !== "Mantenimiento" && (
+                <div style={{ fontSize: 11, color: "#94A3B8", marginTop: -4 }}>
+                  Ocupado/Disponible se recalcula solo según los contratos vigentes -- esta lista no lo cambia. Solo "Mantenimiento" es manual.
+                </div>
+              )}
               <div>
                 <input
                   value={impactoDiario}

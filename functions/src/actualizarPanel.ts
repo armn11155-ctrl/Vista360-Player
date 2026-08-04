@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
+import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -144,4 +145,17 @@ export async function ejecutarActualizarPanel(db: Firestore, panel: PanelEditado
     },
     { merge: true }
   );
+
+  // El formulario de edición manda `estado` como texto suelto (el
+  // admin lo elige en un selector) -- eso pisaba sin querer lo que ya
+  // había calculado el sistema a partir de los contratos reales (por
+  // ejemplo, si el selector quedó mostrando "Disponible" de ANTES de
+  // tocar "Sincronizar", guardar el panel por otro motivo -- cambiar
+  // el tipo, la ciudad, lo que sea -- lo devolvía a "Disponible" de
+  // nuevo, aunque siguiera ocupado de verdad). Recalcular acá cierra
+  // ese hueco: Ocupado/Disponible SIEMPRE sale de los contratos
+  // vigentes hoy, nunca de lo que haya quedado en el formulario --
+  // salvo "Mantenimiento", que sigue siendo 100% manual (ver el check
+  // correspondiente dentro de recalcularEstadoPaneles).
+  await recalcularEstadoPaneles(db, [panel.panelId]);
 }

@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
+import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -129,5 +130,10 @@ export async function ejecutarCrearPanel(db: Firestore, panel: PanelValidado): P
     ...(panel.impactoDiario !== undefined ? { impactoDiario: panel.impactoDiario } : {}),
     createdAt: FieldValue.serverTimestamp(),
   });
+  // Un panel recién creado normalmente no tiene contratos todavía, así
+  // que esto casi siempre confirma "Disponible" -- pero se llama igual
+  // por consistencia con crearContrato/actualizarPanel/eliminarContrato,
+  // que todos pasan por acá para decidir el estado real.
+  await recalcularEstadoPaneles(db, [panelRef.id]);
   return panelRef.id;
 }
