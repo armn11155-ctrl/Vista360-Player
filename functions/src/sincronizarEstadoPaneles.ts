@@ -1,26 +1,11 @@
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esPanelExclusivo } from "./modalidadPanel.js";
+import { cuposPanel } from "./modalidadPanel.js";
+import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 
 if (getApps().length === 0) {
   initializeApp();
-}
-
-/** "Hoy" en Lima como "YYYY-MM-DD" -- Cloud Functions corre en UTC, así
- *  que cerca de la medianoche un new Date().toISOString() se corre de
- *  día entero. Mismo criterio que hoyEnLima() en notificacionesPush.ts
- *  y que hoyEnPeru() en el frontend (src/utils/fechas.ts). */
-/** Día siguiente a una "YYYY-MM-DD": el soporte queda libre recién
- *  cuando termina la campaña que lo ocupa, no el mismo día. */
-function sumarUnDia(fecha: string): string {
-  const [a, m, d] = fecha.slice(0, 10).split("-").map(Number);
-  if (!a || !m || !d) return fecha;
-  return new Date(Date.UTC(a, m - 1, d + 1)).toISOString().slice(0, 10);
-}
-
-function hoyEnLima(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" }).format(new Date());
 }
 
 /**
@@ -53,13 +38,11 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
     db.collection("contratos").where("fin", ">=", hoy).get(),
   ]);
 
-  const panelesOcupados = new Set<string>();
-  // Fecha en que termina la campaña vigente más larga de cada panel. Sirve
-  // para decirle al cliente "disponible desde el ..." en una lona ocupada:
-  // ese dato vive en contratos de OTROS clientes, que él no puede leer por
-  // reglas de Firestore, así que se publica acá como un campo del panel --
-  // solo la fecha, sin decir de quién es la campaña.
-  const finVigentePorPanel = new Map<string, string>();
+  // Fechas de fin de cada contrato vigente HOY, agrupadas por panel --
+  // no un booleano ni "la más lejana": estadoDesdeActivos() necesita
+  // TODAS para calcular bien cuándo se libera un cupo en soportes con
+  // más de uno (unipolar, 2 caras).
+  const finsActivosPorPanel = new Map<string, string[]>();
 
   contratosSnap.docs.forEach((doc) => {
     const c = doc.data();
@@ -75,9 +58,9 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
         : [];
     ids.forEach((id) => {
       const key = String(id);
-      panelesOcupados.add(key);
-      const previo = finVigentePorPanel.get(key);
-      if (!previo || c.fin > previo) finVigentePorPanel.set(key, c.fin);
+      const lista = finsActivosPorPanel.get(key) ?? [];
+      lista.push(c.fin);
+      finsActivosPorPanel.set(key, lista);
     });
   });
 
@@ -89,15 +72,10 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
     const actual = String(datos.estado ?? "");
     if (actual === "Mantenimiento") return;
 
-    const ocupado = panelesOcupados.has(doc.id);
+    const cupos = cuposPanel(datos);
+    const finsActivos = finsActivosPorPanel.get(doc.id) ?? [];
+    const { ocupado, libreDesde } = estadoDesdeActivos(cupos, finsActivos);
     const deberia = ocupado ? "Ocupado" : "Disponible";
-
-    // "Libre desde" solo tiene sentido en soportes EXCLUSIVOS (lona,
-    // mural): una pantalla LED admite otro anunciante desde ya, aunque
-    // tenga campañas corriendo, así que ponerle fecha sería mentir.
-    const finVigente = finVigentePorPanel.get(doc.id);
-    const libreDesde =
-      ocupado && esPanelExclusivo(datos) && finVigente ? sumarUnDia(finVigente) : null;
 
     const libreDesdeActual = datos.libreDesde ?? null;
     if (actual === deberia && libreDesdeActual === libreDesde) return;

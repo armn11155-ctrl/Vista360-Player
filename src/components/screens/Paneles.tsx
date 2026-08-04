@@ -9,7 +9,7 @@ import { modalidadDePanel } from "../../types";
 import { cloudFunctions } from "../../config/firebase";
 import { mensajeDeError } from "../../utils/errores";
 import { cargarLeaflet, zoomMinimoSinGris } from "../../utils/leaflet";
-import type { Panel, PanelEstado } from "../../types";
+import type { Panel, PanelEstado, PanelModalidad } from "../../types";
 
 interface Props {
   onBack: () => void;
@@ -35,6 +35,18 @@ const ESTADO_BADGE: Record<PanelEstado, { bg: string; color: string }> = {
 const CENTRO_DEFECTO: [number, number] = [-12.0464, -77.0428];
 
 const inputStyle = campoBase;
+
+/** Las 4 opciones fijas de "Tipo" que se pidió que hubiera, cada una
+ *  con su modalidad comercial ya pegada (ver PanelModalidad en
+ *  types/index.ts): Mural y Paradero son impresos de una sola cara
+ *  (cupo 1, exclusivos), Unipolar es impreso de DOS caras (cupo 2),
+ *  LED es pantalla digital (sin límite real de anunciantes). */
+const TIPOS_PANEL: { tipo: string; modalidad: PanelModalidad; detalle: string }[] = [
+  { tipo: "Mural", modalidad: "lona", detalle: "Impreso, una cara: un solo cliente a la vez" },
+  { tipo: "Unipolar", modalidad: "unipolar", detalle: "Impreso, dos caras: hasta 2 clientes a la vez" },
+  { tipo: "Paradero", modalidad: "lona", detalle: "Mobiliario urbano impreso: un solo cliente a la vez" },
+  { tipo: "LED", modalidad: "led", detalle: "Pantalla digital: rota varios clientes a la vez" },
+];
 
 /** Convierte lo que haya escrito el admin en un numero valido o
  *  undefined -- nunca NaN. Acepta coma decimal (12,345) ademas de
@@ -91,10 +103,12 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
   const [mostrarForm, setMostrarForm] = useState(false);
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
   const [nombre, setNombre] = useState("");
+  // Tipo: ahora una lista fija (antes texto libre -- terminaba con
+  // datos como "LDELE" cargados a mano sin querer). Cada opción trae
+  // ya su modalidad comercial pegada (ver TIPOS_PANEL abajo), así que
+  // tipo y modalidad no pueden quedar desalineados entre sí nunca más.
   const [tipo, setTipo] = useState("");
-  // Modalidad comercial: define si el soporte admite varios clientes a
-  // la vez (LED, rota anuncios) o uno solo (lona/mural, pieza física).
-  const [modalidad, setModalidad] = useState<"led" | "lona">("led");
+  const [modalidad, setModalidad] = useState<PanelModalidad>("led");
   const [ciudad, setCiudad] = useState("");
   const [direccion, setDireccion] = useState("");
   const [lat, setLat] = useState("");
@@ -398,40 +412,41 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
             </div>
             <div style={{ display: "grid", gap: 10 }}>
               <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Nombre del panel" style={inputStyle} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={tipo} onChange={(e) => setTipo(e.target.value)} maxLength={40} placeholder="Tipo (ej. Valla, LED)" style={inputStyle} />
-                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ciudad" style={inputStyle} />
-              </div>
+              <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ciudad" style={inputStyle} />
 
-              {/* Esto NO es una etiqueta: decide si el sistema deja que
-                  dos clientes coincidan en fechas en este soporte. */}
+              {/* Tipo fijo, no texto libre -- antes esto era un input
+                  de texto y terminaba con datos cargados sin querer
+                  (p. ej. "LDELE" en vez de "LED"). Elegir acá define A
+                  LA VEZ el tipo que se muestra y la modalidad comercial
+                  (cuántos clientes admite el soporte a la vez), así los
+                  dos campos ya no pueden quedar desalineados entre sí. */}
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>
-                  ¿Cómo se vende este soporte?
+                  Tipo de soporte
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {([
-                    ["led", "Pantalla LED", "Rota anuncios: varios clientes a la vez"],
-                    ["lona", "Lona o mural", "Pieza impresa: un solo cliente a la vez"],
-                  ] as const).map(([valor, titulo, detalle]) => (
+                  {TIPOS_PANEL.map(({ tipo: valorTipo, modalidad: valorModalidad, detalle }) => (
                     <button
-                      key={valor}
+                      key={valorTipo}
                       type="button"
-                      onClick={() => setModalidad(valor)}
+                      onClick={() => {
+                        setTipo(valorTipo);
+                        setModalidad(valorModalidad);
+                      }}
                       style={{
                         textAlign: "left",
                         padding: "10px 12px",
                         borderRadius: 12,
                         cursor: "pointer",
-                        border: modalidad === valor ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
-                        background: modalidad === valor ? "rgba(8,119,255,0.07)" : "#fff",
+                        border: tipo === valorTipo ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
+                        background: tipo === valorTipo ? "rgba(8,119,255,0.07)" : "#fff",
                       }}
                     >
                       <span style={{
                         display: "block", fontSize: 13, fontWeight: 800,
-                        color: modalidad === valor ? "#0877FF" : "#0B1220",
+                        color: tipo === valorTipo ? "#0877FF" : "#0B1220",
                       }}>
-                        {titulo}
+                        {valorTipo}
                       </span>
                       <span style={{ display: "block", fontSize: 11, color: "#64748B", marginTop: 3, lineHeight: 1.35 }}>
                         {detalle}
@@ -439,6 +454,11 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                     </button>
                   ))}
                 </div>
+                {tipo && !TIPOS_PANEL.some((t) => t.tipo === tipo) ? (
+                  <div style={{ fontSize: 11, color: "#B45309", marginTop: 8 }}>
+                    Este panel tiene un tipo antiguo ("{tipo}") que ya no es una opción -- elige uno de arriba para corregirlo.
+                  </div>
+                ) : null}
               </div>
               <input value={direccion} onChange={(e) => setDireccion(e.target.value)} maxLength={160} placeholder="Dirección (opcional)" style={inputStyle} />
 

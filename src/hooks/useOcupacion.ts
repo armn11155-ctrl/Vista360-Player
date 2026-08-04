@@ -18,7 +18,7 @@ export interface PanelOcupacion {
   ciudad: string;
   estado: string;
   enMantenimiento: boolean;
-  modalidad: "led" | "lona";
+  modalidad: "led" | "lona" | "unipolar";
   impactoDiario: number;
   anunciantesActivos: number;
   anunciantesProgramados: number;
@@ -70,6 +70,8 @@ export interface ResumenOcupacion {
     lonas: number;
     lonasLibres: number;
     ledConEspacio: number;
+    unipolares: number;
+    unipolaresConEspacio: number;
   };
   paneles: PanelOcupacion[];
   porVencer: PorVencer[];

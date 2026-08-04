@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { modalidadDePanel, esPanelExclusivo } from "../types";
+import { modalidadDePanel, esPanelExclusivo, cuposPanel } from "../types";
 
 /**
  * La modalidad decide una regla de negocio con plata de por medio: si un
@@ -56,5 +56,40 @@ describe("esPanelExclusivo", () => {
 
   it("una LED no lo es", () => {
     expect(esPanelExclusivo({ modalidad: "led", tipo: "" })).toBe(false);
+  });
+
+  it("un unipolar tampoco (tiene 2 caras, no 1) -- para su cupo usar cuposPanel", () => {
+    expect(esPanelExclusivo({ modalidad: "unipolar", tipo: "" })).toBe(false);
+  });
+});
+
+describe("modalidadDePanel — unipolar y paradero", () => {
+  it("respeta unipolar explícito", () => {
+    expect(modalidadDePanel({ modalidad: "unipolar", tipo: "Cualquier cosa" })).toBe("unipolar");
+  });
+
+  it.each([
+    ["Unipolar", "unipolar"],
+    ["unipolar doble cara", "unipolar"],
+  ])("'%s' se deduce como %s", (tipo, esperado) => {
+    expect(modalidadDePanel({ tipo })).toBe(esperado);
+  });
+
+  it("paradero se deduce como lona (impreso, una cara)", () => {
+    expect(modalidadDePanel({ tipo: "Paradero" })).toBe("lona");
+  });
+});
+
+describe("cuposPanel", () => {
+  it("LED no tiene límite real", () => {
+    expect(cuposPanel({ modalidad: "led", tipo: "" })).toBe(Infinity);
+  });
+
+  it("lona/mural/paradero admiten 1 a la vez", () => {
+    expect(cuposPanel({ modalidad: "lona", tipo: "" })).toBe(1);
+  });
+
+  it("unipolar admite 2 a la vez (una por cara)", () => {
+    expect(cuposPanel({ modalidad: "unipolar", tipo: "" })).toBe(2);
   });
 });

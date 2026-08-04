@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esPanelExclusivo } from "./modalidadPanel.js";
+import { cuposPanel } from "./modalidadPanel.js";
+import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) initializeApp();
@@ -58,6 +59,8 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
   // (y dentro de una transaccion, por la misma razon de concurrencia:
   // dos ediciones casi al mismo tiempo no deben poder colarse las dos
   // a la vez con fechas que se crucen entre si).
+  let panelIdsAfectados: string[] = [];
+
   await db.runTransaction(async (tx) => {
     const actual = await tx.get(ref);
     if (!actual.exists) throw new HttpsError("not-found", "No se encontró esa campaña.");
@@ -66,6 +69,7 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
       ? contratoActual.panel_ids
       : (contratoActual.panel_id ? [contratoActual.panel_id] : []);
     const clienteId = String(contratoActual.cliente_id ?? "");
+    panelIdsAfectados = panelIds;
 
     if (clienteId && panelIds.length > 0) {
       type ContratoFila = {
@@ -79,8 +83,9 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
 
       // Misma regla que al crear (ver crearContrato.ts): en pantallas LED
       // solo se revisa contra el propio cliente, porque rotan anuncios;
-      // en lonas/murales se revisa contra CUALQUIER cliente, porque es
-      // una sola pieza física y no puede haber dos a la vez.
+      // en soportes con cupo limitado (lona/mural/paradero: 1, unipolar:
+      // 2) se revisa contra CUALQUIER cliente, y se bloquea recién cuando
+      // ya hay tantas campañas cruzadas como cupos tiene el soporte.
       const todosSnap = await tx.get(db.collection("contratos"));
       const todos = todosSnap.docs
         .filter((d) => d.id !== contratoId)
@@ -89,21 +94,29 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
       for (const panelId of panelIds) {
         const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
         const datosPanel = panelSnap.exists ? panelSnap.data() ?? {} : {};
-        const exclusivo = esPanelExclusivo(datosPanel);
+        const cupos = cuposPanel(datosPanel);
+        const esLimitado = Number.isFinite(cupos);
         const nombrePanel = String(datosPanel.nombre || "ese panel");
 
         const cruces = todos.filter((c) => {
           if (c.deleted || !c.inicio || !c.fin) return false;
-          if (!exclusivo && String(c.cliente_id ?? "") !== clienteId) return false;
+          if (!esLimitado && String(c.cliente_id ?? "") !== clienteId) return false;
           if (!(c.inicio <= fin && inicio <= c.fin)) return false;
           const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
           return idsDeC.includes(panelId);
         });
 
-        if (cruces.length > 0) {
+        const limiteAlcanzado = esLimitado ? cruces.length >= cupos : cruces.length > 0;
+
+        if (limiteAlcanzado) {
           const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
           const ajeno = cruces.some((c) => String(c.cliente_id ?? "") !== clienteId);
-          const quien = exclusivo && ajeno ? "Otro cliente ya tiene una lona instalada" : "Este cliente ya tiene otra campaña";
+          const quien =
+            esLimitado && ajeno
+              ? cupos === 1
+                ? "Otro cliente ya tiene una lona instalada"
+                : `Ya hay ${cupos} campañas activas de otros clientes`
+              : "Este cliente ya tiene otra campaña";
           throw new HttpsError(
             "failed-precondition",
             `${quien} en ${nombrePanel} hasta el ${finMasLejano}. Las fechas nuevas se cruzan con esa -- puedes poner esta a partir del ${siguienteDia(finMasLejano)}.`
@@ -114,6 +127,13 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
 
     tx.update(ref, { nombre, inicio, fin });
   });
+
+  // Las fechas pudieron cambiar si el panel está ocupado HOY -- se
+  // recalcula el estado igual que al crear/eliminar (misma lógica
+  // compartida en estadoPaneles.ts), en vez de esperar a la tarea diaria.
+  if (panelIdsAfectados.length > 0) {
+    await recalcularEstadoPaneles(db, panelIdsAfectados);
+  }
 
   return { ok: true };
 });

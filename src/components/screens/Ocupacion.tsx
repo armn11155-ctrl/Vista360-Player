@@ -154,8 +154,13 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
   const vacio = panel.anunciantesActivos === 0;
 
   const esLona = panel.modalidad === "lona";
-  // En una lona, tener 1 anunciante ya es estar LLENA (es una pieza
-  // física); en una LED, con 1 todavía queda espacio para vender.
+  const esUnipolar = panel.modalidad === "unipolar";
+  // Cupo según modalidad: en una lona/mural/paradero, 1 anunciante ya es
+  // estar LLENA (una sola cara); en un unipolar hacen falta 2 (una por
+  // cara); en LED nunca se considera "llena" por esto, siempre queda
+  // espacio para vender.
+  const cupo = esUnipolar ? 2 : esLona ? 1 : Infinity;
+  const llena = panel.anunciantesActivos >= cupo;
   const subtitulo = panel.enMantenimiento
     ? " · En mantenimiento"
     : vacio
@@ -164,9 +169,11 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
         : panel.diasLibre !== null
           ? ` · Libre hace ${panel.diasLibre} día${panel.diasLibre === 1 ? "" : "s"}`
           : " · Libre"
-      : esLona
-        ? " · Ocupada"
-        : ` · ${panel.anunciantesActivos} anunciante${panel.anunciantesActivos === 1 ? "" : "s"}`;
+      : esUnipolar
+        ? ` · ${panel.anunciantesActivos}/2 caras ocupadas`
+        : llena
+          ? " · Ocupada"
+          : ` · ${panel.anunciantesActivos} anunciante${panel.anunciantesActivos === 1 ? "" : "s"}`;
 
   return (
     <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
@@ -184,7 +191,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
             ? "#7C3AED"
             : vacio
               ? "#94A3B8"
-              : esLona
+              : llena
                 ? "#F59E0B"
                 : "#16A34A",
         }} />
@@ -194,10 +201,10 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
             <span style={{
               marginLeft: 7, fontSize: 11, fontWeight: 800, letterSpacing: 0.3,
               verticalAlign: "middle", padding: "2px 6px", borderRadius: 999,
-              color: esLona ? "#B45309" : "#0877FF",
-              background: esLona ? "rgba(245,158,11,0.13)" : "rgba(8,119,255,0.10)",
+              color: esLona || esUnipolar ? "#B45309" : "#0877FF",
+              background: esLona || esUnipolar ? "rgba(245,158,11,0.13)" : "rgba(8,119,255,0.10)",
             }}>
-              {esLona ? "LONA" : "LED"}
+              {esUnipolar ? "UNIPOLAR" : esLona ? "LONA" : "LED"}
             </span>
           </span>
           <span style={{ display: "block", fontSize: 11, color: "#64748B", marginTop: 2 }}>
@@ -335,10 +342,17 @@ export default function Ocupacion({ onBack }: Props) {
             </div>
             {state.datos.totales.lonas > 0 && (
               <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
-                <Kpi valor={state.datos.totales.lonas} etiqueta="Lonas y murales" />
-                <Kpi valor={state.datos.totales.lonasLibres} etiqueta="Lonas libres"
+                <Kpi valor={state.datos.totales.lonas} etiqueta="Murales y paraderos" />
+                <Kpi valor={state.datos.totales.lonasLibres} etiqueta="Libres"
                      tono={state.datos.totales.lonasLibres > 0 ? "alerta" : undefined} />
                 <Kpi valor={state.datos.totales.ledConEspacio} etiqueta="LED con anunciantes" />
+              </div>
+            )}
+            {state.datos.totales.unipolares > 0 && (
+              <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
+                <Kpi valor={state.datos.totales.unipolares} etiqueta="Unipolares" />
+                <Kpi valor={state.datos.totales.unipolaresConEspacio} etiqueta="Unipolares con cara libre"
+                     tono={state.datos.totales.unipolaresConEspacio > 0 ? "alerta" : undefined} />
               </div>
             )}
 

@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { esPanelExclusivo } from "./modalidadPanel.js";
+import { cuposPanel } from "./modalidadPanel.js";
+import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
@@ -124,34 +125,46 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       for (const panelId of panelIds) {
         const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));
         const datosPanel = panelSnap.exists ? panelSnap.data() ?? {} : {};
-        const exclusivo = esPanelExclusivo(datosPanel);
+        const cupos = cuposPanel(datosPanel);
+        const esLimitado = Number.isFinite(cupos);
         const nombrePanel = String(datosPanel.nombre || "ese panel");
 
         const cruces = todos.filter((c) => {
           if (c.deleted || !c.inicio || !c.fin) return false;
-          // En LED solo importa el propio cliente; en lona, cualquiera.
-          if (!exclusivo && String(c.cliente_id ?? "") !== clienteId) return false;
+          // En LED solo importa el propio cliente (sin límite real de
+          // anunciantes); en soportes con cupo limitado (lona/mural/
+          // paradero: 1, unipolar: 2) se cuentan las campañas de
+          // CUALQUIER cliente, porque el cupo es físico.
+          if (!esLimitado && String(c.cliente_id ?? "") !== clienteId) return false;
           if (!(c.inicio <= fin && inicio <= c.fin)) return false;
           const idsDeC = c.panel_ids && c.panel_ids.length > 0 ? c.panel_ids : c.panel_id ? [c.panel_id] : [];
           return idsDeC.includes(panelId);
         });
 
-        if (cruces.length > 0) {
+        // Sin cupo limitado (LED), basta con que el propio cliente ya
+        // tenga algo cruzado. Con cupo limitado, se bloquea recién
+        // cuando ya hay tantas campañas cruzadas como cupos tiene el
+        // soporte (1 en lona/mural/paradero, 2 en unipolar).
+        const limiteAlcanzado = esLimitado ? cruces.length >= cupos : cruces.length > 0;
+
+        if (limiteAlcanzado) {
           const finMasLejano = cruces.reduce((max, c) => (c.fin! > max ? c.fin! : max), cruces[0].fin!);
           const ajeno = cruces.some((c) => String(c.cliente_id ?? "") !== clienteId);
           let quien = "Este cliente ya tiene una campaña";
-          if (exclusivo && ajeno) {
+          if (esLimitado && ajeno) {
             const otroId = String(cruces.find((c) => String(c.cliente_id ?? "") !== clienteId)?.cliente_id ?? "");
             const otroSnap = otroId ? await tx.get(db.doc(`clientes/${otroId}`)) : null;
             const otroNombre = otroSnap?.exists ? String(otroSnap.data()?.empresa || "otro cliente") : "otro cliente";
-            quien = `${otroNombre} ya tiene una lona instalada`;
+            quien = cupos === 1 ? `${otroNombre} ya tiene una lona instalada` : `Ya hay ${cupos} campañas activas de otros clientes`;
           }
           throw new HttpsError(
             "failed-precondition",
             `${quien} en ${nombrePanel} hasta el ${finMasLejano}. ${
-              exclusivo
-                ? "Es un soporte impreso: solo puede haber una campaña a la vez."
-                : "No puede tener dos campañas activas a la vez en el mismo panel."
+              !esLimitado
+                ? "No puede tener dos campañas activas a la vez en el mismo panel."
+                : cupos === 1
+                ? "Es un soporte impreso de una sola cara: solo puede haber una campaña a la vez."
+                : `Este soporte admite como máximo ${cupos} campañas cruzadas a la vez (una por cara).`
             } Puedes programar esta a partir del ${siguienteDia(finMasLejano)}.`
           );
         }
@@ -171,18 +184,15 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       });
     });
 
-    // Marcar TODOS los paneles elegidos como Ocupado (mismo
-    // comportamiento que en el ERP, ahora para cada uno). Si marcar
-    // algun panel falla, no se revierte la campaña ya creada -- se
-    // avisa igual con exito, el panel se puede corregir a mano desde
-    // Paneles si hiciera falta.
-    await Promise.all(
-      panelIds.map((panelId) =>
-        db.doc(`paneles/${panelId}`).set({ estado: "Ocupado" }, { merge: true }).catch((err) => {
-          console.error(`No se pudo marcar el panel ${panelId} como Ocupado.`, err);
-        })
-      )
-    );
+    // Deja el estado (Ocupado/Disponible) de cada panel elegido en
+    // sintonía con sus contratos vigentes hoy -- ya no un "Ocupado" a
+    // ciegas para todos: en un soporte con más de un cupo (unipolar)
+    // puede seguir Disponible si todavía queda una cara libre, y en LED
+    // nunca se marca Ocupado por esto (no tiene límite real). Si algo
+    // falla, no se revierte la campaña ya creada -- se avisa igual con
+    // éxito, el panel se puede corregir a mano desde Paneles si hiciera
+    // falta, o lo arregla solo la tarea diaria.
+    await recalcularEstadoPaneles(db, panelIds);
 
     return { ok: true, contratoId: contratoRef.id };
   } catch (error) {

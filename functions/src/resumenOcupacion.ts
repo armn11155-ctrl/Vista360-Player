@@ -271,6 +271,11 @@ export const resumenOcupacion = onCall(async (request) => {
   const ledConEspacio = operativos.filter((p) => p.modalidad === "led" && p.anunciantesActivos > 0);
   const lonas = operativos.filter((p) => p.modalidad === "lona");
   const lonasLibres = lonas.filter((p) => p.anunciantesActivos === 0);
+  // Unipolar: impreso de DOS caras -- con menos de 2 anunciantes activos
+  // todavía le queda una cara libre para vender (a diferencia de la
+  // lona, que con 1 solo ya está completa).
+  const unipolares = operativos.filter((p) => p.modalidad === "unipolar");
+  const unipolaresConEspacio = unipolares.filter((p) => p.anunciantesActivos < 2);
 
   return {
     hoy,
@@ -291,6 +296,8 @@ export const resumenOcupacion = onCall(async (request) => {
       lonas: lonas.length,
       lonasLibres: lonasLibres.length,
       ledConEspacio: ledConEspacio.length,
+      unipolares: unipolares.length,
+      unipolaresConEspacio: unipolaresConEspacio.length,
     },
     paneles,
     porVencer,

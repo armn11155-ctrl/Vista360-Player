@@ -113,16 +113,18 @@ export type PanelEstado = "Disponible" | "Ocupado" | "Mantenimiento" | "Libre";
  * la etiqueta:
  *
  *  - "led": pantalla digital. Rota varios anuncios en bucle, así que
- *    puede tener VARIOS clientes al aire a la vez.
- *  - "lona": lona, mural o valla impresa. Es una sola pieza física
- *    instalada: mientras esté puesta la de un cliente, no puede haber
- *    otra. Es EXCLUSIVA por rango de fechas.
+ *    puede tener VARIOS clientes al aire a la vez (sin límite real).
+ *  - "lona": lona, mural, paradero o valla impresa. Es una sola pieza
+ *    física con UNA cara: mientras esté puesta la de un cliente, no
+ *    puede haber otra. Cupo 1, por rango de fechas.
+ *  - "unipolar": impreso también, pero con DOS caras -- admite hasta
+ *    DOS clientes cruzados en fechas (uno por cara), nunca un tercero.
  *
- * Por eso no alcanza con el campo `tipo` (texto libre, "ej. Valla,
- * LED"): de él no se puede derivar una regla con confianza, porque
- * depende de cómo lo haya escrito quien cargó el panel.
+ * Por eso no alcanza con el campo `tipo` (ahora una lista fija: Mural,
+ * Unipolar, Paradero, LED) para el código viejo que todavía deduce la
+ * modalidad de paneles cargados antes de que existiera este campo.
  */
-export type PanelModalidad = "led" | "lona";
+export type PanelModalidad = "led" | "lona" | "unipolar";
 
 export interface Panel {
   id: string;
@@ -182,20 +184,23 @@ export interface Cotizacion {
 }
 
 /** Palabras que delatan un soporte impreso cuando `modalidad` no está
- *  cargada todavía (paneles creados antes de que existiera el campo). */
-const PISTAS_LONA = ["lona", "mural", "banner", "impres", "valla", "gigantograf", "panel tradicional"];
+ *  cargada todavía (paneles creados antes de que existiera el campo, o
+ *  con un `tipo` viejo que no es ninguna de las 4 opciones fijas). */
+const PISTAS_UNIPOLAR = ["unipolar"];
+const PISTAS_LONA = ["lona", "mural", "paradero", "banner", "impres", "valla", "gigantograf", "panel tradicional"];
 
 /**
  * Modalidad efectiva de un panel. Si el admin ya la eligió a mano, manda
  * esa. Si no, se deduce del texto libre de `tipo` -- imperfecto a
- * propósito, pero mejor que asumir: al deducir "lona" el sistema es MÁS
- * restrictivo (exige exclusividad), así que el peor caso de una
- * deducción equivocada es que avise de un cruce que en realidad se
- * podía permitir, y no que se venda dos veces una lona.
+ * propósito, pero mejor que asumir: al deducir "lona"/"unipolar" el
+ * sistema es MÁS restrictivo (exige cupo limitado), así que el peor
+ * caso de una deducción equivocada es que avise de un cruce que en
+ * realidad se podía permitir, y no que se venda de más un soporte físico.
  */
 export function modalidadDePanel(panel: Pick<Panel, "modalidad" | "tipo">): PanelModalidad {
-  if (panel.modalidad === "led" || panel.modalidad === "lona") return panel.modalidad;
+  if (panel.modalidad === "led" || panel.modalidad === "lona" || panel.modalidad === "unipolar") return panel.modalidad;
   const t = (panel.tipo ?? "").toLowerCase();
+  if (PISTAS_UNIPOLAR.some((pista) => t.includes(pista))) return "unipolar";
   if (t.includes("led") || t.includes("digital") || t.includes("pantalla")) return "led";
   if (PISTAS_LONA.some((pista) => t.includes(pista))) return "lona";
   // Sin pistas: se asume LED, que es el comportamiento que ya tenía el
@@ -204,9 +209,20 @@ export function modalidadDePanel(panel: Pick<Panel, "modalidad" | "tipo">): Pane
   return "led";
 }
 
-/** true si el soporte admite un solo cliente a la vez (lona/mural). */
+/** true si el soporte admite un solo cliente a la vez (lona/mural/paradero).
+ *  Un unipolar es impreso pero tiene DOS caras -- para su cupo real usar
+ *  cuposPanel(), esto da false para unipolar a propósito. */
 export function esPanelExclusivo(panel: Pick<Panel, "modalidad" | "tipo">): boolean {
   return modalidadDePanel(panel) === "lona";
+}
+
+/** Cuántas campañas cruzadas en fechas admite el panel a la vez -- 1 en
+ *  lona/mural/paradero, 2 en unipolar (una por cara), sin límite en LED. */
+export function cuposPanel(panel: Pick<Panel, "modalidad" | "tipo">): number {
+  const m = modalidadDePanel(panel);
+  if (m === "unipolar") return 2;
+  if (m === "lona") return 1;
+  return Infinity;
 }
 
 /**

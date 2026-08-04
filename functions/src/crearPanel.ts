@@ -36,7 +36,7 @@ function numeroOpcional(value: unknown): number | undefined {
 export interface PanelValidado {
   nombre: string;
   tipo: string;
-  modalidad: "led" | "lona" | null;
+  modalidad: "led" | "lona" | "unipolar" | null;
   ciudad: string;
   direccion: string;
   icono: string;
@@ -50,7 +50,7 @@ function validarPanel(data: CrearPanelData): PanelValidado {
   const nombre = limpiar(data.nombre);
   const tipo = limpiar(data.tipo);
   const modalidadRaw = limpiar(data.modalidad);
-  const modalidad = modalidadRaw === "led" || modalidadRaw === "lona" ? modalidadRaw : null;
+  const modalidad = modalidadRaw === "led" || modalidadRaw === "lona" || modalidadRaw === "unipolar" ? modalidadRaw : null;
   const ciudad = limpiar(data.ciudad);
   const direccion = limpiar(data.direccion);
   const icono = limpiar(data.icono);
