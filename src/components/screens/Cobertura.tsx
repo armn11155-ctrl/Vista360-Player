@@ -10,6 +10,20 @@ import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
 interface Props {
   contratos: Contrato[];
+  /** true solo cuando `contratos` ya es la respuesta REAL de Firestore
+   *  para este cliente -- false mientras useContratos() todavía está
+   *  cargando (recién logueado, o el admin acaba de cambiar de cliente
+   *  en "vista cliente"). App.tsx colapsa ese estado de carga a un
+   *  array vacío `[]` (contratosState.status === "ready" ? ... : []),
+   *  así que sin esta bandera Cobertura no puede distinguir "este
+   *  cliente de verdad no tiene ninguna campaña" de "todavía no sé
+   *  cuáles son sus campañas". Esa confusión era real: por un instante
+   *  cada panel se ve SIN contrato propio, así que hasta un panel que
+   *  sí es del cliente se pinta azul ("ocupado por otro") en vez de
+   *  negro ("mío"), hasta que llega el snapshot de verdad y se
+   *  corrige solo. Con esta bandera, ese instante se cubre con
+   *  "Cargando paneles" en vez de mostrar colores equivocados. */
+  contratosListos: boolean;
   onBack?: () => void;
   onMenuClick?: () => void;
   /** Se dispara cuando la persona toca "Solicitar disponibilidad" o
@@ -318,7 +332,7 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   `;
 }
 
-export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarPanel }: Props) {
+export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onSolicitarPanel }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
@@ -371,6 +385,16 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   }, [contratos, todosPaneles]);
 
   const conCoordenadas = useMemo(() => lista.filter(tieneCoordenadas), [lista]);
+  // Ver el comentario de `contratosListos` en Props -- mientras esto
+  // sea false, "lista" ya tiene todos los paneles (vienen del
+  // inventario global, no de los contratos) pero su campo `contrato`
+  // todavía puede estar vacío para paneles que SÍ son del cliente. No
+  // alcanza con `panelesState.status === "ready"` solo: ese es el
+  // inventario de paneles, un listener totalmente aparte del de
+  // contratos, así que puede estar "ready" mucho antes de que
+  // useContratos() responda (sobre todo al cambiar de cliente sin
+  // recargar la página, como hace el admin en "vista cliente").
+  const datosListos = panelesState.status === "ready" && contratosListos;
   // Paneles distintos pueden compartir la misma ubicación, o estar a
   // pocos metros uno del otro (ej. un mediano y un grande en el mismo
   // poste/edificio de Pacífico, o en veredas opuestas de la misma
@@ -521,7 +545,13 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
         markersRef.current = L.layerGroup().addTo(mapRef.current);
         markersPorIdRef.current = new Map();
 
-        conCoordenadas.forEach((panel) => {
+        // Mientras !datosListos, se deja el grupo de markers vacío
+        // (arriba) en vez de dibujar con contratos incompletos -- ver
+        // el comentario de `contratosListos` en Props. En cuanto llega
+        // el snapshot real de contratos, "conCoordenadas" cambia de
+        // referencia y este efecto se vuelve a correr solo, esta vez
+        // con datosListos=true.
+        if (datosListos) conCoordenadas.forEach((panel) => {
           const selected = panel.id === seleccionado?.id;
           // 3 colores de pin a propósito (se pidió distinguir "mío" de
           // "ocupado por otro" -- antes los dos se veían negros igual y
@@ -751,7 +781,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
       observadorRef.current?.disconnect();
       observadorRef.current = null;
     };
-  }, [conCoordenadas, seleccionado, seleccionadoId]);
+  }, [conCoordenadas, seleccionado, seleccionadoId, datosListos]);
 
   useEffect(() => () => {
     markersRef.current?.remove();
@@ -789,7 +819,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
-          {mapReady && !mapError && panelesState.status === "ready" && (
+          {mapReady && !mapError && datosListos && (
             <div className="coverage-map-legend coverage-map-legend-desktop" aria-label="Leyenda del mapa">
               <div>
                 <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
@@ -825,7 +855,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
              los pines de golpe. Se ve poco elegante/poco pulido. Ahora
              se distingue el estado "cargando" del estado "ready pero
              vacío" para no mostrar ese mensaje hasta estar seguros. */}
-          {mapReady && !mapError && panelesState.status === "loading" && (
+          {mapReady && !mapError && (panelesState.status === "loading" || !contratosListos) && (
             <div className="coverage-map-loading">
               <span aria-hidden="true" />
               Cargando paneles
@@ -834,7 +864,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           {mapReady && !mapError && panelesState.status === "error" && (
             <div className="coverage-map-loading is-error">{panelesState.message}</div>
           )}
-          {mapReady && !mapError && panelesState.status === "ready" && conCoordenadas.length === 0 && (
+          {mapReady && !mapError && datosListos && conCoordenadas.length === 0 && (
             <div className="coverage-no-coords">
               <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
@@ -852,7 +882,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           )}
         </div>
 
-        {mapReady && !mapError && panelesState.status === "ready" && (
+        {mapReady && !mapError && datosListos && (
           <div className="coverage-map-legend coverage-map-legend-mobile" aria-label="Leyenda del mapa">
             <div>
               <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
@@ -902,7 +932,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         <div className="coverage-panel-card">
           <div className="section-title">Paneles ubicados</div>
-          {panelesState.status === "loading" ? (
+          {panelesState.status === "loading" || !contratosListos ? (
             <div className="state-sub" style={{ maxWidth: "none" }}>
               Cargando paneles…
             </div>

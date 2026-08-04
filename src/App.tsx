@@ -696,6 +696,7 @@ function AuthenticatedApp({
         content = (
           <Cobertura
             contratos={contratos}
+            contratosListos={contratosState.status === "ready"}
             onMenuClick={() => setSidebarOpen(true)}
             onSolicitarPanel={(panel, tipo) => {
               setPrefillNueva({
