@@ -179,9 +179,16 @@ function estadoPinPanel(panel: PanelConUso): EstadoPinPanel {
   return esPanelDisponibleAhora(panel) ? "disponible" : "ocupado";
 }
 
+// Se pidió cambiar los colores: AZUL para los paneles contratados por
+// este cliente y NEGRO para los ocupados por otro. (Antes era al revés.)
+// Solo cambia el color -- qué significa cada estado no cambió, así que
+// estadoPinPanel() y las clases CSS de abajo siguen igual.
+// OJO: el archivo azul se llama ...-contratado.png justamente por esto;
+// antes se llamaba ...-occupied.png y, tras el cambio, ese nombre habría
+// significado lo contrario de lo que muestra.
 const PIN_URL: Record<EstadoPinPanel, string> = {
-  mio: "/vista360-map-marker-v4.png",
-  ocupado: "/vista360-map-marker-occupied.png",
+  mio: "/vista360-map-marker-contratado.png",
+  ocupado: "/vista360-map-marker-v4.png",
   disponible: "/vista360-map-marker-available.png",
 };
 
@@ -852,12 +859,12 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Paneles contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Paneles ocupados</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>
@@ -915,12 +922,12 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
               <strong>{panelesContratables}</strong>
             </div>
             <div>
-              <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
+              <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
               <span>Paneles contratados</span>
               <strong>{panelesActivos}</strong>
             </div>
             <div>
-              <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
+              <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
               <span>Paneles ocupados</span>
               <strong>{panelesOcupadosPorOtros}</strong>
             </div>
