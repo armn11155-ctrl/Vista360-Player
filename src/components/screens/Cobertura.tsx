@@ -793,12 +793,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
             <div className="coverage-map-legend coverage-map-legend-desktop" aria-label="Leyenda del mapa">
               <div>
                 <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Paneles publicitarios que puedes contratar</span>
+                <span>Paneles que puedes contratar</span>
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
                 <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Paneles publicitarios contratados</span>
+                <span>Paneles contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
               <div>
@@ -856,12 +856,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           <div className="coverage-map-legend coverage-map-legend-mobile" aria-label="Leyenda del mapa">
             <div>
               <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Paneles publicitarios que puedes contratar</span>
+              <span>Paneles que puedes contratar</span>
               <strong>{panelesContratables}</strong>
             </div>
             <div>
               <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Paneles publicitarios contratados</span>
+              <span>Paneles contratados</span>
               <strong>{panelesActivos}</strong>
             </div>
             <div>
