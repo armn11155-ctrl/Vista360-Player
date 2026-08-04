@@ -146,6 +146,31 @@ function esPanelDisponibleAhora(panel: PanelConUso) {
   return panel.estado !== "Ocupado" && panel.estado !== "Mantenimiento";
 }
 
+/** Los 3 casos que puede mostrar un pin -- se pidió distinguir a
+ *  simple vista "mío" de "ocupado por otro cliente" (antes los dos
+ *  se veían negros por igual, y varias veces se confundió uno con
+ *  otro). "mio": tengo una campaña propia vigente/programada acá.
+ *  "ocupado": no es mío, pero no está disponible (otro cliente lo
+ *  tiene, o está en Mantenimiento). "disponible": nadie lo tiene hoy. */
+type EstadoPinPanel = "mio" | "ocupado" | "disponible";
+
+function estadoPinPanel(panel: PanelConUso): EstadoPinPanel {
+  if (esPanelActivoCliente(panel)) return "mio";
+  return esPanelDisponibleAhora(panel) ? "disponible" : "ocupado";
+}
+
+const PIN_URL: Record<EstadoPinPanel, string> = {
+  mio: "/vista360-map-marker-v4.png",
+  ocupado: "/vista360-map-marker-occupied.png",
+  disponible: "/vista360-map-marker-available.png",
+};
+
+const PIN_CLASE: Record<EstadoPinPanel, string> = {
+  mio: "is-contracted",
+  ocupado: "is-occupied",
+  disponible: "is-available",
+};
+
 // Mismo umbral que usa recordatorioVencimientoCampanas (Cloud
 // Function) para avisarle al cliente que su campaña vence pronto --
 // acá se usa para mostrar el botón "Solicitar renovación" en el popup.
@@ -372,6 +397,12 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
   // cambia el zoom.
   const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
   const panelesContratables = useMemo(() => conCoordenadas.filter(esPanelContratable).length, [conCoordenadas]);
+  // Cuántos paneles están ocupados por OTRO cliente (ni son míos ni
+  // están libres) -- para la fila nueva de la leyenda con el pin azul.
+  const panelesOcupadosPorOtros = useMemo(
+    () => conCoordenadas.filter((panel) => estadoPinPanel(panel) === "ocupado").length,
+    [conCoordenadas]
+  );
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
 
@@ -492,24 +523,20 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
 
         conCoordenadas.forEach((panel) => {
           const selected = panel.id === seleccionado?.id;
-          // OJO: antes acá usaba esPanelActivoCliente(panel), que solo
-          // pregunta "¿ESTE cliente tiene un contrato acá?" -- eso hacía
-          // que un panel exclusivo (lona/mural) ya tomado por OTRO
-          // cliente se pintara BLANCO (como si estuviera libre) para
-          // cualquiera que no fuera el dueño del contrato, aunque el
-          // popup del mismo pin sí mostrara "Ocupado" bien (ese usa
-          // estadoTexto/estadoColor, que sí revisa panel.estado). Con
-          // !esPanelDisponibleAhora(panel) el pin refleja lo mismo que
-          // ya dice el popup: negro si de verdad no se puede contratar
-          // HOY (sea porque es mío y sigue vigente, porque lo tiene
-          // alguien más, o porque está lleno con fecha de liberación
-          // futura conocida), blanco solo si de verdad está disponible
-          // ahora mismo (NO esPanelContratable: esa además cuenta como
-          // "contratable" a un panel lleno con libreDesde conocido, a
-          // proposito, para permitir reservarlo por adelantado -- pero
-          // eso pintaba el pin blanco, que era el bug).
-          const contratado = !esPanelDisponibleAhora(panel);
-          const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
+          // 3 colores de pin a propósito (se pidió distinguir "mío" de
+          // "ocupado por otro" -- antes los dos se veían negros igual y
+          // se prestaba a confusión): negro = tengo yo una campaña
+          // vigente/programada acá; azul = no es mío pero no está
+          // disponible (otro cliente lo tiene, o está en Mantenimiento);
+          // blanco = de verdad está libre hoy. estadoPinPanel() decide
+          // cuál de los tres es, usando esPanelActivoCliente() y
+          // esPanelDisponibleAhora() (NO esPanelContratable: esa además
+          // cuenta como "disponible" a un panel lleno con libreDesde
+          // conocido, a propósito, para permitir reservarlo por
+          // adelantado -- pero eso pintaba el pin blanco, que era el
+          // bug original reportado).
+          const estadoPin = estadoPinPanel(panel);
+          const pinUrl = PIN_URL[estadoPin];
           // Siempre arranca en su coordenada REAL -- si comparte punto
           // con otro panel, reposicionarSolapados() lo corre a un lado
           // apenas se termina de armar el mapa (y de nuevo cada vez que
@@ -517,7 +544,7 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           // pantalla en vez de grados fijos.
           const marker = L.marker([panel.lat, panel.lng], {
             icon: L.divIcon({
-              className: `coverage-leaflet-marker ${selected ? "active" : ""} ${contratado ? "is-contracted" : "is-available"}`,
+              className: `coverage-leaflet-marker ${selected ? "active" : ""} ${PIN_CLASE[estadoPin]}`,
               html: `<span><img src="${pinUrl}" alt="" /></span>`,
               iconSize: selected ? [48, 74] : [38, 58],
               iconAnchor: selected ? [24, 72] : [19, 56],
@@ -774,6 +801,11 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
                 <span>Paneles publicitarios contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
+              <div>
+                <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
+                <span>Ocupados por otro cliente</span>
+                <strong>{panelesOcupadosPorOtros}</strong>
+              </div>
             </div>
           )}
           {!mapReady && !mapError && (
@@ -831,6 +863,11 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
               <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
               <span>Paneles publicitarios contratados</span>
               <strong>{panelesActivos}</strong>
+            </div>
+            <div>
+              <img src="/vista360-map-marker-occupied.png" decoding="async" alt="" aria-hidden="true" />
+              <span>Ocupados por otro cliente</span>
+              <strong>{panelesOcupadosPorOtros}</strong>
             </div>
           </div>
         )}

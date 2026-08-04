@@ -6713,6 +6713,16 @@
   .coverage-leaflet-marker.is-available.active {
     filter: drop-shadow(0 12px 16px rgba(2,6,23,.48));
   }
+  /* Pin azul (vista360-map-marker-occupied.png) -- "ocupado por OTRO
+     cliente", el 3er estado que se agrego para no confundirlo con el
+     pin negro de "es mio". Mismo tratamiento de sombra que los otros
+     dos, sin aro extra. */
+  .coverage-leaflet-marker.is-occupied {
+    filter: drop-shadow(0 10px 14px rgba(2,6,23,.4));
+  }
+  .coverage-leaflet-marker.is-occupied.active {
+    filter: drop-shadow(0 14px 18px rgba(2,6,23,.5));
+  }
   .coverage-map-legend {
     position: absolute;
     left: 10px;
