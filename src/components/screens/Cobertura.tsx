@@ -84,10 +84,16 @@ function estadoTexto(panel: PanelConUso) {
   return panel.estado === "Ocupado" ? "Ocupado" : panel.estado === "Mantenimiento" ? "Mantenimiento" : "Disponible";
 }
 
+// "Finalizado" a propósito NO es una de las etiquetas que puede devolver
+// estadoTexto() -- una campaña propia ya terminada no tiene NINGÚN peso
+// en el estado actual del panel (ver el comentario grande en
+// estadoTexto): una vez que termina, es como si esa campaña no
+// existiera para efectos de color/disponibilidad, punto. Lo único que
+// queda de ella es informativo, solo dentro del popup (fecha en que
+// "Finalizó" + botón "Volver a contratar") -- eso no pasa por acá.
 function estadoColor(label: string) {
   if (label === "Activo") return "#22C55E";
   if (label === "Programado") return "#0877FF"; // antes naranja -- se pidió que no haya naranjas, todo en la paleta azul de la marca
-  if (label === "Finalizado") return "#64748B";
   if (label === "Disponible") return "#16A34A";
   if (label === "Ocupado") return "#0877FF";
   if (label === "Mantenimiento") return "#7C3AED";
