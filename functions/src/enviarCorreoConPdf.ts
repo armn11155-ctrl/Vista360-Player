@@ -189,7 +189,7 @@ function construirHtmlCorreo(mensaje: string): string {
   <body style="margin:0;padding:0;background-color:${bg};">
     <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" class="vp-bg-navy" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
       <tr>
-        <td align="left" background="${GLOW_URL_TR}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:100px 100px;padding:48px 24px 34px 32px;">
+        <td align="left" background="${GLOW_URL_TR}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:115px 115px;padding:48px 24px 34px 32px;">
           <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
           <table role="presentation" align="left" cellpadding="0" cellspacing="0" style="width:96px;margin-top:14px;">
             <tr><td height="3" style="height:3px;line-height:3px;font-size:0;background-color:#FEFEFE;" class="vp-white-text">&nbsp;</td></tr>
@@ -208,7 +208,7 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:100px 100px;padding:0 24px 46px;font-family:${fuente};">
+        <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:115px 115px;padding:0 24px 46px;font-family:${fuente};">
           <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FEFEFE;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FEFEFE !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
           <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
           <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FEFEFE;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
