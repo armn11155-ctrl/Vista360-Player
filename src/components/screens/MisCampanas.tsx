@@ -55,7 +55,11 @@ function diasParaVencer(c: Contrato): number {
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
 
 export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
-  const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Todas");
+  // Arranca en "Activa" (no "Todas") -- se pidio que al entrar a
+  // Campanas siempre se vea primero lo mas relevante/urgente (lo que
+  // esta corriendo ahora), no la lista completa mezclada con
+  // programadas y finalizadas.
+  const [filtro, setFiltro] = useState<"Todas"|"Activa"|"Programada"|"Finalizada">("Activa");
   const [modal, setModal] = useState<{ contrato: Contrato; panelNombre: string; ciudad: string; estado: RenovacionEstado; solicitudId?: string; error?: string; yaExistia?: boolean } | null>(null);
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
