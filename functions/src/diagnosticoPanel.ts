@@ -42,6 +42,23 @@ export const diagnosticoPanel = onCall<DiagnosticoPanelData>(async (request) => 
     throw new HttpsError("invalid-argument", "Falta el panel.");
   }
 
+  try {
+    return await construirDiagnostico(db, panelId);
+  } catch (error) {
+    if (error instanceof HttpsError) throw error;
+    // "internal" (el código por defecto de un throw sin HttpsError) se
+    // traduce SIEMPRE al mensaje genérico "Algo falló de nuestro lado"
+    // en el frontend (ver mensajeDeError.ts), sin importar qué texto
+    // traiga -- por eso acá se usa "failed-precondition" a propósito,
+    // un código que esa tabla no traduce, para que el detalle REAL del
+    // error llegue a la pantalla en vez de quedar escondido.
+    console.error(`diagnosticoPanel: fallo real para panelId=${panelId}`, error);
+    const detalle = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    throw new HttpsError("failed-precondition", `Fallo real del diagnóstico: ${detalle}`);
+  }
+});
+
+async function construirDiagnostico(db: FirebaseFirestore.Firestore, panelId: string) {
   const panelSnap = await db.doc(`paneles/${panelId}`).get();
   if (!panelSnap.exists) {
     throw new HttpsError("not-found", "No se encontró ese panel.");
@@ -106,4 +123,4 @@ export const diagnosticoPanel = onCall<DiagnosticoPanelData>(async (request) => 
     libreDesdeCalculado: libreDesde,
     contratosEncontrados: contratos,
   };
-});
+}
