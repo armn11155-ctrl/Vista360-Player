@@ -29,6 +29,7 @@ export { resolverSolicitudAccion } from "./resolverSolicitudAccion.js";
 export { eliminarSolicitudCampana } from "./eliminarSolicitudCampana.js";
 export { crearSolicitudCampana } from "./crearSolicitudCampana.js";
 export { sincronizarEstadoPaneles, sincronizarEstadoPanelesAhora } from "./sincronizarEstadoPaneles.js";
+export { diagnosticoPanel } from "./diagnosticoPanel.js";
 export { limpiarArchivosHuerfanos } from "./limpiarArchivosHuerfanos.js";
 export { resumenOcupacion } from "./resumenOcupacion.js";
 export { contarEvidenciasHuerfanas } from "./contarEvidenciasHuerfanas.js";

@@ -36,6 +36,28 @@ const CENTRO_DEFECTO: [number, number] = [-12.0464, -77.0428];
 
 const inputStyle = campoBase;
 
+interface DiagnosticoPanelDatos {
+  hoy: string;
+  nombre: string;
+  tipoGuardado: string;
+  modalidadGuardada: string | null;
+  modalidadEfectiva: string;
+  cupos: number | null;
+  estadoGuardadoActual: string;
+  libreDesdeGuardado: string | null;
+  estadoQueDeberiaSer: string;
+  libreDesdeCalculado: string | null;
+  contratosEncontrados: {
+    id: string;
+    clienteId: string;
+    clienteNombre: string;
+    inicio: string | null;
+    fin: string | null;
+    deleted: boolean;
+    vigenteHoy: boolean;
+  }[];
+}
+
 /** Las 4 opciones fijas de "Tipo" que se pidió que hubiera, cada una
  *  con su modalidad comercial ya pegada (ver PanelModalidad en
  *  types/index.ts): Mural y Paradero son impresos de una sola cara
@@ -103,6 +125,11 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
   const [mostrarForm, setMostrarForm] = useState(false);
   const [sincronizando, setSincronizando] = useState(false);
   const [mensajeSync, setMensajeSync] = useState("");
+  const [diagnostico, setDiagnostico] = useState<{
+    cargando: boolean;
+    error: string;
+    datos: DiagnosticoPanelDatos | null;
+  } | null>(null);
   const [panelEditando, setPanelEditando] = useState<Panel | null>(null);
   const [nombre, setNombre] = useState("");
   // Tipo: ahora una lista fija (antes texto libre -- terminaba con
@@ -285,6 +312,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
   function abrirEdicion(p: Panel) {
     setError("");
     setMensajeOk("");
+    setDiagnostico(null);
     setPanelEditando(p);
     setNombre(p.nombre ?? "");
     setTipo(p.tipo ?? "");
@@ -405,6 +433,24 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
     }
   }
 
+  /** Explica por qué el sistema decide que ESTE panel está Ocupado o
+   *  Disponible, sin tener que adivinar mirando código -- llama a
+   *  diagnosticoPanel (Cloud Function nueva) y muestra tipo/modalidad
+   *  guardados vs. lo que el sistema calcula, más cada contrato real
+   *  que referencia el panel, con sus fechas y si cuenta como vigente
+   *  hoy. Pensada para el caso "sigue en blanco y no sé por qué". */
+  async function verDiagnostico(panelId: string) {
+    if (!cloudFunctions) return;
+    setDiagnostico({ cargando: true, error: "", datos: null });
+    try {
+      const fn = httpsCallable<{ panelId: string }, DiagnosticoPanelDatos>(cloudFunctions, "diagnosticoPanel");
+      const res = await fn({ panelId });
+      setDiagnostico({ cargando: false, error: "", datos: res.data });
+    } catch (err) {
+      setDiagnostico({ cargando: false, error: mensajeDeError(err, "No se pudo obtener el diagnóstico."), datos: null });
+    }
+  }
+
   return (
     <div className="admin-tool-screen paneles-screen">
       <div className="detail-header">
@@ -427,6 +473,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
               setMostrarForm(true);
             }
             setMensajeOk("");
+            setDiagnostico(null);
           }}
           style={{
             width: "100%", margin: "4px 0 12px", background: "#0877FF", color: "#fff",
@@ -460,9 +507,62 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
 
         {mostrarForm && (
           <div className="card">
-            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
-              {panelEditando ? `Editar panel — ${panelEditando.nombre}` : "Panel nuevo"}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 10 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)" }}>
+                {panelEditando ? `Editar panel — ${panelEditando.nombre}` : "Panel nuevo"}
+              </div>
+              {panelEditando && (
+                <button
+                  type="button"
+                  onClick={() => verDiagnostico(panelEditando.id)}
+                  style={{
+                    fontSize: 11, fontWeight: 700, color: "#0877FF", background: "none",
+                    border: "1px solid #0877FF", borderRadius: 8, padding: "5px 9px", cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Ver diagnóstico
+                </button>
+              )}
             </div>
+
+            {diagnostico && (
+              <div style={{
+                marginBottom: 14, padding: 12, borderRadius: 10, background: "#F8F9FB",
+                border: "1px solid #E5E7EB", fontSize: 11.5, lineHeight: 1.6, color: "#0B1220",
+              }}>
+                {diagnostico.cargando && <div>Cargando diagnóstico…</div>}
+                {diagnostico.error && <div style={{ color: "var(--red)" }}>{diagnostico.error}</div>}
+                {diagnostico.datos && (() => {
+                  const d = diagnostico.datos;
+                  return (
+                    <>
+                      <div><strong>Hoy (Lima):</strong> {d.hoy}</div>
+                      <div><strong>Tipo guardado:</strong> "{d.tipoGuardado}" &nbsp; <strong>Modalidad guardada:</strong> {d.modalidadGuardada ?? "(ninguna)"}</div>
+                      <div><strong>Modalidad efectiva:</strong> {d.modalidadEfectiva} &nbsp; <strong>Cupo:</strong> {d.cupos ?? "sin límite"}</div>
+                      <div><strong>Estado guardado ahora mismo:</strong> {d.estadoGuardadoActual}{d.libreDesdeGuardado ? ` (libre desde ${d.libreDesdeGuardado})` : ""}</div>
+                      <div>
+                        <strong>Estado que debería tener:</strong>{" "}
+                        <span style={{ color: d.estadoQueDeberiaSer === d.estadoGuardadoActual ? "#16A34A" : "#DC2626", fontWeight: 800 }}>
+                          {d.estadoQueDeberiaSer}
+                        </span>
+                        {d.libreDesdeCalculado ? ` (libre desde ${d.libreDesdeCalculado})` : ""}
+                      </div>
+                      <div style={{ marginTop: 8, fontWeight: 800 }}>Contratos encontrados que usan este panel:</div>
+                      {d.contratosEncontrados.length === 0 && <div>Ninguno.</div>}
+                      {d.contratosEncontrados.map((c) => (
+                        <div key={c.id} style={{ marginTop: 3, paddingLeft: 8, borderLeft: "2px solid #E5E7EB" }}>
+                          {c.clienteNombre} · {c.inicio ?? "?"} → {c.fin ?? "?"}
+                          {c.deleted ? " · BORRADO" : ""}
+                          {" · "}{c.vigenteHoy ? "vigente hoy" : "no vigente hoy"}
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+
             <div style={{ display: "grid", gap: 10 }}>
               <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Nombre del panel" style={inputStyle} />
               <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ciudad" style={inputStyle} />
