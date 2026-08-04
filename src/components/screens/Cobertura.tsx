@@ -358,9 +358,40 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   const lista = useMemo<PanelConUso[]>(() => {
     // Un contrato multi-panel ocupa TODOS sus paneles en el mapa, no
     // solo el primero.
+    //
+    // Un mismo panel puede tener MÁS DE UN contrato de este cliente a
+    // lo largo del tiempo -- típicamente uno viejo ya Finalizado y uno
+    // nuevo recién creado (renovación en el mismo punto). Antes acá se
+    // hacía usados.set(panelId, contrato) sin más, así que el ÚLTIMO
+    // contrato de ese panel recorrido en el forEach ganaba SIEMPRE --
+    // y como la query de useContratos() viene ordenada por
+    // inicio DESCENDENTE (el más nuevo primero), el contrato viejo
+    // terminaba procesándose después y pisaba al nuevo en el Map. El
+    // resultado: con una campaña nueva recién creada en un panel que
+    // ya habías tenido antes, "panel.contrato" quedaba apuntando al
+    // contrato VIEJO (Finalizado) -- así que esPanelActivoCliente()
+    // decía que no era tuyo, y el pin se pintaba azul ("ocupado por
+    // otro") en vez de negro, aunque el panel sí mostrara bien la
+    // fecha de liberación de la campaña nueva (esa sí sale de
+    // panel.estado/libreDesde, que no depende de este Map).
+    //
+    // Ahora, si un panel ya tiene un contrato asignado en el Map, uno
+    // nuevo solo lo reemplaza si es "mejor" para representar el
+    // estado actual: se prefiere cualquiera que NO esté Finalizado
+    // por sobre uno que sí lo esté, y entre dos con el mismo estado,
+    // el que termina más tarde (el más vigente/reciente).
     const usados = new Map<string, Contrato>();
+    const esMejorParaPin = (nuevo: Contrato, existente: Contrato) => {
+      const nuevoFinalizado = estadoCampana(nuevo) === "Finalizada";
+      const existenteFinalizado = estadoCampana(existente) === "Finalizada";
+      if (nuevoFinalizado !== existenteFinalizado) return existenteFinalizado;
+      return nuevo.fin > existente.fin;
+    };
     contratos.forEach((contrato) => {
-      panelesDeContrato(contrato).forEach((panelId) => usados.set(panelId, contrato));
+      panelesDeContrato(contrato).forEach((panelId) => {
+        const existente = usados.get(panelId);
+        if (!existente || esMejorParaPin(contrato, existente)) usados.set(panelId, contrato);
+      });
     });
     return todosPaneles
       .map((panel) => ({
