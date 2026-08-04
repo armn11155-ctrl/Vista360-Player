@@ -72,25 +72,42 @@ const OnboardingTour = lazy(() => import("./components/OnboardingTour"));
  *  admin realmente toca "Paneles" (o Cobertura, Facturas, etc), el
  *  código ya esté en caché y la pantalla aparezca al toque. */
 function precargarPantallas() {
-  void import("./components/screens/DetalleCampana");
-  void import("./components/screens/NuevaCampana");
-  void import("./components/screens/Cobertura");
-  void import("./components/screens/MisPantallas");
-  void import("./components/screens/AnaliticaClientes");
-  void import("./components/screens/AprobacionesGerente");
-  void import("./components/screens/SolicitudesCampana");
-  void import("./components/screens/Accesos");
-  void import("./components/screens/Facturas");
-  void import("./components/screens/Notificaciones");
-  void import("./components/screens/CrearCliente");
-  void import("./components/screens/Paneles");
-  void import("./components/screens/Ocupacion");
-  void import("./components/screens/Cotizaciones");
-  void import("./components/AdminClientPicker");
-  void import("./components/screens/AdminPerfil");
-  void import("./components/screens/MisCampanas");
-  void import("./components/screens/Reportes");
-  void import("./components/screens/Perfil");
+  // OJO con el .catch(): una precarga que falla es TOTALMENTE inofensiva
+  // (la pantalla se vuelve a pedir sola cuando la persona entra de
+  // verdad), pero sin capturar el error cada fallo se convertía en un
+  // "unhandled promise rejection". Y fallan seguido: esto corre al
+  // arrancar la app, cuando el celular todavía está enganchándose a la
+  // red, y son 19 pedidos de golpe. Peor aún, después de un despliegue
+  // nuevo, una pestaña vieja pide chunks que ya no existen -- ahí
+  // fallan TODOS a la vez. Ese ruido tapaba errores de verdad en la
+  // consola y, en algunos navegadores, llegaba a los reportes de error
+  // como si la app se hubiera roto. Ahora se ignoran en silencio, que es
+  // exactamente lo que corresponde para una precarga optimista.
+  const precargar = (cargar: () => Promise<unknown>) => {
+    void cargar().catch(() => {
+      /* precarga optimista: si falla, la pantalla se pide de nuevo al abrirla */
+    });
+  };
+
+  precargar(() => import("./components/screens/DetalleCampana"));
+  precargar(() => import("./components/screens/NuevaCampana"));
+  precargar(() => import("./components/screens/Cobertura"));
+  precargar(() => import("./components/screens/MisPantallas"));
+  precargar(() => import("./components/screens/AnaliticaClientes"));
+  precargar(() => import("./components/screens/AprobacionesGerente"));
+  precargar(() => import("./components/screens/SolicitudesCampana"));
+  precargar(() => import("./components/screens/Accesos"));
+  precargar(() => import("./components/screens/Facturas"));
+  precargar(() => import("./components/screens/Notificaciones"));
+  precargar(() => import("./components/screens/CrearCliente"));
+  precargar(() => import("./components/screens/Paneles"));
+  precargar(() => import("./components/screens/Ocupacion"));
+  precargar(() => import("./components/screens/Cotizaciones"));
+  precargar(() => import("./components/AdminClientPicker"));
+  precargar(() => import("./components/screens/AdminPerfil"));
+  precargar(() => import("./components/screens/MisCampanas"));
+  precargar(() => import("./components/screens/Reportes"));
+  precargar(() => import("./components/screens/Perfil"));
   // Cobertura necesita además el chunk de Leaflet (ahora empaquetado con
   // la app, ya no un CDN externo -- ver utils/leaflet.ts). Pedirlo acá
   // igual sirve: aunque ya esté en el mismo paquete Vite, sigue siendo
@@ -109,7 +126,7 @@ function precargarPantallas() {
   // de una vez -- así, para cuando la persona realmente toca
   // "Cobertura", lo más probable es que los paneles ya hayan llegado
   // mientras miraba Inicio, y no vea "Cargando" en absoluto.
-  void import("./hooks/usePanelesDisponibles").then((m) => m.precargarPaneles());
+  precargar(() => import("./hooks/usePanelesDisponibles").then((m) => m.precargarPaneles()));
 }
 
 type View =

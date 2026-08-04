@@ -7831,3 +7831,98 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     scroll-behavior: auto !important;
   }
 }
+
+/* ===== Diálogos de confirmación / aviso =====
+   Reemplazan window.confirm() y window.alert() -- ver el comentario
+   grande en components/DialogosProvider.tsx sobre por qué no se usan
+   los nativos. Sigue el mismo lenguaje que los otros modales de la app
+   (.avatar-modal, .photo-crop-modal): fondo oscurecido con desenfoque,
+   tarjeta blanca redondeada, botones grandes en fila.
+   z-index 80: por encima del resto de modales (60), porque un diálogo
+   puede pedir confirmación DESDE uno de ellos (ej. "borrar estas
+   fotos" dentro del modal de recorte) y tiene que quedar arriba. */
+  .dialogo-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: rgba(5,10,18,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+    animation: dialogo-entrada-fondo .16s ease-out;
+  }
+  .dialogo {
+    width: 100%;
+    max-width: 340px;
+    background: #FFFFFF;
+    border-radius: 20px;
+    padding: 22px 20px 18px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.35);
+    animation: dialogo-entrada .18s cubic-bezier(.2,.8,.3,1);
+  }
+  .dialogo-titulo {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0B1220;
+    line-height: 1.35;
+    text-align: center;
+  }
+  .dialogo-titulo.es-error {
+    color: #DC2626;
+  }
+  .dialogo-mensaje {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #536079;
+    text-align: center;
+    /* Los mensajes traen nombres de campañas/clientes escritos por el
+       usuario: sin esto, un nombre largo sin espacios (o un correo)
+       desbordaba la tarjeta y se cortaba fuera del borde redondeado. */
+    overflow-wrap: anywhere;
+  }
+  .dialogo-acciones {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .dialogo-btn {
+    flex: 1;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    padding: 0 12px;
+  }
+  .dialogo-btn.secondary {
+    background: #F1F5F9;
+    color: #536079;
+  }
+  .dialogo-btn.primary {
+    background: #0877FF;
+    color: #fff;
+  }
+  /* Rojo solo para lo que no se puede deshacer -- que el botón se vea
+     distinto es justamente el punto: con los diálogos nativos ambos
+     botones eran idénticos y se confirmaban borrados sin registrarlo. */
+  .dialogo-btn.destructive {
+    background: #DC2626;
+    color: #fff;
+  }
+  .dialogo-btn:focus-visible {
+    outline: 2px solid #0B1220;
+    outline-offset: 2px;
+  }
+  @keyframes dialogo-entrada-fondo {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes dialogo-entrada {
+    from { opacity: 0; transform: translateY(8px) scale(.97); }
+    to { opacity: 1; transform: none; }
+  }

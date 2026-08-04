@@ -11,6 +11,7 @@ import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";
 import { useSignedUrls } from "../../hooks/useSignedUrls";
 import type { SolicitudCampana } from "../../types";
+import { useDialogos } from "../DialogosProvider";
 
 /** "26 jul 2026" -- para mostrarle al admin la fecha de inicio que
  *  pidió el cliente al solicitar disponibilidad o renovación. */
@@ -65,6 +66,7 @@ interface Props {
 }
 
 export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
+  const { confirmar } = useDialogos();
   const state = useSolicitudesCampana(true);
   const { respuesta: recordatorioDominio, aceptar: aceptarRecordatorioDominio, aceptando: aceptandoRecordatorioDominio } = useRecordatorioDominio(true);
   const clientesState = useClientesAdmin();
@@ -114,7 +116,12 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
     if (eliminandoId) return;
     if (!cloudFunctions) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
     setAccionError(null);
-    const confirmado = window.confirm(`¿Eliminar la solicitud "${nombre}"? No se puede deshacer.`);
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar esta solicitud?",
+      mensaje: `Se eliminará la solicitud "${nombre}". No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setMenuAbiertoId(null);
     setEliminandoId(id);

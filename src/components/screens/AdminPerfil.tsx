@@ -9,6 +9,7 @@ import { useAvatarPropio } from "../../hooks/useAvatarPropio";
 import BackChevron from "../BackChevron";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
+import { useDialogos } from "../DialogosProvider";
 
 interface Props {
   uid: string;
@@ -92,6 +93,7 @@ type LimpiezaEstado =
  * Muestra identidad (con foto propia editable) + espacio usado en R2.
  */
 export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBack }: Props) {
+  const { confirmar } = useDialogos();
   const rolInterno = esGerente ? "Gerente" : "Trabajador";
   const espacio = useEspacioR2();
   const porcentajeUsado =
@@ -185,17 +187,17 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
     | { fase: "error"; mensaje: string }
   >({ fase: "idle" });
 
-  async function llamarEvidencias(confirmar: boolean) {
+  async function llamarEvidencias(borrar: boolean) {
     if (!cloudFunctions) { setEvidencias({ fase: "error", mensaje: "Sin conexión." }); return; }
-    setEvidencias({ fase: confirmar ? "borrando" : "contando" });
+    setEvidencias({ fase: borrar ? "borrando" : "contando" });
     try {
       const fn = httpsCallable<
         { confirmar: boolean },
         { contratosConFotos: number; archivos: number; borradas: number }
       >(cloudFunctions, "contarEvidenciasHuerfanas");
-      const { data } = await fn({ confirmar });
+      const { data } = await fn({ confirmar: borrar });
       setEvidencias(
-        confirmar
+        borrar
           ? { fase: "listo", borradas: data.borradas }
           : { fase: "contado", contratos: data.contratosConFotos, archivos: data.archivos }
       );
@@ -224,9 +226,12 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
 
   async function borrarHuerfanos(previo: LimpiezaResultado) {
     if (!cloudFunctions) { setLimpieza({ fase: "error", mensaje: "Sin conexión. Intenta de nuevo." }); return; }
-    const confirmado = window.confirm(
-      `¿Borrar ${previo.huerfanos} archivo${previo.huerfanos === 1 ? "" : "s"} y recuperar ${previo.mbHuerfanos} MB? No se puede deshacer.`
-    );
+    const confirmado = await confirmar({
+      titulo: "¿Borrar los archivos sueltos?",
+      mensaje: `Se borrarán ${previo.huerfanos} archivo${previo.huerfanos === 1 ? "" : "s"} y se recuperarán ${previo.mbHuerfanos} MB. No se puede deshacer.`,
+      textoConfirmar: "Borrar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setLimpieza({ fase: "borrando", datos: previo });
     try {
@@ -508,9 +513,15 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                     <button
                       type="button"
                       onClick={() => {
-                        if (window.confirm(`¿Borrar ${evidencias.archivos} fotos de la pantalla retirada? No se puede deshacer.`)) {
-                          void llamarEvidencias(true);
-                        }
+                        void (async () => {
+                          const ok = await confirmar({
+                            titulo: "¿Borrar estas fotos?",
+                            mensaje: `Se borrarán ${evidencias.archivos} fotos de la pantalla retirada. No se puede deshacer.`,
+                            textoConfirmar: "Borrar",
+                            destructivo: true,
+                          });
+                          if (ok) await llamarEvidencias(true);
+                        })();
                       }}
                       style={{
                         flex: "1 1 auto", minWidth: 130, padding: "14px", borderRadius: 12,

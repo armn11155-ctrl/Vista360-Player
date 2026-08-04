@@ -15,6 +15,7 @@ import { cloudFunctions, db } from "../../config/firebase";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { mensajeDeError } from "../../utils/errores";
 import type { Cliente, PersonaInterna } from "../../types";
+import { useDialogos } from "../DialogosProvider";
 
 interface Props {
   onBack: () => void;
@@ -72,6 +73,7 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
 }
 
 export default function Accesos({ onBack, esGerente = true }: Props) {
+  const { confirmar, avisar } = useDialogos();
   const state = useInvitaciones(true);
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -529,12 +531,25 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
     const nombre = nombreDeUsuario(inv);
     const confirmado =
       accion === "archivar"
-        ? window.confirm(`¿Seguro que quieres archivar el usuario de ${nombre}? No podrá entrar hasta que lo restaures.`)
+        ? await confirmar({
+            titulo: "¿Archivar este usuario?",
+            mensaje: `${nombre} no podrá entrar hasta que lo restaures.`,
+            textoConfirmar: "Archivar",
+          })
         : accion === "eliminar"
-          ? window.confirm(
+          ? await confirmar(
               esGerente
-                ? `¿Seguro que quieres eliminar definitivamente el usuario de ${nombre}? Esta acción no se puede deshacer.`
-                : `¿Pedirle a tu Gerente que elimine definitivamente el usuario de ${nombre}? Quedará pendiente de su aprobación.`
+                ? {
+                    titulo: "¿Eliminar definitivamente?",
+                    mensaje: `Se eliminará el usuario de ${nombre}. No se puede deshacer.`,
+                    textoConfirmar: "Eliminar",
+                    destructivo: true,
+                  }
+                : {
+                    titulo: "¿Pedir la eliminación?",
+                    mensaje: `Se le pedirá a tu Gerente eliminar definitivamente el usuario de ${nombre}. Quedará pendiente de su aprobación.`,
+                    textoConfirmar: "Enviar solicitud",
+                  }
             )
           : true;
     if (!confirmado) return;
@@ -567,9 +582,11 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
       return;
     }
     const nombre = nombreDeUsuario(inv);
-    const confirmado = window.confirm(
-      `¿Generar una contraseña nueva para ${nombre}? La contraseña actual dejará de funcionar de inmediato.`
-    );
+    const confirmado = await confirmar({
+      titulo: "¿Generar una contraseña nueva?",
+      mensaje: `La contraseña actual de ${nombre} dejará de funcionar de inmediato.`,
+      textoConfirmar: "Generar",
+    });
     if (!confirmado) return;
 
     setReseteandoId(inv.id);

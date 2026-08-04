@@ -6,6 +6,7 @@ import { saludoPorHora } from "../utils/fechas";
 import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, Factura, FacturaEstado } from "../types";
+import { useDialogos } from "./DialogosProvider";
 
 interface Props {
   factura: Factura;
@@ -135,6 +136,7 @@ function nombreArchivoFactura(f: Factura) {
  * que los reportes, deja enviar por WhatsApp y Correo.
  */
 export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
+  const { confirmar } = useDialogos();
   const esKeyR2 = Boolean(f.pdfUrl) && !f.pdfUrl!.startsWith("http");
   const keysAFirmar = esKeyR2 ? [f.pdfUrl!] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -205,9 +207,12 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       setErrorEliminar("Firebase Functions no está configurado.");
       return;
     }
-    const confirmado = window.confirm(
-      `¿Eliminar la factura "${f.numero_fmt ?? f.serie ?? "sin número"}"? No se puede deshacer.`
-    );
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar esta factura?",
+      mensaje: `Se eliminará la factura "${f.numero_fmt ?? f.serie ?? "sin número"}". No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setMenuAbierto(false);
     setErrorEliminar("");

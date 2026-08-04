@@ -148,11 +148,6 @@ async function subirArchivoYMiniatura(file: File, folder: "vista360/campanas" | 
 
   return { key, thumbKey };
 }
-
-export async function subirEvidenciaR2(file: File): Promise<SubidaR2> {
-  return subirArchivoYMiniatura(file, "vista360/campanas");
-}
-
 function blobABase64(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

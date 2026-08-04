@@ -19,12 +19,3 @@ export function brandColor(name: string): { bg: string; text: string } {
   }
   return PALETTE[Math.abs(hash) % PALETTE.length];
 }
-
-export function brandInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((w) => w[0] ?? "")
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}

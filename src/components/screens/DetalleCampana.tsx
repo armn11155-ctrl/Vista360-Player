@@ -14,6 +14,7 @@ import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 import { cloudFunctions } from "../../config/firebase";
 import { mensajeDeError } from "../../utils/errores";
 import { descargarRecordatorioCalendario } from "../../utils/calendarioIcs";
+import { useDialogos } from "../DialogosProvider";
 
 interface Props {
   contrato: Contrato;
@@ -93,6 +94,7 @@ function EmptyReportsIcon() {
 }
 
 export default function DetalleCampana({ contrato, paneles, clienteNombre, cliente, onBack, isAdmin }: Props) {
+  const { confirmar } = useDialogos();
   const [tab, setTab] = useState<TabId>("resumen");
 
   const estado = estadoCampana(contrato);
@@ -124,7 +126,11 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
 
   async function solicitarRenovacion() {
     if (!cloudFunctions) { setErrorRenovacion("Sin conexión. Intenta de nuevo."); setRenovacion("error"); return; }
-    const confirmado = window.confirm(`¿Solicitar la renovación de "${tituloCampana}"?`);
+    const confirmado = await confirmar({
+      titulo: "¿Solicitar la renovación?",
+      mensaje: `Se enviará una solicitud para renovar "${tituloCampana}". El equipo de Vista360 se pondrá en contacto contigo.`,
+      textoConfirmar: "Solicitar",
+    });
     if (!confirmado) return;
     setRenovacion("enviando");
     setErrorRenovacion("");

@@ -11,6 +11,7 @@ import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
+import { useDialogos } from "./DialogosProvider";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -50,6 +51,7 @@ interface Props {
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
+  const { confirmar, avisar } = useDialogos();
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -166,7 +168,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }
 
   async function archivarCliente(cliente: Cliente) {
-    const seguro = window.confirm(`¿Seguro que quieres eliminar el perfil de ${cliente.empresa}? Primero se moverá a Archivados y podrás recuperarlo.`);
+    const seguro = await confirmar({
+      titulo: "¿Archivar este perfil?",
+      mensaje: `${cliente.empresa} se moverá a Archivados. Podrás recuperarlo cuando quieras.`,
+      textoConfirmar: "Archivar",
+    });
     if (!seguro) return;
     setAccionandoId(cliente.id);
     setErrorAccion("");
@@ -196,10 +202,19 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   }
 
   async function eliminarDefinitivo(cliente: Cliente) {
-    const seguro = window.confirm(
+    const seguro = await confirmar(
       esGerente
-        ? `¿Eliminar definitivamente ${cliente.empresa}? Esto borrará el perfil y sus accesos de la base de datos. No se puede deshacer.`
-        : `¿Pedirle a tu Gerente que elimine definitivamente ${cliente.empresa}? Quedará pendiente de su aprobación.`
+        ? {
+            titulo: "¿Eliminar definitivamente?",
+            mensaje: `Se borrará el perfil de ${cliente.empresa} y todos sus accesos. No se puede deshacer.`,
+            textoConfirmar: "Eliminar",
+            destructivo: true,
+          }
+        : {
+            titulo: "¿Pedir la eliminación?",
+            mensaje: `Se le pedirá a tu Gerente eliminar definitivamente a ${cliente.empresa}. Quedará pendiente de su aprobación.`,
+            textoConfirmar: "Enviar solicitud",
+          }
     );
     if (!seguro) return;
     setAccionandoId(cliente.id);
@@ -209,7 +224,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       setMenuCliente(null);
       if (pendiente) {
         setErrorAccion("");
-        window.alert(`Enviado a tu Gerente para aprobación: eliminar definitivamente a ${cliente.empresa}.`);
+        await avisar({
+          titulo: "Enviado para aprobación",
+          mensaje: `Tu Gerente debe aprobar la eliminación definitiva de ${cliente.empresa}.`,
+        });
       }
     } catch (err) {
       // La tarjeta puede seguir visible unas milésimas después de que

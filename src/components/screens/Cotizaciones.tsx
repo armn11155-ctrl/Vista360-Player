@@ -9,6 +9,7 @@ import { dinero, esCotizacionExonerada, esUbicacionExonerada, fechaVisible } fro
 import { generarCotizacionPdf } from "../../utils/cotizacionPdf";
 import { compartirArchivoPrecargado, puedeCompartirEsteArchivo } from "../../utils/compartirArchivo";
 import { saludoPorHora } from "../../utils/fechas";
+import { useDialogos } from "../DialogosProvider";
 
 type Formulario = {
   nombre: string;
@@ -52,6 +53,7 @@ const inicial: Formulario = {
 };
 
 export default function Cotizaciones({ onBack }: { onBack: () => void }) {
+  const { confirmar } = useDialogos();
   const clientesState = useClientesAdmin();
   const panelesState = usePanelesDisponibles(true);
   const clientes = clientesState.status === "ready" ? clientesState.clientes.filter((c) => !c.archived) : [];
@@ -145,7 +147,13 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
   }
 
   async function eliminar(cotizacion: Cotizacion) {
-    if (!window.confirm(`¿Eliminar ${cotizacion.numero}? Esta acción no se puede deshacer.`)) return;
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar esta cotización?",
+      mensaje: `Se eliminará ${cotizacion.numero}. No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
+    if (!confirmado) return;
     setMensaje("");
     try {
       await ejecutar({ accion: "eliminar", id: cotizacion.id });

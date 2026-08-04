@@ -9,6 +9,7 @@ import { cloudFunctions } from "../../config/firebase";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
+import { useDialogos } from "../DialogosProvider";
 
 function WhatsAppIcon({ size = 16 }: { size?: number }) {
   return (
@@ -64,6 +65,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   const [renovadas, setRenovadas] = useState<Set<string>>(new Set());
   const [menuAbiertoId, setMenuAbiertoId] = useState<string | null>(null);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  const { confirmar, avisar } = useDialogos();
   const [editando, setEditando] = useState<{
     contrato: Contrato;
     nombre: string;
@@ -115,7 +117,12 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
   async function eliminarCampana(c: Contrato, panelNombre: string) {
     if (!cloudFunctions || eliminandoId) return;
-    const confirmado = window.confirm(`¿Eliminar la campaña de "${panelNombre}"? Se borra el contrato y no se puede deshacer.`);
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar esta campaña?",
+      mensaje: `Se borrará el contrato de "${panelNombre}". No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setMenuAbiertoId(null);
     setEliminandoId(c.id);
@@ -123,10 +130,17 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       const fn = httpsCallable<{ contratoId: string }, { ok: boolean; pendiente?: boolean }>(cloudFunctions, "eliminarContrato");
       const res = await fn({ contratoId: c.id });
       if (res.data.pendiente) {
-        window.alert(`Enviado a tu Gerente para aprobación: eliminar la campaña de "${panelNombre}".`);
+        await avisar({
+          titulo: "Enviado para aprobación",
+          mensaje: `Tu Gerente debe aprobar la eliminación de la campaña de "${panelNombre}".`,
+        });
       }
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : "No se pudo eliminar la campaña.");
+      await avisar({
+        titulo: "No se pudo eliminar la campaña",
+        mensaje: err instanceof Error ? err.message : "Vuelve a intentarlo en un momento.",
+        esError: true,
+      });
     } finally {
       setEliminandoId(null);
     }

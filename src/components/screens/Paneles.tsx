@@ -10,6 +10,7 @@ import { cloudFunctions } from "../../config/firebase";
 import { mensajeDeError } from "../../utils/errores";
 import { cargarLeaflet, zoomMinimoSinGris } from "../../utils/leaflet";
 import type { Panel, PanelEstado, PanelModalidad } from "../../types";
+import { useDialogos } from "../DialogosProvider";
 
 interface Props {
   onBack: () => void;
@@ -62,6 +63,7 @@ function numeroCoordenada(value: string): number | undefined {
 }
 
 export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props) {
+  const { confirmar } = useDialogos();
   const state = usePanelesDisponibles(true);
   const panelesTodos = state.status === "ready" ? state.paneles : [];
   const [busqueda, setBusqueda] = useState("");
@@ -85,7 +87,12 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
 
   async function eliminarPanel(panel: Panel) {
     if (!cloudFunctions) { setErrorEliminar("Sin conexión. Intenta de nuevo."); return; }
-    const confirmado = window.confirm(`¿Eliminar el panel "${panel.nombre}"? No se puede deshacer.`);
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar este panel?",
+      mensaje: `Se eliminará "${panel.nombre}" del inventario. No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setMenuAbiertoId(null);
     setErrorEliminar("");

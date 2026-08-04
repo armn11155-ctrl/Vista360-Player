@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { DialogosProvider } from "./components/DialogosProvider";
 import "./styles/app.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
@@ -68,7 +69,13 @@ createRoot(document.getElementById("root")!).render(
     {/* Envuelve TODA la app: cualquier error de render que se escape queda
         atrapado acá en vez de dejar la pantalla en blanco. */}
     <ErrorBoundary>
-      <App />
+      {/* Provee confirmar()/avisar() a toda la app -- reemplazo propio de
+          window.confirm/alert, ver DialogosProvider.tsx. Va DENTRO del
+          ErrorBoundary para que, si un diálogo rompiera algo, igual caiga
+          en la pantalla de error normal y no en blanco. */}
+      <DialogosProvider>
+        <App />
+      </DialogosProvider>
     </ErrorBoundary>
   </StrictMode>
 );

@@ -6,6 +6,7 @@ import { saludoPorHora } from "../utils/fechas";
 import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, InformeCliente } from "../types";
+import { useDialogos } from "./DialogosProvider";
 
 interface Props {
   informe: InformeCliente;
@@ -86,6 +87,7 @@ function nombreArchivoReporte(mesLabel: string) {
  * Reportes), para que se vea igual en los dos lados.
  */
 export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }: Props) {
+  const { confirmar } = useDialogos();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   const [error, setError] = useState("");
@@ -235,9 +237,12 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
 
   async function eliminarReporte() {
     if (!cloudFunctions || eliminando) return;
-    const confirmado = window.confirm(
-      `¿Eliminar el reporte de ${informe.mesLabel}? Se borra el PDF de R2 y no se puede deshacer.`
-    );
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar este reporte?",
+      mensaje: `Se borrará el reporte de ${informe.mesLabel} junto con su PDF. No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
     if (!confirmado) return;
     setMenuAbierto(false);
     setEliminando(true);

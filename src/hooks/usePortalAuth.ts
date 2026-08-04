@@ -89,5 +89,3 @@ export function usePortalAuth(): AuthState {
 
   return state;
 }
-
-export const authReady = () => !!auth;
