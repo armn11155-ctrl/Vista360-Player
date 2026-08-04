@@ -122,7 +122,19 @@ function construirHtmlCorreo(mensaje: string): string {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="format-detection" content="telephone=no,date=no,address=no,email=no" />
+    <!-- El diseño YA es oscuro a propósito -- sin esto, el modo oscuro
+         del cliente de correo (Apple Mail, Outlook.com, Gmail, etc.)
+         "adivina" qué es fondo y qué es texto y reinvierte colores por
+         su cuenta -- eso era lo que volvía negra la tarjeta blanca del
+         mensaje (texto oscuro sobre fondo oscuro, ilegible). Estos dos
+         metas le dicen al cliente "este correo ya eligió sus colores,
+         no los toques", que es soporte estándar de color-scheme para
+         email (no tiene nada que ver con prefers-color-scheme de CSS
+         normal, que los clientes de correo no respetan igual). -->
+    <meta name="color-scheme" content="light" />
+    <meta name="supported-color-schemes" content="light" />
     <style type="text/css">
+      :root { color-scheme: light; supported-color-schemes: light; }
       a[x-apple-data-detectors] {
         color: inherit !important;
         text-decoration: none !important;
