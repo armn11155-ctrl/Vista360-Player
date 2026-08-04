@@ -84,7 +84,10 @@ function esPanelContratable(panel: PanelConUso) {
   // Un soporte ocupado por otro cliente PERO con fecha de liberación
   // conocida también se puede pedir: se reserva para cuando quede libre.
   // Sigue mostrándose con su estado real ("Ocupado" + "Se libera el ...")
-  // -- no aparece como si estuviera disponible hoy.
+  // -- no aparece como si estuviera disponible hoy. OJO: esto solo debe
+  // usarse para decidir si el botón "Solicitar"/el contador de
+  // "pantallas que podrías contratar" aparecen -- NO para pintar el pin
+  // (ver esPanelDisponibleAhora más abajo, que es la que manda ahí).
   if (panel.libreDesde) return true;
   // Antes esto exigía panel.estado === "Disponible" || "Libre" -- si
   // el panel no tenía ese campo seteado (undefined/""), quedaba NO
@@ -96,6 +99,26 @@ function esPanelContratable(panel: PanelConUso) {
   // podrías contratar" igual se quedara en 0 sin incluirlo. Ahora usa
   // el mismo criterio que estadoTexto para que ambos coincidan
   // siempre.
+  return panel.estado !== "Ocupado" && panel.estado !== "Mantenimiento";
+}
+
+/** Si el panel está DE VERDAD libre HOY -- a diferencia de
+ *  esPanelContratable() (arriba), acá NO cuenta panel.libreDesde como
+ *  "disponible": libreDesde solo se guarda (ver estadoDesdeActivos en
+ *  estadoPaneles.ts, backend) CUANDO el panel está lleno ahora mismo y
+ *  se calcula la fecha en que se libera un cupo -- o sea que su sola
+ *  presencia YA significa que está ocupado hoy, no que esté disponible.
+ *  Esta es la función que tiene que mandar en el color del PIN: antes
+ *  el pin usaba esPanelContratable(panel) directo, y como CUALQUIER
+ *  panel ocupado con libreDesde conocido cae en el "if (panel.libreDesde)
+ *  return true" de esa función, el pin se pintaba BLANCO (disponible)
+ *  para paneles que en realidad estaban ocupados por otro cliente --
+ *  exactamente el bug reportado ("el pin sigue en blanco"). El botón
+ *  "Solicitar"/"Reservar para cuando se libere" sigue funcionando igual
+ *  (usa esPanelContratable), lo único que cambia es qué pinta el pin. */
+function esPanelDisponibleAhora(panel: PanelConUso) {
+  if (esPanelActivoCliente(panel)) return false;
+  if (panel.contrato && estadoCampana(panel.contrato) === "Finalizada") return true;
   return panel.estado !== "Ocupado" && panel.estado !== "Mantenimiento";
 }
 
@@ -439,11 +462,16 @@ export default function Cobertura({ contratos, onBack, onMenuClick, onSolicitarP
           // cualquiera que no fuera el dueño del contrato, aunque el
           // popup del mismo pin sí mostrara "Ocupado" bien (ese usa
           // estadoTexto/estadoColor, que sí revisa panel.estado). Con
-          // !esPanelContratable(panel) el pin refleja lo mismo que ya
-          // dice el popup: negro si de verdad no se puede contratar
-          // (sea porque es mío y sigue vigente, o porque lo tiene
-          // alguien más), blanco solo si de verdad está disponible.
-          const contratado = !esPanelContratable(panel);
+          // !esPanelDisponibleAhora(panel) el pin refleja lo mismo que
+          // ya dice el popup: negro si de verdad no se puede contratar
+          // HOY (sea porque es mío y sigue vigente, porque lo tiene
+          // alguien más, o porque está lleno con fecha de liberación
+          // futura conocida), blanco solo si de verdad está disponible
+          // ahora mismo (NO esPanelContratable: esa además cuenta como
+          // "contratable" a un panel lleno con libreDesde conocido, a
+          // proposito, para permitir reservarlo por adelantado -- pero
+          // eso pintaba el pin blanco, que era el bug).
+          const contratado = !esPanelDisponibleAhora(panel);
           const pinUrl = contratado ? "/vista360-map-marker-v4.png" : "/vista360-map-marker-available.png";
           // Siempre arranca en su coordenada REAL -- si comparte punto
           // con otro panel, reposicionarSolapados() lo corre a un lado
