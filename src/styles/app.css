@@ -6752,7 +6752,13 @@
     border-radius: 12px;
     background: linear-gradient(100deg, rgba(255,255,255,.08), rgba(255,255,255,.015) 72%);
   }
-  .coverage-map-legend > div:last-child {
+  /* Resalta la fila de "Paneles contratados" (la 2da) -- antes era
+     :last-child, que funcionaba con las 2 filas originales pero se
+     movio solo al agregar la 3ra fila de "Paneles ocupados" (paso a
+     resaltar esa por error, en vez de la de contratados que es la
+     que de verdad importa destacar). Con nth-child(2) se queda fija
+     ahi pase lo que pase con cuantas filas mas se agreguen despues. */
+  .coverage-map-legend > div:nth-child(2) {
     border-color: rgba(130,174,235,.16);
     background:
       radial-gradient(circle at 13px 50%, rgba(203,222,247,.28), transparent 34px),
