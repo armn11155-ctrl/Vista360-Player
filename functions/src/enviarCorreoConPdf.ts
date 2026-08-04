@@ -68,6 +68,17 @@ const LOGO_BLANCO_URL = "https://vista360player.pe/vista360-logo-correo-blanco.p
  *  celda no llegaba a alcanzar la zona brillante del centro. */
 const GLOW_URL_TR = "https://vista360player.pe/vista360-correo-glow.png";
 const GLOW_URL_BL = "https://vista360player.pe/vista360-correo-glow-bl.png";
+// PNGs de color solido (8x8, se repiten en mosaico sin que se note --
+// es un color plano) para las secciones que dependian SOLO de
+// background-color CSS. Se agregan como respaldo via el atributo
+// "background" clasico de <td>/<table>, que Outlook (motor Word/VML)
+// respeta directo -- las imagenes no las invierte el modo oscuro de
+// Outlook (que hace inversion bit a bit de cada color CSS declarado),
+// asi que esto es la forma real de que esas dos secciones NO cambien
+// de color ahi, en vez de depender de que Outlook respete el meta
+// color-scheme (que en la practica es inconsistente segun version).
+const FONDO_BLANCO_URL = "https://vista360player.pe/vista360-correo-fondo-blanco.png";
+const FONDO_NAVY_URL = "https://vista360player.pe/vista360-correo-fondo-navy.png";
 
 /**
  * Envuelve el mensaje de texto plano en el diseño de correo de la
@@ -171,7 +182,7 @@ function construirHtmlCorreo(mensaje: string): string {
     </style>
   </head>
   <body style="margin:0;padding:0;background-color:${bg};">
-    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" class="vp-bg-navy" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
+    <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="${bg}" background="${FONDO_NAVY_URL}" class="vp-bg-navy" style="background-color:${bg};font-family:${fuente};border-collapse:collapse;">
       <tr>
         <td align="left" background="${GLOW_URL_TR}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_TR});background-repeat:no-repeat;background-position:top right;background-size:280px 280px;padding:48px 24px 34px 32px;">
           <img src="${LOGO_BLANCO_URL}" width="220" alt="VISTA360" style="display:block;width:220px;max-width:220px;border:0;outline:none;" />
@@ -181,10 +192,10 @@ function construirHtmlCorreo(mensaje: string): string {
         </td>
       </tr>
       <tr>
-        <td align="center" class="vp-bg-navy" style="background-color:${bg};padding:0 24px 40px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="vp-card" style="max-width:480px;background-color:#FEFEFE;border-radius:16px;">
+        <td align="center" background="${FONDO_NAVY_URL}" class="vp-bg-navy" style="background-color:${bg};padding:0 24px 40px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" background="${FONDO_BLANCO_URL}" class="vp-card" style="max-width:480px;background-color:#FEFEFE;border-radius:16px;">
             <tr>
-              <td class="vp-card vp-card-text" style="background-color:#FEFEFE;padding:32px 30px;color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
+              <td background="${FONDO_BLANCO_URL}" class="vp-card vp-card-text" style="background-color:#FEFEFE;padding:32px 30px;color:#172235;mso-style-textfill-fill-color:#172235;font-size:14px;line-height:1.65;font-family:${fuente};">
                 ${cuerpoHtml}
               </td>
             </tr>
@@ -193,9 +204,9 @@ function construirHtmlCorreo(mensaje: string): string {
       </tr>
       <tr>
         <td align="center" background="${GLOW_URL_BL}" class="vp-bg-navy" style="background-color:${bg};background-image:url(${GLOW_URL_BL});background-repeat:no-repeat;background-position:bottom left;background-size:280px 280px;padding:0 24px 46px;font-family:${fuente};">
-          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FEFEFE;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FEFEFE !important;">947 957 971 &middot; gestion@vista360player.pe</span></div>
-          <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
-          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FEFEFE;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
+          <div style="text-align:center;line-height:1.3;font-weight:bold;font-size:13px;color:#FEFEFE;mso-style-textfill-fill-color:#FEFEFE;" class="vp-white-text"><span x-apple-data-detectors="false" class="vp-white-text" style="color:#FEFEFE !important;mso-style-textfill-fill-color:#FEFEFE;">947 957 971 &middot; gestion@vista360player.pe</span></div>
+          <div style="text-align:center;line-height:1.3;font-size:9.5px;letter-spacing:.04em;color:#8B96AD;margin-top:5px;mso-style-textfill-fill-color:#8B96AD;" class="vp-muted-text">PUBLICIDAD EXTERIOR &middot; PANELES PREMIUM</div>
+          <div style="text-align:center;line-height:1.3;border-top:1px solid rgba(255,255,255,.14);margin-top:14px;padding-top:12px;font-weight:bold;font-size:10.5px;letter-spacing:.03em;color:#FEFEFE;mso-style-textfill-fill-color:#FEFEFE;" class="vp-white-text">MAS QUE VISIBILIDAD. PRESENCIA.</div>
         </td>
       </tr>
     </table>
