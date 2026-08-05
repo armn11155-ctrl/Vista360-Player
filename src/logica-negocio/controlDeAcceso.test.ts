@@ -254,3 +254,25 @@ describe("integridad: una factura sin cliente sería invisible", () => {
     expect(c).toMatch(/Falta el cliente de la factura/);
   });
 });
+
+describe("integridad al eliminar un cliente: no quedan datos sueltos", () => {
+  const eliminar = readFileSync(resolve(DIR, "administrarClienteAdmin.ts"), "utf-8");
+
+  it("borra las facturas por IDENTIFICADOR, no solo por RUC", () => {
+    // Bug real encontrado en producción: solo se borraban por RUC, así
+    // que un RUC mal escrito (o corregido después de subir los PDF)
+    // dejaba facturas huérfanas -- invisibles para todos, pero
+    // conservando documentos de un cliente que se pidió eliminar.
+    expect(eliminar).toContain('db.collection("facturas").where("cliente_id", "==", clienteId)');
+  });
+
+  it("sigue borrando también por RUC (facturas antiguas sin identificador)", () => {
+    expect(eliminar).toContain('db.collection("facturas").where("cliente_doc", "==", clienteDoc)');
+  });
+
+  it("borra TODO lo asociado al cliente, no solo algunas colecciones", () => {
+    for (const coleccion of ["contratos", "informesCliente", "solicitudesCampana", "portalUsers", "invitacionesPortal", "facturas"]) {
+      expect(eliminar, `falta borrar ${coleccion}`).toContain(`db.collection("${coleccion}")`);
+    }
+  });
+});

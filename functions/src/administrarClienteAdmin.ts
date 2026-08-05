@@ -132,6 +132,24 @@ export async function ejecutarEliminarClienteDefinitivo(db: Firestore, clienteId
   await borrarQuery(db.collection("solicitudesCampana").where("cliente_id", "==", clienteId));
   await borrarQuery(db.collection("portalUsers").where("clienteId", "==", clienteId));
   await borrarQuery(db.collection("invitacionesPortal").where("clienteId", "==", clienteId));
+  // FACTURAS: por identificador Y por RUC.
+  //
+  // Antes solo se borraban por RUC (cliente_doc), y ahí quedó un agujero
+  // real: si el RUC guardado en la ficha del cliente no coincidía
+  // EXACTAMENTE con el de sus facturas -- un dígito mal, un espacio, o
+  // porque alguien corrigió el RUC de la ficha después de haber subido
+  // los PDF -- las facturas sobrevivían al borrado del cliente.
+  //
+  // Quedaban invisibles para todo el mundo (su RUC ya no correspondía a
+  // ningún cliente) pero seguían ocupando espacio y, peor, conservando
+  // documentos de un cliente que se pidió eliminar. Se detectaron 4 así
+  // en producción, con RUC evidentemente mal escrito ("239u1u3u921").
+  //
+  // cliente_id es el vínculo fiable: lo escribe la propia aplicación al
+  // subir el PDF, no depende de que nadie teclee bien un número. Se
+  // mantiene también el borrado por RUC para alcanzar facturas antiguas
+  // que quizá no tengan cliente_id.
+  await borrarQuery(db.collection("facturas").where("cliente_id", "==", clienteId));
   if (clienteDoc) {
     await borrarQuery(db.collection("facturas").where("cliente_doc", "==", clienteDoc));
   }

@@ -116,7 +116,11 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
   }
 
   async function enviarPdf() {
-    if (!pdfListo || (!ruc && !clienteId)) return;
+    // Se exige el cliente, no "uno de los dos". Una factura sin
+    // cliente_id no la vería nadie: la app las busca por ese campo (ver
+    // useFacturas). El servidor también lo rechaza, pero frenarlo acá da
+    // un mensaje claro en vez de un error del backend.
+    if (!pdfListo || !clienteId) return;
     if (!cloudFunctions) {
       setMensaje("Firebase Functions no está configurado.");
       return;
