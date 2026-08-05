@@ -161,3 +161,49 @@ describe("escalada de privilegios", () => {
     expect(c).toMatch(/esGerente|role\s*!==\s*"admin"/);
   });
 });
+
+describe("mínimo privilegio: cada rol solo lo que le toca", () => {
+  it("subir archivos exige personal interno, no basta con ser cliente", () => {
+    // Antes bastaba con tener ficha de portal: cualquier cliente podía
+    // pedir una URL de subida desde la consola del navegador, aunque la
+    // app no le ofrezca ninguna forma de subir. No era fuga de datos
+    // (no puede sobrescribir ni leer lo ajeno) pero sí espacio y coste
+    // a cuenta de Vista360.
+    const c = readFileSync(resolve(DIR, "crearSubidaR2.ts"), "utf-8");
+    expect(c).toContain("esPersonalInterno(snap.data()?.role)");
+  });
+
+  it("el avatar propio SIGUE abierto a cualquier cuenta (no se rompió al cliente)", () => {
+    // Va por otro camino a propósito: cada quien debe poder cambiar su
+    // foto sin ser personal interno.
+    const c = readFileSync(resolve(DIR, "subirAvatarServidor.ts"), "utf-8");
+    expect(c).not.toContain("esPersonalInterno");
+    expect(c).not.toContain("esGerente(");
+  });
+
+  it("crear cuentas de cliente y restablecer contraseñas exige Gerente", () => {
+    for (const archivo of ["crearClienteAcceso.ts", "restablecerPasswordCliente.ts", "crearTrabajadorAcceso.ts"]) {
+      const c = readFileSync(resolve(DIR, archivo), "utf-8");
+      expect(c, archivo).toMatch(/esGerente|requireAdmin|role\s*!==\s*"admin"/);
+    }
+  });
+
+  it("eliminar paneles y facturas exige Gerente, no basta con ser Trabajador", () => {
+    for (const archivo of ["eliminarPanel.ts", "eliminarFactura.ts"]) {
+      const c = readFileSync(resolve(DIR, archivo), "utf-8");
+      // Vale tanto el helper como la comparación directa del rol; lo
+      // que NO puede aparecer es esPersonalInterno(), que dejaría
+      // borrar también a un Trabajador.
+      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"/);
+      expect(c, archivo).not.toMatch(/esPersonalInterno\(/);
+    }
+  });
+
+  it("un Trabajador que quiere borrar algo grave pasa por aprobación", () => {
+    // El diseño es que el Trabajador PIDE y el Gerente aprueba.
+    for (const archivo of ["eliminarContrato.ts", "administrarClienteAdmin.ts", "administrarUsuarioPortal.ts"]) {
+      const c = readFileSync(resolve(DIR, archivo), "utf-8");
+      expect(c, archivo).toContain("crearSolicitudPendiente");
+    }
+  });
+});

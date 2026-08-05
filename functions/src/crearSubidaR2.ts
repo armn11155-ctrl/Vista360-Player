@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { MAX_SUBIDA_BYTES, R2_SECRETS, esCarpetaValida, firmarSubidaR2, nuevaKey } from "./r2Storage.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -45,6 +46,24 @@ export const crearSubidaR2 = onCall({ secrets: R2_SECRETS }, async (request) => 
   const snap = await db.doc(`portalUsers/${uid}`).get();
   if (!snap.exists) {
     throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
+  }
+  // SOLO PERSONAL INTERNO. Antes bastaba con tener ficha de portal, o
+  // sea que cualquier cliente podía pedir una URL de subida llamando a
+  // esta función desde la consola del navegador -- aunque la aplicación
+  // no le ofrezca ninguna forma de subir archivos.
+  //
+  // No permitía sobrescribir nada (la clave la genera el servidor con
+  // una parte aleatoria) ni leer lo ajeno (eso lo cubre firmarUrlsR2),
+  // así que no era una fuga de datos: era espacio y coste de
+  // almacenamiento a cuenta de Vista360, y archivos ajenos metidos en
+  // las carpetas del negocio.
+  //
+  // En la aplicación esto solo lo usan Reportes (fotos de evidencia) y
+  // Facturas (PDF), las dos pantallas de administración. El avatar del
+  // cliente NO pasa por acá: va por subirAvatarServidor, que sí debe
+  // seguir abierto a cualquier cuenta para su propia foto.
+  if (!esPersonalInterno(snap.data()?.role)) {
+    throw new HttpsError("permission-denied", "Solo el equipo interno puede subir archivos.");
   }
 
   const folder = String(request.data?.folder ?? "");
