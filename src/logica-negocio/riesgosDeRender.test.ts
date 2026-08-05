@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
-import { writeFileSync, unlinkSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { resolve } from "node:path";
 
 /**
@@ -27,20 +29,26 @@ interface Riesgo {
   detalle: string;
 }
 
-function analizar(): Riesgo[] {
-  return JSON.parse(
-    execFileSync("node", [DETECTOR, "--json"], { encoding: "utf-8", cwd: RAIZ }),
-  );
+function analizar(dir?: string): Riesgo[] {
+  const args = [DETECTOR, "--json", ...(dir ? [`--dir=${dir}`] : [])];
+  return JSON.parse(execFileSync("node", args, { encoding: "utf-8", cwd: RAIZ }));
 }
 
 /** Analiza un fragmento suelto, escribiéndolo dentro de src/. */
+/**
+ * Analiza un fragmento en un directorio TEMPORAL PROPIO.
+ *
+ * Antes se escribia dentro de src/, y entonces la prueba de "src/ esta
+ * limpio" veia los fragmentos de las otras pruebas corriendo en paralelo
+ * y fallaba al azar.
+ */
 function analizarFragmento(codigo: string): Riesgo[] {
-  const ruta = resolve(RAIZ, "src/__fragmento-de-prueba.tsx");
-  writeFileSync(ruta, codigo, "utf-8");
+  const dir = mkdtempSync(join(tmpdir(), "riesgos-"));
+  writeFileSync(join(dir, "Fragmento.tsx"), codigo, "utf-8");
   try {
-    return analizar().filter((r) => r.archivo.includes("__fragmento-de-prueba"));
+    return analizar(dir);
   } finally {
-    unlinkSync(ruta);
+    rmSync(dir, { recursive: true, force: true });
   }
 }
 

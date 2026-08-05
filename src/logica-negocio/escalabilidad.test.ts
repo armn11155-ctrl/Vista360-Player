@@ -737,15 +737,52 @@ describe("publicar las reglas no puede fallar en silencio", () => {
     expect(comandos).not.toContain("set +e");
   });
 
-  it("si falla, se anota Y la ejecución acaba en rojo", () => {
-    // Pero NO se corta ahi. El fallo real es un 403 de la API de reglas
-    // (la cuenta de servicio no tiene ese rol), y cortar en seco dejaba
-    // sin desplegar las Cloud Functions, que no tienen nada que ver y sí
-    // son criticas. Se anota, sigue todo, y se marca rojo al final.
-    expect(paso).toContain("/tmp/reglas-fallaron");
-    expect(paso).toContain("::error::");
-    expect(paso).not.toContain('exit "$codigo"');
+  it("EJECUTA el paso bajo `bash -e` y comprueba que NO se corta", () => {
+    // Un test de patrones no basta, y esto lo demostró en producción: el
+    // paso llevaba `set -o pipefail` y parecía correcto, pero GitHub
+    // Actions ejecuta cada bloque con `bash -e`, así que el fallo del
+    // comando mataba el script ANTES de llegar al `if`. Resultado: las
+    // Cloud Functions se quedaron otra vez sin desplegar.
+    //
+    // Aquí se ejecuta el bloque de verdad, sustituyendo el `firebase
+    // deploy` por un comando que falla, y se comprueba que llega al
+    // final y deja la marca.
+    const { execFileSync } = require("node:child_process") as typeof import("node:child_process");
+    const { writeFileSync, existsSync, unlinkSync, mkdtempSync } = require("node:fs") as typeof import("node:fs");
+    const { tmpdir } = require("node:os") as typeof import("node:os");
+    const { join } = require("node:path") as typeof import("node:path");
 
+    const wf = readFileSync(
+      resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
+      "utf-8",
+    );
+    const inicio = wf.indexOf("- name: Desplegar reglas de seguridad");
+    const bloque = wf.slice(inicio, wf.indexOf("- name: Verificar que las reglas", inicio));
+    const guion = bloque
+      .slice(bloque.indexOf("run: |") + 6)
+      .split("\n")
+      .map((l) => l.replace(/^ {10}/, ""))
+      .join("\n")
+      // El comando real se sustituye por uno que falla igual que el 403.
+      .replace(/firebase deploy[\s\S]*?--only firestore:rules/, "false");
+
+    const dir = mkdtempSync(join(tmpdir(), "reglas-"));
+    const marca = join(dir, "reglas-fallaron");
+    const salida = join(dir, "deploy-rules.txt");
+    const preparado = guion
+      .replace(/\/tmp\/reglas-fallaron/g, marca)
+      .replace(/\/tmp\/deploy-rules\.txt/g, salida);
+    const archivo = join(dir, "paso.sh");
+    writeFileSync(archivo, "#!/bin/bash -e\n" + preparado, { mode: 0o755 });
+
+    // Si el paso se cortara, execFileSync lanzaría.
+    expect(() => execFileSync("bash", ["-e", archivo], { encoding: "utf-8" })).not.toThrow();
+    // Y tiene que haber dejado constancia del fallo.
+    expect(existsSync(marca), "el paso no anotó el fallo").toBe(true);
+    unlinkSync(marca);
+  });
+
+  it("y la ejecución termina en rojo gracias al paso final", () => {
     const wfCompleto = readFileSync(
       resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
       "utf-8",

@@ -15,7 +15,18 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const RAIZ = new URL("..", import.meta.url).pathname;
-const SRC = join(RAIZ, "src");
+/**
+ * Directorio a analizar. Por defecto src/, pero se puede apuntar a otro
+ * con --dir=<ruta>.
+ *
+ * NO ES UN CAPRICHO: las pruebas necesitan analizar fragmentos sueltos
+ * sin escribirlos dentro de src/. Cuando lo hacian, la prueba de "src/
+ * esta limpio" veia los fragmentos temporales de las OTRAS pruebas
+ * corriendo en paralelo y fallaba al azar. Un test inestable es peor que
+ * no tenerlo: se aprende a reintentar el CI en vez de mirar por que fallo.
+ */
+const argDir = process.argv.find((a) => a.startsWith("--dir="));
+const SRC = argDir ? argDir.slice(6) : join(RAIZ, "src");
 
 /** Expresiones que devuelven una referencia NUEVA en cada evaluación. */
 const CREADORES = [

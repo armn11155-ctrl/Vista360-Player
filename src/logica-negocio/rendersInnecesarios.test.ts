@@ -71,22 +71,25 @@ describe("el detector sirve de algo", () => {
   const { execFileSync: ejecutar } = require("node:child_process") as typeof import("node:child_process");
 
   function analizarTexto(codigo: string): number {
-    // Se analiza un archivo temporal dentro de src/ para que el detector
-    // lo recorra igual que a los demas.
-    const { writeFileSync, unlinkSync } = require("node:fs") as typeof import("node:fs");
-    const ruta = resolve(RAIZ, "src/__prueba-detector.tsx");
-    writeFileSync(ruta, codigo, "utf-8");
+    // DIRECTORIO TEMPORAL PROPIO, no dentro de src/. Escribiendo en src/,
+    // la prueba de "no hay hallazgos en src/" veia los fragmentos de las
+    // otras pruebas corriendo en paralelo y fallaba al azar. Un test
+    // inestable es peor que no tenerlo.
+    const { mkdtempSync, rmSync, writeFileSync } = require("node:fs") as typeof import("node:fs");
+    const { tmpdir } = require("node:os") as typeof import("node:os");
+    const { join } = require("node:path") as typeof import("node:path");
+    const dir = mkdtempSync(join(tmpdir(), "renders-"));
+    writeFileSync(join(dir, "Fragmento.tsx"), codigo, "utf-8");
     try {
-      const salida = ejecutar("node", [resolve(RAIZ, "scripts/detectar-renders.mjs"), "--json"], {
-        encoding: "utf-8",
-        cwd: RAIZ,
-      });
+      const salida = ejecutar(
+        "node",
+        [resolve(RAIZ, "scripts/detectar-renders.mjs"), "--json", `--dir=${dir}`],
+        { encoding: "utf-8", cwd: RAIZ },
+      );
       const r = JSON.parse(salida);
-      return [...r.hallazgos, ...r.argumentosEnLinea].filter(
-        (h: Hallazgo) => h.archivo.includes("__prueba-detector"),
-      ).length;
+      return [...r.hallazgos, ...r.argumentosEnLinea].length;
     } finally {
-      unlinkSync(ruta);
+      rmSync(dir, { recursive: true, force: true });
     }
   }
 
