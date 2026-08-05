@@ -1,5 +1,10 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { initializeFirestore, type Firestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from "firebase/firestore";
 import { getFunctions, type Functions } from "firebase/functions";
 import {
   getAuth,
@@ -29,7 +34,42 @@ if (envMissing.length === 0) {
   // experimentalAutoDetectLongPolling, Firestore detecta esto solo y
   // cambia a "long polling" (peticiones normales repetidas) en vez de
   // la conexión que Safari bloquea.
-  db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+  db = initializeFirestore(app, {
+    experimentalAutoDetectLongPolling: true,
+
+    // ── CACHÉ LOCAL EN EL DISPOSITIVO ────────────────────────────────
+    //
+    // Es la optimización de coste con mejor relación beneficio/riesgo de
+    // toda la aplicación, y estaba sin activar.
+    //
+    // Sin ella, cada vez que alguien abre la app se vuelven a descargar
+    // (y a PAGAR) los mismos documentos: sus campañas, su ficha, el
+    // inventario... aunque no haya cambiado absolutamente nada desde
+    // hace cinco minutos. Y el uso real de esta app es justamente ese:
+    // la misma persona entrando varias veces al día desde el mismo
+    // teléfono.
+    //
+    // Con la caché, Firestore guarda los documentos en el dispositivo y
+    // al reconectar solo pide lo que CAMBIÓ. La segunda visita del día,
+    // y la tercera, y la décima, cuestan casi cero.
+    //
+    // NO se pierde el tiempo real: las escuchas siguen recibiendo los
+    // cambios del servidor igual que antes. La caché solo evita volver a
+    // bajar lo que ya se tiene idéntico. Y como efecto secundario, la
+    // app abre más rápido y aguanta mejor un túnel o un ascensor: los
+    // datos ya están, no hay pantalla en blanco esperando la red.
+    //
+    // persistentMultipleTabManager por si alguien abre la app en dos
+    // pestañas: sin él, la segunda se queda sin caché (el modo por
+    // defecto solo deja usarla a una). Pasa más de lo que parece --
+    // basta con abrir un reporte en una pestaña nueva.
+    //
+    // Si el navegador no deja usar almacenamiento local (Safari en modo
+    // privado, o el disco lleno), Firestore lo detecta y sigue
+    // funcionando contra el servidor como hasta ahora: se pierde el
+    // ahorro, no la aplicación.
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  });
   auth = getAuth(app);
   cloudFunctions = getFunctions(app);
 }

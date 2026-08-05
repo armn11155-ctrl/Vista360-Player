@@ -129,3 +129,28 @@ describe("reutilizar lo que ya está en memoria", () => {
     expect(c).toContain("escucharColeccionDirecta");
   });
 });
+
+describe("caché local: la segunda visita no vuelve a pagar los mismos datos", () => {
+  const config = readFileSync(resolve(__dirname, "../config/firebase.ts"), "utf-8");
+  const configSinComentarios = sinComentarios(config);
+
+  it("Firestore guarda los documentos en el dispositivo", () => {
+    // Sin esto, cada apertura de la app vuelve a descargar y pagar los
+    // mismos documentos aunque no haya cambiado nada. El uso real de
+    // esta app es la misma persona entrando varias veces al día desde
+    // el mismo teléfono: es justo el caso que la caché resuelve.
+    expect(configSinComentarios).toContain("persistentLocalCache(");
+  });
+
+  it("funciona con varias pestañas abiertas", () => {
+    // Con el gestor por defecto, la segunda pestaña se queda SIN caché.
+    // Pasa más de lo que parece: basta con abrir un reporte aparte.
+    expect(configSinComentarios).toContain("persistentMultipleTabManager()");
+  });
+
+  it("se conserva la detección automática de long polling (Safari)", () => {
+    // Iba en la misma llamada: si al añadir la caché se hubiera perdido,
+    // las pantallas en vivo dejarían de actualizarse en Safari.
+    expect(configSinComentarios).toContain("experimentalAutoDetectLongPolling: true");
+  });
+});
