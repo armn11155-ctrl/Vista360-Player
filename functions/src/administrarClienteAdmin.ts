@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore, type Query } from "firebase-admin/firestore";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -59,6 +60,7 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
 
   if (accion === "archivar") {
     await clienteRef.set({ archived: true, archivedAt: FieldValue.serverTimestamp() }, { merge: true });
+    auditar("cliente_archivado", { uid, objetivoId: clienteId });
     return { ok: true, pendiente: false };
   }
 
@@ -82,6 +84,11 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
   }
 
   await ejecutarEliminarClienteDefinitivo(db, clienteId);
+  // Lo más destructivo que puede hacer la app: borra el cliente y TODO
+  // lo asociado (campañas, informes, accesos, facturas), sin vuelta
+  // atrás. Si algún día alguien pregunta "¿qué pasó con este cliente?",
+  // esta línea es la única respuesta posible.
+  auditar("cliente_eliminado_definitivo", { uid, objetivoId: clienteId });
   return { ok: true, pendiente: false };
 });
 

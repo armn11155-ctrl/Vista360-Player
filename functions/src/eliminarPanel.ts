@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -62,5 +63,8 @@ export const eliminarPanel = onCall<EliminarPanelData>(async (request) => {
   }
 
   await panelRef.delete();
+  // Borrar un panel es irreversible y afecta al inventario entero: queda
+  // registrado quién lo hizo.
+  auditar("panel_eliminado", { uid, objetivoId: panelRef.id });
   return { ok: true };
 });

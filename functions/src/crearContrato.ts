@@ -5,6 +5,7 @@ import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -191,6 +192,15 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
     // éxito, el panel se puede corregir a mano desde Paneles si hiciera
     // falta, o lo arregla solo la tarea diaria.
     await recalcularEstadoPaneles(db, panelIds);
+
+    auditar("contrato_creado", {
+      uid,
+      clienteId,
+      objetivoId: contratoRef.id,
+      paneles: panelIds.length,
+      inicio,
+      fin,
+    });
 
     return { ok: true, contratoId: contratoRef.id };
   } catch (error) {

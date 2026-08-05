@@ -5,6 +5,7 @@ import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
+import { auditar, auditarFallo } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -64,7 +65,17 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
     return { ok: true, pendiente: true, solicitudId };
   }
 
-  await ejecutarEliminarContrato(db, contratoId);
+  try {
+    await ejecutarEliminarContrato(db, contratoId);
+  } catch (error) {
+    // Se audita el intento fallido igual que el exitoso: si alguien
+    // reporta "intenté borrar y no pude", el rastro tiene que existir.
+    auditarFallo("contrato_eliminado", error, { uid, rol, objetivoId: contratoId });
+    throw error;
+  }
+  // Queda el rastro de QUIEN borró qué y cuándo. Antes esto se perdía:
+  // el contrato desaparecía y no quedaba registro de quién lo pidió.
+  auditar("contrato_eliminado", { uid, rol, objetivoId: contratoId });
   return { ok: true, pendiente: false };
 });
 
