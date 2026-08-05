@@ -37,12 +37,12 @@ describe("solicitudes de campaña: el historial no se lee entero", () => {
     // cada apertura del admin: el doble de la cuota diaria gratuita
     // gastado por UNA sola sesión.
     expect(solicitudes).not.toMatch(
-      /query\(\s*collection\(db!?,\s*"solicitudesCampana"\)\s*\)/
+      /query\(\s*collection\((db|bd)!?,\s*"solicitudesCampana"\)\s*\)/
     );
   });
 
   it("toda consulta a solicitudesCampana lleva filtro por estado", () => {
-    const consultas = solicitudes.match(/collection\(db!?,\s*"solicitudesCampana"\)/g) ?? [];
+    const consultas = solicitudes.match(/collection\((db|bd)!?,\s*"solicitudesCampana"\)/g) ?? [];
     expect(consultas.length).toBeGreaterThan(0);
     // Una consulta por estado: las pendientes y las ya resueltas.
     expect(solicitudes).toContain('where("estado", "==", "Pendiente")');
@@ -138,5 +138,34 @@ describe("ninguna escucha nueva lee una colección entera en vivo", () => {
       }
     }
     expect(culpables).toEqual([]);
+  });
+});
+
+describe("respaldo si falta el índice compuesto", () => {
+  it("distingue 'falta el índice' de un fallo real", () => {
+    // failed-precondition es lo ÚNICO que significa "hay que crear el
+    // índice". Un fallo de permisos o de red sí debe verse como error.
+    expect(solicitudes).toContain('codigo === "failed-precondition"');
+  });
+
+  it("al faltar el índice reintenta SIN el orden, no sin el límite", () => {
+    // El índice solo lo exige el orderBy. Reintentar sin límite habría
+    // devuelto la bomba de tiempo que este archivo existe para evitar.
+    const reintento = solicitudes.slice(solicitudes.indexOf("escucharResueltas(false)"));
+    expect(solicitudes).toContain("escucharResueltas(false)");
+    expect(reintento.length).toBeGreaterThan(0);
+    // Las DOS ramas (con y sin orden) llevan el límite.
+    const conLimite = solicitudes.match(/limit\(RESUELTAS_VISIBLES\)/g) ?? [];
+    expect(conLimite.length).toBe(2);
+    // Solo UNA rama lleva el orden.
+    const conOrden = solicitudes.match(/orderBy\("createdAt", "desc"\)/g) ?? [];
+    expect(conOrden.length).toBe(1);
+  });
+
+  it("el respaldo no puede reintentarse en bucle", () => {
+    // escucharResueltas(false) vuelve a este mismo manejador si falla.
+    // La guarda `conOrden &&` es lo que impide que se llame a sí mismo
+    // para siempre quemando cuota en cada intento.
+    expect(solicitudes).toContain("if (conOrden && esFaltaDeIndice(err))");
   });
 });

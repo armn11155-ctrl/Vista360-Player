@@ -12,7 +12,7 @@ export type SolicitudesCampanaState =
  * Solicitudes de campaña para la cuenta admin.
  *
  * ANTES ESTO ERA UNA BOMBA DE TIEMPO. La consulta era
- * `query(collection(db, "solicitudesCampana"))`: la colección ENTERA, sin
+ * `query(collection(bd, "solicitudesCampana"))`: la colección ENTERA, sin
  * filtro, sin límite, y en vivo. Hoy no se nota porque hay pocas
  * solicitudes, pero esa colección solo crece -- una solicitud resuelta
  * hace tres años se seguía leyendo y pagando en cada sesión del admin.
@@ -45,6 +45,14 @@ const ESTADOS_RESUELTOS = ["Revisada", "Rechazada", "Convertida"] as const;
 /** Cuántas resueltas se conservan a la vista. */
 export const RESUELTAS_VISIBLES = 50;
 
+/** Firestore avisa de un indice compuesto que falta con este codigo.
+ *  Es lo unico que distingue "hay que crear el indice" de un fallo real
+ *  de permisos o de red, que si deben mostrarse como error. */
+function esFaltaDeIndice(err: unknown): boolean {
+  const codigo = (err as { code?: string } | null)?.code ?? "";
+  return codigo === "failed-precondition";
+}
+
 function aSolicitud(d: { id: string; data: () => unknown }): SolicitudCampana {
   return { id: d.id, ...(d.data() as Omit<SolicitudCampana, "id">) };
 }
@@ -62,6 +70,9 @@ export function useSolicitudesCampana(isAdmin: boolean): SolicitudesCampanaState
     // algo. Cuando no hay nada que consultar, el resultado correcto es
     // "listo y vacío", no "cargando".
     if (!db || !isAdmin) { setState({ status: "ready", solicitudes: [] }); return; }
+    // TypeScript no puede afinar "db" dentro de las funciones de abajo
+    // (son cierres: no sabe que el guard de arriba sigue valiendo).
+    const bd = db;
 
     // Cada escucha guarda SU parte. Se combinan al publicar, para que la
     // llegada de una no borre lo que ya trajo la otra.
@@ -83,21 +94,53 @@ export function useSolicitudesCampana(isAdmin: boolean): SolicitudesCampanaState
       setState({ status: "error", message: err.message });
 
     const unsubPendientes = onSnapshot(
-      query(collection(db, "solicitudesCampana"), where("estado", "==", "Pendiente")),
+      query(collection(bd, "solicitudesCampana"), where("estado", "==", "Pendiente")),
       (snap) => { pendientes = snap.docs.map(aSolicitud); publicar(); },
       alFallar
     );
 
-    const unsubResueltas = onSnapshot(
-      query(
-        collection(db, "solicitudesCampana"),
-        where("estado", "in", [...ESTADOS_RESUELTOS]),
-        orderBy("createdAt", "desc"),
-        limit(RESUELTAS_VISIBLES)
-      ),
-      (snap) => { resueltas = snap.docs.map(aSolicitud); publicar(); },
-      alFallar
-    );
+    // El orden por fecha necesita el indice compuesto
+    // solicitudesCampana(estado, createdAt). Mientras ese indice no
+    // exista -- justo despues de desplegar, o si alguien lo borra --
+    // Firestore rechaza la consulta con "failed-precondition" y la
+    // pantalla quedaria en error.
+    //
+    // El respaldo quita el orden, que es lo unico que exige el indice:
+    // where("estado","in",[...]) + limit() funciona con los indices que
+    // Firestore crea solo. Se pierde que sean LAS MAS RECIENTES (llegan
+    // 50 cualesquiera), pero la pantalla sigue viva y acotada -- y el
+    // orden final lo pone igual publicar(), que ordena por fecha lo que
+    // haya llegado. Es el mismo patron que contratosDePaneles.ts.
+    const escucharResueltas = (conOrden: boolean) =>
+      onSnapshot(
+        conOrden
+          ? query(
+              collection(bd, "solicitudesCampana"),
+              where("estado", "in", [...ESTADOS_RESUELTOS]),
+              orderBy("createdAt", "desc"),
+              limit(RESUELTAS_VISIBLES)
+            )
+          : query(
+              collection(bd, "solicitudesCampana"),
+              where("estado", "in", [...ESTADOS_RESUELTOS]),
+              limit(RESUELTAS_VISIBLES)
+            ),
+        (snap) => { resueltas = snap.docs.map(aSolicitud); publicar(); },
+        (err) => {
+          if (conOrden && esFaltaDeIndice(err)) {
+            console.warn(
+              "Falta el indice solicitudesCampana(estado, createdAt); " +
+                "se muestran 50 solicitudes resueltas sin ordenar por fecha.",
+              err
+            );
+            unsubResueltas = escucharResueltas(false);
+            return;
+          }
+          alFallar(err);
+        }
+      );
+
+    let unsubResueltas = escucharResueltas(true);
 
     return () => { unsubPendientes(); unsubResueltas(); };
   }, [isAdmin]);
