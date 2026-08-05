@@ -238,6 +238,63 @@ más para prevenir un gasto que hoy es hipotético.
 
 ---
 
+## 11. El SDK de Cloud Functions va dos versiones por detrás
+
+**Qué pasa hoy.** Cada despliegue avisa:
+
+```
+⚠  functions: package.json indicates an outdated version of firebase-functions.
+⚠  functions: Please note that there will be breaking changes when you upgrade
+```
+
+El proyecto usa `firebase-functions@6.6.0` y `firebase-admin@12.6.0`. Las
+versiones actuales son **7.3.2** y **14.2.0**.
+
+**Por qué importa dentro de unos años, y no hoy.** Un SDK sin soporte
+sigue funcionando hasta que deja de hacerlo: Google retira runtimes de
+Node, cambia APIs internas, o el despliegue empieza a rechazarlo. Cuando
+eso pasa, ya no puedes desplegar NADA hasta actualizar — y para entonces
+el salto es de cuatro versiones en vez de una, con prisa y sin poder
+probar con calma.
+
+**Lo bueno: el salto está medido y es pequeño.** El único cambio que
+rompe en la v7 es la retirada de `functions.config()`, y **este proyecto
+no la usa en ningún sitio**: los secretos van por `secrets: [...]` con
+`process.env`, que es la forma moderna y compatible.
+
+Comprobado el 5 de agosto de 2026 en una copia del proyecto:
+
+| Paquete | De | A | `tsc --noEmit` |
+|---|---|---|---|
+| firebase-functions | 6.6.0 | 7.3.2 | **0 errores** |
+| firebase-admin | 12.6.0 | 14.2.0 | **0 errores** |
+
+**Por qué NO se hizo en el momento.** Compilar no es funcionar. Un SDK
+tiene comportamiento en tiempo de ejecución que los tipos no ven, y ese
+día ya se habían hecho quince despliegues seguidos: si algo fallaba,
+habría sido imposible separar la causa. Una actualización de dependencias
+merece su propio despliegue, en un día tranquilo y sin nada más encima.
+
+**Cómo hacerlo cuando toque** (media hora, incluida la comprobación):
+
+```bash
+cd functions
+npm install --save firebase-functions@^7 firebase-admin@^14
+npx tsc --noEmit          # debe dar 0 errores
+cd .. && npm test         # la suite completa
+```
+
+Después, desplegar **solo eso**, sin mezclarlo con ningún cambio de
+código, y probar en la aplicación: crear una campaña (callable), abrir
+Cobertura (lectura), y subir una factura (R2 + secretos). Si algo falla,
+se sabe exactamente qué lo causó.
+
+**Disparador:** cuando Google anuncie el fin de soporte del runtime de
+Node 22, o cuando un despliegue empiece a fallar por la versión. Antes de
+eso, no hay prisa.
+
+---
+
 ## Cómo quedó lo revisado
 
 Sin hallazgos pendientes en: fugas de memoria (listeners y timers se limpian
