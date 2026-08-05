@@ -8,7 +8,7 @@ import {
   type QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
-import type { Contrato } from "../types";
+import type { Contrato, SolicitudCampana } from "../types";
 import { diasHasta, soloFecha } from "../utils/fechas";
 
 export interface Notificacion {
@@ -74,7 +74,11 @@ export function eliminarNotificacion(clienteId: string, id: string) {
  * sesión, mismo resultado y además sin el desfase que podía haber entre
  * las dos copias.
  */
-export function useNotificaciones(clienteId: string, contratos: Contrato[]): NotifState {
+export function useNotificaciones(
+  clienteId: string,
+  contratos: Contrato[],
+  solicitudes: SolicitudCampana[]
+): NotifState {
   const [state, setState] = useState<NotifState>({ status: "loading" });
 
   useEffect(() => {
@@ -104,40 +108,23 @@ export function useNotificaciones(clienteId: string, contratos: Contrato[]): Not
     //    recientemente (el cliente merece saber qué pasó, no que la
     //    notificación simplemente desaparezca) ─────────────────────────
     //
-    // ANTES ESTO LEIA TODAS LAS SOLICITUDES DEL CLIENTE, DESDE SIEMPRE.
-    // La consulta era `where("cliente_id", "==", clienteId)` a secas, y
-    // despues se descartaba en el navegador casi todo lo que llegaba: de
-    // las resueltas solo interesan las de los ultimos 14 dias, y aun asi
-    // se pagaban las de hace cinco anios en CADA sesion del cliente.
+    // YA NO SE CONSULTAN: LLEGAN COMO PARAMETRO.
     //
-    // Ahora se piden solo las dos cosas que se usan. El resultado que ve
-    // la persona es identico -- lo que cambia es que el filtro lo hace
-    // Firestore en vez del navegador, y por tanto no se cobra lo que se
-    // iba a tirar. El coste deja de crecer con la antiguedad del cliente.
+    // Historia corta de esta linea. Primero era `where("cliente_id")` a
+    // secas: TODAS las solicitudes del cliente desde siempre, en cada
+    // sesion, para mostrar dos. Despues se acoto a dos consultas
+    // (pendientes + resueltas de 14 dias). Ahora son CERO consultas: las
+    // solicitudes viajan dentro del documento resumen del cliente, que la
+    // sesion ya paga para las campanas.
+    //
+    // El filtro por fecha se sigue haciendo ACA y no en el resumen: "de
+    // los ultimos 14 dias" depende del dia de hoy, y un documento que
+    // dependiera del calendario se quedaria desfasado a medianoche sin
+    // que nadie escribiera nada.
     const hace14 = new Date(hoyBase.getTime() - 14 * 86400000);
-    const qPendientes = query(
-      collection(db, "solicitudesCampana"),
-      where("cliente_id", "==", clienteId),
-      where("estado", "==", "Pendiente")
-    );
-    const qResueltasRecientes = query(
-      collection(db, "solicitudesCampana"),
-      where("cliente_id", "==", clienteId),
-      where("estadoActualizadoEn", ">=", Timestamp.fromDate(hace14))
-    );
-
-    // Cada escucha trae su parte; se juntan antes de recorrerlas para no
-    // borrar las notificaciones de la otra al limpiar las "sol-".
-    let solPendientes: QueryDocumentSnapshot[] | null = null;
-    let solRecientes: QueryDocumentSnapshot[] | null = null;
 
     const procesarSolicitudes = () => {
-      if (solPendientes === null || solRecientes === null) return;
-      // Una solicitud resuelta HOY sale en las dos consultas: se
-      // deduplica por id para no contar la misma notificacion dos veces.
-      const porId = new Map<string, QueryDocumentSnapshot>();
-      [...solPendientes, ...solRecientes].forEach((d) => porId.set(d.id, d));
-      const snap = { docs: [...porId.values()] };
+      const snap = { docs: solicitudes.map((s) => ({ id: s.id, data: () => s as Record<string, any> })) };
       // Limpiar las anteriores de este tipo
       for (const k of notifs.keys()) {
         if (k.startsWith("sol-")) notifs.delete(k);
@@ -176,18 +163,8 @@ export function useNotificaciones(clienteId: string, contratos: Contrato[]): Not
       emitir();
     };
 
-    const alFallarSolicitudes = () => { solicitudesDone = true; emitir(); };
-    const unsubSolPendientes = onSnapshot(
-      qPendientes,
-      (snap) => { solPendientes = snap.docs; procesarSolicitudes(); },
-      alFallarSolicitudes
-    );
-    const unsubSolRecientes = onSnapshot(
-      qResueltasRecientes,
-      (snap) => { solRecientes = snap.docs; procesarSolicitudes(); },
-      alFallarSolicitudes
-    );
-    const unsubSol = () => { unsubSolPendientes(); unsubSolRecientes(); };
+    procesarSolicitudes();
+    const unsubSol = () => {};
 
     // ── Contratos por vencer (próximos 30 días) ───────────────────────────
     // Sin consulta: se recorren los que ya vienen cargados.
@@ -217,7 +194,7 @@ export function useNotificaciones(clienteId: string, contratos: Contrato[]): Not
       unsubSol();
       window.removeEventListener(EVENTO_NOTIFICACIONES, alCambiarEstado);
     };
-  }, [clienteId, contratos]);
+  }, [clienteId, contratos, solicitudes]);
 
   return state;
 }

@@ -2,7 +2,7 @@ import { lazy, Suspense, startTransition, useEffect, useState } from "react";
 import { envMissing } from "./config/env";
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
-import { useContratos } from "./hooks/useContratos";
+import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
 import { useThemeColor } from "./hooks/useThemeColor";
 import { useOnlineStatus } from "./hooks/useOnlineStatus";
@@ -496,7 +496,11 @@ function AuthenticatedApp({
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
-  const notifState = useNotificaciones(clienteId, contratos);
+  // Las solicitudes salen del MISMO documento resumen que las campanas:
+  // no cuestan ninguna lectura extra.
+  const solicitudesCliente = useSolicitudesDelCliente(clienteId);
+  const misSolicitudes = solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : [];
+  const notifState = useNotificaciones(clienteId, contratos, misSolicitudes);
   const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
   // Igual que en el selector: para el contador de la barra lateral
   // bastan las pendientes.

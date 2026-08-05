@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { regenerarResumenCliente } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -145,5 +146,7 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
     ...(panelSolicitadoId ? { panelSolicitadoId, panelSolicitadoNombre: panelSolicitadoNombre || panelSolicitadoId } : {}),
   });
 
+  // El resumen del cliente incluye sus solicitudes.
+  await regenerarResumenCliente(db, clienteId);
   return { ok: true, id: ref.id, yaExistia: false };
 });

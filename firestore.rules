@@ -131,10 +131,15 @@ service cloud.firestore {
     // desde la consola del navegador.
     match /solicitudesCampana/{id} {
       allow read: if esAdminPortal() || esDeMiCliente();
-      allow update: if esAdminPortal()
-        && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['estado', 'estadoActualizadoEn'])
-        && request.resource.data.estado in ['Pendiente', 'Revisada', 'Rechazada', 'Convertida'];
+      // CERRADO. Antes el navegador del admin podía cambiar el estado
+      // directamente (acotado a esos dos campos). Funcionaba, pero era
+      // el ÚNICO camino de escritura sobre esta colección que no pasaba
+      // por una Cloud Function, y eso impedía guardar las solicitudes en
+      // el resumen de cada cliente: al marcar una como revisada, el
+      // resumen quedaba desfasado sin que nada se enterara. Ahora pasa
+      // por actualizarEstadoSolicitud, que valida el estado (lo validaba
+      // esta regla) y regenera el resumen en el mismo paso.
+      allow update: if false; // actualizarEstadoSolicitud
       allow create, delete: if false; // crearSolicitudCampana / eliminarSolicitudCampana
     }
 

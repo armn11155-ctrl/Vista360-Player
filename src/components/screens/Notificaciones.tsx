@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import BackChevron from "../BackChevron";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
 import { usePushEstado } from "../../hooks/usePushEstado";
+import { useSolicitudesDelCliente } from "../../hooks/useContratos";
 
 interface Props {
   clienteId: string;
@@ -44,7 +45,13 @@ function tiempoRelativo(isoFecha: string): string {
 }
 
 export default function Notificaciones({ clienteId, contratos, uid, onBack }: Props) {
-  const state = useNotificaciones(clienteId, contratos);
+  // Del mismo documento resumen que ya tiene la sesion: 0 lecturas.
+  const solicitudesCliente = useSolicitudesDelCliente(clienteId);
+  const state = useNotificaciones(
+    clienteId,
+    contratos,
+    solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : []
+  );
   const idsVisibles = state.status === "ready" ? state.notifs.map((n) => n.id).join("|") : "";
 
   useEffect(() => {

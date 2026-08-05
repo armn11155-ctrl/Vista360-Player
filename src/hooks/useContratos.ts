@@ -2,11 +2,27 @@ import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { hoyEnPeru } from "../utils/fechas";
-import type { Contrato } from "../types";
+import type { Contrato, SolicitudCampana } from "../types";
 
 export type ContratosState =
   | { status: "loading" }
   | { status: "ready"; contratos: Contrato[] }
+  | { status: "error"; message: string; retry: () => void };
+
+export type SolicitudesDelClienteState =
+  | { status: "loading" }
+  | { status: "ready"; solicitudes: SolicitudCampana[] }
+  | { status: "error"; message: string };
+
+/** Lo que hay dentro del documento resumen del cliente. */
+interface Resumen {
+  contratos: Contrato[];
+  solicitudes: SolicitudCampana[];
+}
+
+type ResumenState =
+  | { status: "loading" }
+  | { status: "ready"; datos: Resumen }
   | { status: "error"; message: string; retry: () => void };
 
 /**
@@ -31,20 +47,20 @@ export type ContratosState =
  * documento serían dos lecturas.
  */
 
-interface Suscriptor { (estado: ContratosState): void }
+interface Suscriptor { (estado: ResumenState): void }
 
 let clienteActual = "";
-let estadoActual: ContratosState = { status: "loading" };
+let estadoActual: ResumenState = { status: "loading" };
 let suscriptores = new Set<Suscriptor>();
 let cortar: (() => void) | null = null;
 
-function publicar(estado: ContratosState) {
+function publicar(estado: ResumenState) {
   estadoActual = estado;
   suscriptores.forEach((s) => s(estado));
 }
 
 function arrancar(clienteId: string) {
-  if (!db) { publicar({ status: "ready", contratos: [] }); return; }
+  if (!db) { publicar({ status: "ready", datos: { contratos: [], solicitudes: [] } }); return; }
   const bd = db;
   const reintentar = () => { detener(); arrancar(clienteId); };
 
@@ -57,17 +73,36 @@ function arrancar(clienteId: string) {
   // pero correcta. Se usa si el resumen no existe todavía o si las
   // reglas aún no permiten leerlo.
   const leerColeccionDirecta = () => {
-    cortar = onSnapshot(
+    // Dos consultas, como antes de existir el resumen. Se publican
+    // juntas para que la pantalla no parpadee a medias.
+    let contratos: Contrato[] | null = null;
+    let solicitudes: SolicitudCampana[] | null = null;
+    const juntar = () => {
+      if (contratos === null || solicitudes === null) return;
+      publicar({ status: "ready", datos: { contratos: ordenar(contratos), solicitudes } });
+    };
+    const alFallar = (err: { message: string }) =>
+      publicar({ status: "error", message: err.message, retry: reintentar });
+    const a = onSnapshot(
       query(collection(bd, "contratos"), where("cliente_id", "==", clienteId)),
-      (snap) => publicar({ status: "ready", contratos: ordenar(desdeDocumentos(snap.docs)) }),
-      (err) => publicar({ status: "error", message: err.message, retry: reintentar })
+      (snap) => { contratos = desdeDocumentos(snap.docs) as Contrato[]; juntar(); },
+      alFallar
     );
+    const b = onSnapshot(
+      query(collection(bd, "solicitudesCampana"), where("cliente_id", "==", clienteId)),
+      (snap) => {
+        solicitudes = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<SolicitudCampana, "id">) }));
+        juntar();
+      },
+      alFallar
+    );
+    cortar = () => { a(); b(); };
   };
 
   cortar = onSnapshot(
     doc(bd, `agregados/cliente-${clienteId}`),
     (snap) => {
-      const datos = snap.data() as { contratos?: Contrato[] } | undefined;
+      const datos = snap.data() as { contratos?: Contrato[]; solicitudes?: SolicitudCampana[] } | undefined;
       if (!snap.exists() || !Array.isArray(datos?.contratos)) {
         console.warn(
           "No existe el resumen de este cliente; se leen las campañas de la colección. " +
@@ -78,7 +113,10 @@ function arrancar(clienteId: string) {
       }
       publicar({
         status: "ready",
-        contratos: ordenar(datos!.contratos!.filter((c) => !c.deleted)),
+        datos: {
+          contratos: ordenar(datos!.contratos!.filter((c) => !c.deleted)),
+          solicitudes: Array.isArray(datos!.solicitudes) ? datos!.solicitudes! : [],
+        },
       });
     },
     (err) => {
@@ -109,7 +147,7 @@ function suscribir(clienteId: string, fn: Suscriptor): () => void {
     clienteActual = clienteId;
     estadoActual = { status: "loading" };
     if (clienteId) arrancar(clienteId);
-    else estadoActual = { status: "ready", contratos: [] };
+    else estadoActual = { status: "ready", datos: { contratos: [], solicitudes: [] } };
   }
   suscriptores.add(fn);
   fn(estadoActual);
@@ -122,10 +160,10 @@ function suscribir(clienteId: string, fn: Suscriptor): () => void {
   };
 }
 
-function useResumen(clienteId: string): ContratosState {
-  const [state, setState] = useState<ContratosState>({ status: "loading" });
+function useResumen(clienteId: string): ResumenState {
+  const [state, setState] = useState<ResumenState>({ status: "loading" });
   useEffect(() => {
-    if (!clienteId) { setState({ status: "ready", contratos: [] }); return; }
+    if (!clienteId) { setState({ status: "ready", datos: { contratos: [], solicitudes: [] } }); return; }
     return suscribir(clienteId, setState);
   }, [clienteId]);
   return state;
@@ -137,7 +175,10 @@ export function useContratos(clienteId: string): ContratosState {
   const state = useResumen(clienteId);
   if (state.status !== "ready") return state;
   const hoy = hoyEnPeru();
-  return { status: "ready", contratos: state.contratos.filter((c) => String(c.fin ?? "") >= hoy) };
+  return {
+    status: "ready",
+    contratos: state.datos.contratos.filter((c) => String(c.fin ?? "") >= hoy),
+  };
 }
 
 /**
@@ -149,5 +190,20 @@ export function useContratos(clienteId: string): ContratosState {
  */
 export function useContratosHistoricos(clienteId: string, activo: boolean): ContratosState {
   const state = useResumen(activo ? clienteId : "");
-  return state;
+  if (state.status !== "ready") return state;
+  return { status: "ready", contratos: state.datos.contratos };
+}
+
+/**
+ * Las solicitudes del cliente, del MISMO documento.
+ *
+ * No cuesta ninguna lectura extra: la sesión ya pagó ese documento para
+ * las campañas. Antes eran dos consultas más (pendientes y resueltas
+ * recientes), y con ellas la sesión costaba 5 lecturas en vez de 4.
+ */
+export function useSolicitudesDelCliente(clienteId: string): SolicitudesDelClienteState {
+  const state = useResumen(clienteId);
+  if (state.status === "loading") return state;
+  if (state.status === "error") return { status: "error", message: state.message };
+  return { status: "ready", solicitudes: state.datos.solicitudes };
 }

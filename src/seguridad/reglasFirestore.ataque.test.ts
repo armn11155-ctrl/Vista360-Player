@@ -223,8 +223,18 @@ describe("Lo que SÍ debe seguir funcionando (que la seguridad no rompa la app)"
     await assertSucceeds(getDocs(collection(comoGerente(), "invitacionesPortal")));
   });
 
-  it("el gerente marca una solicitud como revisada (única escritura del navegador)", async () => {
-    await assertSucceeds(
+  it("NI SIQUIERA EL GERENTE puede ya escribir una solicitud desde el navegador", async () => {
+    // Antes esta era la única escritura permitida desde el navegador: el
+    // gerente marcaba el estado con un updateDoc acotado a dos campos.
+    // Se cerró (allow update: if false) y pasó a
+    // actualizarEstadoSolicitud, que valida el estado y regenera el
+    // resumen del cliente en el mismo paso.
+    //
+    // No es solo higiene: mientras ese camino estuvo abierto, guardar
+    // las solicitudes en el resumen del cliente era imposible -- se
+    // habría desfasado al marcar una como revisada, sin forma de
+    // enterarse.
+    await assertFails(
       updateDoc(doc(comoGerente(), "solicitudesCampana/s-de-b"), {
         estado: "Revisada",
         estadoActualizadoEn: new Date(),
@@ -232,9 +242,7 @@ describe("Lo que SÍ debe seguir funcionando (que la seguridad no rompa la app)"
     );
   });
 
-  it("...pero NI EL GERENTE puede reescribir el contenido de la solicitud", async () => {
-    // La regla acota la escritura a los campos de estado. Sin ese
-    // límite, un trabajador podría cambiar el cliente o los paneles.
+  it("y tampoco puede reescribir su contenido", async () => {
     await assertFails(
       updateDoc(doc(comoGerente(), "solicitudesCampana/s-de-b"), { cliente_id: "empresa-a" })
     );
@@ -367,5 +375,56 @@ describe("ATAQUE 8: la copia agregada del inventario", () => {
     // su estado para todos los demás.
     await assertFails(setDoc(doc(comoClienteA(), "agregados/paneles"), { paneles: [] }));
     await assertFails(setDoc(doc(comoGerente(), "agregados/paneles"), { paneles: [] }));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// Dentro de `agregados` ya no vive solo el inventario de paneles, que es
+// público para todo el portal. Viven también la LISTA DE CLIENTES y el
+// RESUMEN DE CADA CLIENTE. La regla vieja (`allow read: if
+// esCuentaDePortal()` para todo el grupo) habría dejado que cualquier
+// cliente leyera los datos de todos los demás con solo cambiar la URL.
+describe("ATAQUE 9: los agregados con datos de clientes", () => {
+  beforeEach(async () => {
+    await entorno.withSecurityRulesDisabled(async (ctx) => {
+      const bd = ctx.firestore();
+      await setDoc(doc(bd, "agregados/clientes-0"), {
+        clientes: [{ id: "empresa-a", empresa: "Empresa A" }, { id: "empresa-b", empresa: "Empresa B" }],
+        partes: 1,
+      });
+      await setDoc(doc(bd, "agregados/cliente-empresa-a"), { contratos: [], solicitudes: [] });
+      await setDoc(doc(bd, "agregados/cliente-empresa-b"), { contratos: [], solicitudes: [] });
+    });
+  });
+
+  it("un CLIENTE no puede leer la lista de todos los clientes", async () => {
+    // Serían los nombres de toda la cartera de Vista360.
+    await assertFails(getDoc(doc(comoClienteA(), "agregados/clientes-0")));
+  });
+
+  it("el gerente SÍ puede (es su pantalla de inicio)", async () => {
+    await assertSucceeds(getDoc(doc(comoGerente(), "agregados/clientes-0")));
+  });
+
+  it("un cliente SÍ puede leer SU propio resumen", async () => {
+    await assertSucceeds(getDoc(doc(comoClienteA(), "agregados/cliente-empresa-a")));
+  });
+
+  it("pero NO el resumen de otro cliente", async () => {
+    // El id va en la ruta: cambiarla es el ataque obvio. La regla compara
+    // contra el clienteId que consta en portalUsers, no contra la URL.
+    await assertFails(getDoc(doc(comoClienteA(), "agregados/cliente-empresa-b")));
+  });
+
+  it("sin sesión no se puede leer ninguno", async () => {
+    await assertFails(getDoc(doc(sinSesion(), "agregados/clientes-0")));
+    await assertFails(getDoc(doc(sinSesion(), "agregados/cliente-empresa-a")));
+  });
+
+  it("nadie puede escribirlos desde el navegador", async () => {
+    await assertFails(setDoc(doc(comoGerente(), "agregados/clientes-0"), { clientes: [] }));
+    await assertFails(
+      setDoc(doc(comoClienteA(), "agregados/cliente-empresa-a"), { contratos: [] })
+    );
   });
 });

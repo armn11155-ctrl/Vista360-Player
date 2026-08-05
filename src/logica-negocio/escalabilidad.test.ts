@@ -170,52 +170,29 @@ describe("respaldo si falta el índice compuesto", () => {
   });
 });
 
-describe("notificaciones del cliente: tampoco leen su historial entero", () => {
+describe("notificaciones del cliente: cero consultas propias", () => {
   const notif = sinComentarios(readFileSync(resolve(HOOKS, "useNotificaciones.ts"), "utf-8"));
 
-  it("NO se piden todas las solicitudes del cliente", () => {
-    // Era where("cliente_id","==",clienteId) a secas, y luego el
-    // navegador tiraba casi todo. Un cliente de cinco anios pagaba sus
-    // ~100 solicitudes historicas en CADA sesion para mostrar dos.
-    const suelta = /query\(\s*collection\(db!?,\s*"solicitudesCampana"\),\s*where\("cliente_id",\s*"==",\s*clienteId\)\s*\)/;
-    expect(notif).not.toMatch(suelta);
+  it("NO consulta solicitudesCampana en absoluto", () => {
+    // Primero era where(cliente_id) a secas -- todo el historial en cada
+    // sesion. Luego dos consultas acotadas. Ahora ninguna: las
+    // solicitudes viajan en el resumen que la sesion ya paga.
+    expect(notif).not.toContain('"solicitudesCampana"');
   });
 
-  it("se piden solo las pendientes y las resueltas recientes", () => {
-    expect(notif).toContain('where("estado", "==", "Pendiente")');
-    expect(notif).toContain('where("estadoActualizadoEn", ">=", Timestamp.fromDate(hace14))');
+  it("las recibe como parámetro, igual que las campañas", () => {
+    expect(notif).toContain("solicitudes: SolicitudCampana[]");
   });
 
-  it("el filtro por fecha usa la MISMA ventana que se muestra", () => {
-    // Si la consulta trajera mas dias de los que se pintan, se estaria
-    // pagando por documentos que se descartan; si trajera menos,
-    // desaparecerian notificaciones que el cliente deberia ver.
+  it("el filtro de 14 días se hace acá, NO en el resumen", () => {
+    // "de los últimos 14 días" depende del día de hoy. Si lo hiciera el
+    // resumen, el documento se desfasaría a medianoche sin que nadie
+    // escribiera nada.
     expect(notif).toMatch(/hace14 = new Date\(hoyBase\.getTime\(\) - 14 \* 86400000\)/);
   });
 
-  it("una solicitud resuelta hoy no se cuenta dos veces", () => {
-    // Sale en las DOS consultas. Sin deduplicar, el contador de
-    // notificaciones marcaria de mas.
-    expect(notif).toContain("porId.set(d.id, d)");
-  });
-
-  it("se cancelan las dos escuchas de solicitudes", () => {
-    expect(notif).toMatch(/unsubSolPendientes\(\);\s*unsubSolRecientes\(\);/);
-  });
-
-  it("existen los indices de las dos consultas", () => {
-    const idx = JSON.parse(readFileSync(resolve(raiz, "firestore.indexes.json"), "utf-8")) as {
-      indexes: Array<{ collectionGroup: string; fields: Array<{ fieldPath: string }> }>;
-    };
-    const tiene = (campos: string[]) =>
-      idx.indexes.some(
-        (i) =>
-          i.collectionGroup === "solicitudesCampana" &&
-          i.fields.length === campos.length &&
-          i.fields.every((f, n) => f.fieldPath === campos[n]),
-      );
-    expect(tiene(["cliente_id", "estado"])).toBe(true);
-    expect(tiene(["cliente_id", "estadoActualizadoEn"])).toBe(true);
+  it("se recalculan cuando cambian las solicitudes", () => {
+    expect(notif).toContain("[clienteId, contratos, solicitudes]");
   });
 });
 
@@ -443,13 +420,52 @@ describe("el resumen por cliente se regenera desde TODOS los sitios que lo inval
     );
   });
 
-  it("las solicitudes NO entran en el resumen", () => {
-    // Se actualizan directamente desde el navegador del admin, sin pasar
-    // por ninguna función: un resumen que las incluyera se quedaría
-    // desfasado en cuanto marcara una como revisada, sin forma de
-    // enterarse. Si algún día se cierra ese camino, se podrán añadir.
+  it("las solicitudes SÍ entran en el resumen, y su camino está cerrado", () => {
+    // Solo puede ser asi porque NINGUNA escritura sobre esta coleccion
+    // ocurre ya desde el navegador: la regla es allow write: if false y
+    // todo pasa por Cloud Functions que regeneran el resumen.
     const agregado = readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8");
-    expect(agregado).not.toContain('collection("solicitudesCampana")');
+    expect(agregado).toContain('collection("solicitudesCampana")');
+
+    const reglas = readFileSync(resolve(raiz, "firestore.rules"), "utf-8");
+    const inicio = reglas.indexOf("match /solicitudesCampana/");
+    const bloque = reglas.slice(inicio, reglas.indexOf("match /", inicio + 20));
+    expect(bloque).toContain("allow update: if false;");
+    expect(bloque).not.toMatch(/allow update: if esAdminPortal\(\)/);
+  });
+
+  it("no queda NINGUNA escritura directa a solicitudesCampana en la app", () => {
+    // Este es el test que sostiene todo lo anterior. Si alguien vuelve a
+    // meter un updateDoc, el resumen se desfasaria en silencio.
+    const pantalla = readFileSync(
+      resolve(__dirname, "../components/screens/SolicitudesCampana.tsx"),
+      "utf-8",
+    );
+    expect(pantalla).not.toMatch(/updateDoc\(\s*doc\([^)]*"solicitudesCampana"/);
+    expect(pantalla).toContain('"actualizarEstadoSolicitud"');
+  });
+
+  it("actualizarEstadoSolicitud valida el estado y regenera el resumen", () => {
+    // Al cerrar la regla, la validacion que hacia Firestore
+    // (`estado in [...]`) hay que seguir haciendola en algun sitio.
+    const fn = sinComentarios(readFileSync(resolve(FUNCIONES, "actualizarEstadoSolicitud.ts"), "utf-8"));
+    // La lista blanca y su comprobacion, no solo el nombre de la
+    // constante: declararla y no usarla no valida nada.
+    expect(fn).toMatch(/const ESTADOS_PERMITIDOS = \[[^\]]+\] as const;/);
+    expect(fn).toContain("if (!(ESTADOS_PERMITIDOS as readonly string[]).includes(estado))");
+    expect(fn).toContain('throw new HttpsError("invalid-argument"');
+    // Y que "Convertida" NO este: lo pone crearContrato, no una persona.
+    const lista = /const ESTADOS_PERMITIDOS = \[([^\]]+)\]/.exec(fn)![1];
+    expect(lista).not.toContain("Convertida");
+    expect(fn).toContain("regenerarResumenCliente(db,");
+    expect(fn).toContain("esPersonalInterno");
+  });
+
+  it("la funcion nueva esta en la lista de despliegue", () => {
+    // El workflow enumera las funciones una por una: si no se anade, no
+    // se despliega y la pantalla de Solicitudes deja de funcionar.
+    const wf = readFileSync(resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"), "utf-8");
+    expect(wf).toContain("functions:actualizarEstadoSolicitud");
   });
 
   it("el resumen nunca hace fallar la operación que lo dispara", () => {

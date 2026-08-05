@@ -7,16 +7,12 @@ import type { Firestore } from "firebase-admin/firestore";
  * por campaña vigente + una por solicitud. Con esto, las campañas pasan
  * a costar 1 sola lectura tenga el cliente dos o doscientas. De 8 a 5.
  *
- * POR QUÉ NO ENTRAN LAS SOLICITUDES. Se actualizan DIRECTAMENTE desde el
- * navegador del admin (`updateDoc` sobre el estado, permitido por las
- * reglas), sin pasar por ninguna Cloud Function. Un resumen que las
- * incluyera se quedaría desfasado en cuanto el admin marcara una como
- * revisada, y no hay forma de enterarse. Los contratos sí son seguros:
- * su regla es `allow write: if false`, así que TODA escritura pasa por
- * una función y no hay ningún camino que se nos escape.
- *
- * Son 2 lecturas menos que podrían ahorrarse, pero exigirían cerrar ese
- * camino de escritura primero. No compensa el riesgo hoy.
+ * ENTRAN TAMBIÉN LAS SOLICITUDES. Antes no: el navegador del admin las
+ * actualizaba directamente y el resumen se habría quedado desfasado al
+ * marcar una como revisada. Ese camino se cerró
+ * (actualizarEstadoSolicitud), así que ahora TODA escritura sobre las
+ * dos colecciones pasa por una Cloud Function y no hay forma de que un
+ * cambio se nos escape.
  *
  * ─────────────────────────────────────────────────────────────────────
  * LA DECISIÓN IMPORTANTE: SE GUARDA TODO, NO SOLO LO VIGENTE.
@@ -44,6 +40,11 @@ export function rutaResumen(clienteId: string): string {
   return `agregados/cliente-${clienteId}`;
 }
 
+/** Cuántas solicitudes resueltas se guardan. Las notificaciones solo
+ *  miran las de 14 días, así que con las más recientes sobra. Las
+ *  pendientes van SIEMPRE, sin tope. */
+export const SOLICITUDES_RECIENTES = 100;
+
 /** Aviso: por encima de esto el documento se acerca al límite de 1 MB. */
 const AVISO_CONTRATOS = 400;
 
@@ -61,10 +62,10 @@ function ordenDescendente(a: unknown, b: unknown): number {
 export async function regenerarResumenCliente(db: Firestore, clienteId: string): Promise<void> {
   if (!clienteId) return;
   try {
-    const contratosSnap = await db
-      .collection("contratos")
-      .where("cliente_id", "==", clienteId)
-      .get();
+    const [contratosSnap, solicitudesSnap] = await Promise.all([
+      db.collection("contratos").where("cliente_id", "==", clienteId).get(),
+      db.collection("solicitudesCampana").where("cliente_id", "==", clienteId).get(),
+    ]);
 
     const contratos = contratosSnap.docs
       .map((d) => ({ id: d.id, ...d.data() }))
@@ -78,8 +79,24 @@ export async function regenerarResumenCliente(db: Firestore, clienteId: string):
       );
     }
 
+    // Las PENDIENTES van todas (son trabajo sin atender). De las
+    // resueltas bastan las más recientes: las notificaciones solo miran
+    // las de los últimos 14 días. El corte es por número, no por fecha,
+    // para que el documento no dependa del calendario.
+    const solicitudesTodas = solicitudesSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const pendientes = solicitudesTodas.filter((s) => (s as { estado?: string }).estado === "Pendiente");
+    const resueltas = solicitudesTodas
+      .filter((s) => (s as { estado?: string }).estado !== "Pendiente")
+      .sort((a, b) => {
+        const fa = (a as { estadoActualizadoEn?: { toMillis?: () => number } }).estadoActualizadoEn;
+        const fb = (b as { estadoActualizadoEn?: { toMillis?: () => number } }).estadoActualizadoEn;
+        return (fb?.toMillis?.() ?? 0) - (fa?.toMillis?.() ?? 0);
+      })
+      .slice(0, SOLICITUDES_RECIENTES);
+
     await db.doc(rutaResumen(clienteId)).set({
       contratos,
+      solicitudes: [...pendientes, ...resueltas],
       totalContratos: contratos.length,
       actualizadoEn: new Date().toISOString(),
     });

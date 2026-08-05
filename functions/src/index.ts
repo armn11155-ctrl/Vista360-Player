@@ -27,6 +27,7 @@ export { actualizarClienteInfo } from "./actualizarClienteInfo.js";
 export { eliminarContrato } from "./eliminarContrato.js";
 export { resolverSolicitudAccion } from "./resolverSolicitudAccion.js";
 export { eliminarSolicitudCampana } from "./eliminarSolicitudCampana.js";
+export { actualizarEstadoSolicitud } from "./actualizarEstadoSolicitud.js";
 export { crearSolicitudCampana } from "./crearSolicitudCampana.js";
 export { sincronizarEstadoPaneles, sincronizarEstadoPanelesAhora } from "./sincronizarEstadoPaneles.js";
 export { diagnosticoPanel } from "./diagnosticoPanel.js";

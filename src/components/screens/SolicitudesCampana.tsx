@@ -100,11 +100,20 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   const resolverUrl = (valor?: string) => (!valor ? undefined : valor.startsWith("http") ? valor : urlsFirmadas[valor]);
 
   async function resolver(id: string, estado: "Revisada" | "Rechazada") {
-    if (!db) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
+    if (!cloudFunctions) { setAccionError("Sin conexión. Intenta de nuevo."); return; }
+    const fns = cloudFunctions;
     setAccionError(null);
     setResolviendo(id);
     try {
-      await updateDoc(doc(db, "solicitudesCampana", id), { estado, estadoActualizadoEn: serverTimestamp() });
+      // Pasa por una Cloud Function y no por updateDoc: es lo que permite
+      // que las solicitudes vivan en el resumen de cada cliente sin
+      // quedarse desfasadas. La regla de Firestore ya no deja escribir
+      // esta colección desde el navegador.
+      const fn = httpsCallable<{ solicitudId: string; estado: string }, { ok: boolean }>(
+        fns,
+        "actualizarEstadoSolicitud"
+      );
+      await fn({ solicitudId: id, estado });
       setSeleccionada((actual) => actual?.id === id ? { ...actual, estado } : actual);
     } catch (error) {
       setAccionError(mensajeDeError(error, "No se pudo actualizar la solicitud. Revisa tu conexión e intenta de nuevo."));
