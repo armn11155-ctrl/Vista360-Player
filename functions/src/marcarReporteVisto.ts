@@ -35,6 +35,15 @@ export const marcarReporteVisto = onCall(async (request) => {
   if (!clienteId || !informeId || !informeId.startsWith(`${clienteId}_`)) {
     throw new HttpsError("invalid-argument", "Envía clienteId e informeId válidos.");
   }
+  // El informeId se concatena a una ruta de Firestore más abajo. Sin
+  // esto, un informeId con barras ("miCliente_a/b/c") apuntaría a un
+  // documento anidado distinto del previsto: seguiría colgando de
+  // informesCliente (así que no da acceso a otras colecciones), pero
+  // dejaría crear documentos sueltos en rutas inventadas. Se acota a lo
+  // que de verdad genera la app: id de cliente, guion bajo, y la fecha.
+  if (!/^[A-Za-z0-9_-]+$/.test(informeId)) {
+    throw new HttpsError("invalid-argument", "informeId con caracteres no permitidos.");
+  }
 
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();

@@ -79,15 +79,81 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
     return Boolean(clienteIdFactura) && clienteIdFactura === clienteIdPropio;
   }
 
-  const permitidas = esAdmin
-    ? keys
-    : (
-        await Promise.all(
-          keys.map(async (key) =>
-            key.startsWith("vista360/facturas/") && !(await facturaEsDelCliente(key)) ? null : key
-          )
-        )
-      ).filter((k): k is string => k !== null);
+  /**
+   * Todas las keys de R2 que aparecen en las campañas de ESTE cliente:
+   * la foto de portada y las fotos de evidencia (con sus miniaturas).
+   *
+   * Se traen de una sola consulta y se dejan en un Set, en vez de
+   * consultar por cada key: firmarUrlsR2 acepta hasta 60 por llamada, y
+   * una consulta por cada una haría de esta función un cuello de
+   * botella (y un blanco fácil para saturar la cuota de Firestore
+   * llamándola en bucle).
+   */
+  async function keysDeMisCampanas(): Promise<Set<string>> {
+    const propias = new Set<string>();
+    if (!clienteIdPropio) return propias;
+    const snapContratos = await db
+      .collection("contratos")
+      .where("cliente_id", "==", clienteIdPropio)
+      .get();
+    snapContratos.docs.forEach((d) => {
+      const c = d.data();
+      if (typeof c.imagenCampaniaUrl === "string") propias.add(c.imagenCampaniaUrl);
+      const fotos = Array.isArray(c.fotos_campania) ? c.fotos_campania : [];
+      fotos.forEach((f: { url?: unknown; thumbKey?: unknown }) => {
+        if (typeof f?.url === "string") propias.add(f.url);
+        if (typeof f?.thumbKey === "string") propias.add(f.thumbKey);
+      });
+    });
+    return propias;
+  }
+
+  /**
+   * DECIDIR POR LISTA BLANCA, NO POR EXCEPCIONES.
+   *
+   * Antes acá solo se comprobaba la propiedad de las keys que empezaban
+   * por "vista360/facturas/"; CUALQUIER otra se firmaba sin verificar
+   * nada. En la práctica eso significaba que un cliente autenticado
+   * podía pedir una URL firmada de las fotos de campaña de OTRO cliente
+   * con solo conocer su key -- las keys llevan una parte aleatoria y no
+   * son adivinables a la fuerza, pero apoyarse en eso es seguridad por
+   * oscuridad, no control de acceso: basta con que una key se filtre por
+   * cualquier vía (una consulta mal protegida, un enlace compartido, una
+   * copia de seguridad) para que quede accesible sin límite.
+   *
+   * Ahora se decide carpeta por carpeta y lo que no encaje se niega. Si
+   * mañana se agrega una carpeta nueva a CARPETAS_PERMITIDAS y nadie
+   * toca esto, sus archivos quedan inaccesibles para los clientes --
+   * molesto, pero es el fallo seguro: se nota enseguida y no filtra nada.
+   */
+  async function keysPermitidas(): Promise<string[]> {
+    if (esAdmin) return keys;
+
+    const mias = await keysDeMisCampanas();
+    const decididas = await Promise.all(
+      keys.map(async (key) => {
+        // Facturas: tienen que ser de este cliente (por cliente_id o RUC).
+        if (key.startsWith("vista360/facturas/")) {
+          return (await facturaEsDelCliente(key)) ? key : null;
+        }
+        // Fotos de campaña: solo las que están en SUS propias campañas.
+        if (key.startsWith("vista360/campanas/")) {
+          return mias.has(key) ? key : null;
+        }
+        // Avatares: son el logo/foto de perfil que la propia app muestra
+        // en cabeceras y listados; no llevan información privada y se
+        // ven de forma cruzada por diseño.
+        if (key.startsWith("vista360/avatares/")) {
+          return key;
+        }
+        // Cualquier otra cosa: no.
+        return null;
+      })
+    );
+    return decididas.filter((k): k is string => k !== null);
+  }
+
+  const permitidas = await keysPermitidas();
 
   const firmadas = await Promise.all(
     permitidas.map(async (key) => ({
