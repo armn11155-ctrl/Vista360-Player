@@ -58,7 +58,7 @@ describe("los índices declarados cubren las consultas del código", () => {
     // Firestore usa los campos de la izquierda para las igualdades y el
     // último para el rango. Al revés, el índice no sirve para la consulta
     // aunque el deploy lo acepte.
-    for (const idx of indices.indexes) {
+    for (const idx of indices.indexes.filter((i) => i.collectionGroup === "contratos")) {
       const ultimo = idx.fields[idx.fields.length - 1];
       expect(ultimo.fieldPath).toBe("fin");
     }
@@ -77,6 +77,36 @@ describe("los índices declarados cubren las consultas del código", () => {
     expect(posIndices).toBeGreaterThan(-1);
     expect(posFunciones).toBeGreaterThan(-1);
     expect(posIndices).toBeLessThan(posFunciones);
+  });
+
+  it("PELIGRO: el deploy de índices NO puede llevar --force (borraría los que no estén en el archivo)", () => {
+    // firebase-tools hace `shouldDeleteIndexes = options.force`: con
+    // --force borra TODO índice que exista en el proyecto y no esté en
+    // firestore.indexes.json. Este proyecto tiene índices creados por
+    // otras vías (scripts/create-informes-index-direct.mjs) y puede
+    // tener otros hechos a mano desde la consola. Con --force, un
+    // despliegue rutinario los borraría y rompería pantallas que hoy
+    // funcionan, sin que nadie relacionara la causa con el efecto.
+    const wf = readFileSync(resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"), "utf-8");
+    const inicio = wf.indexOf("- name: Desplegar índices de Firestore");
+    expect(inicio).toBeGreaterThan(-1);
+    const finPaso = wf.indexOf("- name:", inicio + 10);
+    const paso = wf.slice(inicio, finPaso === -1 ? undefined : finPaso);
+    // Se quitan los comentarios: este mismo paso EXPLICA en un comentario
+    // por qué no lleva --force, y esa mención no debe contar como uso.
+    const comandos = paso
+      .split("\n")
+      .filter((l) => !l.trim().startsWith("#"))
+      .join(" ");
+    expect(comandos).toContain("--only firestore:indexes");
+    expect(comandos).not.toContain("--force");
+  });
+
+  it("los índices que ya existían por otras vías están declarados (si no, se avisaría de borrarlos)", () => {
+    // El de informesCliente lo crea create-informes-index-direct.mjs.
+    // Declararlo acá mantiene el archivo fiel a la realidad del
+    // proyecto; la CLI lo detecta como existente y no hace nada.
+    expect(existeIndice("informesCliente", [["cliente_id", "ASCENDING"], ["mes", "DESCENDING"]])).toBe(true);
   });
 
   it("el código tiene respaldo por si el índice no está disponible", () => {

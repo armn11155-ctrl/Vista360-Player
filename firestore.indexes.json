@@ -4,16 +4,42 @@
       "collectionGroup": "contratos",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "panel_ids", "arrayConfig": "CONTAINS" },
-        { "fieldPath": "fin", "order": "ASCENDING" }
+        {
+          "fieldPath": "panel_ids",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "fin",
+          "order": "ASCENDING"
+        }
       ]
     },
     {
       "collectionGroup": "contratos",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "panel_id", "order": "ASCENDING" },
-        { "fieldPath": "fin", "order": "ASCENDING" }
+        {
+          "fieldPath": "panel_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fin",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "informesCliente",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "cliente_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes",
+          "order": "DESCENDING"
+        }
       ]
     }
   ],
