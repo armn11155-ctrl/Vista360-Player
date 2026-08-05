@@ -3,6 +3,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { latir } from "./latidoDeTareas.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -210,6 +211,11 @@ export const recordatorioReportesMensuales = onSchedule(
   { schedule: "30 11 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
+    // El latido va al PRINCIPIO, no al final: lo que se vigila es que la
+    // tarea se EJECUTE. La mayoria de los dias no hay nada que enviar
+    // (solo avisa en los ultimos 7 dias del mes), y una tarea que corre
+    // y no encuentra trabajo esta perfectamente sana.
+    await latir(db, "recordatorioReportesMensuales");
     const hoy = hoyEnLima();
     const hoyStr = hoy.str;
     const mesActual = hoyStr.slice(0, 7);
@@ -283,6 +289,7 @@ export const recordatorioVencimientoCampanas = onSchedule(
   { schedule: "0 15 * * *", timeZone: "America/Lima" },
   async () => {
     const db = getFirestore();
+    await latir(db, "recordatorioVencimientoCampanas");
     const hoyInfo = hoyEnLima();
     const hoy = hoyInfo.str;
     const limite = sumarDias(hoyInfo, 10);

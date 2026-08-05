@@ -6,6 +6,7 @@ import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenesDeTodos } from "./agregadoCliente.js";
+import { latir } from "./latidoDeTareas.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -128,6 +129,9 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   // Si alguna vez hiciera falta reconstruirlos todos (una migracion, un
   // dato corrupto), esta regenerarResumenesDeTodos() y se llama a mano
   // desde sincronizarEstadoPanelesAhora con reconstruirResumenes: true.
+
+  // Deja constancia de que esta tarea corrio (ver latidoDeTareas.ts).
+  await latir(db, "sincronizarEstadoPaneles");
 
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }

@@ -1,5 +1,6 @@
 import { lazy, Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
+import { useTareasPeriodicas } from "./hooks/useTareasPeriodicas";
 import { anotarRutaActual, useDetectorDeBucles } from "./hooks/useDetectorDeBucles";
 import { pantallaLazy, recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
 
@@ -273,6 +274,9 @@ export default function App() {
   // Solo el NOMBRE de la pantalla, para que el aviso de bucle diga dónde
   // pasó. Nada de identificadores de cliente ni contenido.
   anotarRutaActual(view);
+  // Guardián de las tareas periódicas: una lectura por sesión de
+  // personal interno. Los clientes no pagan nada por esto.
+  useTareasPeriodicas(auth.status === "in" && auth.role !== "cliente");
   useRegistrarVisita(uid, view);
   // Estos 4 estados (contratoAbierto, adminClienteId, volverAGestion,
   // adminVistaCliente) casi siempre cambian JUNTO con la pantalla

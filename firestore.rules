@@ -171,6 +171,9 @@ service cloud.firestore {
         // Lista de clientes para el selector, repartida en partes
         // (clientes-0, clientes-1...). SOLO personal interno.
         || (documento.matches('clientes-[0-9]+') && esPersonalDePortal())
+        // Latidos de las tareas periodicas: solo personal interno, y
+        // solo para saber si alguna dejo de correr.
+        || (documento == 'tareas' && esPersonalDePortal())
         // Resumen de UN cliente (sus campañas): cliente-<id>. Solo lo lee
         // ese mismo cliente, o el personal interno. El id va en la RUTA,
         // así que cambiar la URL no sirve de nada: la comparación es
