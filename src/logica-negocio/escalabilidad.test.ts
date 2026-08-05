@@ -271,3 +271,29 @@ describe("campañas: en cada sesión solo se lee lo vigente", () => {
     expect(existe).toBe(true);
   });
 });
+
+describe("respaldo si falta el índice de campañas", () => {
+  const contratos = sinComentarios(readFileSync(resolve(HOOKS, "useContratos.ts"), "utf-8"));
+
+  it("si falta el índice se lee el historial completo, no se deja vacío", () => {
+    // Es LA pantalla principal del cliente. Quedarse sin ninguna campaña
+    // sería peor que pagar de más unos minutos.
+    expect(contratos).toContain('code === "failed-precondition"');
+    expect(contratos).toContain("escuchando = escuchar(false);");
+  });
+
+  it("el respaldo no se reintenta en bucle", () => {
+    expect(contratos).toContain("if (conFiltroDeFecha && (err as { code?: string }).code");
+  });
+
+  it("un fallo de permisos SÍ se muestra como error", () => {
+    // Disfrazar cualquier fallo de "falta el índice" esconde problemas
+    // reales y encima dispara la consulta cara sin motivo.
+    const bloque = contratos.slice(contratos.indexOf("failed-precondition"));
+    expect(bloque).toContain('status: "error"');
+  });
+
+  it("se cancela la escucha vigente al desmontar, sea cual sea", () => {
+    expect(contratos).toContain("return () => { escuchando?.(); };");
+  });
+});

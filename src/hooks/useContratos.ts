@@ -65,12 +65,30 @@ function useConsultaDeContratos(clienteId: string, soloVigentes: boolean): Contr
     // "listo y vacío", no "cargando".
     if (!clienteId || !db) { setState({ status: "ready", contratos: [] }); return; }
     setState({ status: "loading" });
-    const base = [collection(db, "contratos"), where("cliente_id", "==", clienteId)] as const;
-    const q = soloVigentes
-      ? query(base[0], base[1], where("fin", ">=", hoyEnPeru()))
-      : query(base[0], base[1]);
-    const unsub = onSnapshot(
-      q,
+    const bd = db;
+    const consulta = (conFiltroDeFecha: boolean) =>
+      conFiltroDeFecha
+        ? query(
+            collection(bd, "contratos"),
+            where("cliente_id", "==", clienteId),
+            where("fin", ">=", hoyEnPeru())
+          )
+        : query(collection(bd, "contratos"), where("cliente_id", "==", clienteId));
+
+    // RESPALDO SI FALTA EL INDICE contratos(cliente_id, fin).
+    //
+    // Sin el, Firestore rechaza la consulta con failed-precondition y el
+    // cliente se queda SIN NINGUNA campana -- la pantalla principal
+    // vacia. Y la ventana existe de verdad: Cloudflare publica el
+    // frontend en cuanto se empuja, pero el indice solo se crea al
+    // lanzar el despliegue.
+    //
+    // El respaldo lee todo el historial: mas caro, exactamente lo que
+    // haciamos antes, pero CORRECTO. Vale mas pagar de mas unos minutos
+    // que ensenar una lista vacia.
+    let escuchando: (() => void) | null = null;
+    const escuchar = (conFiltroDeFecha: boolean) => onSnapshot(
+      consulta(conFiltroDeFecha),
       (snap) => {
         const contratos = snap.docs
           .map((d) => ({ id: d.id, ...(d.data() as Omit<Contrato, "id">) }))
@@ -80,14 +98,30 @@ function useConsultaDeContratos(clienteId: string, soloVigentes: boolean): Contr
           .sort((a, b) => String(b.inicio ?? "").localeCompare(String(a.inicio ?? "")));
         setState({ status: "ready", contratos });
       },
-      (err) =>
+      (err) => {
+        // Solo failed-precondition significa "falta el indice". Un fallo
+        // de permisos o de red debe verse como error, no disfrazarse de
+        // consulta cara. Y la guarda `conFiltroDeFecha &&` impide que el
+        // respaldo se reintente a si mismo en bucle.
+        if (conFiltroDeFecha && (err as { code?: string }).code === "failed-precondition") {
+          console.warn(
+            "Falta el indice contratos(cliente_id, fin); se lee el historial completo " +
+              "hasta que el indice termine de construirse.",
+            err
+          );
+          escuchando = escuchar(false);
+          return;
+        }
         setState({
           status: "error",
           message: err.message,
           retry: () => setRetryNonce((n) => n + 1),
-        })
+        });
+      }
     );
-    return unsub;
+
+    escuchando = escuchar(soloVigentes);
+    return () => { escuchando?.(); };
   }, [clienteId, soloVigentes, retryNonce]);
 
   return state;

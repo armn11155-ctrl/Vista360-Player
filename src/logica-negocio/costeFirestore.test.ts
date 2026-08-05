@@ -41,7 +41,7 @@ describe("no duplicar escuchas sobre la misma colección", () => {
       .filter((f) => f.endsWith(".ts") && !f.includes(".test."))
       .filter((f) => {
         const c = sinComentarios(readFileSync(resolve(HOOKS, f), "utf-8"));
-        return /collection\(db!?,\s*"contratos"\)/.test(c) && /where\("cliente_id"/.test(c);
+        return /collection\((db|bd)!?,\s*"contratos"\)/.test(c) && /where\("cliente_id"/.test(c);
       });
     expect(conEscuchaDeContratos).toEqual(["useContratos.ts"]);
   });
@@ -49,7 +49,7 @@ describe("no duplicar escuchas sobre la misma colección", () => {
   it("useNotificaciones recibe los contratos, no los consulta", () => {
     const c = sinComentarios(hook("useNotificaciones"));
     expect(c).toContain("contratos: Contrato[]");
-    expect(c).not.toMatch(/collection\(db!?,\s*"contratos"\)/);
+    expect(c).not.toMatch(/collection\((db|bd)!?,\s*"contratos"\)/);
   });
 });
 
@@ -66,7 +66,7 @@ describe("ninguna escucha lee una colección entera sin filtrar", () => {
       if (SIN_FILTRO_ACEPTABLE.has(f)) continue;
       const c = sinComentarios(readFileSync(resolve(HOOKS, f), "utf-8"));
       // onSnapshot(collection(...)) directo, sin query() alrededor.
-      if (/onSnapshot\(\s*collection\(db!?,\s*"(contratos|facturas|informesCliente|solicitudesCampana)"\)/.test(c)) {
+      if (/onSnapshot\(\s*collection\((db|bd)!?,\s*"(contratos|facturas|informesCliente|solicitudesCampana)"\)/.test(c)) {
         sinFiltro.push(f);
       }
     }
