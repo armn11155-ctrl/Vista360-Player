@@ -207,3 +207,39 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
     }
   });
 });
+
+describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () => {
+  it("generar reportes (540s, 1GiB) exige personal interno", () => {
+    const c = readFileSync(resolve(DIR, "generarReporteCliente.ts"), "utf-8");
+    expect(c).toContain("esPersonalInterno(user?.role)");
+    // Y sigue declarando el timeout largo: si alguien lo bajara sin
+    // pensar, los reportes grandes se cortarían a medias.
+    expect(c).toContain("timeoutSeconds: 540");
+  });
+
+  it("las herramientas de mantenimiento que barren colecciones enteras exigen Gerente", () => {
+    for (const archivo of ["limpiarArchivosHuerfanos.ts", "contarEvidenciasHuerfanas.ts", "obtenerEspacioR2.ts", "resumenOcupacion.ts"]) {
+      const c = readFileSync(resolve(DIR, archivo), "utf-8");
+      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"|requireAdmin/);
+    }
+  });
+
+  it("firmarUrlsR2 topa cuántas URLs se piden de una vez", () => {
+    const c = readFileSync(resolve(DIR, "firmarUrlsR2.ts"), "utf-8");
+    expect(c).toContain("MAX_KEYS_POR_LLAMADA");
+  });
+
+  it("enviar correos exige personal interno (no es un relay abierto)", () => {
+    const c = readFileSync(resolve(DIR, "enviarCorreoConPdf.ts"), "utf-8");
+    expect(c).toContain("esPersonalInterno(rol)");
+    // Y valida el destinatario, para no mandar a cualquier cosa.
+    expect(c).toMatch(/test\(destinatario\)/);
+  });
+
+  it("leer archivos por base64 exige Gerente y solo prefijos conocidos", () => {
+    const c = readFileSync(resolve(DIR, "obtenerArchivoR2Base64.ts"), "utf-8");
+    expect(c).toMatch(/role\s*!==\s*"admin"/);
+    expect(c).toContain('key.includes("..")');
+    expect(c).toContain("prefijoValido");
+  });
+});

@@ -202,6 +202,42 @@ todo que el cliente escriba en `portalUsers`.
 
 ---
 
+## 10. No hay límite de llamadas: un cliente podría inflar la factura
+
+| | |
+|---|---|
+| **Riesgo** | 🟡 Bajo-medio |
+| **Impacto** | Medio — coste, NO acceso a datos |
+| **Probabilidad** | Baja (requiere mala fe de un cliente con cuenta) |
+| **Cuándo** | **Ahora** la alerta de gasto; App Check, más adelante |
+
+Ninguna Cloud Function limita cuántas veces se la puede llamar. Un cliente con
+sesión legítima podría llamar en bucle a las suyas — `firmarUrlsR2`,
+`listarReportesCliente` — desde la consola del navegador y generar miles de
+lecturas de Firestore e invocaciones de funciones. No accedería a nada que no
+sea suyo: el daño es **económico**, no de datos.
+
+Lo caro está protegido: `generarReporteCliente` (540 s, 1 GiB) exige personal
+interno, igual que la limpieza de archivos y el resumen de ocupación. Lo que un
+cliente puede llamar es barato por operación; el problema sería el volumen.
+
+**Recomendación por orden de sensatez:**
+
+1. **Alerta de presupuesto en Google Cloud** (gratis, 2 minutos, sin tocar
+   código): Facturación → Presupuestos y alertas. Avisa por correo al superar un
+   importe. No previene el abuso, pero hace que te enteres el mismo día en vez de
+   a fin de mes. Es lo proporcionado al riesgo real.
+2. **Firebase App Check**, más adelante: verifica que las llamadas vengan de tu
+   app de verdad y no de un script. Es la solución correcta al problema, pero mal
+   configurado **bloquea a usuarios legítimos**, así que no conviene activarlo a
+   ciegas ni con prisa.
+
+No se implementó un limitador propio a propósito: guardar contadores por usuario
+cuesta escrituras de Firestore en cada llamada, o sea que el remedio gastaría de
+más para prevenir un gasto que hoy es hipotético.
+
+---
+
 ## Cómo quedó lo revisado
 
 Sin hallazgos pendientes en: fugas de memoria (listeners y timers se limpian
