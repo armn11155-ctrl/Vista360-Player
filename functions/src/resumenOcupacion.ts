@@ -60,7 +60,12 @@ function panelesDe(c: ContratoDatos): string[] {
  * dejan hacer esa lectura desde el navegador. Mismo patrón que
  * listarAccesosClientes.
  */
-export const resumenOcupacion = onCall(async (request) => {
+export const resumenOcupacion = onCall(
+  // Lee paneles, clientes y facturas completos. Los contratos ya van
+  // filtrados por fecha, pero las facturas no: el coste de esta funcion
+  // crece con todas las que se hayan emitido en la historia del negocio.
+  { timeoutSeconds: 300, memory: "512MiB" },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");

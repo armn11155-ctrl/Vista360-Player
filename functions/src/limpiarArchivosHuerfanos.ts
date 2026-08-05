@@ -81,7 +81,14 @@ async function keysEnUso(db: FirebaseFirestore.Firestore): Promise<Set<string>> 
   return enUso;
 }
 
-export const limpiarArchivosHuerfanos = onCall<LimpiarData>({ secrets: R2_SECRETS }, async (request) => {
+export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
+  // Recorre SEIS colecciones completas y ademas lista el bucket entero de
+  // R2. Es la funcion que peor escala del proyecto: su coste crece con
+  // TODO el historico, no con lo que se este usando. Con los 60 segundos
+  // por defecto, el dia que haya decenas de miles de documentos se corta
+  // a la mitad y deja el recuento sin terminar -- sin decir por que.
+  { secrets: R2_SECRETS, timeoutSeconds: 540, memory: "1GiB" },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");

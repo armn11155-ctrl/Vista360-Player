@@ -17,7 +17,10 @@ if (getApps().length === 0) {
  * mucho, convendría cachear el resultado en vez de recalcularlo cada
  * vez que se abre la pantalla.
  */
-export const obtenerEspacioR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
+export const obtenerEspacioR2 = onCall(
+  // Lista el bucket entero de a 1000 objetos para sumar tamanos.
+  { secrets: R2_SECRETS, timeoutSeconds: 300 },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");

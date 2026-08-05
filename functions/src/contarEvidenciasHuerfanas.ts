@@ -25,7 +25,10 @@ interface Datos {
  * del contrato para no dejar referencias apuntando a archivos que ya no
  * existen.
  */
-export const contarEvidenciasHuerfanas = onCall<Datos>({ secrets: R2_SECRETS }, async (request) => {
+export const contarEvidenciasHuerfanas = onCall<Datos>(
+  // Recorre la coleccion de contratos completa y cruza con R2.
+  { secrets: R2_SECRETS, timeoutSeconds: 300, memory: "512MiB" },
+  async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
 
