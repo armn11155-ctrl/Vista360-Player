@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "contratos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "panel_ids", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "fin", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "contratos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "panel_id", "order": "ASCENDING" },
+        { "fieldPath": "fin", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

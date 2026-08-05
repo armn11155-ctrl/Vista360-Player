@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
+import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) initializeApp();
@@ -72,35 +73,15 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
     panelIdsAfectados = panelIds;
 
     if (clienteId && panelIds.length > 0) {
-      type ContratoFila = {
-        cliente_id?: string;
-        panel_id?: string;
-        panel_ids?: string[];
-        inicio?: string;
-        fin?: string;
-        deleted?: boolean;
-      };
-
       // Misma regla que al crear (ver crearContrato.ts): en pantallas LED
       // solo se revisa contra el propio cliente, porque rotan anuncios;
       // en soportes con cupo limitado (lona/mural/paradero: 1, unipolar:
       // 2) se revisa contra CUALQUIER cliente, y se bloquea recién cuando
       // ya hay tantas campañas cruzadas como cupos tiene el soporte.
-      // Mismo motivo que en crearContrato.ts (ver el comentario largo
-      // allá): esto era `tx.get(db.collection("contratos"))`, o sea
-      // leer TODO el historial de contratos cada vez que se edita una
-      // campaña. Una cuenta que solo crece con los años hasta volverse
-      // lenta y cara sin que nadie haya tocado nada. Ahora se traen
-      // solo los contratos de ESTOS paneles, con las dos consultas que
-      // cubren el formato nuevo (panel_ids) y el viejo (panel_id).
-      const relevantes = new Map<string, ContratoFila>();
-      for (const panelId of panelIds) {
-        const [porLista, porUnico] = await Promise.all([
-          tx.get(db.collection("contratos").where("panel_ids", "array-contains", panelId)),
-          tx.get(db.collection("contratos").where("panel_id", "==", panelId)),
-        ]);
-        [...porLista.docs, ...porUnico.docs].forEach((d) => relevantes.set(d.id, d.data() as ContratoFila));
-      }
+      // Mismo criterio que al crear (ver contratosDePaneles.ts): solo
+      // los contratos que PUEDEN chocar, filtrados por panel y por
+      // fecha en Firestore, en vez de leer todo el historial.
+      const relevantes = await contratosQuePuedenChocar(db, tx, panelIds, inicio);
       // El contrato que se está editando no debe chocar consigo mismo.
       relevantes.delete(contratoId);
       const todos = Array.from(relevantes.values());

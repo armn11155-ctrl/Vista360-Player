@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
+import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
@@ -107,49 +108,16 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
     // como corresponde.
     const contratoRef = db.collection("contratos").doc();
     await db.runTransaction(async (tx) => {
-      type ContratoFila = {
-        cliente_id?: string;
-        panel_id?: string;
-        panel_ids?: string[];
-        inicio?: string;
-        fin?: string;
-        deleted?: boolean;
-      };
-
       // Para poder aplicar la regla de exclusividad hay que mirar los
       // contratos de TODOS los clientes, no solo los de este -- después
       // se filtra según la modalidad de cada panel.
       //
-      // OJO con no volver a leer la colección entera acá. Antes esto era
-      // `tx.get(db.collection("contratos"))`: cada campaña que se creaba
-      // leía TODOS los contratos que hubieran existido jamás. Con pocos
-      // meses de historial no se nota, pero es una cuenta que solo sube:
-      // al cabo de unos años, crear una campaña costaría leer miles de
-      // documentos -- más lento, más caro en cada llamada, y con más
-      // probabilidad de que la transacción tenga que reintentarse porque
-      // algo de todo lo leído cambió mientras tanto. Un día dejaría de
-      // funcionar sin que nadie hubiera tocado nada.
-      //
-      // Se traen solo los contratos que tocan ESTOS paneles: dos
-      // consultas por panel (formato nuevo panel_ids y formato viejo
-      // panel_id), unidas por id para no contar dos veces el mismo
-      // documento. Es el mismo patrón que ya usa recalcularEstadoPaneles
-      // en estadoPaneles.ts. Ninguna de las dos necesita un índice
-      // compuesto nuevo -- Firestore las resuelve con los índices de un
-      // solo campo que crea solo, así que esto no arrastra ningún paso
-      // manual de despliegue.
-      //
-      // El resultado ya no depende del volumen del negocio, sino del
-      // historial de esos paneles concretos: unas pocas decenas de
-      // documentos, aunque la empresa lleve diez años operando.
-      const relevantes = new Map<string, ContratoFila>();
-      for (const panelId of panelIds) {
-        const [porLista, porUnico] = await Promise.all([
-          tx.get(db.collection("contratos").where("panel_ids", "array-contains", panelId)),
-          tx.get(db.collection("contratos").where("panel_id", "==", panelId)),
-        ]);
-        [...porLista.docs, ...porUnico.docs].forEach((d) => relevantes.set(d.id, d.data() as ContratoFila));
-      }
+      // Solo los contratos que PUEDEN chocar: filtrados por panel Y
+      // por fecha directamente en Firestore. Ver el comentario largo de
+      // contratosDePaneles.ts -- incluye por qué no se lee la colección
+      // entera (crecía con todo el negocio) y qué pasa si falta el
+      // índice compuesto (se degrada, no se rompe).
+      const relevantes = await contratosQuePuedenChocar(db, tx, panelIds, inicio);
       const todos = Array.from(relevantes.values());
 
       for (const panelId of panelIds) {

@@ -72,10 +72,13 @@ añadiría complejidad sin beneficio.
 inventario supere ~200 paneles. Ahí conviene paginar o acotar por fecha
 (ej. traer solo lo de los últimos 2 años y cargar el resto bajo demanda).
 
-**Ya corregido esta semana:** la lectura equivalente en el backend
-(`crearContrato`/`actualizarContrato` leían *todos* los contratos existentes en
-cada operación). Ese era el caso grave, porque crecía con el negocio entero y no
-por cliente.
+**Ya corregido esta semana:** la lectura equivalente en el backend.
+`crearContrato`/`actualizarContrato` leían *todos* los contratos existentes en
+cada operación — el caso grave, porque crecía con el negocio entero y no por
+cliente. Ahora se filtra por panel **y por fecha** (`fin >= inicio`) en la propia
+consulta: un contrato que terminó antes de que empiece la campaña nueva no puede
+chocar, así que ni se trae. Se leen solo los contratos vigentes o futuros de esos
+paneles — un puñado, sin importar los años de historial.
 
 ---
 
@@ -91,6 +94,9 @@ por cliente.
 Las reglas viven solo en la consola de Firebase. No hay historial de cambios, ni
 revisión, ni forma de saber cuándo se modificaron ni por qué. Si alguien las
 afloja por accidente, nada lo detecta.
+
+(Los **índices** sí quedaron versionados en `firestore.indexes.json` y se
+despliegan solos, antes que las funciones. Falta hacer lo mismo con las reglas.)
 
 **Recomendación:** exportarlas a `firestore.rules` y versionarlas. Son la última
 línea de defensa de los datos: el frontend ya no escribe directo (todo pasa por
