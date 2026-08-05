@@ -264,11 +264,18 @@ describe("campañas: en cada sesión solo se lee lo vigente", () => {
 describe("respaldo si el resumen del cliente no está", () => {
   const contratos = sinComentarios(readFileSync(resolve(HOOKS, "useContratos.ts"), "utf-8"));
 
-  it("cubre las DOS ramas: documento ausente y fallo de la escucha", () => {
+  it("cubre las TRES ramas de fallo", () => {
+    // 1) el documento no existe, 2) la escucha falla (permiso, red),
+    // 3) nadie contesta y salta el reloj de guardia.
+    //
     // Cubrir solo una fue exactamente el fallo que dejó Cobertura en
-    // blanco en producción. Es LA pantalla principal del cliente.
+    // blanco en producción. Y la tercera es la que evita el spinner
+    // eterno: ningún manejador se dispara, así que sin reloj el estado
+    // se quedaba en "cargando" para siempre.
     const llamadas = (contratos.match(/leerColeccionDirecta\(\);/g) ?? []).length;
-    expect(llamadas).toBe(2);
+    expect(llamadas).toBe(3);
+    expect(contratos).toContain("ESPERA_MAXIMA_MS");
+    expect(contratos).toContain('estadoActual.status === "loading"');
   });
 
   it("el respaldo lee la colección, no deja la lista vacía", () => {
@@ -622,3 +629,25 @@ describe("el resumen de facturas se regenera desde todos sus caminos", () => {
 });
 
 const reglasTexto = readFileSync(resolve(raiz, "firestore.rules"), "utf-8");
+
+describe("un fallo al cargar campañas no puede bloquear TODA la navegación", () => {
+  const app = sinComentarios(readFileSync(resolve(__dirname, "../App.tsx"), "utf-8"));
+
+  it("solo esperan las vistas cuyo contenido SON las campañas", () => {
+    // Antes el loader tapaba la aplicación entera: con las campañas
+    // atascadas no se podía ir a Cobertura, Reportes ni Perfil, que no
+    // las necesitan para nada.
+    expect(app).toContain('NECESITAN_CAMPANAS = new Set<View>(["inicio", "campanas", "detalle", "nueva"])');
+    expect(app).toContain("esperandoCampanas && contratosState.status === \"loading\"");
+    expect(app).toContain("esperandoCampanas && contratosState.status === \"error\"");
+  });
+
+  it("Cobertura NO está en esa lista: sabe manejarlo sola", () => {
+    // Recibe `contratosListos` justo para eso.
+    const lista = /NECESITAN_CAMPANAS = new Set<View>\(\[([^\]]+)\]\)/.exec(app)![1];
+    expect(lista).not.toContain("cobertura");
+    expect(lista).not.toContain("reportes");
+    expect(lista).not.toContain("perfil");
+    expect(app).toContain("contratosListos=");
+  });
+});

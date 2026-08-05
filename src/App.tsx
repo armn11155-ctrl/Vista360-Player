@@ -605,11 +605,27 @@ function AuthenticatedApp({
 
   let content: React.ReactNode = null;
 
-  if (contratosState.status === "loading") {
+  // SOLO SE TAPAN LAS PANTALLAS QUE SON CAMPAÑAS.
+  //
+  // Antes, mientras las campañas cargaban, este loader tapaba la
+  // aplicación ENTERA: no se podía ir a Cobertura, ni a Reportes, ni a
+  // Perfil, ni a Facturas -- pantallas que no necesitan las campañas
+  // para nada. Si la carga se atascaba (una conexión mala, un permiso
+  // que falta, un respaldo que tarda), la persona se quedaba mirando un
+  // spinner sin poder navegar a ningún sitio.
+  //
+  // Ahora solo esperan las vistas cuyo CONTENIDO son las campañas. Las
+  // demás se pintan igual; Cobertura ya sabe manejarlo por su cuenta con
+  // `contratosListos`, y Notificaciones y Facturas funcionan con la
+  // lista vacía mientras llega.
+  const NECESITAN_CAMPANAS = new Set<View>(["inicio", "campanas", "detalle", "nueva"]);
+  const esperandoCampanas = contratosState.status !== "ready" && NECESITAN_CAMPANAS.has(view);
+
+  if (esperandoCampanas && contratosState.status === "loading") {
     content = (
       <BrandLoader label="Cargando campañas" />
     );
-  } else if (contratosState.status === "error") {
+  } else if (esperandoCampanas && contratosState.status === "error") {
     content = (
       <div className="state-screen">
         <div className="state-title">No se pudieron cargar las campañas</div>

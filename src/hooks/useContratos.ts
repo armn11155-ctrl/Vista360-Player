@@ -73,16 +73,32 @@ function arrancar(clienteId: string) {
   // pero correcta. Se usa si el resumen no existe todavía o si las
   // reglas aún no permiten leerlo.
   const leerColeccionDirecta = () => {
+    // Cortar PRIMERO la escucha del agregado. Sin esto seguia viva: el
+    // `cortar` de abajo se sobrescribia con el del respaldo y la
+    // original quedaba huerfana, cobrando cada cambio y pudiendo
+    // relanzar el respaldo otra vez en cada reconexion.
+    cortar?.();
+    cortar = null;
     // Dos consultas, como antes de existir el resumen. Se publican
     // juntas para que la pantalla no parpadee a medias.
     let contratos: Contrato[] | null = null;
     let solicitudes: SolicitudCampana[] | null = null;
     const juntar = () => {
       if (contratos === null || solicitudes === null) return;
+      cancelarReloj();
       publicar({ status: "ready", datos: { contratos: ordenar(contratos), solicitudes } });
     };
-    const alFallar = (err: { message: string }) =>
+    const alFallar = (err: { message: string }) => {
+      cancelarReloj();
+      // Una de las dos falla pero la otra puede haber llegado: se
+      // publica lo que haya en vez de dejar la pantalla en error. Sin
+      // campanas no se puede seguir; sin solicitudes si.
+      if (contratos !== null) {
+        publicar({ status: "ready", datos: { contratos: ordenar(contratos), solicitudes: solicitudes ?? [] } });
+        return;
+      }
       publicar({ status: "error", message: err.message, retry: reintentar });
+    };
     const a = onSnapshot(
       query(collection(bd, "contratos"), where("cliente_id", "==", clienteId)),
       (snap) => { contratos = desdeDocumentos(snap.docs) as Contrato[]; juntar(); },
@@ -99,6 +115,20 @@ function arrancar(clienteId: string) {
     cortar = () => { a(); b(); };
   };
 
+  // RED DE SEGURIDAD. Si el resumen no contesta en unos segundos --
+  // conexion mala, un fallo raro de Firestore, cualquier cosa que no
+  // llegue a disparar el manejador de error -- se cae al respaldo igual.
+  // Sin esto, quedarse en "cargando" para siempre es un estado posible,
+  // y eso deja al usuario mirando un spinner sin poder hacer nada.
+  const relojDeGuardia = setTimeout(() => {
+    if (estadoActual.status === "loading") {
+      console.warn("El resumen del cliente tarda demasiado; se leen las colecciones directamente.");
+      leerColeccionDirecta();
+    }
+  }, ESPERA_MAXIMA_MS);
+  const cancelarReloj = () => clearTimeout(relojDeGuardia);
+  cancelarRelojActual = cancelarReloj;
+
   cortar = onSnapshot(
     doc(bd, `agregados/cliente-${clienteId}`),
     (snap) => {
@@ -111,6 +141,7 @@ function arrancar(clienteId: string) {
         leerColeccionDirecta();
         return;
       }
+      cancelarReloj();
       publicar({
         status: "ready",
         datos: {
@@ -130,13 +161,20 @@ function arrancar(clienteId: string) {
   );
 }
 
+/** Cuanto se espera al resumen antes de leer las colecciones. */
+const ESPERA_MAXIMA_MS = 6000;
+
 function ordenar(contratos: Contrato[]): Contrato[] {
   return [...contratos].sort((a, b) =>
     String(b.inicio ?? "").localeCompare(String(a.inicio ?? ""))
   );
 }
 
+let cancelarRelojActual: (() => void) | null = null;
+
 function detener() {
+  cancelarRelojActual?.();
+  cancelarRelojActual = null;
   cortar?.();
   cortar = null;
 }
