@@ -6,6 +6,7 @@ import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -202,6 +203,10 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       fin,
     });
 
+    // Mantiene al dia el agregado del selector (lista de clientes y su
+    // conteo de campanas activas). No lanza: si falla, el selector cae
+    // a leer la coleccion directamente.
+    await regenerarAgregadoClientes(db);
     return { ok: true, contratoId: contratoRef.id };
   } catch (error) {
     if (error instanceof HttpsError) throw error;

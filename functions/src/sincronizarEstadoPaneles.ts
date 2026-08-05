@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -96,6 +97,11 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   // nada: es una sola escritura al día y garantiza que el agregado no se
   // quede viejo si alguna vez se desincronizó por otra vía.
   await regenerarAgregadoPaneles(db);
+  // OBLIGATORIO A DIARIO, no solo al tocar un contrato: "campana
+  // activa" depende de la FECHA DE HOY. Una programada pasa a activa
+  // sin que nadie escriba nada, y sin esto el contador del selector
+  // se quedaria congelado hasta el siguiente cambio manual.
+  await regenerarAgregadoClientes(db);
 
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }

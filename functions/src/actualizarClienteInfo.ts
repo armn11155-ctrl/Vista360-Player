@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -128,5 +129,9 @@ export const actualizarClienteInfo = onCall<ActualizarClienteInfoData>(async (re
 
   await batch.commit();
 
+  // Mantiene al dia el agregado del selector (lista de clientes y su
+  // conteo de campanas activas). No lanza: si falla, el selector cae a
+  // leer la coleccion directamente.
+  await regenerarAgregadoClientes(db);
   return { ok: true };
 });

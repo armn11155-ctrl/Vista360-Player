@@ -5,6 +5,7 @@ import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -130,5 +131,9 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
     await recalcularEstadoPaneles(db, panelIdsAfectados);
   }
 
+  // Mantiene al dia el agregado del selector (lista de clientes y su
+  // conteo de campanas activas). No lanza: si falla, el selector cae
+  // a leer la coleccion directamente.
+  await regenerarAgregadoClientes(db);
   return { ok: true };
 });

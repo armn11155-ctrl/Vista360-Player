@@ -4,6 +4,7 @@ import { FieldValue, getFirestore, type Firestore, type Query } from "firebase-a
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { auditar } from "./registro.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -61,11 +62,19 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
   if (accion === "archivar") {
     await clienteRef.set({ archived: true, archivedAt: FieldValue.serverTimestamp() }, { merge: true });
     auditar("cliente_archivado", { uid, objetivoId: clienteId });
+    // Mantiene al dia el agregado del selector (lista de clientes y su
+    // conteo de campanas activas). No lanza: si falla, el selector cae
+    // a leer la coleccion directamente.
+    await regenerarAgregadoClientes(db);
     return { ok: true, pendiente: false };
   }
 
   if (accion === "restaurar") {
     await clienteRef.set({ archived: false, archivedAt: null }, { merge: true });
+    // Mantiene al dia el agregado del selector (lista de clientes y su
+    // conteo de campanas activas). No lanza: si falla, el selector cae
+    // a leer la coleccion directamente.
+    await regenerarAgregadoClientes(db);
     return { ok: true, pendiente: false };
   }
 
@@ -89,6 +98,10 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
   // atrás. Si algún día alguien pregunta "¿qué pasó con este cliente?",
   // esta línea es la única respuesta posible.
   auditar("cliente_eliminado_definitivo", { uid, objetivoId: clienteId });
+  // Mantiene al dia el agregado del selector (lista de clientes y su
+  // conteo de campanas activas). No lanza: si falla, el selector cae
+  // a leer la coleccion directamente.
+  await regenerarAgregadoClientes(db);
   return { ok: true, pendiente: false };
 });
 

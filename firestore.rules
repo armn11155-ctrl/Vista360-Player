@@ -52,6 +52,21 @@ service cloud.firestore {
         get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.role == 'admin';
     }
 
+    /** Personal interno: Gerente O Trabajador.
+     *
+     *  OJO CON LA DIFERENCIA. esAdminPortal() exige role == 'admin', o
+     *  sea SOLO el Gerente. Un Trabajador tiene role == 'trabajador' y
+     *  NO la cumple. Eso es un problema que viene de antes y que no se
+     *  toca acá (cambiar esAdminPortal() afectaría a media docena de
+     *  colecciones a la vez); esta función se usa únicamente para el
+     *  agregado del selector, que es la pantalla de inicio de CUALQUIER
+     *  cuenta interna y por tanto también de un Trabajador.
+     */
+    function esPersonalDePortal() {
+      return esCuentaDePortal() &&
+        get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.role in ['admin', 'trabajador'];
+    }
+
     /** ¿Este documento es del cliente que lo pide? */
     function esDeMiCliente() {
       return esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal();
@@ -138,8 +153,19 @@ service cloud.firestore {
     // Mismo permiso que la colección "paneles": no lleva nada que no
     // esté ya ahí, solo agrupado. La escritura la hacen las Cloud
     // Functions con el Admin SDK, que no pasan por estas reglas.
+    // ANTES ESTO ERA `allow read: if esCuentaDePortal()` PARA TODO EL
+    // GRUPO. Daba igual mientras el único documento fuese el inventario
+    // de paneles, que es el mismo para todo el mundo y ya se ve en
+    // Cobertura. Pero acá dentro entra ahora la LISTA DE CLIENTES, y con
+    // la regla en bloque cualquier cliente podría leer los nombres de
+    // todos los demás. Se cierra documento por documento.
     match /agregados/{documento} {
-      allow read: if esCuentaDePortal();
+      allow read: if
+        // Inventario de paneles: público para cualquier cuenta del portal.
+        (documento == 'paneles' && esCuentaDePortal())
+        // Lista de clientes para el selector, repartida en partes
+        // (clientes-0, clientes-1...). SOLO personal interno.
+        || (documento.matches('clientes-[0-9]+') && esPersonalDePortal());
       allow write: if false;
     }
 

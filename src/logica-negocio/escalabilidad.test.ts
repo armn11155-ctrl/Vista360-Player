@@ -297,3 +297,118 @@ describe("respaldo si falta el índice de campañas", () => {
     expect(contratos).toContain("return () => { escuchando?.(); };");
   });
 });
+
+describe("selector de clientes: sin crecimiento lineal", () => {
+  const selector = sinComentarios(readFileSync(resolve(HOOKS, "useClientesAdmin.ts"), "utf-8"));
+  const agregado = sinComentarios(readFileSync(resolve(FUNCIONES, "agregadoClientes.ts"), "utf-8"));
+  const reglas = readFileSync(resolve(raiz, "firestore.rules"), "utf-8");
+
+  it("el selector NO escucha la colección de clientes por defecto", () => {
+    // Era onSnapshot sobre "clientes" entera en cada inicio de sesión.
+    // Ahora eso solo puede aparecer dentro del respaldo.
+    const antesDelRespaldo = selector.slice(0, selector.indexOf("leerColeccionDirecta"));
+    expect(antesDelRespaldo).not.toMatch(/collection\((db|bd)!?,\s*"clientes"\)/);
+  });
+
+  it("lee el agregado en partes y sabe cuántas hay", () => {
+    expect(selector).toContain('doc(bd, "agregados/clientes-0")');
+    expect(selector).toContain("datos!.partes ?? 1");
+  });
+
+  it("con pocos clientes es UNA sola lectura", () => {
+    // partes <= 1 debe publicar directamente, sin pedir nada más.
+    expect(selector).toMatch(/if \(partes <= 1\) \{ publicar\(datos!\.clientes!\); return; \}/);
+  });
+
+  it("las partes extra se leen UNA VEZ, no como escuchas en vivo", () => {
+    // N escuchas abiertas volverían a cobrar N documentos en cada
+    // cambio, que es justo lo que se venía a quitar.
+    expect(selector).toContain("getDoc");
+    const bloque = selector.slice(selector.indexOf("leerPartesRestantes"));
+    expect(bloque.slice(0, 600)).not.toContain("onSnapshot");
+  });
+
+  it("si el agregado falta o falla, se lee la colección (no se deja vacío)", () => {
+    // Sin esto el admin no podría entrar a NINGUNA cuenta.
+    // Las DOS ramas: el documento que no existe y el fallo de la
+    // escucha (permiso denegado, red...). Cubrir solo una fue
+    // exactamente el fallo que dejó Cobertura en blanco en producción.
+    const llamadas = (selector.match(/leerColeccionDirecta\(\);/g) ?? []).length;
+    expect(llamadas).toBe(2);
+  });
+
+  it("el agregado se reparte en partes por el límite de 1 MB", () => {
+    const tope = /CLIENTES_POR_PARTE = (\d+)/.exec(agregado);
+    expect(tope).not.toBeNull();
+    const n = Number(tope![1]);
+    expect(n).toBeGreaterThan(0);
+    // ~250 bytes por cliente: por encima de ~4.000 se acerca al límite.
+    expect(n).toBeLessThanOrEqual(4000);
+  });
+
+  it("el conteo de campañas activas no lee el historial cerrado", () => {
+    expect(agregado).toContain('.where("fin", ">=", hoy)');
+  });
+
+  it("el agregado nunca hace fallar la operación que lo dispara", () => {
+    // Si regenerarlo revienta, crear un cliente NO puede fallar.
+    expect(agregado).toContain("catch (error)");
+    expect(agregado).not.toContain("throw");
+  });
+
+  it("se borran las partes sobrantes al reducirse los clientes", () => {
+    expect(agregado).toContain("lote.delete(db.doc(rutaParte(i)))");
+  });
+
+  it("REGLAS: la lista de clientes NO la puede leer un cliente", () => {
+    // La regla vieja era `allow read: if esCuentaDePortal()` para TODO
+    // agregados. Con la lista de clientes dentro, eso dejaría que
+    // cualquier cliente leyera los nombres de todos los demás.
+    expect(reglas).not.toMatch(/match \/agregados\/\{documento\} \{\s*allow read: if esCuentaDePortal\(\);/);
+    expect(reglas).toContain("documento.matches('clientes-[0-9]+') && esPersonalDePortal()");
+  });
+
+  it("REGLAS: personal interno incluye al Trabajador, no solo al Gerente", () => {
+    // esAdminPortal() exige role == 'admin'. Un Trabajador se quedaría
+    // sin poder abrir su propia pantalla de inicio.
+    expect(reglas).toMatch(/function esPersonalDePortal\(\)/);
+    expect(reglas).toContain("data.role in ['admin', 'trabajador']");
+  });
+
+  it("REGLAS: agregados sigue cerrado a escritura desde el navegador", () => {
+    const bloque = reglas.slice(reglas.indexOf("match /agregados/"));
+    expect(bloque.slice(0, 800)).toContain("allow write: if false;");
+  });
+});
+
+describe("el agregado del selector se regenera desde TODOS los sitios que lo invalidan", () => {
+  // Sin disparadores de Firestore (no se pueden desplegar en este
+  // proyecto), la unica garantia es llamar a mano desde cada sitio. Este
+  // test es esa garantia: si alguien anade una funcion que toca clientes
+  // o contratos y se olvida, falla acá y no en producción semanas
+  // después con el selector mostrando datos viejos.
+  const OBLIGATORIAS = [
+    "crearClienteNuevo",
+    "actualizarClienteInfo",
+    "administrarClienteAdmin",
+    "actualizarAvatarCliente",
+    "crearContrato",
+    "actualizarContrato",
+    "eliminarContrato",
+    "sincronizarEstadoPaneles",
+  ];
+
+  for (const nombre of OBLIGATORIAS) {
+    it(`${nombre} regenera el agregado`, () => {
+      const codigo = readFileSync(resolve(FUNCIONES, `${nombre}.ts`), "utf-8");
+      expect(codigo).toContain("regenerarAgregadoClientes(db)");
+    });
+  }
+
+  it("el barrido DIARIO lo regenera (el conteo depende de la fecha)", () => {
+    // Una campaña programada pasa a activa sin que nadie escriba nada.
+    // Sin esto el contador se congela hasta el siguiente cambio manual.
+    const sync = readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8");
+    expect(sync).toContain("regenerarAgregadoClientes(db)");
+  });
+});

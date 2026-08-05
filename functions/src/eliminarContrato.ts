@@ -6,6 +6,7 @@ import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { auditar, auditarFallo } from "./registro.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -76,6 +77,10 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
   // Queda el rastro de QUIEN borró qué y cuándo. Antes esto se perdía:
   // el contrato desaparecía y no quedaba registro de quién lo pidió.
   auditar("contrato_eliminado", { uid, rol, objetivoId: contratoId });
+  // Mantiene al dia el agregado del selector (lista de clientes y su
+  // conteo de campanas activas). No lanza: si falla, el selector cae
+  // a leer la coleccion directamente.
+  await regenerarAgregadoClientes(db);
   return { ok: true, pendiente: false };
 });
 

@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
+import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -73,5 +74,9 @@ export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>({ sec
     await borrarObjetoR2(avatarAnterior);
   }
 
+  // Mantiene al dia el agregado del selector (lista de clientes y su
+  // conteo de campanas activas). No lanza: si falla, el selector cae
+  // a leer la coleccion directamente.
+  await regenerarAgregadoClientes(db);
   return { clienteId, avatarUrl };
 });

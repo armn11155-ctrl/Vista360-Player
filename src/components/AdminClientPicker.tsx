@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { useClientesAdmin } from "../hooks/useClientesAdmin";
+import { useSelectorDeClientes } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
 import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
 import { usePushEstado } from "../hooks/usePushEstado";
-import { useCampanasActivasPorCliente } from "../hooks/useCampanasActivasPorCliente";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
@@ -60,8 +59,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // fijo, ligado a la cuenta del admin, sin importar qué cliente esté
   // viendo (o si no está viendo ninguno).
   const { estado: estadoPush, activar: activarPush } = usePushEstado(uid);
-  const state = useClientesAdmin();
-  const campanasActivasPorCliente = useCampanasActivasPorCliente();
+  // Una sola fuente para la lista Y el contador de campañas activas:
+  // los dos salen del mismo documento agregado, así que no hay dos
+  // consultas ni pueden desincronizarse entre sí.
+  const { state, campanasActivas: campanasActivasPorCliente } = useSelectorDeClientes();
   const [busqueda, setBusqueda] = useState("");
   const [tab, setTab] = useState<"activos" | "archivados">("activos");
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 /**
@@ -73,11 +73,15 @@ describe("ninguna escucha lee una colección entera sin filtrar", () => {
     expect(sinFiltro).toEqual([]);
   });
 
-  it("el conteo de campañas activas descarta el historial ya cerrado", () => {
-    // Antes leía TODOS los contratos que hubieran existido para contar
-    // los activos de hoy: una cuenta que solo crece con los años.
-    const c = sinComentarios(hook("useCampanasActivasPorCliente"));
-    expect(c).toContain('where("fin", ">=", hoyEnPeru())');
+  it("el conteo de campañas activas ya no se calcula en el navegador", () => {
+    // useCampanasActivasPorCliente escuchaba los contratos de TODOS los
+    // clientes para contar los activos de hoy. Con 1.000 clientes eran
+    // ~2.000 documentos en cada inicio de sesión del admin. Ahora el
+    // conteo viene ya hecho dentro del agregado del selector, así que
+    // ese hook se eliminó: si alguien lo recrea, este test lo dice.
+    expect(existsSync(resolve(HOOKS, "useCampanasActivasPorCliente.ts"))).toBe(false);
+    const selector = sinComentarios(hook("useClientesAdmin"));
+    expect(selector).toContain("campanasActivas");
   });
 });
 
