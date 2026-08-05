@@ -4,6 +4,7 @@ import type { User } from "firebase/auth";
 import { auth, db, logout, onUserChange } from "../config/firebase";
 import type { PortalRole, PortalUser } from "../types";
 import { nombreConocidoPorEmail } from "../utils/nombresConocidos";
+import { publicarAvatarPropio } from "./useAvatarPropio";
 
 export type AuthState =
   | { status: "loading" }
@@ -67,6 +68,10 @@ export function usePortalAuth(): AuthState {
             });
             return;
           }
+          // La foto propia sale de ESTE mismo documento: se reparte para
+          // que useAvatarPropio no abra su propia escucha sobre él (ver
+          // el comentario en useAvatarPropio.ts).
+          publicarAvatarPropio(user.uid, String(data.avatarUrl ?? ""));
           const role: PortalRole = data.role ?? "cliente";
           setState({
             status: "in",

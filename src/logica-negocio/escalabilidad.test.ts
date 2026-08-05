@@ -651,3 +651,35 @@ describe("un fallo al cargar campañas no puede bloquear TODA la navegación", (
     expect(app).toContain("contratosListos=");
   });
 });
+
+describe("no leer dos veces el mismo documento propio", () => {
+  const avatar = sinComentarios(readFileSync(resolve(HOOKS, "useAvatarPropio.ts"), "utf-8"));
+  const auth = sinComentarios(readFileSync(resolve(HOOKS, "usePortalAuth.ts"), "utf-8"));
+
+  it("la foto propia sale del documento que usePortalAuth ya escucha", () => {
+    // portalUsers/{uid} se leía hasta CUATRO veces por sesión: una por
+    // usePortalAuth y otra por cada sitio donde se muestra la foto
+    // (selector, barra lateral, Mi perfil).
+    expect(auth).toContain("publicarAvatarPropio(user.uid,");
+    expect(avatar).toContain("export function publicarAvatarPropio");
+  });
+
+  it("no abre escucha cuando es la cuenta con sesión abierta", () => {
+    expect(avatar).toContain("if (uid === uidPublicado)");
+    // La rama termina donde empieza el respaldo: se corta ahi para no
+    // arrastrar el onSnapshot del respaldo, que si debe existir.
+    const desde = avatar.indexOf("if (uid === uidPublicado)");
+    const hasta = avatar.indexOf("const unsub", desde);
+    expect(hasta).toBeGreaterThan(desde);
+    expect(avatar.slice(desde, hasta)).not.toContain("onSnapshot");
+  });
+
+  it("...pero conserva el respaldo para OTRO uid", () => {
+    // Si algún día se pide la foto de otra cuenta, tiene que poder.
+    expect(avatar).toContain("onSnapshot(doc(db,");
+  });
+
+  it("se da de baja al desmontar", () => {
+    expect(avatar).toContain("suscriptores.delete(setAvatarUrl)");
+  });
+});
