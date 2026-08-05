@@ -4,6 +4,7 @@ import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
 import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { estadoCampana, panelesDeContrato } from "../../types";
+import { useContratosHistoricos } from "../../hooks/useContratos";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
 import MobileSidebarButton from "../MobileSidebarButton";
@@ -80,7 +81,34 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
   // requieren accion). Dentro de cada grupo se respeta el orden
   // original (sort estable).
   const ORDEN_ESTADO: Record<CampanaEstado, number> = { Activa: 0, Programada: 1, Finalizada: 2 };
-  const filtradas = contratos
+
+  // EL HISTORIAL SE PIDE SOLO CUANDO SE MIRA.
+  //
+  // La aplicación entera trabaja con las campañas VIGENTES (ver
+  // useContratos): son las únicas que necesitan Cobertura, las
+  // notificaciones y las facturas. Esta pantalla es el único sitio que
+  // enseña las terminadas, y solo en dos de sus cuatro pestañas.
+  //
+  // Traerlas siempre significaba que un cliente de diez años pagaba
+  // cuarenta documentos en CADA sesión aunque nunca abriera esta
+  // pantalla. Ahora la consulta cara -- la que crece con los años -- se
+  // dispara únicamente al pulsar "Finalizadas" o "Todas".
+  const quiereHistorial = filtro === "Finalizada" || filtro === "Todas";
+  const historialState = useContratosHistoricos(clienteId ?? "", quiereHistorial);
+  const cargandoHistorial = quiereHistorial && historialState.status === "loading";
+
+  // Al pedir el historial llega TAMBIÉN lo vigente (es la misma consulta
+  // sin el filtro de fecha), así que se deduplica por id en vez de
+  // concatenar: si no, cada campaña activa saldría dos veces en "Todas".
+  const visibles = (() => {
+    if (!quiereHistorial) return contratos;
+    if (historialState.status !== "ready") return contratos;
+    const porId = new Map<string, Contrato>();
+    [...contratos, ...historialState.contratos].forEach((c) => porId.set(c.id, c));
+    return [...porId.values()];
+  })();
+
+  const filtradas = visibles
     .filter((c) => filtro === "Todas" || estadoCampana(c) === filtro)
     .slice()
     .sort((a, b) => ORDEN_ESTADO[estadoCampana(a)] - ORDEN_ESTADO[estadoCampana(b)]);
@@ -317,7 +345,20 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           </div>
         )}
 
-        {filtradas.length === 0 && (
+        {/* Mientras llega el historial NO se puede mostrar el vacío: la
+            persona pulsa "Finalizadas" y vería "no tienes campañas"
+            durante un instante, que es justo lo contrario de la verdad. */}
+        {cargandoHistorial && (
+          <div
+            style={{ padding: "48px 28px", textAlign: "center", color: "#64748B", fontSize: 14 }}
+            role="status"
+            aria-live="polite"
+          >
+            Cargando el historial…
+          </div>
+        )}
+
+        {!cargandoHistorial && filtradas.length === 0 && (
           <div className="mis-campanas-empty" style={{
             display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
             padding: "56px 28px 40px", marginTop: 12,

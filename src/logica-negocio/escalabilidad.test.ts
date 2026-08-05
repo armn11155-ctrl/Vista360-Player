@@ -218,3 +218,56 @@ describe("notificaciones del cliente: tampoco leen su historial entero", () => {
     expect(tiene(["cliente_id", "estadoActualizadoEn"])).toBe(true);
   });
 });
+
+describe("campañas: en cada sesión solo se lee lo vigente", () => {
+  const contratos = sinComentarios(readFileSync(resolve(HOOKS, "useContratos.ts"), "utf-8"));
+  const misCampanas = sinComentarios(
+    readFileSync(resolve(__dirname, "../components/screens/MisCampanas.tsx"), "utf-8"),
+  );
+
+  it("la consulta de cada sesión descarta el historial cerrado", () => {
+    // Era where("cliente_id","==",clienteId) a secas: TODAS las campañas
+    // que el cliente hubiera tenido nunca, en cada apertura de la app.
+    expect(contratos).toContain('where("fin", ">=", hoyEnPeru())');
+  });
+
+  it("el historial solo se consulta bajo demanda", () => {
+    // useContratosHistoricos con activo=false debe pasar "" como
+    // clienteId, que es lo que corta la consulta antes de empezar.
+    expect(contratos).toContain("useContratosHistoricos");
+    expect(contratos).toMatch(/activo \? clienteId : ""/);
+    expect(contratos).toContain('if (!clienteId || !db) { setState({ status: "ready", contratos: [] }); return; }');
+  });
+
+  it("Mis campañas pide el historial SOLO en las pestañas que lo enseñan", () => {
+    expect(misCampanas).toMatch(
+      /quiereHistorial = filtro === "Finalizada" \|\| filtro === "Todas"/,
+    );
+    expect(misCampanas).toContain('useContratosHistoricos(clienteId ?? "", quiereHistorial)');
+  });
+
+  it("no se duplican las campañas al mezclar vigentes con historial", () => {
+    // El historial es la misma consulta SIN el filtro de fecha, así que
+    // devuelve también las vigentes. Concatenar sin más las mostraría
+    // dos veces en la pestaña "Todas".
+    expect(misCampanas).toContain("porId.set(c.id, c)");
+  });
+
+  it("no se muestra 'no hay campañas' mientras carga el historial", () => {
+    expect(misCampanas).toContain("!cargandoHistorial && filtradas.length === 0");
+  });
+
+  it("existe el índice contratos(cliente_id, fin)", () => {
+    const idx = JSON.parse(readFileSync(resolve(raiz, "firestore.indexes.json"), "utf-8")) as {
+      indexes: Array<{ collectionGroup: string; fields: Array<{ fieldPath: string; order?: string }> }>;
+    };
+    const existe = idx.indexes.some(
+      (i) =>
+        i.collectionGroup === "contratos" &&
+        i.fields.length === 2 &&
+        i.fields[0].fieldPath === "cliente_id" &&
+        i.fields[1].fieldPath === "fin",
+    );
+    expect(existe).toBe(true);
+  });
+});
