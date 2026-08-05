@@ -103,3 +103,29 @@ describe("facturas: una sola consulta, no dos", () => {
     expect((c.match(/onSnapshot\(/g) ?? []).length).toBe(1);
   });
 });
+
+describe("reutilizar lo que ya está en memoria", () => {
+  it("usePaneles se sirve del inventario cargado antes de pedir a Firestore", () => {
+    // La app carga el inventario completo al arrancar (1 lectura). Antes
+    // este hook lo ignoraba y pedía cada panel por separado: en una
+    // sesión normal, 8 lecturas para datos que ya estaban delante.
+    const c = sinComentarios(hook("usePaneles"));
+    expect(c).toContain("panelesEnMemoria()");
+    expect(c).toContain("faltan");
+  });
+
+  it("...pero sigue pudiendo pedir los que falten (no se rompe si no está en memoria)", () => {
+    const c = sinComentarios(hook("usePaneles"));
+    expect(c).toContain("getDoc(");
+  });
+
+  it("el inventario se lee de UN documento agregado, no de la colección", () => {
+    const c = sinComentarios(hook("usePanelesDisponibles"));
+    expect(c).toContain('doc(db!, "agregados", "paneles")');
+  });
+
+  it("...con respaldo a la colección si ese documento aún no existe", () => {
+    const c = sinComentarios(hook("usePanelesDisponibles"));
+    expect(c).toContain("escucharColeccionDirecta");
+  });
+});

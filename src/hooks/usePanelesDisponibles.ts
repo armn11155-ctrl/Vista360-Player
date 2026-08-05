@@ -220,6 +220,20 @@ function reiniciarEscucha() {
  *  de las pantallas) apenas la app queda ociosa tras iniciar sesión.
  *  Segura de llamar varias veces: si ya hay una escucha corriendo, no
  *  hace nada. */
+/**
+ * Los paneles que ya están en memoria, si la precarga o alguna pantalla
+ * los trajo. Devuelve null si todavía no hay nada.
+ *
+ * Existe para que otros hooks no vuelvan a pedir a Firestore algo que la
+ * aplicación ya tiene cargado. El caso concreto: usePaneles necesitaba
+ * los datos de los paneles de las campañas del cliente y los pedía uno
+ * por uno, aunque el inventario COMPLETO ya estuviera en memoria desde
+ * el arranque.
+ */
+export function panelesEnMemoria(): Panel[] | null {
+  return CACHE_PANELES;
+}
+
 export function precargarPaneles() {
   iniciarEscuchaSiHaceFalta();
 }
