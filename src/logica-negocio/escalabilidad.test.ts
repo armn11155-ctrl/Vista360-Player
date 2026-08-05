@@ -683,3 +683,37 @@ describe("no leer dos veces el mismo documento propio", () => {
     expect(avatar).toContain("suscriptores.delete(setAvatarUrl)");
   });
 });
+
+describe("los resúmenes por cliente se pueden crear la PRIMERA vez", () => {
+  const fn = sinComentarios(readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8"));
+  const wf = readFileSync(
+    resolve(raiz, ".github/workflows/sincronizar-paneles-diario.yml"),
+    "utf-8",
+  );
+
+  it("la función acepta que se le pida la reconstrucción", () => {
+    // Sin esto, un cliente que ya existe y al que nadie le toca una
+    // campaña NUNCA tendría resumen: su sesión se quedaría para siempre
+    // en el camino lento del respaldo, sin que nada avisara.
+    expect(fn).toContain("req.query?.reconstruirResumenes");
+    expect(fn).toContain("regenerarResumenesDeTodos(db)");
+  });
+
+  it("el workflow tiene la casilla y la pasa a la URL", () => {
+    expect(wf).toContain("reconstruir_resumenes");
+    expect(wf).toContain("?reconstruirResumenes=1");
+  });
+
+  it("la corrida DIARIA no la activa", () => {
+    // La casilla solo existe en workflow_dispatch. Si el cron la
+    // activara, volvería el coste que quitamos hace un rato.
+    expect(wf).toContain("github.event_name == 'workflow_dispatch'");
+  });
+
+  it("hay tiempo suficiente para recorrer todos los clientes", () => {
+    const t = /timeoutSeconds: (\d+)/.exec(fn);
+    expect(t).not.toBeNull();
+    expect(Number(t![1])).toBeGreaterThanOrEqual(300);
+    expect(wf).toContain("--max-time 600");
+  });
+});

@@ -163,7 +163,9 @@ export const sincronizarEstadoPaneles = onRequest(
   // ningun mensaje propio: no es este código el que lo devuelve). La
   // seguridad real la sigue dando el secret (CRON_SYNC_SECRET) que se
   // revisa abajo, no el que la funcion sea publica.
-  { secrets: ["CRON_SYNC_SECRET"], invoker: "public" },
+  // timeoutSeconds alto porque con ?reconstruirResumenes=1 puede tardar:
+  // recorre todos los clientes.
+  { secrets: ["CRON_SYNC_SECRET"], invoker: "public", timeoutSeconds: 540, memory: "512MiB" },
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");
@@ -174,6 +176,29 @@ export const sincronizarEstadoPaneles = onRequest(
       return;
     }
     const resultado = await sincronizar();
+
+    // RECONSTRUCCION COMPLETA, SOLO SI SE PIDE. Con
+    // ?reconstruirResumenes=1 se rehacen los resumenes de TODOS los
+    // clientes (sus campañas y sus facturas).
+    //
+    // No va en la corrida diaria: cuesta una lectura por cada campaña,
+    // solicitud y factura de cada cliente -- con 1.000 clientes son
+    // ~241.000 lecturas, cinco veces la cuota. Los resumenes se
+    // mantienen solos desde las funciones que escriben.
+    //
+    // Pero hace falta poder crearlos LA PRIMERA VEZ: un cliente que ya
+    // existe y al que nadie le toca una campaña nunca tendria resumen, y
+    // su sesion se quedaria para siempre en el camino lento del
+    // respaldo. Esto es esa primera vez, y la reparacion si algo se
+    // corrompe.
+    const pedido = req.query?.reconstruirResumenes;
+    if (pedido === "1" || pedido === "true") {
+      const db = getFirestore();
+      await regenerarResumenesDeTodos(db);
+      console.log("Resumenes de todos los clientes reconstruidos a peticion.");
+      res.status(200).json({ ...resultado, resumenesReconstruidos: true });
+      return;
+    }
     console.log(
       `Paneles revisados: ${resultado.revisados}, actualizados: ${resultado.actualizados}.`,
       resultado.detalle
