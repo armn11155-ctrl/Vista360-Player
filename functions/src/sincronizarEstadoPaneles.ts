@@ -103,12 +103,31 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   // sin que nadie escriba nada, y sin esto el contador del selector
   // se quedaria congelado hasta el siguiente cambio manual.
   await regenerarAgregadoClientes(db);
-  // Red de seguridad: reconstruye el resumen de TODOS los clientes por
-  // si alguna escritura no lo hubiera hecho. Los contratos solo se
-  // escriben desde Cloud Functions, asi que no deberia hacer falta --
-  // pero un resumen desfasado se veria en la pantalla principal del
-  // cliente, y eso no se puede dejar a la confianza.
-  await regenerarResumenesDeTodos(db);
+  // LOS RESUMENES POR CLIENTE NO SE RECONSTRUYEN ACA. A PROPOSITO.
+  //
+  // Estuvieron un rato: parecia una buena red de seguridad. Es un error
+  // caro. Reconstruir el resumen de UN cliente lee sus campanas, sus
+  // solicitudes y sus facturas; hacerlo para TODOS, todos los dias:
+  //
+  //     100 clientes  ->   24.100 lecturas diarias
+  //   1.000 clientes  ->  241.000 lecturas diarias   (5x la cuota gratis)
+  //   5.000 clientes  -> 1.205.000 lecturas diarias
+  //
+  // Se habria comido entero el ahorro que estos resumenes existen para
+  // conseguir, y encima creciendo con cada cliente nuevo.
+  //
+  // Y no hace falta. La red de seguridad tenia sentido para el agregado
+  // de arriba, cuyo contador de "campanas activas" SI depende de la
+  // fecha de hoy. Los resumenes por cliente estan disenados justo al
+  // reves: guardan TODO (todas las campanas, todas las facturas) y el
+  // filtro por fecha se hace en el navegador, precisamente para que el
+  // documento no dependa del calendario. Solo cambian cuando alguien
+  // ESCRIBE, y cada camino de escritura los regenera -- hay tests que
+  // fallan si alguna funcion se olvida.
+  //
+  // Si alguna vez hiciera falta reconstruirlos todos (una migracion, un
+  // dato corrupto), esta regenerarResumenesDeTodos() y se llama a mano
+  // desde sincronizarEstadoPanelesAhora con reconstruirResumenes: true.
 
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }
@@ -166,15 +185,33 @@ export const sincronizarEstadoPaneles = onRequest(
 /** La misma sincronización, pero a pedido del admin -- útil para
  *  corregir de una todos los paneles que quedaron "Ocupado" de antes,
  *  sin esperar a que corra la tarea de la madrugada. */
-export const sincronizarEstadoPanelesAhora = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+export const sincronizarEstadoPanelesAhora = onCall<{ reconstruirResumenes?: boolean }>(
+  // Reconstruir todos los resumenes puede tardar con muchos clientes.
+  { timeoutSeconds: 540, memory: "512MiB" },
+  async (request) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+    }
+    const db = getFirestore();
+    const propio = await db.doc(`portalUsers/${uid}`).get();
+    if (!propio.exists || propio.data()?.role !== "admin") {
+      throw new HttpsError("permission-denied", "Solo la cuenta admin puede hacer esto.");
+    }
+
+    const resultado = await sincronizar();
+
+    // OPERACION DE REPARACION, NO DE RUTINA. Reconstruye el resumen de
+    // cada cliente leyendo sus campañas, solicitudes y facturas: con
+    // 1.000 clientes son ~241.000 lecturas de una sentada. Solo se pide
+    // explícitamente, y solo tiene sentido tras una migración o si se
+    // sospecha que algún resumen quedó corrupto. En marcha normal los
+    // mantienen al día las funciones que escriben.
+    if (request.data?.reconstruirResumenes === true) {
+      await regenerarResumenesDeTodos(db);
+      return { ...resultado, resumenesReconstruidos: true };
+    }
+
+    return resultado;
   }
-  const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede hacer esto.");
-  }
-  return sincronizar();
-});
+);

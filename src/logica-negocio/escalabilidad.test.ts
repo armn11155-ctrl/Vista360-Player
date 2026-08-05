@@ -414,10 +414,42 @@ describe("el resumen por cliente se regenera desde TODOS los sitios que lo inval
     });
   }
 
-  it("el barrido diario los reconstruye todos (red de seguridad)", () => {
-    expect(readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8")).toContain(
-      "regenerarResumenesDeTodos(db)",
+  it("el barrido DIARIO no los reconstruye todos (seria carisimo)", () => {
+    // Reconstruir el resumen de un cliente lee sus campañas, solicitudes
+    // y facturas. Hacerlo para todos, cada día:
+    //     100 clientes ->    24.100 lecturas diarias
+    //   1.000 clientes ->   241.000 lecturas diarias (5x la cuota)
+    //   5.000 clientes -> 1.205.000 lecturas diarias
+    // Se habría comido entero el ahorro que estos resúmenes consiguen.
+    // Y no hace falta: no dependen de la fecha, solo de las escrituras,
+    // y cada escritura los regenera.
+    const sync = sinComentarios(
+      readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8"),
     );
+    const barrido = sync.slice(sync.indexOf("async function sincronizar"), sync.indexOf("export const"));
+    expect(barrido).not.toContain("regenerarResumenesDeTodos");
+  });
+
+  it("...pero sigue disponible como reparación a mano", () => {
+    // Tras una migración o un dato corrupto hay que poder rehacerlos.
+    const sync = sinComentarios(
+      readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8"),
+    );
+    expect(sync).toContain("reconstruirResumenes === true");
+    expect(sync).toContain("regenerarResumenesDeTodos(db)");
+  });
+
+  it("el agregado del SELECTOR sí se reconstruye a diario, y debe", () => {
+    // Ese sí depende de la fecha: su contador de campañas activas cambia
+    // a medianoche sin que nadie escriba nada. Y cuesta una lectura de
+    // clientes más una consulta de contratos vigentes, no una por
+    // cliente: es barato.
+    const sync = sinComentarios(
+      readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8"),
+    );
+    const barrido = sync.slice(sync.indexOf("async function sincronizar"), sync.indexOf("export const"));
+    expect(barrido).toContain("regenerarAgregadoClientes(db)");
+    expect(barrido).toContain("regenerarAgregadoPaneles(db)");
   });
 
   it("las solicitudes SÍ entran en el resumen, y su camino está cerrado", () => {
@@ -573,7 +605,9 @@ describe("el resumen de facturas se regenera desde todos sus caminos", () => {
     });
   }
 
-  it("el barrido diario también", () => {
+  it("la reconstrucción a mano también las incluye", () => {
+    // regenerarResumenesDeTodos ya no corre a diario (ver arriba), pero
+    // cuando se pide expresamente debe rehacer campañas Y facturas.
     expect(readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8")).toContain(
       "regenerarResumenFacturas(db, id)",
     );
