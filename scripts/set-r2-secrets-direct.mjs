@@ -20,6 +20,12 @@ import { GoogleAuth } from 'google-auth-library';
 const PROJECT_ID = 'base-de-datos-vista360';
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
+/** Cuántas versiones de cada secreto se conservan.
+ *
+ *  Dos: la que está en uso y la anterior, por si hay que volver atrás.
+ *  Cada versión activa de más cuesta ~$0.06 al mes PARA SIEMPRE. */
+const VERSIONES_A_CONSERVAR = 2;
+
 const SECRETS = {
   R2_ACCOUNT_ID: process.env.VAL_R2_ACCOUNT_ID,
   R2_ACCESS_KEY_ID: process.env.VAL_R2_ACCESS_KEY_ID,
@@ -80,19 +86,64 @@ for (const [name, value] of Object.entries(SECRETS)) {
     continue;
   }
 
-  // 2) Agregar una versión nueva con el valor real.
+  // 2) ¿HACE FALTA UNA VERSIÓN NUEVA?
+  //
+  // Antes se añadía una SIEMPRE, en cada ejecución del workflow. Y
+  // Secret Manager cobra por VERSIÓN ACTIVA (~$0.06 al mes cada una, SKU
+  // "Secret version replica storage"). Con 6 secretos, cada despliegue
+  // dejaba 6 versiones nuevas pagando para siempre: un cargo que solo
+  // sube y nunca baja, sin que nadie lo note hasta ver la factura.
+  //
+  // Casi siempre el valor NO cambió --se redespliega por el código, no
+  // por los secretos-- así que primero se compara con el que ya está.
   const b64 = Buffer.from(value, 'utf-8').toString('base64');
-  const addVersion = await call(
-    `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}:addVersion`,
-    'POST',
-    { payload: { data: b64 } }
+  const actual = await call(
+    `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}/versions/latest:access`,
+    'GET'
   );
-  if (addVersion.ok) {
-    console.log(`  ✅ Valor guardado (${addVersion.json.name})`);
+  const yaEstaba = actual.ok && actual.json?.payload?.data === b64;
+
+  if (yaEstaba) {
+    console.log('  ⏭️  El valor no cambió: no se crea versión nueva');
   } else {
-    console.error(`  ❌ Error agregando versión a ${name} (HTTP ${addVersion.status}):`, JSON.stringify(addVersion.json, null, 2));
-    failed = true;
+    const addVersion = await call(
+      `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}:addVersion`,
+      'POST',
+      { payload: { data: b64 } }
+    );
+    if (addVersion.ok) {
+      console.log(`  ✅ Valor guardado (${addVersion.json.name})`);
+    } else {
+      console.error(`  ❌ Error agregando versión a ${name} (HTTP ${addVersion.status}):`, JSON.stringify(addVersion.json, null, 2));
+      failed = true;
+      continue;
+    }
   }
+
+  // 3) DESTRUIR LAS VERSIONES VIEJAS.
+  //
+  // Se conservan las VERSIONES_A_CONSERVAR más recientes para poder
+  // volver atrás si un valor nuevo estuviera mal. El resto se destruyen:
+  // una versión destruida deja de cobrarse.
+  //
+  // Esto es lo que limpia además todo lo acumulado hasta hoy.
+  const lista = await call(
+    `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}/versions?pageSize=100`,
+    'GET'
+  );
+  if (!lista.ok) {
+    console.warn(`  ⚠️  No se pudieron listar las versiones de ${name}; se deja como está`);
+    continue;
+  }
+  // Vienen de más nueva a más vieja. Solo las que siguen ENABLED cuestan.
+  const activas = (lista.json.versions ?? []).filter((v) => v.state === 'ENABLED');
+  const sobran = activas.slice(VERSIONES_A_CONSERVAR);
+  for (const v of sobran) {
+    const r = await call(`https://secretmanager.googleapis.com/v1/${v.name}:destroy`, 'POST', {});
+    if (r.ok) console.log(`  🧹 Versión antigua destruida (${v.name.split('/').pop()})`);
+    else console.warn(`  ⚠️  No se pudo destruir ${v.name} (HTTP ${r.status})`);
+  }
+  if (sobran.length === 0) console.log('  ✅ Sin versiones antiguas que limpiar');
 }
 
 if (failed) {
