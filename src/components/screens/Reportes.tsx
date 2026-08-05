@@ -73,7 +73,7 @@ function nombreCliente(cliente: Cliente | null) {
 export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
-  const [mes, setMes] = useState(mesActual());
+  const [mes, setMes] = useState(() => mesActual());
   // Selector de año/mes para ENCONTRAR un reporte viejo rápido -- antes
   // solo se podía bajar haciendo scroll por todos los meses. "" en
   // cualquiera de los dos significa "Todos" (sin filtrar por ese eje).

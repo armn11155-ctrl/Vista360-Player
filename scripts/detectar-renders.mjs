@@ -169,6 +169,10 @@ for (const ruta of archivos(SRC)) {
     const linea = codigo.slice(0, m.index).split("\n").length;
     const deps = m[1].split(",").map((d) => d.trim()).filter(Boolean);
     for (const dep of deps) {
+      // `lista.length` es un NUMERO: se compara por valor y es seguro,
+      // aunque `lista` sea una referencia nueva en cada render. Recortar
+      // el `.length` y quedarse con `lista` era un falso positivo.
+      if (/\.length\s*$/.test(dep)) continue;
       const nombre = dep.replace(/[?!].*$/, "").split(/[.[]/)[0];
       const d = declaraciones.get(nombre);
       if (!d || d.memoizado) continue;
