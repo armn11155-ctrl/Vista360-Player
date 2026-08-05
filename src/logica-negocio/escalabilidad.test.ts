@@ -169,3 +169,52 @@ describe("respaldo si falta el índice compuesto", () => {
     expect(solicitudes).toContain("if (conOrden && esFaltaDeIndice(err))");
   });
 });
+
+describe("notificaciones del cliente: tampoco leen su historial entero", () => {
+  const notif = sinComentarios(readFileSync(resolve(HOOKS, "useNotificaciones.ts"), "utf-8"));
+
+  it("NO se piden todas las solicitudes del cliente", () => {
+    // Era where("cliente_id","==",clienteId) a secas, y luego el
+    // navegador tiraba casi todo. Un cliente de cinco anios pagaba sus
+    // ~100 solicitudes historicas en CADA sesion para mostrar dos.
+    const suelta = /query\(\s*collection\(db!?,\s*"solicitudesCampana"\),\s*where\("cliente_id",\s*"==",\s*clienteId\)\s*\)/;
+    expect(notif).not.toMatch(suelta);
+  });
+
+  it("se piden solo las pendientes y las resueltas recientes", () => {
+    expect(notif).toContain('where("estado", "==", "Pendiente")');
+    expect(notif).toContain('where("estadoActualizadoEn", ">=", Timestamp.fromDate(hace14))');
+  });
+
+  it("el filtro por fecha usa la MISMA ventana que se muestra", () => {
+    // Si la consulta trajera mas dias de los que se pintan, se estaria
+    // pagando por documentos que se descartan; si trajera menos,
+    // desaparecerian notificaciones que el cliente deberia ver.
+    expect(notif).toMatch(/hace14 = new Date\(hoyBase\.getTime\(\) - 14 \* 86400000\)/);
+  });
+
+  it("una solicitud resuelta hoy no se cuenta dos veces", () => {
+    // Sale en las DOS consultas. Sin deduplicar, el contador de
+    // notificaciones marcaria de mas.
+    expect(notif).toContain("porId.set(d.id, d)");
+  });
+
+  it("se cancelan las dos escuchas de solicitudes", () => {
+    expect(notif).toMatch(/unsubSolPendientes\(\);\s*unsubSolRecientes\(\);/);
+  });
+
+  it("existen los indices de las dos consultas", () => {
+    const idx = JSON.parse(readFileSync(resolve(raiz, "firestore.indexes.json"), "utf-8")) as {
+      indexes: Array<{ collectionGroup: string; fields: Array<{ fieldPath: string }> }>;
+    };
+    const tiene = (campos: string[]) =>
+      idx.indexes.some(
+        (i) =>
+          i.collectionGroup === "solicitudesCampana" &&
+          i.fields.length === campos.length &&
+          i.fields.every((f, n) => f.fieldPath === campos[n]),
+      );
+    expect(tiene(["cliente_id", "estado"])).toBe(true);
+    expect(tiene(["cliente_id", "estadoActualizadoEn"])).toBe(true);
+  });
+});

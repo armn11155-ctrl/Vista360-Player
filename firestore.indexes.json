@@ -55,6 +55,34 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "solicitudesCampana",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "cliente_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "estado",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "solicitudesCampana",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "cliente_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "estadoActualizadoEn",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []
