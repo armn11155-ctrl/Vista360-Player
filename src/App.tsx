@@ -1,5 +1,6 @@
 import { lazy, Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
+import { useDetectorDeBucles } from "./hooks/useDetectorDeBucles";
 import { pantallaLazy, recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
 
 /** Arrays vacios COMPARTIDOS. Un `[]` escrito en el render es un objeto
@@ -198,6 +199,10 @@ const SIDEBAR_VIEWS = new Set<View>([
 ]);
 
 export default function App() {
+  // Red de seguridad en tiempo de ejecución: avisa si algo desboca los
+  // renders. Los detectores estáticos solo ven los patrones conocidos y
+  // dentro de un archivo; un bucle puede formarse entre varios.
+  useDetectorDeBucles("App");
   const auth = usePortalAuth();
   const online = useOnlineStatus();
   const uid = auth.status === "in" ? auth.user.uid : undefined;
@@ -529,6 +534,7 @@ function AuthenticatedApp({
   onSeleccionarCliente,
   online,
 }: AuthenticatedProps) {
+  useDetectorDeBucles("AuthenticatedApp");
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
   // VACIO ESTABLE. `? x : []` crea un array nuevo en CADA render, y ese
