@@ -102,6 +102,41 @@ function bloqueDe(coleccion) {
 }
 
 console.log('\n════════ VEREDICTO SOBRE portalUsers ════════\n');
+
+/** Cuerpo de una función declarada en las reglas (`function nombre() { ... }`). */
+function cuerpoDeFuncion(nombre) {
+  const m = contenido.match(new RegExp(`function\\s+${nombre}\\s*\\([^)]*\\)\\s*\\{`));
+  if (!m) return null;
+  let nivel = 0;
+  const inicio = m.index + m[0].length - 1;
+  for (let k = inicio; k < contenido.length; k += 1) {
+    if (contenido[k] === '{') nivel += 1;
+    else if (contenido[k] === '}') {
+      nivel -= 1;
+      if (nivel === 0) return contenido.slice(inicio, k + 1);
+    }
+  }
+  return null;
+}
+
+/**
+ * Condición con las funciones auxiliares ya sustituidas por su cuerpo.
+ *
+ * Sin esto el análisis se equivocaba: una regla como
+ *     allow update: if request.auth.uid == uid && soloActualizaAnalitica();
+ * parecía "no limita los campos", cuando el límite está DENTRO de la
+ * función. Da una alarma falsa justo donde todo estaba bien.
+ */
+function condicionExpandida(condicion, profundidad = 0) {
+  if (profundidad > 3) return condicion;
+  let salida = condicion;
+  for (const m of condicion.matchAll(/\b([a-zA-Z][a-zA-Z0-9_]*)\s*\(\s*\)/g)) {
+    const cuerpo = cuerpoDeFuncion(m[1]);
+    if (cuerpo) salida += ' ' + condicionExpandida(cuerpo, profundidad + 1);
+  }
+  return salida;
+}
+
 const bloquePortal = bloqueDe('portalUsers');
 
 if (!bloquePortal) {
@@ -112,27 +147,43 @@ if (!bloquePortal) {
   console.log(bloquePortal.split('\n').map((l) => '    ' + l).join('\n'));
   console.log();
 
-  // Todas las reglas de escritura del bloque.
   const escrituras = [...bloquePortal.matchAll(/allow\s+([a-z,\s]*(?:write|update|create)[a-z,\s]*):([^;]*);/g)];
 
   if (escrituras.length === 0) {
     console.log('✅ SEGURO: el bloque no concede ninguna escritura.');
   } else {
     let peligroso = false;
+    let dudoso = false;
+
     for (const e of escrituras) {
+      const etiqueta = e[1].trim();
       const condicion = e[2].trim();
+      const expandida = condicionExpandida(condicion);
+
       const cerrada = /^if\s+false$/.test(condicion);
-      const acotaCampos = /hasOnly|affectedKeys|keys\(\)/.test(condicion);
-      const mencionaRole = /role/.test(condicion);
+      const acotaCampos = /hasOnly|affectedKeys|keys\(\)/.test(expandida);
+      const permiteRole = /hasOnly\([^)]*['"]role['"]/.test(expandida);
+      // Condiciones que EXCLUYEN a las cuentas de portal (el personal
+      // interno del ERP). Un cliente nunca las cumple, así que esa
+      // escritura no está a su alcance.
+      const soloPersonalInterno = /!\s*esCuentaDePortal\(\)|isHuman\(\)|isOwner\(\)|isAllowed\(\)/.test(condicion);
 
       if (cerrada) {
-        console.log(`✅ "allow ${e[1].trim()}" está cerrada (if false).`);
-      } else if (acotaCampos && !mencionaRole) {
-        console.log(`✅ "allow ${e[1].trim()}" limita los campos que se pueden tocar.`);
-        console.log('   Comprobar en el texto de arriba que "role" NO esté en esa lista.');
+        console.log(`✅ "allow ${etiqueta}" está cerrada (if false).`);
+      } else if (acotaCampos && !permiteRole) {
+        console.log(`✅ "allow ${etiqueta}" limita los campos, y "role" NO está entre ellos.`);
+      } else if (acotaCampos && permiteRole) {
+        peligroso = true;
+        console.log(`🔴 "allow ${etiqueta}" limita campos pero INCLUYE "role".`);
+      } else if (soloPersonalInterno) {
+        dudoso = true;
+        console.log(`🟡 "allow ${etiqueta}" no limita campos, pero exige NO ser cuenta de portal.`);
+        console.log('   Un cliente del portal no puede usarla. Queda al alcance de cualquier');
+        console.log('   cuenta de Firebase SIN ficha en portalUsers: revisar que el registro');
+        console.log('   de cuentas esté cerrado en Authentication.');
       } else {
         peligroso = true;
-        console.log(`🔴 "allow ${e[1].trim()}" NO limita qué campos se escriben.`);
+        console.log(`🔴 "allow ${etiqueta}" NO limita qué campos se escriben y sí está al alcance de un cliente.`);
       }
     }
 
@@ -140,21 +191,18 @@ if (!bloquePortal) {
     if (peligroso) {
       console.log('🔴🔴🔴  ESCALADA DE PRIVILEGIOS POSIBLE  🔴🔴🔴');
       console.log();
-      console.log('Cualquier cliente con sesión puede escribirse role:"admin" desde la');
-      console.log('consola del navegador y quedarse con acceso a TODOS los clientes.');
+      console.log('Un cliente con sesión podría escribirse role:"admin".');
       console.log();
-      console.log('ARREGLO INMEDIATO (30 segundos, sin desplegar nada):');
-      console.log('  Consola de Firebase -> Firestore -> Reglas');
-      console.log('  Cambiar la línea de escritura de portalUsers por:');
-      console.log();
+      console.log('ARREGLO (consola de Firebase -> Firestore -> Reglas):');
       console.log('      allow write: if false;');
       console.log();
-      console.log('  y pulsar Publicar.');
-      console.log();
-      console.log('Es seguro: desde el cambio del 5 de agosto, la aplicación ya NO escribe');
-      console.log('ahí desde el navegador. El registro de accesos y visitas pasa por las');
-      console.log('Cloud Functions registrarAcceso/registrarVisita, que usan el Admin SDK');
-      console.log('y se saltan las reglas. No se rompe nada.');
+      console.log('Es seguro: desde el 5 de agosto la app ya no escribe ahí desde el');
+      console.log('navegador -- accesos y visitas pasan por Cloud Functions.');
+    } else if (dudoso) {
+      console.log('🟡 Sin escalada al alcance de un CLIENTE del portal.');
+      console.log('   Queda por confirmar que nadie pueda crearse una cuenta suelta:');
+      console.log('   Authentication -> Configuración -> Acciones del usuario ->');
+      console.log('   "Habilitar la creación (registro)" debe estar DESMARCADO.');
     } else {
       console.log('✅ No se detecta escalada de privilegios por esta vía.');
     }
