@@ -1,6 +1,9 @@
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
+/** Tope duro de la API de Firebase Cloud Messaging. */
+const TOPE_TOKENS_POR_ENVIO = 500;
+
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
 import { latir } from "./latidoDeTareas.js";
@@ -41,9 +44,15 @@ export async function enviarPushACliente(clienteId: string, payload: PushPayload
     if (Array.isArray(lista)) tokens.push(...lista.filter((t) => typeof t === "string" && t));
   });
   if (tokens.length === 0) return;
+  // sendEachForMulticast acepta 500 como maximo. Los tokens ya se
+  // limitan al guardarlos (ver guardarTokenPush), pero esto cubre los
+  // datos que quedaron de antes de aquel arreglo: sin este recorte, una
+  // sola cuenta con el array crecido tumbaria el envio a TODAS las
+  // demas de esa tanda.
+  const aEnviar = tokens.slice(0, TOPE_TOKENS_POR_ENVIO);
 
   const respuesta = await getMessaging().sendEachForMulticast({
-    tokens,
+    tokens: aEnviar,
     notification: { title: payload.title, body: payload.body },
     data: { url: payload.url || "/" },
     webpush: {
@@ -60,7 +69,7 @@ export async function enviarPushACliente(clienteId: string, payload: PushPayload
     if (!r.success) {
       const code = r.error?.code || "";
       if (code.includes("registration-token-not-registered") || code.includes("invalid-argument")) {
-        tokensInvalidos.push(tokens[i]);
+        tokensInvalidos.push(aEnviar[i]);
       }
     }
   });
@@ -93,9 +102,15 @@ export async function enviarPushAAdmin(payload: PushPayload): Promise<void> {
     if (Array.isArray(lista)) tokens.push(...lista.filter((t) => typeof t === "string" && t));
   });
   if (tokens.length === 0) return;
+  // sendEachForMulticast acepta 500 como maximo. Los tokens ya se
+  // limitan al guardarlos (ver guardarTokenPush), pero esto cubre los
+  // datos que quedaron de antes de aquel arreglo: sin este recorte, una
+  // sola cuenta con el array crecido tumbaria el envio a TODAS las
+  // demas de esa tanda.
+  const aEnviar = tokens.slice(0, TOPE_TOKENS_POR_ENVIO);
 
   const respuesta = await getMessaging().sendEachForMulticast({
-    tokens,
+    tokens: aEnviar,
     notification: { title: payload.title, body: payload.body },
     data: { url: payload.url || "/" },
     webpush: {
@@ -109,7 +124,7 @@ export async function enviarPushAAdmin(payload: PushPayload): Promise<void> {
     if (!r.success) {
       const code = r.error?.code || "";
       if (code.includes("registration-token-not-registered") || code.includes("invalid-argument")) {
-        tokensInvalidos.push(tokens[i]);
+        tokensInvalidos.push(aEnviar[i]);
       }
     }
   });

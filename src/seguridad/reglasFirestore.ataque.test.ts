@@ -54,6 +54,7 @@ beforeEach(async () => {
     await setDoc(doc(db, "portalUsers/uid-cliente-a"), { role: "cliente", clienteId: "empresa-a", nombre: "A" });
     await setDoc(doc(db, "portalUsers/uid-cliente-b"), { role: "cliente", clienteId: "empresa-b", nombre: "B" });
     await setDoc(doc(db, "portalUsers/uid-gerente"), { role: "admin", nombre: "Gerente" });
+    await setDoc(doc(db, "portalUsers/uid-trabajador"), { role: "trabajador", nombre: "Trabajador" });
     await setDoc(doc(db, "clientes/empresa-a"), { empresa: "Empresa A", ruc: "111" });
     await setDoc(doc(db, "clientes/empresa-b"), { empresa: "Empresa B", ruc: "222" });
     await setDoc(doc(db, "contratos/c-de-a"), { cliente_id: "empresa-a", monto: 5000, fin: "2027-01-01" });
@@ -79,6 +80,7 @@ const sinFichaDePortal = () => entorno.authenticatedContext("uid-desconocido").f
 const comoClienteA = () => entorno.authenticatedContext("uid-cliente-a").firestore();
 const comoClienteB = () => entorno.authenticatedContext("uid-cliente-b").firestore();
 const comoGerente = () => entorno.authenticatedContext("uid-gerente").firestore();
+const comoTrabajador = () => entorno.authenticatedContext("uid-trabajador").firestore();
 const sinSesion = () => entorno.unauthenticatedContext().firestore();
 
 // ─────────────────────────────────────────────────────────────
@@ -433,5 +435,58 @@ describe("ATAQUE 9: los agregados con datos de clientes", () => {
     await assertFails(
       setDoc(doc(comoClienteA(), "agregados/cliente-empresa-a"), { contratos: [] })
     );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// El Trabajador es personal interno con menos poder que el Gerente:
+// gestiona clientes y campañas, pero no cuentas de usuario.
+//
+// ESTABA ROTO. Las reglas usaban esAdminPortal(), que exige
+// role == 'admin', así que un Trabajador no podía leer NADA de negocio.
+// Y a la vez las Cloud Functions sí le dejaban crear y editar clientes y
+// campañas: podía escribir lo que no podía leer. Creaba una campaña y no
+// la veía.
+describe("ATAQUE 10: el rol Trabajador", () => {
+  it("SÍ puede leer los clientes (es su trabajo)", async () => {
+    await assertSucceeds(getDoc(doc(comoTrabajador(), "clientes/empresa-a")));
+    await assertSucceeds(getDocs(collection(comoTrabajador(), "clientes")));
+  });
+
+  it("SÍ puede leer campañas, facturas, informes y solicitudes", async () => {
+    await assertSucceeds(getDoc(doc(comoTrabajador(), "contratos/c-de-a")));
+    await assertSucceeds(getDoc(doc(comoTrabajador(), "facturas/f-de-b")));
+    await assertSucceeds(getDocs(collection(comoTrabajador(), "solicitudesCampana")));
+  });
+
+  it("SÍ puede leer el selector y los resúmenes agrupados", async () => {
+    await assertSucceeds(getDoc(doc(comoTrabajador(), "agregados/paneles")));
+  });
+
+  it("NO puede leer las fichas de OTROS usuarios", async () => {
+    // Ahí vive el campo `role`. Leerlo es el primer paso para atacarlo.
+    await assertFails(getDoc(doc(comoTrabajador(), "portalUsers/uid-gerente")));
+    await assertFails(getDoc(doc(comoTrabajador(), "portalUsers/uid-cliente-a")));
+  });
+
+  it("SÍ puede leer la suya propia", async () => {
+    await assertSucceeds(getDoc(doc(comoTrabajador(), "portalUsers/uid-trabajador")));
+  });
+
+  it("NO puede leer las invitaciones al portal", async () => {
+    // Gestionar cuentas es del Gerente, igual que en las funciones.
+    await assertFails(getDocs(collection(comoTrabajador(), "invitacionesPortal")));
+  });
+
+  it("NO puede ESCRIBIR nada, como nadie", async () => {
+    await assertFails(setDoc(doc(comoTrabajador(), "contratos/nuevo"), { cliente_id: "empresa-a" }));
+    await assertFails(updateDoc(doc(comoTrabajador(), "clientes/empresa-a"), { empresa: "X" }));
+    await assertFails(updateDoc(doc(comoTrabajador(), "portalUsers/uid-trabajador"), { role: "admin" }));
+  });
+
+  it("NO puede ascenderse a Gerente", async () => {
+    // El ataque obvio: cambiarse el propio rol.
+    await assertFails(updateDoc(doc(comoTrabajador(), "portalUsers/uid-trabajador"), { role: "admin" }));
+    await assertFails(setDoc(doc(comoTrabajador(), "portalUsers/uid-trabajador"), { role: "admin" }, { merge: true }));
   });
 });

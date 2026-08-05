@@ -54,13 +54,21 @@ service cloud.firestore {
 
     /** Personal interno: Gerente O Trabajador.
      *
-     *  OJO CON LA DIFERENCIA. esAdminPortal() exige role == 'admin', o
-     *  sea SOLO el Gerente. Un Trabajador tiene role == 'trabajador' y
-     *  NO la cumple. Eso es un problema que viene de antes y que no se
-     *  toca acá (cambiar esAdminPortal() afectaría a media docena de
-     *  colecciones a la vez); esta función se usa únicamente para el
-     *  agregado del selector, que es la pantalla de inicio de CUALQUIER
-     *  cuenta interna y por tanto también de un Trabajador.
+     *  POR QUÉ EXISTE. esAdminPortal() exige role == 'admin', o sea SOLO
+     *  el Gerente. Un Trabajador tiene role == 'trabajador' y no la
+     *  cumple -- así que con las reglas anteriores NO PODÍA LEER
+     *  clientes, contratos, facturas, informes ni solicitudes.
+     *
+     *  Y sin embargo las Cloud Functions SÍ le dejan crear y editar
+     *  clientes y campañas (usan esPersonalInterno). O sea que podía
+     *  escribir lo que no podía leer: creaba una campaña y no la veía.
+     *  Las reglas eran las equivocadas, no el backend.
+     *
+     *  QUÉ SIGUE SIENDO SOLO DEL GERENTE: leer las fichas de OTROS
+     *  usuarios (portalUsers) y las invitaciones. O sea, la gestión de
+     *  cuentas -- que es exactamente lo que las funciones reservan
+     *  también al Gerente (crearTrabajadorAcceso, administrarUsuario
+     *  Portal, restablecerPassword...).
      */
     function esPersonalDePortal() {
       return esCuentaDePortal() &&
@@ -86,17 +94,17 @@ service cloud.firestore {
     // ── Datos del cliente ───────────────────────────────────────────
 
     match /clientes/{id} {
-      allow read: if esAdminPortal() || (esCuentaDePortal() && id == clienteIdDelPortal());
+      allow read: if esPersonalDePortal() || (esCuentaDePortal() && id == clienteIdDelPortal());
       allow write: if false; // crearClienteNuevo / actualizarClienteInfo
     }
 
     match /contratos/{id} {
-      allow read: if esAdminPortal() || esDeMiCliente();
+      allow read: if esPersonalDePortal() || esDeMiCliente();
       allow write: if false; // crearContrato / actualizarContrato / eliminarContrato
     }
 
     match /informesCliente/{id} {
-      allow read: if esAdminPortal() || esDeMiCliente();
+      allow read: if esPersonalDePortal() || esDeMiCliente();
       allow write: if false; // generarReporteCliente / marcarReporteVisto
     }
 
@@ -105,7 +113,7 @@ service cloud.firestore {
     // ya no se emiten desde ahí, y crearFacturaAdmin/eliminarFactura son
     // Cloud Functions.
     match /facturas/{id} {
-      allow read: if esAdminPortal() ||
+      allow read: if esPersonalDePortal() ||
         (esCuentaDePortal() &&
           resource.data.cliente_doc ==
             get(/databases/$(database)/documents/clientes/$(clienteIdDelPortal())).data.ruc);
@@ -130,7 +138,7 @@ service cloud.firestore {
     // reescribir el contenido de la solicitud (cliente, paneles, fechas)
     // desde la consola del navegador.
     match /solicitudesCampana/{id} {
-      allow read: if esAdminPortal() || esDeMiCliente();
+      allow read: if esPersonalDePortal() || esDeMiCliente();
       // CERRADO. Antes el navegador del admin podía cambiar el estado
       // directamente (acotado a esos dos campos). Funcionaba, pero era
       // el ÚNICO camino de escritura sobre esta colección que no pasaba

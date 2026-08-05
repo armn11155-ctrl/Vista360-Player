@@ -154,3 +154,56 @@ describe("procesos revisados que NO necesitan guardián", () => {
     expect(leer("functions/src/registrarAcceso.ts")).toContain("lastLoginCount");
   });
 });
+
+/**
+ * COHERENCIA ENTRE LAS REGLAS Y LAS CLOUD FUNCTIONS.
+ *
+ * Son dos sistemas de permisos distintos que tienen que decir lo mismo.
+ * Cuando se desalinean no salta ningún error: simplemente un rol puede
+ * escribir algo que no puede leer, o al revés. Eso fue exactamente lo
+ * que le pasó al Trabajador -- podía crear una campaña y no verla.
+ */
+describe("los tres roles pueden hacer su trabajo, y nada más", () => {
+  const reglas = leer("firestore.rules");
+
+  it("un Trabajador puede LEER lo que las funciones le dejan ESCRIBIR", () => {
+    // crearContrato/actualizarContrato/crearClienteNuevo usan
+    // esPersonalInterno, así que aceptan a un Trabajador. Las reglas
+    // tienen que dejarle leer esas mismas colecciones.
+    for (const coleccion of ["clientes", "contratos", "informesCliente", "solicitudesCampana"]) {
+      const inicio = reglas.indexOf(`match /${coleccion}/`);
+      expect(inicio, `no existe la regla de ${coleccion}`).toBeGreaterThan(-1);
+      const bloque = reglas.slice(inicio, reglas.indexOf("match /", inicio + 20));
+      expect(bloque, `${coleccion} sigue cerrada al Trabajador`).toContain("esPersonalDePortal()");
+    }
+  });
+
+  it("la gestión de CUENTAS sigue siendo solo del Gerente", () => {
+    // Coherente con las funciones: crearTrabajadorAcceso,
+    // administrarUsuarioPortal y restablecerPassword son solo del
+    // Gerente. Leer las fichas de otros también debe serlo.
+    for (const coleccion of ["portalUsers", "invitacionesPortal"]) {
+      const inicio = reglas.indexOf(`match /${coleccion}/`);
+      const bloque = reglas.slice(inicio, reglas.indexOf("match /", inicio + 20));
+      expect(bloque, `${coleccion} se abrió al Trabajador`).not.toContain("esPersonalDePortal()");
+      expect(bloque).toContain("esAdminPortal()");
+    }
+  });
+
+  it("NINGÚN rol puede escribir desde el navegador", () => {
+    // Toda escritura pasa por Cloud Functions, que revalidan el rol con
+    // el Admin SDK. Es lo que permite que las reglas sean tan simples.
+    const escrituras = [...reglas.matchAll(/allow (write|create|update|delete)[^;]*;/g)]
+      .map((m) => m[0])
+      .filter((linea) => !/if false/.test(linea));
+    expect(escrituras).toEqual([]);
+  });
+
+  it("un cliente sigue viendo SOLO lo suyo", () => {
+    // Las tres puertas por las que un cliente llega a sus datos comparan
+    // siempre contra portalUsers, nunca contra algo que mande él.
+    expect(reglas).toContain("resource.data.cliente_id == clienteIdDelPortal()");
+    expect(reglas).toContain("id == clienteIdDelPortal()");
+    expect(reglas).toContain("documento == 'cliente-' + clienteIdDelPortal()");
+  });
+});
