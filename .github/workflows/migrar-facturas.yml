@@ -1,0 +1,55 @@
+# Completa el campo cliente_id en las facturas antiguas que solo tienen
+# el RUC, para poder quitar una de las dos consultas que hace la app
+# (hoy lee cada factura dos veces).
+#
+# POR DEFECTO SOLO CUENTA. No escribe nada a menos que se marque la
+# casilla de forma explícita. La primera vez conviene lanzarlo sin
+# marcarla, leer el diagnóstico, y solo entonces decidir.
+name: 🧾 Migrar facturas (completar cliente_id)
+
+on:
+  workflow_dispatch:
+    inputs:
+      escribir:
+        description: "APLICAR los cambios (sin marcar, solo cuenta y no toca nada)"
+        type: boolean
+        default: false
+
+jobs:
+  migrar:
+    name: Revisar y completar cliente_id en facturas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Instalar dependencia del script
+        run: npm install google-auth-library --no-save
+
+      - name: Diagnóstico (siempre, sin escribir)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/migrar-facturas-clienteid.mjs | tee /tmp/migracion-diagnostico.txt
+
+      # Solo si se marcó la casilla. Va DESPUÉS del diagnóstico a
+      # propósito: así el log siempre muestra primero el estado previo,
+      # aunque se lance directamente en modo escritura.
+      - name: Aplicar los cambios (solo si se marcó la casilla)
+        if: ${{ inputs.escribir }}
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/migrar-facturas-clienteid.mjs --escribir | tee /tmp/migracion-aplicada.txt
+
+      - name: Guardar el resultado como artefacto
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: migracion-facturas
+          path: |
+            /tmp/migracion-diagnostico.txt
+            /tmp/migracion-aplicada.txt
+          retention-days: 30
+          if-no-files-found: ignore
