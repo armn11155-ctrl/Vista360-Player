@@ -61,6 +61,35 @@ function milisegundos(s: SolicitudCampana): number {
   return s.createdAt?.toMillis ? s.createdAt.toMillis() : 0;
 }
 
+/**
+ * SOLO las pendientes. Es lo único que necesita el contador del selector
+ * y de la barra lateral: un número.
+ *
+ * Antes esas pantallas usaban useSolicitudesCampana entero, o sea que
+ * cargaban también las 50 resueltas -- 50 documentos por cada inicio de
+ * sesión, para pintar un "3" en un círculo rojo. El historial solo hace
+ * falta DENTRO de la pantalla de Solicitudes, y allí se sigue cargando.
+ *
+ * Sigue siendo en vivo: el contador se actualiza solo al llegar una
+ * solicitud nueva o al resolver una, igual que antes. Y las pendientes
+ * son pocas por naturaleza -- se vacían porque alguien las atiende.
+ */
+export function useSolicitudesPendientes(isAdmin: boolean): SolicitudesCampanaState {
+  const [state, setState] = useState<SolicitudesCampanaState>({ status: "loading" });
+
+  useEffect(() => {
+    if (!db || !isAdmin) { setState({ status: "ready", solicitudes: [] }); return; }
+    const bd = db;
+    return onSnapshot(
+      query(collection(bd, "solicitudesCampana"), where("estado", "==", "Pendiente")),
+      (snap) => setState({ status: "ready", solicitudes: snap.docs.map(aSolicitud) }),
+      (err) => setState({ status: "error", message: err.message })
+    );
+  }, [isAdmin]);
+
+  return state;
+}
+
 export function useSolicitudesCampana(isAdmin: boolean): SolicitudesCampanaState {
   const [state, setState] = useState<SolicitudesCampanaState>({ status: "loading" });
 

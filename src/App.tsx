@@ -27,7 +27,7 @@ import { esMovil } from "./utils/dispositivo";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
-import { useSolicitudesCampana } from "./hooks/useSolicitudesCampana";
+import { useSolicitudesPendientes } from "./hooks/useSolicitudesCampana";
 import { useAvatarPropio } from "./hooks/useAvatarPropio";
 import type { Contrato } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
@@ -498,9 +498,11 @@ function AuthenticatedApp({
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
   const notifState = useNotificaciones(clienteId, contratos);
   const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
-  const solCampState = useSolicitudesCampana(!!isAdmin);
+  // Igual que en el selector: para el contador de la barra lateral
+  // bastan las pendientes.
+  const solCampState = useSolicitudesPendientes(!!isAdmin);
   const solCampPendientes = solCampState.status === "ready"
-    ? solCampState.solicitudes.filter((s) => s.estado === "Pendiente").length
+    ? solCampState.solicitudes.length
     : 0;
   const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
   // "esInterno" identifica una sesión REAL de Gerente/Trabajador, sin

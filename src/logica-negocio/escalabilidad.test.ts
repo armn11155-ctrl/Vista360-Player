@@ -464,3 +464,47 @@ describe("el resumen por cliente se regenera desde TODOS los sitios que lo inval
     expect(agregado).toContain("console.warn");
   });
 });
+
+describe("el historial de solicitudes solo se carga donde se muestra", () => {
+  const hook = sinComentarios(readFileSync(resolve(HOOKS, "useSolicitudesCampana.ts"), "utf-8"));
+  const picker = sinComentarios(
+    readFileSync(resolve(__dirname, "../components/AdminClientPicker.tsx"), "utf-8"),
+  );
+  const app = sinComentarios(readFileSync(resolve(__dirname, "../App.tsx"), "utf-8"));
+  const pantalla = sinComentarios(
+    readFileSync(resolve(__dirname, "../components/screens/SolicitudesCampana.tsx"), "utf-8"),
+  );
+
+  it("existe un hook que trae SOLO las pendientes", () => {
+    expect(hook).toContain("export function useSolicitudesPendientes");
+    const bloque = hook.slice(hook.indexOf("useSolicitudesPendientes"), hook.indexOf("export function useSolicitudesCampana"));
+    // El barato NO puede pedir las resueltas.
+    expect(bloque).not.toContain("ESTADOS_RESUELTOS");
+    expect(bloque).toContain('where("estado", "==", "Pendiente")');
+  });
+
+  it("el contador del selector usa el hook barato", () => {
+    // El badge es un número. Cargar las 50 resueltas para pintarlo eran
+    // 50 documentos por cada inicio de sesión.
+    expect(picker).toContain("useSolicitudesPendientes(true)");
+    expect(picker).not.toContain("useSolicitudesCampana(");
+  });
+
+  it("el contador de la barra lateral también", () => {
+    expect(app).toContain("useSolicitudesPendientes(!!isAdmin)");
+    expect(app).not.toContain("useSolicitudesCampana(");
+  });
+
+  it("la pantalla de Solicitudes SÍ carga el historial", () => {
+    // Ahí es donde de verdad se enseña; quitarlo sería romperla.
+    expect(pantalla).toContain("useSolicitudesCampana(true)");
+  });
+
+  it("el contador sigue siendo en vivo", () => {
+    // Se podría haber usado una consulta de conteo (1 lectura), pero
+    // dejaría de actualizarse solo al llegar una solicitud nueva. Las
+    // pendientes son pocas por naturaleza: se vacían al atenderlas.
+    const bloque = hook.slice(hook.indexOf("useSolicitudesPendientes"), hook.indexOf("export function useSolicitudesCampana"));
+    expect(bloque).toContain("onSnapshot");
+  });
+});

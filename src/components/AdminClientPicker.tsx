@@ -3,7 +3,7 @@ import { httpsCallable } from "firebase/functions";
 import { useSelectorDeClientes } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { useAvatarPropio } from "../hooks/useAvatarPropio";
-import { useSolicitudesCampana } from "../hooks/useSolicitudesCampana";
+import { useSolicitudesPendientes } from "../hooks/useSolicitudesCampana";
 import { usePushEstado } from "../hooks/usePushEstado";
 import { cloudFunctions, logout } from "../config/firebase";
 import type { Cliente } from "../types";
@@ -80,9 +80,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
     if (gestionInicial) onGestionInicialConsumida?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const solicitudesState = useSolicitudesCampana(true);
+  // Solo las pendientes: el badge es un numero. Cargar tambien las 50
+  // resueltas costaba 50 documentos por inicio de sesion para pintar
+  // un digito en un circulo rojo.
+  const solicitudesState = useSolicitudesPendientes(true);
   const solicitudesPendientes = solicitudesState.status === "ready"
-    ? solicitudesState.solicitudes.filter((solicitud) => solicitud.estado === "Pendiente").length
+    ? solicitudesState.solicitudes.length
     : 0;
   // Antes se mostraba la grilla al toque con íconos de color por
   // defecto y las fotos reales "aparecían" un instante después (viaje
