@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
+import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -63,6 +64,9 @@ export const eliminarPanel = onCall<EliminarPanelData>(async (request) => {
   }
 
   await panelRef.delete();
+  // Excepción: acá no se recalcula estado (el panel ya no existe), así
+  // que hay que refrescar el agregado a mano.
+  await regenerarAgregadoPaneles(db);
   // Borrar un panel es irreversible y afecta al inventario entero: queda
   // registrado quién lo hizo.
   auditar("panel_eliminado", { uid, objetivoId: panelRef.id });

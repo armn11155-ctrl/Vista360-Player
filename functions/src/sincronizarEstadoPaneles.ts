@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
+import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -88,6 +89,13 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   });
 
   await Promise.all(cambios);
+
+  // Esta función escribe los estados directamente, sin pasar por
+  // recalcularEstadoPaneles, así que refresca el agregado por su cuenta
+  // (ver agregadoPaneles.ts). Se hace siempre, aunque no haya cambiado
+  // nada: es una sola escritura al día y garantiza que el agregado no se
+  // quede viejo si alguna vez se desincronizó por otra vía.
+  await regenerarAgregadoPaneles(db);
 
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }

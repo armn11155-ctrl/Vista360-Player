@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { mensajeDeError } from "../utils/errores";
 import type { Panel } from "../types";
@@ -79,6 +79,50 @@ function avisarSuscriptores(estado: PanelesDisponiblesState) {
   suscriptores.forEach((fn) => fn(estado));
 }
 
+/** Deja la lista en caché y avisa a las pantallas, evitando trabajo de
+ *  más cuando el contenido no cambió realmente (ver el comentario largo
+ *  sobre el parpadeo de los pines, más abajo). */
+function publicarPaneles(paneles: Panel[]) {
+  const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
+  if (!cambio) return;
+  CACHE_PANELES = paneles;
+  avisarSuscriptores({ status: "ready", paneles });
+}
+
+function alFallarLaEscucha(err: unknown) {
+  // Si falla pero ya había algo en caché, se deja lo último bueno en
+  // pantalla en vez de tapar el mapa con un error -- mismo criterio que
+  // useInformes.
+  escuchaActiva = false;
+  unsubEscucha = null;
+  if (CACHE_PANELES) return;
+  avisarSuscriptores({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") });
+}
+
+/**
+ * RESPALDO: leer la colección panel por panel, como se hacía antes.
+ *
+ * Solo se usa si el documento agregado todavía no existe -- proyecto
+ * recién montado, o antes del primer despliegue del backend con este
+ * cambio. Cuesta una lectura por panel en vez de una sola, pero la
+ * aplicación funciona igual: el ahorro nunca puede convertirse en una
+ * pantalla vacía.
+ */
+function escucharColeccionDirecta() {
+  if (unsubEscucha) unsubEscucha();
+  unsubEscucha = onSnapshot(
+    collection(db!, "paneles"),
+    (snap) => {
+      publicarPaneles(
+        snap.docs
+          .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
+          .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""))
+      );
+    },
+    alFallarLaEscucha
+  );
+}
+
 function iniciarEscuchaSiHaceFalta() {
   if (escuchaActiva || !db) return;
   escuchaActiva = true;
@@ -97,12 +141,35 @@ function iniciarEscuchaSiHaceFalta() {
   // Esto empezaría a pesar recién con cientos de paneles o muchos
   // clientes mirando el mapa a la vez; ahí convendría volver a lectura
   // única con caché.
+  // SE ESCUCHA UN SOLO DOCUMENTO, NO LA COLECCION ENTERA.
+  //
+  // Cobertura le muestra a cada cliente TODO el inventario, así que
+  // antes cada sesión leía un documento por panel. Con 150 paneles eso
+  // era el 60% del coste de una sesión -- y lo pagaba todo el mundo,
+  // incluso quien entra a ver una factura y nunca abre el mapa. Y es un
+  // gasto absurdo: los paneles son los MISMOS para todos, así que eran
+  // miles de sesiones leyendo una y otra vez los mismos documentos.
+  //
+  // El backend mantiene una copia del inventario en un único documento
+  // (ver functions/src/agregadoPaneles.ts), que se refresca cada vez que
+  // un panel cambia. Leerlo cuesta 1 lectura en vez de N.
+  //
+  // Si ese documento todavía no existe -- proyecto recién montado, o
+  // antes del primer despliegue con este cambio -- se cae a leer la
+  // colección como antes. Más caro, pero la aplicación funciona igual:
+  // el ahorro nunca puede convertirse en una pantalla vacía.
+  const ordenar = (lista: Panel[]) =>
+    [...lista].sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+
   unsubEscucha = onSnapshot(
-    collection(db!, "paneles"),
-    (snap) => {
-      const paneles = snap.docs
-        .map((d) => ({ id: d.id, ...(d.data() as Omit<Panel, "id">) }))
-        .sort((a, b) => (a.nombre || "").localeCompare(b.nombre || ""));
+    doc(db!, "agregados", "paneles"),
+    (docSnap) => {
+      if (!docSnap.exists()) {
+        escucharColeccionDirecta();
+        return;
+      }
+      const crudos = (docSnap.data()?.paneles ?? []) as Panel[];
+      const paneles = ordenar(crudos);
       // Si el contenido es EXACTAMENTE el mismo que ya había en caché
       // (nada cambió de verdad, solo se volvió a conectar la escucha),
       // no conviene igual pisar el estado con un array nuevo: aunque
@@ -134,20 +201,9 @@ function iniciarEscuchaSiHaceFalta() {
       // ordena las llaves de cada objeto antes de comparar (y de
       // guardar en caché) -- así el texto es estable sin importar en
       // qué orden Firestore entregue los campos.
-      const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
-      if (!cambio) return;
-      CACHE_PANELES = paneles;
-      avisarSuscriptores({ status: "ready", paneles });
+      publicarPaneles(paneles);
     },
-    (err) => {
-      // Si falla pero ya había algo en caché, se deja lo último bueno
-      // en pantalla en vez de tapar el mapa con un error -- mismo
-      // criterio que useInformes.
-      escuchaActiva = false;
-      unsubEscucha = null;
-      if (CACHE_PANELES) return;
-      avisarSuscriptores({ status: "error", message: mensajeDeError(err, "No se pudieron cargar los paneles.") });
-    }
+    alFallarLaEscucha
   );
 }
 

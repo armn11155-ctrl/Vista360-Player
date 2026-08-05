@@ -1,6 +1,7 @@
 import type { Firestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima, sumarUnDia } from "./reglasOcupacion.js";
+import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 
 // Las reglas puras de ocupación se mudaron a reglasOcupacion.ts (ver el
 // comentario grande de ese archivo: se importan desde los tests del
@@ -67,4 +68,15 @@ export async function recalcularEstadoPaneles(db: Firestore, panelIds: string[])
       }
     })
   );
+
+  // Punto único donde se refresca la copia que lee Cobertura. Se pone
+  // acá y no en cada función que toca paneles porque por acá pasan
+  // TODAS: crear y editar un panel, y crear, editar o borrar una
+  // campaña (que cambia el estado del panel). Un solo sitio que
+  // recordar en vez de cinco.
+  //
+  // Las dos excepciones, que lo llaman por su cuenta, son eliminar un
+  // panel (ya no hay estado que recalcular) y la sincronización diaria
+  // (escribe los estados directamente, sin pasar por acá).
+  await regenerarAgregadoPaneles(db);
 }

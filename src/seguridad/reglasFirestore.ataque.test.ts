@@ -337,3 +337,35 @@ describe("Concesiones retiradas: funciones que no existen en la app", () => {
     );
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+describe("ATAQUE 8: la copia agregada del inventario", () => {
+  beforeEach(async () => {
+    await entorno.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "agregados/paneles"), {
+        paneles: [{ id: "p1", nombre: "Mural", estado: "Disponible" }],
+        total: 1,
+      });
+    });
+  });
+
+  it("un cliente con sesión SÍ puede leerla (Cobertura la necesita)", async () => {
+    await assertSucceeds(getDoc(doc(comoClienteA(), "agregados/paneles")));
+  });
+
+  it("sin sesión NO se puede leer", async () => {
+    await assertFails(getDoc(doc(sinSesion(), "agregados/paneles")));
+  });
+
+  it("una cuenta sin ficha de portal tampoco", async () => {
+    await assertFails(getDoc(doc(sinFichaDePortal(), "agregados/paneles")));
+  });
+
+  it("NADIE puede escribirla desde el navegador, ni el gerente", async () => {
+    // La mantienen las Cloud Functions con el Admin SDK. Si el navegador
+    // pudiera escribirla, un cliente podría inventarse paneles o cambiar
+    // su estado para todos los demás.
+    await assertFails(setDoc(doc(comoClienteA(), "agregados/paneles"), { paneles: [] }));
+    await assertFails(setDoc(doc(comoGerente(), "agregados/paneles"), { paneles: [] }));
+  });
+});
