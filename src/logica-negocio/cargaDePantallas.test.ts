@@ -120,3 +120,34 @@ describe("una pestaña abierta desde antes del despliegue se entera sola", () =>
     expect(main).toContain("recargarPorVersionDesactualizada()");
   });
 });
+
+describe("un cambio de pantalla que no termina se detecta y se recupera", () => {
+  it("setView usa useTransition, no el startTransition suelto", () => {
+    // Con el suelto no hay forma de saber si el cambio quedó a medias.
+    expect(app).toContain("const [cambioEnCurso, comenzarCambioDePantalla] = useTransition()");
+    expect(app).toContain("comenzarCambioDePantalla(() => setViewInmediato(v))");
+  });
+
+  it("si el cambio tarda demasiado, la app se recarga sola", () => {
+    // Es EL modo de fallo que costó todo un día: React se queda
+    // mostrando la pantalla anterior sin error, sin aviso y sin nada en
+    // la consola. La persona pulsa un botón y no pasa absolutamente
+    // nada. Ahora, si no se completa, se recarga.
+    expect(app).toContain("if (!cambioEnCurso) return;");
+    expect(app).toContain("recargarPorVersionDesactualizada()");
+    expect(app).toMatch(/ESPERA_MAXIMA_CAMBIO_MS = \d+/);
+  });
+
+  it("el reloj se cancela cuando el cambio SÍ termina", () => {
+    // Sin esto recargaría la app cada vez que se navega.
+    const bloque = app.slice(app.indexOf("if (!cambioEnCurso) return;"));
+    expect(bloque.slice(0, 400)).toContain("clearTimeout(reloj)");
+  });
+
+  it("los cambios que acompañan a la pantalla usan la misma transición", () => {
+    // contratoAbierto, adminClienteId y demás cambian en el mismo clic;
+    // si fueran por otra vía, React 18 lanza el error #426.
+    expect(app).toContain("comenzarCambioDePantalla(() => setContratoAbiertoInmediato(c))");
+    expect(app).toContain("comenzarCambioDePantalla(() => setAdminClienteIdInmediato(id))");
+  });
+});

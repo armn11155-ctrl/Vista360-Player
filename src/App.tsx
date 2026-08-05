@@ -1,6 +1,9 @@
-import { lazy, Suspense, startTransition, useEffect, useState } from "react";
+import { lazy, Suspense, startTransition, useEffect, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
-import { pantallaLazy } from "./utils/pantallaLazy";
+import { pantallaLazy, recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
+
+/** Si un cambio de pantalla tarda mas que esto, algo va mal. */
+const ESPERA_MAXIMA_CAMBIO_MS = 8000;
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
@@ -227,8 +230,35 @@ export default function App() {
   // que el cambio puede demorar, así que muestra el loader (BrandLoader,
   // ya puesto en el Suspense) en vez de romperse. setView sigue
   // llamándose igual en los ~38 lugares que ya la usan en este archivo.
+  // EL CAMBIO DE PANTALLA NO PUEDE QUEDARSE COLGADO EN SILENCIO.
+  //
+  // setView usa startTransition: React NO cambia la pantalla hasta tener
+  // el codigo de la pantalla nueva (cada una es un .js aparte). Eso es
+  // bueno -- evita un parpadeo -- pero tiene un modo de fallo horrible:
+  // si ese codigo NO llega, React se queda mostrando la pantalla
+  // anterior. Sin error, sin aviso, sin nada en la consola. La persona
+  // pulsa un boton y no pasa absolutamente nada.
+  //
+  // Pasa despues de un despliegue: una pestana abierta desde antes pide
+  // archivos con nombres que ya no existen. Y es dificilisimo de
+  // diagnosticar precisamente porque no deja rastro: la app "funciona",
+  // solo que no se mueve.
+  //
+  // Con isPending sabemos que hay un cambio en curso. Si pasan varios
+  // segundos y sigue sin completarse, algo va mal: se recarga, que es lo
+  // unico que trae el index.html nuevo con los nombres correctos.
+  const [cambioEnCurso, comenzarCambioDePantalla] = useTransition();
+  useEffect(() => {
+    if (!cambioEnCurso) return;
+    const reloj = setTimeout(() => {
+      console.error("El cambio de pantalla no se completa; se recarga la aplicacion.");
+      recargarPorVersionDesactualizada();
+    }, ESPERA_MAXIMA_CAMBIO_MS);
+    return () => clearTimeout(reloj);
+  }, [cambioEnCurso]);
+
   function setView(v: View) {
-    startTransition(() => setViewInmediato(v));
+    comenzarCambioDePantalla(() => setViewInmediato(v));
   }
   useRegistrarVisita(uid, view);
   // Estos 4 estados (contratoAbierto, adminClienteId, volverAGestion,
@@ -246,13 +276,13 @@ export default function App() {
   // estos datos) se trate como una sola transición.
   const [contratoAbierto, setContratoAbiertoInmediato] = useState<Contrato | null>(null);
   function setContratoAbierto(c: Contrato | null) {
-    startTransition(() => setContratoAbiertoInmediato(c));
+    comenzarCambioDePantalla(() => setContratoAbiertoInmediato(c));
   }
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
   const [adminClienteId, setAdminClienteIdInmediato] = useState<string | null>(null);
   function setAdminClienteId(id: string | null) {
-    startTransition(() => setAdminClienteIdInmediato(id));
+    comenzarCambioDePantalla(() => setAdminClienteIdInmediato(id));
   }
   // Cuando se vuelve con "atrás" desde Usuarios/Solicitudes/Analítica/
   // Paneles, hay que reabrir Centro de gestión (de donde salió esta
@@ -260,11 +290,11 @@ export default function App() {
   // AdminClientPicker.tsx (gestionInicial).
   const [volverAGestion, setVolverAGestionInmediato] = useState(false);
   function setVolverAGestion(v: boolean) {
-    startTransition(() => setVolverAGestionInmediato(v));
+    comenzarCambioDePantalla(() => setVolverAGestionInmediato(v));
   }
   const [adminVistaCliente, setAdminVistaClienteInmediato] = useState(false);
   function setAdminVistaCliente(v: boolean | ((activa: boolean) => boolean)) {
-    startTransition(() => setAdminVistaClienteInmediato(v));
+    comenzarCambioDePantalla(() => setAdminVistaClienteInmediato(v));
   }
 
   // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
