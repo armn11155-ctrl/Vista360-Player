@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { hoyEnPeru } from "../utils/fechas";
@@ -211,12 +211,27 @@ function useResumen(clienteId: string): ResumenState {
  *  aplicación salvo la pestaña de historial. */
 export function useContratos(clienteId: string): ContratosState {
   const state = useResumen(clienteId);
-  if (state.status !== "ready") return state;
-  const hoy = hoyEnPeru();
-  return {
-    status: "ready",
-    contratos: state.datos.contratos.filter((c) => String(c.fin ?? "") >= hoy),
-  };
+  // useMemo NO es un lujo aquí: es lo que evita un bucle de renderizado.
+  //
+  // .filter() crea un array NUEVO cada vez. Ese array viaja hasta las
+  // dependencias del efecto de useNotificaciones, que al correr hace
+  // setState, que provoca otro render, que crea otro array distinto, que
+  // vuelve a disparar el efecto... para siempre.
+  //
+  // Y el sintoma es de los peores: no hay error, no hay pantalla rota,
+  // el DOM ni se mueve (React re-renderiza y produce lo mismo). Lo unico
+  // que se ve es que las TRANSICIONES dejan de completarse -- son
+  // interrumpibles, y un bucle de renders las interrumpe sin descanso.
+  // O sea: pulsas un boton de la barra inferior y no pasa nada, pero el
+  // menu lateral (que no usa transicion) sigue abriendo perfectamente.
+  return useMemo(() => {
+    if (state.status !== "ready") return state;
+    const hoy = hoyEnPeru();
+    return {
+      status: "ready" as const,
+      contratos: state.datos.contratos.filter((c) => String(c.fin ?? "") >= hoy),
+    };
+  }, [state]);
 }
 
 /**
@@ -228,8 +243,11 @@ export function useContratos(clienteId: string): ContratosState {
  */
 export function useContratosHistoricos(clienteId: string, activo: boolean): ContratosState {
   const state = useResumen(activo ? clienteId : "");
-  if (state.status !== "ready") return state;
-  return { status: "ready", contratos: state.datos.contratos };
+  // Mismo motivo que arriba: el objeto de vuelta debe ser estable.
+  return useMemo(() => {
+    if (state.status !== "ready") return state;
+    return { status: "ready" as const, contratos: state.datos.contratos };
+  }, [state]);
 }
 
 /**
@@ -241,7 +259,9 @@ export function useContratosHistoricos(clienteId: string, activo: boolean): Cont
  */
 export function useSolicitudesDelCliente(clienteId: string): SolicitudesDelClienteState {
   const state = useResumen(clienteId);
-  if (state.status === "loading") return state;
-  if (state.status === "error") return { status: "error", message: state.message };
-  return { status: "ready", solicitudes: state.datos.solicitudes };
+  return useMemo(() => {
+    if (state.status === "loading") return state;
+    if (state.status === "error") return { status: "error" as const, message: state.message };
+    return { status: "ready" as const, solicitudes: state.datos.solicitudes };
+  }, [state]);
 }

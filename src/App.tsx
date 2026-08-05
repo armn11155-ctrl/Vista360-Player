@@ -1,6 +1,11 @@
-import { lazy, Suspense, startTransition, useEffect, useState, useTransition } from "react";
+import { lazy, Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
 import { pantallaLazy, recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
+
+/** Arrays vacios COMPARTIDOS. Un `[]` escrito en el render es un objeto
+ *  nuevo cada vez, y basta con eso para disparar efectos en bucle. */
+const SIN_CONTRATOS: Contrato[] = [];
+const SIN_SOLICITUDES: SolicitudCampana[] = [];
 
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
@@ -33,7 +38,7 @@ import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
 import { useSolicitudesPendientes } from "./hooks/useSolicitudesCampana";
 import { useAvatarPropio } from "./hooks/useAvatarPropio";
-import type { Contrato } from "./types";
+import type { Contrato, SolicitudCampana } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
 import { cargarLeaflet } from "./utils/leaflet";
 
@@ -526,11 +531,21 @@ function AuthenticatedApp({
 }: AuthenticatedProps) {
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
-  const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
+  // VACIO ESTABLE. `? x : []` crea un array nuevo en CADA render, y ese
+  // array es dependencia del efecto de useNotificaciones: efecto ->
+  // setState -> render -> array nuevo -> efecto... Un bucle infinito sin
+  // ningun error visible. Ver el comentario largo en useContratos.ts.
+  const contratos = useMemo(
+    () => (contratosState.status === "ready" ? contratosState.contratos : SIN_CONTRATOS),
+    [contratosState]
+  );
   // Las solicitudes salen del MISMO documento resumen que las campanas:
   // no cuestan ninguna lectura extra.
   const solicitudesCliente = useSolicitudesDelCliente(clienteId);
-  const misSolicitudes = solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : [];
+  const misSolicitudes = useMemo(
+    () => (solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : SIN_SOLICITUDES),
+    [solicitudesCliente]
+  );
   const notifState = useNotificaciones(clienteId, contratos, misSolicitudes);
   const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
   // Igual que en el selector: para el contador de la barra lateral
