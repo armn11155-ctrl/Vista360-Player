@@ -1,0 +1,52 @@
+# Descarga las reglas de seguridad que están AHORA en producción y las
+# deja como artefacto, para poder compararlas con firestore.rules.
+#
+# Por qué hace falta: las reglas nunca estuvieron versionadas -- vivían
+# solo en la consola de Firebase. Sin saber qué dicen no se puede
+# afirmar que la aplicación sea segura: son la última línea de defensa,
+# la que se aplica aunque alguien llame a Firestore directamente desde
+# la consola del navegador, saltándose la aplicación entera.
+#
+# SOLO LEE. No publica ni modifica nada, así que se puede lanzar cuando
+# se quiera sin ningún riesgo.
+name: 🔍 Auditar reglas de Firestore (solo lectura)
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  auditar:
+    name: Descargar y revisar las reglas en producción
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Instalar dependencia del script
+        run: npm install google-auth-library --no-save
+
+      - name: Descargar las reglas actuales
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/descargar-reglas-firestore.mjs /tmp/reglas-en-produccion.rules
+
+      # Comparación con las del repositorio. `diff` devuelve 1 si hay
+      # diferencias, y eso NO debe marcar el trabajo en rojo: al día de
+      # hoy se espera que difieran (las del repo aún no se han
+      # publicado). Lo que interesa es poder verlas.
+      - name: Comparar con las del repositorio
+        run: |
+          echo "=== DIFERENCIAS (izquierda: producción · derecha: repositorio) ==="
+          diff -u /tmp/reglas-en-produccion.rules firestore.rules || true
+
+      - name: Guardar como artefacto
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: reglas-firestore-en-produccion
+          path: /tmp/reglas-en-produccion.rules
+          retention-days: 14
+          if-no-files-found: warn

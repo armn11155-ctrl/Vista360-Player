@@ -86,3 +86,40 @@ jobs:
       - name: Comprobar tipos del backend
         working-directory: functions
         run: npx tsc --noEmit -p tsconfig.json
+
+  reglas:
+    name: Reglas de Firestore (ataques reales contra el emulador)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      # El emulador de Firestore es un programa Java. Es la única razón
+      # por la que estos tests no corren en la suite normal: exigir Java
+      # instalado para lanzar `npm test` sería una molestia para
+      # cualquiera que solo quiera tocar la interfaz.
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar Firebase CLI (trae el emulador)
+        run: npm install -g firebase-tools
+
+      # `emulators:exec` levanta el emulador, corre el comando y lo apaga
+      # solo -- si el comando falla, el job falla. Se usa un proyecto
+      # inventado (demo-) para que el emulador no toque NADA real: no
+      # pide credenciales y nunca se conecta al proyecto de producción.
+      - name: Atacar las reglas contra el emulador
+        run: |
+          firebase emulators:exec \
+            --only firestore \
+            --project demo-vista360-reglas \
+            "npm run test:reglas"

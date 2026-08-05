@@ -48,5 +48,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // Los tests de src/seguridad/ atacan las reglas de Firestore contra
+    // el emulador de verdad, así que necesitan Java y el emulador
+    // levantado. Se dejan fuera de la suite normal (que tiene que poder
+    // correr en cualquier máquina, sin nada instalado) y corren en su
+    // propio job del CI, con `npm run test:reglas`.
+    exclude: ["node_modules/**", "src/seguridad/**"],
   },
 });
