@@ -7,7 +7,7 @@ import {
   initializeTestEnvironment,
   type RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where } from "firebase/firestore";
 
 /**
  * ESCENARIOS DE ATAQUE contra las reglas de Firestore, ejecutados de
@@ -64,6 +64,17 @@ beforeEach(async () => {
     await setDoc(doc(db, "invitacionesPortal/i1"), { clienteId: "empresa-a", email: "a@a.com" });
   });
 });
+
+/**
+ * Cuenta con sesión de Firebase pero SIN ficha en portalUsers.
+ *
+ * Es el escenario que antes abría la puerta grande: las reglas viejas
+ * tenían isHuman() = "tiene sesión y NO es cuenta de portal", y a eso le
+ * daban acceso de administrador del ERP (gastos, sueldos, proveedores,
+ * editar clientes, borrar contratos). Bastaba con conseguir una cuenta
+ * cualquiera del proyecto para tenerlo todo.
+ */
+const sinFichaDePortal = () => entorno.authenticatedContext("uid-desconocido").firestore();
 
 const comoClienteA = () => entorno.authenticatedContext("uid-cliente-a").firestore();
 const comoClienteB = () => entorno.authenticatedContext("uid-cliente-b").firestore();
@@ -232,6 +243,97 @@ describe("Lo que SÍ debe seguir funcionando (que la seguridad no rompa la app)"
   it("un cliente NO puede marcar sus propias solicitudes como revisadas", async () => {
     await assertFails(
       updateDoc(doc(comoClienteB(), "solicitudesCampana/s-de-b"), { estado: "Revisada" })
+    );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe("ATAQUE 6: la puerta trasera de isHuman() (cuenta sin ficha de portal)", () => {
+  /**
+   * Antes, cualquier cuenta de Firebase sin documento en portalUsers era
+   * tratada como dueña del ERP. Si el registro por correo estuviera
+   * abierto en Authentication, cualquiera podía crearse una cuenta y
+   * quedarse con todo. Estos tests comprueban que esa vía está cerrada.
+   */
+
+  it("no puede leer campañas de nadie", async () => {
+    await assertFails(getDoc(doc(sinFichaDePortal(), "contratos/c-de-a")));
+  });
+
+  it("no puede leer clientes", async () => {
+    await assertFails(getDoc(doc(sinFichaDePortal(), "clientes/empresa-a")));
+  });
+
+  it("no puede leer perfiles ajenos", async () => {
+    await assertFails(getDoc(doc(sinFichaDePortal(), "portalUsers/uid-cliente-a")));
+  });
+
+  it("no puede borrar una campaña", async () => {
+    await assertFails(deleteDoc(doc(sinFichaDePortal(), "contratos/c-de-a")));
+  });
+
+  it("no puede editar la ficha de un cliente", async () => {
+    await assertFails(updateDoc(doc(sinFichaDePortal(), "clientes/empresa-a"), { empresa: "Mío" }));
+  });
+
+  it("no puede tocar el inventario de paneles", async () => {
+    await assertFails(updateDoc(doc(sinFichaDePortal(), "paneles/p1"), { estado: "Mantenimiento" }));
+  });
+
+  it("no puede leer facturas", async () => {
+    await assertFails(getDoc(doc(sinFichaDePortal(), "facturas/f-de-b")));
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe("ATAQUE 7: colecciones del ERP retirado", () => {
+  /**
+   * gastos, proveedores, sueldos, configuracion y config eran del ERP
+   * Vista360, que ya no se usa. Los datos siguen en Firestore, pero no
+   * deben ser accesibles desde ningún navegador.
+   */
+  const coleccionesRetiradas = ["gastos", "proveedores", "sueldos", "configuracion", "config", "solicitudesWeb"];
+
+  it.each(coleccionesRetiradas)("nadie puede leer «%s»", async (col) => {
+    await assertFails(getDoc(doc(comoClienteA(), `${col}/x`)));
+    await assertFails(getDoc(doc(comoGerente(), `${col}/x`)));
+    await assertFails(getDoc(doc(sinFichaDePortal(), `${col}/x`)));
+  });
+
+  it.each(coleccionesRetiradas)("nadie puede escribir en «%s»", async (col) => {
+    await assertFails(setDoc(doc(comoGerente(), `${col}/x`), { a: 1 }));
+    await assertFails(setDoc(doc(sinFichaDePortal(), `${col}/x`), { a: 1 }));
+  });
+
+  it("el formulario público de la web ya no puede crear solicitudes", async () => {
+    // Antes solicitudesWeb aceptaba creación SIN sesión (la web pública).
+    await assertFails(
+      setDoc(doc(sinSesion(), "solicitudesWeb/nueva"), {
+        contacto: "X", empresa: "Y", celular: "9", email: "a@b.c",
+        panelInteres: "", notas: "", tipo: "Prospecto",
+        estado: "En contacto", origen: "web",
+      })
+    );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe("Concesiones retiradas: funciones que no existen en la app", () => {
+  it("un cliente NO puede calificar su campaña (esa función no existe)", async () => {
+    await assertFails(
+      updateDoc(doc(comoClienteA(), "contratos/c-de-a"), { calificacion: 5 })
+    );
+  });
+
+  it("un cliente NO puede adjuntar comprobantes a una solicitud (no existe)", async () => {
+    await assertFails(
+      updateDoc(doc(comoClienteB(), "solicitudesCampana/s-de-b"), { comprobantePagoUrl: "x" })
+    );
+  });
+
+  it("el personal NO puede confirmar pagos por esta vía (no existe)", async () => {
+    await assertFails(
+      updateDoc(doc(comoGerente(), "solicitudesCampana/s-de-b"), { pagoConfirmado: true })
     );
   });
 });

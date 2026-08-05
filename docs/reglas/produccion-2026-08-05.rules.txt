@@ -1,0 +1,101 @@
+# COPIA DE SEGURIDAD — reglas que estaban publicadas el 5 de agosto de 2026
+#
+# Descargadas con el workflow "Auditar reglas de Firestore (solo lectura)"
+# ANTES de simplificarlas. Sirve como vuelta atrás: si algo se rompe tras
+# publicar las nuevas, se pega este contenido en la consola de Firebase
+# (Firestore -> Reglas -> Publicar) y todo vuelve a como estaba.
+#
+# Nota: estas reglas cubrían también el ERP (gastos, proveedores, sueldos,
+# configuracion) y facturacion-web, que ya no se usan.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function esCuentaDePortal() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/portalUsers/$(request.auth.uid));
+    }
+    function clienteIdDelPortal() {
+      return get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.clienteId;
+    }
+    function esAdminPortal() {
+      return esCuentaDePortal() &&
+        get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isHuman() {
+      return request.auth != null && !esCuentaDePortal();
+    }
+    function isAllowed() {
+      let cfg = get(/databases/$(database)/documents/config/allowedEmails);
+      return isHuman() && cfg != null && request.auth.token.email in cfg.data.emails;
+    }
+    function isOwner() {
+      return request.auth != null &&
+        request.auth.token.email in ['armn.101@hotmail.com','armn.11155@gmail.com'];
+    }
+    match /configuracion/{id} { allow read, write: if isOwner(); }
+    match /paneles/{id} {
+      allow read: if isHuman() || esCuentaDePortal();
+      allow write: if isHuman() ||
+        (esAdminPortal() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado']));
+    }
+    match /clientes/{id} {
+      allow read: if isHuman() || esAdminPortal() || (esCuentaDePortal() && id == clienteIdDelPortal());
+      allow write: if isHuman();
+    }
+    match /contratos/{id} {
+      allow read: if isHuman() || esAdminPortal() ||
+        (esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal());
+      allow create: if isHuman() || (esAdminPortal() && esContratoAdminValido(request.resource.data));
+      allow update: if isHuman() ||
+        (esAdminPortal() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['fotos_campania'])) ||
+        (esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal() &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['calificacion','calificacionComentario','calificacionFecha']));
+      allow delete: if isHuman();
+    }
+    match /gastos/{id}      { allow read, write: if isHuman(); }
+    match /proveedores/{id} { allow read, write: if isHuman(); }
+    match /config/{docId}   { allow read: if isHuman(); allow write: if isAllowed(); }
+    match /facturas/{id} {
+      allow read: if isAllowed() || esAdminPortal() ||
+        (esCuentaDePortal() && resource.data.cliente_doc ==
+          get(/databases/$(database)/documents/clientes/$(clienteIdDelPortal())).data.ruc);
+      allow write: if isAllowed();
+    }
+    match /invitacionesPortal/{id} { allow read: if esAdminPortal(); allow write: if false; }
+    match /sueldos/{id} { allow read, write: if isHuman(); }
+    function soloActualizaAnalitica() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['lastLogin','lastLoginCount','pantallasVisitadas']);
+    }
+    match /portalUsers/{uid} {
+      allow read: if isHuman() || esAdminPortal() || (request.auth != null && request.auth.uid == uid);
+      allow write: if isHuman();
+      allow update: if request.auth != null && request.auth.uid == uid && soloActualizaAnalitica();
+    }
+    match /solicitudesCampana/{id} {
+      allow read: if isHuman() ||
+        (esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal()) || esAdminPortal();
+      allow create: if (esCuentaDePortal() && esSolicitudCampanaValida(request.resource.data))
+                   || (esAdminPortal() && esSolicitudCampanaAdminValida(request.resource.data));
+      allow update: if isHuman() ||
+        (esAdminPortal() && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['estado','estadoActualizadoEn','pagoConfirmado'])) ||
+        (esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal() &&
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['comprobantePagoUrl','comprobantePagoFecha']));
+      allow delete: if isHuman();
+    }
+    match /informesCliente/{id} {
+      allow read: if isHuman() || esAdminPortal() ||
+        (esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal());
+      allow write: if isHuman();
+    }
+    match /solicitudesWeb/{id} {
+      allow read, update, delete: if isHuman();
+      allow create: if esSolicitudValida(request.resource.data);
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

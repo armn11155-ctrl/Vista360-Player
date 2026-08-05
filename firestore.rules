@@ -1,149 +1,149 @@
 rules_version = '2';
 
 // ─────────────────────────────────────────────────────────────────────
-//  Reglas de seguridad de Firestore — Vista360 Player
+//  Vista360 Player — reglas de seguridad de Firestore
 //
-//  Son la ÚLTIMA línea de defensa. No dependen de que el frontend se
-//  comporte bien: alguien puede abrir la consola del navegador y llamar
-//  a Firestore directamente con su sesión, saltándose la app entera.
-//  Lo que se permita acá es lo que de verdad se puede hacer.
+//  Basadas en las que estaban publicadas el 5 de agosto de 2026 (copia
+//  íntegra en docs/reglas/produccion-2026-08-05.rules.txt, que sirve de
+//  vuelta atrás), simplificadas tras confirmar que el ERP Vista360 y
+//  facturacion-web ya no se usan.
 //
-//  PRINCIPIO: el navegador LEE lo suyo y no ESCRIBE casi nada. Todas las
-//  modificaciones importantes pasan por Cloud Functions, que corren con
-//  el Admin SDK y por tanto se saltan estas reglas -- por eso pueden ser
-//  tan estrictas sin romper nada.
+//  EL CAMBIO DE FONDO: se elimina isHuman().
 //
-//  Derivadas del uso REAL del código, no escritas de memoria: se
-//  inventariaron todas las lecturas y escrituras del navegador
-//  (7 colecciones se leen, 1 se escribe). Hay un test que comprueba que
-//  ese inventario siga coincidiendo con estas reglas
-//  (src/logica-negocio/reglasFirestore.test.ts).
+//  Esa función decía "tiene sesión y NO tiene ficha en portalUsers", y
+//  concedía acceso de administrador a gastos, sueldos, proveedores,
+//  edición de clientes y borrado de contratos. O sea: CUALQUIER cuenta
+//  de Firebase sin ficha de portal era tratada como dueño del ERP. Se
+//  sostenía en que nadie más pudiera crear una cuenta -- si el registro
+//  por correo estuviera abierto en Authentication, cualquiera podía
+//  entrar y quedarse con todo. Ahora que el ERP no se usa, esa puerta no
+//  le sirve a nadie y solo era superficie de ataque: se cierra.
+//
+//  PRINCIPIO: el navegador LEE lo suyo y NO ESCRIBE nada, salvo una
+//  única excepción acotada. Todo lo demás pasa por Cloud Functions, que
+//  usan el Admin SDK y no pasan por estas reglas -- por eso pueden ser
+//  tan estrictas sin romper la aplicación.
+//
+//  Verificado contra el código: el navegador hace exactamente UNA
+//  escritura directa (marcar una solicitud como revisada). Las
+//  concesiones que había para calificar campañas y subir comprobantes
+//  de pago se retiran: esas funciones no existen en la aplicación.
 // ─────────────────────────────────────────────────────────────────────
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Ayudas ──────────────────────────────────────────────────────
+    // ── Quién es quién ──────────────────────────────────────────────
 
-    function haIniciadoSesion() {
-      return request.auth != null;
+    /** Tiene sesión Y ficha en portalUsers (cliente o personal). */
+    function esCuentaDePortal() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/portalUsers/$(request.auth.uid));
     }
 
-    // El perfil de quien pide. Es una lectura extra por consulta, pero es
-    // la única forma de conocer su rol y su cliente sin confiar en datos
-    // que mande el propio navegador.
-    function perfil() {
-      return get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data;
+    /** A qué cliente pertenece quien pide. */
+    function clienteIdDelPortal() {
+      return get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.clienteId;
     }
 
-    function tienePerfil() {
-      return haIniciadoSesion()
-        && exists(/databases/$(database)/documents/portalUsers/$(request.auth.uid));
+    /** Personal de Vista360 ("admin" es el nombre histórico del Gerente). */
+    function esAdminPortal() {
+      return esCuentaDePortal() &&
+        get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Personal de Vista360 (gerente o trabajador). Ojo: "admin" es el
-    // nombre histórico del rol de Gerente en portalUsers.
-    function esInterno() {
-      return tienePerfil() && (perfil().role == 'admin' || perfil().role == 'trabajador');
+    /** ¿Este documento es del cliente que lo pide? */
+    function esDeMiCliente() {
+      return esCuentaDePortal() && resource.data.cliente_id == clienteIdDelPortal();
     }
 
-    // El cliente al que pertenece quien pide. Null si es personal interno.
-    function miClienteId() {
-      return tienePerfil() ? perfil().clienteId : null;
-    }
-
-    function esMiCliente(clienteId) {
-      return miClienteId() == clienteId;
-    }
-
-    // ── portalUsers ─────────────────────────────────────────────────
-    // Acá vive el campo `role`. Si el navegador pudiera escribir, alguien
-    // podría ponerse role:'admin' y entrar como administrador de todos
-    // los clientes. Por eso: escritura CERRADA del todo.
-    // El registro de accesos y visitas pasa por las Cloud Functions
-    // registrarAcceso/registrarVisita (ver useRegistrarAcceso.ts).
+    // ── portalUsers: acá vive el campo `role` ───────────────────────
+    // Escritura CERRADA del todo. Antes el navegador podía actualizar
+    // los campos de analítica (lastLogin, pantallasVisitadas); ya no
+    // hace falta: desde el 5 de agosto eso pasa por las Cloud Functions
+    // registrarAcceso/registrarVisita. Cerrarlo elimina cualquier duda
+    // sobre si `role` podría tocarse por algún resquicio.
     match /portalUsers/{uid} {
-      // Cada quien lee su propio perfil (de ahí sale su rol al entrar).
-      // El personal interno lee todos: la pantalla de Analítica lista
-      // los accesos de los clientes.
-      allow read: if haIniciadoSesion() && (request.auth.uid == uid || esInterno());
+      allow read: if esAdminPortal() || (request.auth != null && request.auth.uid == uid);
       allow write: if false;
     }
 
-    // ── clientes ────────────────────────────────────────────────────
-    match /clientes/{clienteId} {
-      // El cliente ve su propia ficha; el personal interno, todas (el
-      // selector de clientes del admin las lista).
-      allow read: if haIniciadoSesion() && (esMiCliente(clienteId) || esInterno());
+    // ── Datos del cliente ───────────────────────────────────────────
+
+    match /clientes/{id} {
+      allow read: if esAdminPortal() || (esCuentaDePortal() && id == clienteIdDelPortal());
       allow write: if false; // crearClienteNuevo / actualizarClienteInfo
     }
 
-    // ── contratos (campañas) ────────────────────────────────────────
-    match /contratos/{contratoId} {
-      // Un cliente solo puede ver SUS campañas. Sin esto, cambiando el
-      // cliente_id de la consulta se verían las de la competencia:
-      // fechas, paneles y montos.
-      allow read: if haIniciadoSesion()
-        && (esInterno() || esMiCliente(resource.data.cliente_id));
+    match /contratos/{id} {
+      allow read: if esAdminPortal() || esDeMiCliente();
       allow write: if false; // crearContrato / actualizarContrato / eliminarContrato
     }
 
-    // ── facturas ────────────────────────────────────────────────────
-    match /facturas/{facturaId} {
-      // Se consultan por cliente_id o por cliente_doc (el RUC), según de
-      // dónde vengan; se contemplan las dos.
-      allow read: if haIniciadoSesion()
-        && (esInterno()
-            || esMiCliente(resource.data.cliente_id)
-            || (tienePerfil()
-                && resource.data.cliente_doc ==
-                   get(/databases/$(database)/documents/clientes/$(miClienteId())).data.ruc));
-      allow write: if false; // crearFacturaAdmin / eliminarFactura / ...
+    match /informesCliente/{id} {
+      allow read: if esAdminPortal() || esDeMiCliente();
+      allow write: if false; // generarReporteCliente / marcarReporteVisto
     }
 
-    // ── paneles (inventario) ────────────────────────────────────────
-    match /paneles/{panelId} {
-      // Lectura abierta a cualquiera con sesión, a propósito: Cobertura
-      // le muestra a cada cliente TODO el inventario para que pueda
-      // pedir disponibilidad de otros puntos. No lleva datos sensibles
-      // (ubicación, tipo y estado), y de quién ocupa cada panel no se
-      // dice nada acá: eso sale de contratos, que sí está restringido.
-      allow read: if haIniciadoSesion();
-      allow write: if false; // crearPanel / actualizarPanel / eliminarPanel
+    // Las facturas se identifican por RUC (cliente_doc), que es como las
+    // generaba el sistema de facturación. La escritura queda cerrada:
+    // ya no se emiten desde ahí, y crearFacturaAdmin/eliminarFactura son
+    // Cloud Functions.
+    match /facturas/{id} {
+      allow read: if esAdminPortal() ||
+        (esCuentaDePortal() &&
+          resource.data.cliente_doc ==
+            get(/databases/$(database)/documents/clientes/$(clienteIdDelPortal())).data.ruc);
+      allow write: if false;
     }
 
-    // ── solicitudesCampana ──────────────────────────────────────────
-    match /solicitudesCampana/{solicitudId} {
-      allow read: if haIniciadoSesion()
-        && (esInterno() || esMiCliente(resource.data.cliente_id));
+    // ── Inventario ──────────────────────────────────────────────────
+    // Lectura para cualquier cuenta de portal, a propósito: Cobertura le
+    // muestra a cada cliente TODO el inventario para que pueda pedir
+    // disponibilidad. No lleva datos sensibles -- de quién ocupa cada
+    // panel no se dice nada acá, eso sale de contratos, que sí está
+    // restringido.
+    match /paneles/{id} {
+      allow read: if esCuentaDePortal();
+      allow write: if false; // crearPanel / actualizarPanel / eliminarPanel / recalcularEstadoPaneles
+    }
 
-      // ÚNICA escritura que hace el navegador en toda la app: el
-      // personal interno marca una solicitud como revisada/rechazada
-      // desde la pantalla de Solicitudes.
-      //
-      // Se acota a los DOS campos de estado. Sin ese límite, un
-      // trabajador podría reescribir el contenido de la solicitud
-      // (cliente, paneles, fechas) desde la consola del navegador.
-      // Crear y borrar siguen cerrados: van por Cloud Function.
-      allow update: if esInterno()
+    // ── Solicitudes de campaña ──────────────────────────────────────
+    // La ÚNICA escritura que hace el navegador en toda la aplicación:
+    // el personal marca una solicitud como revisada o rechazada.
+    // Acotada a los dos campos de estado -- sin ese límite se podría
+    // reescribir el contenido de la solicitud (cliente, paneles, fechas)
+    // desde la consola del navegador.
+    match /solicitudesCampana/{id} {
+      allow read: if esAdminPortal() || esDeMiCliente();
+      allow update: if esAdminPortal()
         && request.resource.data.diff(resource.data).affectedKeys()
              .hasOnly(['estado', 'estadoActualizadoEn'])
         && request.resource.data.estado in ['Pendiente', 'Revisada', 'Rechazada', 'Convertida'];
-
       allow create, delete: if false; // crearSolicitudCampana / eliminarSolicitudCampana
     }
 
-    // ── invitacionesPortal ──────────────────────────────────────────
-    match /invitacionesPortal/{invitacionId} {
-      // Solo personal interno: es la pantalla de Accesos.
-      allow read: if esInterno();
+    match /invitacionesPortal/{id} {
+      allow read: if esAdminPortal();
       allow write: if false; // crearClienteAcceso / administrarUsuarioPortal
     }
 
-    // ── Todo lo demás ───────────────────────────────────────────────
-    // Cerrado por defecto. Si mañana se agrega una colección nueva y se
-    // olvida ponerle regla, queda inaccesible desde el navegador -- que
-    // es el fallo seguro. Las Cloud Functions la seguirán viendo.
+    // ── Cierre por defecto ──────────────────────────────────────────
+    // Cubre a la vez tres cosas:
+    //
+    //  1. Las colecciones del ERP que ya no se usan (gastos, proveedores,
+    //     sueldos, configuracion, config) y el formulario de la web
+    //     pública (solicitudesWeb). Los datos NO se borran -- siguen en
+    //     Firestore por si alguna vez hacen falta -- pero dejan de ser
+    //     accesibles desde cualquier navegador. Si algún día hay que
+    //     recuperarlos, se hace con el Admin SDK, que no pasa por acá.
+    //
+    //  2. Las colecciones que la aplicación usa SOLO a través de Cloud
+    //     Functions (cotizaciones, solicitudesAccion): nunca se piden
+    //     desde el navegador, así que no necesitan permiso.
+    //
+    //  3. Cualquier colección futura a la que se olvide ponerle regla:
+    //     queda inaccesible, que es el fallo seguro.
     match /{document=**} {
       allow read, write: if false;
     }
