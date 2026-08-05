@@ -1,6 +1,6 @@
 import { lazy, Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
-import { useDetectorDeBucles } from "./hooks/useDetectorDeBucles";
+import { anotarRutaActual, useDetectorDeBucles } from "./hooks/useDetectorDeBucles";
 import { pantallaLazy, recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
 
 /** Arrays vacios COMPARTIDOS. Un `[]` escrito en el render es un objeto
@@ -270,6 +270,9 @@ export default function App() {
   function setView(v: View) {
     comenzarCambioDePantalla(() => setViewInmediato(v));
   }
+  // Solo el NOMBRE de la pantalla, para que el aviso de bucle diga dónde
+  // pasó. Nada de identificadores de cliente ni contenido.
+  anotarRutaActual(view);
   useRegistrarVisita(uid, view);
   // Estos 4 estados (contratoAbierto, adminClienteId, volverAGestion,
   // adminVistaCliente) casi siempre cambian JUNTO con la pantalla

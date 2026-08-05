@@ -82,6 +82,49 @@ function avisarSuscriptores(estado: PanelesDisponiblesState) {
 /** Deja la lista en caché y avisa a las pantallas, evitando trabajo de
  *  más cuando el contenido no cambió realmente (ver el comentario largo
  *  sobre el parpadeo de los pines, más abajo). */
+/**
+ * Avisa si el barrido diario dejó de correr.
+ *
+ * ES UN FALLO QUE NO SE VE. Si la tarea diaria se para --el secreto de
+ * GitHub caducó, alguien desactivó el workflow, GitHub desactiva las
+ * tareas programadas de un repositorio inactivo-- la aplicación sigue
+ * funcionando perfectamente. Simplemente deja de actualizarse el estado
+ * de los paneles: una campaña que terminó anoche sigue apareciendo como
+ * "Ocupado", y el cliente ve un panel libre marcado como tomado.
+ *
+ * Nadie se entera hasta que alguien lo nota por casualidad.
+ *
+ * Aquí SÍ vale medir por antigüedad, y es importante entender por qué:
+ * este documento lo reescribe el barrido TODOS los días, cambie algo o
+ * no. Así que si es viejo, el barrido no corrió. (El resumen de cada
+ * cliente es distinto: ese solo cambia cuando alguien escribe, y que sea
+ * viejo es perfectamente normal. Ahí la antigüedad no dice nada, y por
+ * eso no se vigila igual.)
+ *
+ * Coste: una resta de fechas cuando llega el documento. Nada.
+ */
+const DIAS_TOLERADOS = 2;
+let yaAvisoDelBarrido = false;
+
+function avisarSiElBarridoDejoDeCorrer(actualizadoEn: unknown): void {
+  if (yaAvisoDelBarrido || typeof actualizadoEn !== "string") return;
+  const cuando = Date.parse(actualizadoEn);
+  if (Number.isNaN(cuando)) return;
+  const dias = (Date.now() - cuando) / 86400000;
+  if (dias < DIAS_TOLERADOS) return;
+  yaAvisoDelBarrido = true;
+  console.error("[barrido diario detenido]", {
+    diasSinActualizar: Math.floor(dias),
+    queSignifica:
+      "El inventario agrupado de paneles lleva días sin regenerarse, y ese documento se reescribe " +
+      "a diario corra o no corra algo. El estado de los paneles esta congelado: una campana " +
+      "terminada puede seguir apareciendo como ocupada.",
+    queHacer:
+      "Revisar en GitHub Actions el workflow 'Sincronizar estado de paneles (diario)': lo mas " +
+      "probable es que este desactivado o que su secreto haya caducado.",
+  });
+}
+
 function publicarPaneles(paneles: Panel[]) {
   const cambio = !CACHE_PANELES || comparacionEstable(paneles) !== comparacionEstable(CACHE_PANELES);
   if (!cambio) return;
@@ -168,6 +211,7 @@ function iniciarEscuchaSiHaceFalta() {
         escucharColeccionDirecta();
         return;
       }
+      avisarSiElBarridoDejoDeCorrer(docSnap.data()?.actualizadoEn);
       const crudos = (docSnap.data()?.paneles ?? []) as Panel[];
       const paneles = ordenar(crudos);
       // Si el contenido es EXACTAMENTE el mismo que ya había en caché
