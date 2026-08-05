@@ -737,9 +737,37 @@ describe("publicar las reglas no puede fallar en silencio", () => {
     expect(comandos).not.toContain("set +e");
   });
 
-  it("si falla, el despliegue sale en rojo", () => {
-    expect(paso).toContain('exit "$codigo"');
+  it("si falla, se anota Y la ejecución acaba en rojo", () => {
+    // Pero NO se corta ahi. El fallo real es un 403 de la API de reglas
+    // (la cuenta de servicio no tiene ese rol), y cortar en seco dejaba
+    // sin desplegar las Cloud Functions, que no tienen nada que ver y sí
+    // son criticas. Se anota, sigue todo, y se marca rojo al final.
+    expect(paso).toContain("/tmp/reglas-fallaron");
     expect(paso).toContain("::error::");
+    expect(paso).not.toContain('exit "$codigo"');
+
+    const wfCompleto = readFileSync(
+      resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
+      "utf-8",
+    );
+    expect(wfCompleto).toContain("Marcar en rojo si las reglas no se publicaron");
+    const final = wfCompleto.slice(wfCompleto.indexOf("Marcar en rojo si las reglas"));
+    expect(final).toContain("exit 1");
+  });
+
+  it("el paso final va DESPUÉS de desplegar las funciones", () => {
+    const wfCompleto = readFileSync(
+      resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
+      "utf-8",
+    );
+    expect(wfCompleto.indexOf("--only functions:")).toBeLessThan(
+      wfCompleto.indexOf("Marcar en rojo si las reglas"),
+    );
+  });
+
+  it("un 403 explica que es un permiso y cómo darlo", () => {
+    // Es EL fallo que ocurrio de verdad y el mensaje generico no ayudaba.
+    expect(paso).toContain("roles/firebaserules.admin");
   });
 
   it("además se COMPRUEBA que lo publicado es lo del repositorio", () => {
