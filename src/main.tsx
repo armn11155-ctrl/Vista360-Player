@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DialogosProvider } from "./components/DialogosProvider";
@@ -34,15 +35,14 @@ bloquearZoomDeNavegador();
 // firebase.ts) para no volver a toparse con una copia vieja guardada. El
 // guard de sessionStorage evita un bucle infinito si por algún otro
 // motivo la recarga no alcanza a resolverlo.
-function recargarPorVersionDesactualizada() {
-  const YA_RECARGO = "vista360_recargo_por_chunk_viejo";
-  if (sessionStorage.getItem(YA_RECARGO)) return;
-  sessionStorage.setItem(YA_RECARGO, "1");
-  navigator.serviceWorker?.ready
-    .then((registro) => registro.active?.postMessage({ tipo: "limpiar-cache" }))
-    .catch(() => {})
-    .finally(() => window.location.reload());
-}
+// La implementacion vive en utils/pantallaLazy.ts, junto al lazy() que
+// tambien la usa. Aca solo se enchufan los dos eventos globales.
+//
+// SU GUARD ES POR TIEMPO, NO DE UNA SOLA VEZ. Antes era una marca en
+// sessionStorage que no se borraba nunca: si la primera recarga no
+// bastaba, quedaba puesta para toda la sesion y no se volvia a intentar
+// NUNCA. La app se quedaba atascada en la pantalla que ya tenia cargada,
+// sin error y sin poder navegar a ninguna otra.
 
 window.addEventListener("vite:preloadError", recargarPorVersionDesactualizada);
 

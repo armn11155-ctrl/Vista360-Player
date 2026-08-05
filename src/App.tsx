@@ -1,5 +1,6 @@
 import { lazy, Suspense, startTransition, useEffect, useState } from "react";
 import { envMissing } from "./config/env";
+import { pantallaLazy } from "./utils/pantallaLazy";
 import { usePortalAuth } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
@@ -38,30 +39,30 @@ import { cargarLeaflet } from "./utils/leaflet";
 // abrir el menú lateral, etc). Esto es lo que baja el peso del bundle
 // inicial: nadie descarga el código de "Cobertura" o "Analítica" solo
 // para ver "Inicio".
-const DetalleCampana = lazy(() => import("./components/screens/DetalleCampana"));
-const NuevaCampana = lazy(() => import("./components/screens/NuevaCampana"));
-const Cobertura = lazy(() => import("./components/screens/Cobertura"));
-const MisPantallas = lazy(() => import("./components/screens/MisPantallas"));
-const AnaliticaClientes = lazy(() => import("./components/screens/AnaliticaClientes"));
-const AprobacionesGerente = lazy(() => import("./components/screens/AprobacionesGerente"));
-const SolicitudesCampana = lazy(() => import("./components/screens/SolicitudesCampana"));
-const Accesos = lazy(() => import("./components/screens/Accesos"));
-const Facturas = lazy(() => import("./components/screens/Facturas"));
-const Notificaciones = lazy(() => import("./components/screens/Notificaciones"));
-const CrearCliente = lazy(() => import("./components/screens/CrearCliente"));
-const Paneles = lazy(() => import("./components/screens/Paneles"));
-const Ocupacion = lazy(() => import("./components/screens/Ocupacion"));
-const Cotizaciones = lazy(() => import("./components/screens/Cotizaciones"));
+const DetalleCampana = pantallaLazy(() => import("./components/screens/DetalleCampana"));
+const NuevaCampana = pantallaLazy(() => import("./components/screens/NuevaCampana"));
+const Cobertura = pantallaLazy(() => import("./components/screens/Cobertura"));
+const MisPantallas = pantallaLazy(() => import("./components/screens/MisPantallas"));
+const AnaliticaClientes = pantallaLazy(() => import("./components/screens/AnaliticaClientes"));
+const AprobacionesGerente = pantallaLazy(() => import("./components/screens/AprobacionesGerente"));
+const SolicitudesCampana = pantallaLazy(() => import("./components/screens/SolicitudesCampana"));
+const Accesos = pantallaLazy(() => import("./components/screens/Accesos"));
+const Facturas = pantallaLazy(() => import("./components/screens/Facturas"));
+const Notificaciones = pantallaLazy(() => import("./components/screens/Notificaciones"));
+const CrearCliente = pantallaLazy(() => import("./components/screens/CrearCliente"));
+const Paneles = pantallaLazy(() => import("./components/screens/Paneles"));
+const Ocupacion = pantallaLazy(() => import("./components/screens/Ocupacion"));
+const Cotizaciones = pantallaLazy(() => import("./components/screens/Cotizaciones"));
 // Estas seis estaban en el bundle inicial: ~2600 líneas que el navegador
 // descargaba para poder mostrar la pantalla de login, donde no se usa
 // ninguna. Ahora bajan cuando hacen falta, y precargarPantallas() las pide
 // apenas la app queda ociosa, así no se nota el cambio al abrirlas.
-const AdminClientPicker = lazy(() => import("./components/AdminClientPicker"));
-const AdminPerfil = lazy(() => import("./components/screens/AdminPerfil"));
-const MisCampanas = lazy(() => import("./components/screens/MisCampanas"));
-const Reportes = lazy(() => import("./components/screens/Reportes"));
-const Perfil = lazy(() => import("./components/screens/Perfil"));
-const OnboardingTour = lazy(() => import("./components/OnboardingTour"));
+const AdminClientPicker = pantallaLazy(() => import("./components/AdminClientPicker"));
+const AdminPerfil = pantallaLazy(() => import("./components/screens/AdminPerfil"));
+const MisCampanas = pantallaLazy(() => import("./components/screens/MisCampanas"));
+const Reportes = pantallaLazy(() => import("./components/screens/Reportes"));
+const Perfil = pantallaLazy(() => import("./components/screens/Perfil"));
+const OnboardingTour = pantallaLazy(() => import("./components/OnboardingTour"));
 
 /** Precarga en segundo plano (cuando el navegador está libre, sin
  *  competir con nada urgente) el código de TODAS las pantallas que

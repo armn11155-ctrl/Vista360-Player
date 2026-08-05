@@ -1,4 +1,4 @@
-const CACHE = "v360player-shell-v9";
+const CACHE = "v360player-shell-v10";
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -127,9 +127,15 @@ self.addEventListener("fetch", (event) => {
 // borra lo que ya quedo guardado de antes, asi que hace falta esto.
 self.addEventListener("message", (event) => {
   if (event.data && event.data.tipo === "limpiar-cache") {
-    event.waitUntil(
-      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-    );
+    const terminado = caches
+      .keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      // Contestar por el puerto que mando el cliente, si lo mando. Sin
+      // esto, quien limpia la cache antes de reintentar cargar una
+      // pantalla no tiene forma de saber CUANDO termino, y reintenta
+      // sobre la cache vieja -- que es justo lo que se venia a evitar.
+      .then(() => { try { event.ports && event.ports[0] && event.ports[0].postMessage({ ok: true }); } catch (e) {} });
+    event.waitUntil(terminado);
   }
 });
 
