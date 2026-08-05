@@ -86,10 +86,24 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
       // en soportes con cupo limitado (lona/mural/paradero: 1, unipolar:
       // 2) se revisa contra CUALQUIER cliente, y se bloquea recién cuando
       // ya hay tantas campañas cruzadas como cupos tiene el soporte.
-      const todosSnap = await tx.get(db.collection("contratos"));
-      const todos = todosSnap.docs
-        .filter((d) => d.id !== contratoId)
-        .map((d) => d.data() as ContratoFila);
+      // Mismo motivo que en crearContrato.ts (ver el comentario largo
+      // allá): esto era `tx.get(db.collection("contratos"))`, o sea
+      // leer TODO el historial de contratos cada vez que se edita una
+      // campaña. Una cuenta que solo crece con los años hasta volverse
+      // lenta y cara sin que nadie haya tocado nada. Ahora se traen
+      // solo los contratos de ESTOS paneles, con las dos consultas que
+      // cubren el formato nuevo (panel_ids) y el viejo (panel_id).
+      const relevantes = new Map<string, ContratoFila>();
+      for (const panelId of panelIds) {
+        const [porLista, porUnico] = await Promise.all([
+          tx.get(db.collection("contratos").where("panel_ids", "array-contains", panelId)),
+          tx.get(db.collection("contratos").where("panel_id", "==", panelId)),
+        ]);
+        [...porLista.docs, ...porUnico.docs].forEach((d) => relevantes.set(d.id, d.data() as ContratoFila));
+      }
+      // El contrato que se está editando no debe chocar consigo mismo.
+      relevantes.delete(contratoId);
+      const todos = Array.from(relevantes.values());
 
       for (const panelId of panelIds) {
         const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));

@@ -119,8 +119,38 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       // Para poder aplicar la regla de exclusividad hay que mirar los
       // contratos de TODOS los clientes, no solo los de este -- después
       // se filtra según la modalidad de cada panel.
-      const todosSnap = await tx.get(db.collection("contratos"));
-      const todos = todosSnap.docs.map((d) => d.data() as ContratoFila);
+      //
+      // OJO con no volver a leer la colección entera acá. Antes esto era
+      // `tx.get(db.collection("contratos"))`: cada campaña que se creaba
+      // leía TODOS los contratos que hubieran existido jamás. Con pocos
+      // meses de historial no se nota, pero es una cuenta que solo sube:
+      // al cabo de unos años, crear una campaña costaría leer miles de
+      // documentos -- más lento, más caro en cada llamada, y con más
+      // probabilidad de que la transacción tenga que reintentarse porque
+      // algo de todo lo leído cambió mientras tanto. Un día dejaría de
+      // funcionar sin que nadie hubiera tocado nada.
+      //
+      // Se traen solo los contratos que tocan ESTOS paneles: dos
+      // consultas por panel (formato nuevo panel_ids y formato viejo
+      // panel_id), unidas por id para no contar dos veces el mismo
+      // documento. Es el mismo patrón que ya usa recalcularEstadoPaneles
+      // en estadoPaneles.ts. Ninguna de las dos necesita un índice
+      // compuesto nuevo -- Firestore las resuelve con los índices de un
+      // solo campo que crea solo, así que esto no arrastra ningún paso
+      // manual de despliegue.
+      //
+      // El resultado ya no depende del volumen del negocio, sino del
+      // historial de esos paneles concretos: unas pocas decenas de
+      // documentos, aunque la empresa lleve diez años operando.
+      const relevantes = new Map<string, ContratoFila>();
+      for (const panelId of panelIds) {
+        const [porLista, porUnico] = await Promise.all([
+          tx.get(db.collection("contratos").where("panel_ids", "array-contains", panelId)),
+          tx.get(db.collection("contratos").where("panel_id", "==", panelId)),
+        ]);
+        [...porLista.docs, ...porUnico.docs].forEach((d) => relevantes.set(d.id, d.data() as ContratoFila));
+      }
+      const todos = Array.from(relevantes.values());
 
       for (const panelId of panelIds) {
         const panelSnap = await tx.get(db.doc(`paneles/${panelId}`));

@@ -55,3 +55,71 @@ export function estadoDesdeActivos(
   const idx = finsActivos.length - cupos;
   return { ocupado: true, libreDesde: sumarUnDia(ordenados[idx]) };
 }
+
+/** Forma mínima de un contrato para decidir cruces de fechas. Se declara
+ *  acá (y no se importa del tipo completo) para que este archivo siga
+ *  sin depender de nada. */
+export interface ContratoParaCruce {
+  cliente_id?: string;
+  panel_id?: string;
+  panel_ids?: string[];
+  inicio?: string;
+  fin?: string;
+  deleted?: boolean;
+}
+
+/** Los paneles que ocupa un contrato, soportando tanto el formato viejo
+ *  (panel_id suelto) como el nuevo (panel_ids). Equivalente a
+ *  panelesDeContrato() del frontend. */
+export function panelesDelContrato(c: ContratoParaCruce): string[] {
+  if (c.panel_ids && c.panel_ids.length > 0) return c.panel_ids;
+  return c.panel_id ? [c.panel_id] : [];
+}
+
+/** ¿Dos rangos de fechas "YYYY-MM-DD" se pisan? Inclusivo en ambos
+ *  extremos: si una campaña termina el mismo día que empieza otra, la
+ *  lona no se puede cambiar a mitad de día, así que cuenta como cruce. */
+export function seCruzan(aInicio: string, aFin: string, bInicio: string, bFin: string): boolean {
+  return bInicio <= aFin && aInicio <= bFin;
+}
+
+/**
+ * De una lista de contratos, cuáles chocan con las fechas pedidas en un
+ * panel concreto. Es la regla que impide vender dos veces el mismo
+ * espacio físico, así que se aísla acá para poder probarla sin Firestore.
+ *
+ * `soporteLimitado` distingue los dos modelos de negocio:
+ *  - false (pantalla LED): rota anuncios en bucle, varios clientes
+ *    conviven; solo molesta que el MISMO cliente se cruce consigo mismo.
+ *  - true (lona/mural/paradero/unipolar): es una pieza física instalada,
+ *    así que cuenta el cruce con CUALQUIER cliente.
+ */
+export function cruces(
+  contratos: ContratoParaCruce[],
+  opciones: {
+    panelId: string;
+    inicio: string;
+    fin: string;
+    clienteId: string;
+    soporteLimitado: boolean;
+    /** Contrato que se está editando: no debe chocar consigo mismo. */
+    excluirId?: string;
+  },
+  idDe: (c: ContratoParaCruce) => string | undefined = () => undefined
+): ContratoParaCruce[] {
+  return contratos.filter((c) => {
+    if (c.deleted || !c.inicio || !c.fin) return false;
+    if (opciones.excluirId && idDe(c) === opciones.excluirId) return false;
+    if (!opciones.soporteLimitado && String(c.cliente_id ?? "") !== opciones.clienteId) return false;
+    if (!seCruzan(opciones.inicio, opciones.fin, c.inicio, c.fin)) return false;
+    return panelesDelContrato(c).includes(opciones.panelId);
+  });
+}
+
+/** ¿Se llegó al tope del soporte? Con cupo limitado se bloquea recién
+ *  cuando ya hay tantas campañas cruzadas como cupos (1 en lona/mural/
+ *  paradero, 2 en unipolar). Sin cupo (LED), basta con un solo cruce
+ *  del propio cliente. */
+export function limiteAlcanzado(cantidadCruces: number, cupos: number): boolean {
+  return Number.isFinite(cupos) ? cantidadCruces >= cupos : cantidadCruces > 0;
+}
