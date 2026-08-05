@@ -203,7 +203,28 @@ function iniciarEscuchaSiHaceFalta() {
       // qué orden Firestore entregue los campos.
       publicarPaneles(paneles);
     },
-    alFallarLaEscucha
+    (err) => {
+      // CUALQUIER fallo del agregado cae a leer la colección, no solo el
+      // caso de "el documento no existe".
+      //
+      // Este respaldo estaba incompleto y rompió Cobertura en
+      // producción: el hook empezó a leer agregados/paneles, pero las
+      // reglas de Firestore publicadas todavía no conocían esa
+      // colección, así que la rechazaban. Un rechazo por permisos NO
+      // llega como "documento inexistente" -- llega acá, al manejador
+      // de error. Y como acá no se caía a la colección, el mapa se
+      // quedaba vacío con "No tienes permiso para hacer esto".
+      //
+      // La lección: el respaldo de una optimización tiene que cubrir
+      // que la optimización FALLE, no solo que todavía no esté lista.
+      // Ahora, pase lo que pase con el agregado, los paneles se leen.
+      console.warn(
+        "No se pudo leer el inventario agrupado; se lee la colección directamente. " +
+          "Revisa que las reglas de Firestore permitan leer agregados/paneles.",
+        err
+      );
+      escucharColeccionDirecta();
+    }
   );
 }
 

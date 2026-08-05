@@ -154,3 +154,29 @@ describe("caché local: la segunda visita no vuelve a pagar los mismos datos", (
     expect(configSinComentarios).toContain("experimentalAutoDetectLongPolling: true");
   });
 });
+
+describe("el respaldo del inventario cubre el FALLO, no solo la ausencia", () => {
+  const c = sinComentarios(hook("usePanelesDisponibles"));
+
+  it("cae a la colección si el documento agregado no existe", () => {
+    expect(c).toMatch(/if \(!docSnap\.exists\(\)\)[\s\S]{0,80}escucharColeccionDirecta\(\)/);
+  });
+
+  it("cae a la colección también si la lectura del agregado FALLA", () => {
+    // Este era el hueco que rompió Cobertura en producción: un rechazo
+    // por permisos no llega como "documento inexistente", llega al
+    // manejador de error. Sin respaldo ahí, el mapa se quedaba vacío
+    // con "No tienes permiso para hacer esto".
+    const desdeElAgregado = c.slice(c.indexOf('doc(db!, "agregados", "paneles")'));
+    const bloqueDeLaEscucha = desdeElAgregado.slice(0, desdeElAgregado.indexOf("function reiniciarEscucha"));
+    // DOS veces: una para "no existe" y otra para "falló". Con una sola
+    // faltaría justo el caso que rompió producción, y contar es lo único
+    // que distingue los dos escenarios de forma fiable.
+    const veces = (bloqueDeLaEscucha.match(/escucharColeccionDirecta\(\)/g) ?? []).length;
+    expect(veces).toBeGreaterThanOrEqual(2);
+  });
+
+  it("avisa en consola cuando usa el respaldo (para poder diagnosticarlo)", () => {
+    expect(c).toContain("console.warn");
+  });
+});
