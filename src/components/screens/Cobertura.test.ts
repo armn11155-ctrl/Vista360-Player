@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   contratoVigentePorPanel,
+  escapeHtml,
+  popupHtml,
   esPanelActivoCliente,
   esPanelContratable,
   esPanelDisponibleAhora,
@@ -197,5 +199,74 @@ describe("coherencia entre las tres funciones (que no se contradigan entre sí)"
 
   it.each(casos)("«$nombre»: si la etiqueta dice Ocupado, el pin nunca sale 'disponible'", ({ p }) => {
     if (estadoTexto(p) === "Ocupado") expect(estadoPinPanel(p)).not.toBe("disponible");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe("seguridad: el popup del mapa no puede ser usado para inyectar HTML", () => {
+  /**
+   * Leaflet arma sus popups con strings de HTML crudo, no con JSX, así
+   * que acá React NO protege sola como en el resto de la app: si un
+   * valor llegara sin escapar, cualquiera que pueda escribir el nombre
+   * o la dirección de un panel podría inyectar código que se ejecuta en
+   * el navegador de TODOS los clientes que abran Cobertura.
+   *
+   * Las comprobaciones se hacen sobre el HTML YA INTERPRETADO por el
+   * navegador, no buscando texto: un texto escapado sigue conteniendo
+   * la palabra "onerror" de forma totalmente inofensiva, así que buscar
+   * esa palabra daría falsas alarmas. Lo que importa de verdad es si el
+   * navegador llegó a CREAR un elemento o un atributo ejecutable.
+   */
+  const CARGA = '<img src=x onerror="alert(1)">';
+
+  function interpretar(html: string): HTMLElement {
+    const cont = document.createElement("div");
+    cont.innerHTML = html;
+    return cont;
+  }
+
+  function tieneAlgoEjecutable(cont: HTMLElement): boolean {
+    if (cont.querySelector("script, iframe, object, embed")) return true;
+    // Cualquier atributo tipo onerror/onclick/onmouseover inyectado.
+    return Array.from(cont.querySelectorAll("*")).some((el) =>
+      Array.from(el.attributes).some((a) => a.name.toLowerCase().startsWith("on"))
+    );
+  }
+
+  it("escapeHtml neutraliza los 5 caracteres peligrosos", () => {
+    expect(escapeHtml('<>&"\'')).toBe("&lt;&gt;&amp;&quot;&#39;");
+  });
+
+  it("un popup normal no contiene nada ejecutable (línea base)", () => {
+    expect(tieneAlgoEjecutable(interpretar(popupHtml(panel(), true)))).toBe(false);
+  });
+
+  const camposDeTexto: Array<{ campo: string; p: () => PanelConUso }> = [
+    { campo: "nombre", p: () => panel({ nombre: CARGA }) },
+    { campo: "dirección", p: () => panel({ direccion: CARGA }) },
+    { campo: "ciudad", p: () => panel({ direccion: "", ciudad: CARGA }) },
+    { campo: "tipo de soporte", p: () => panel({ tipo: CARGA as never }) },
+    { campo: "id del panel", p: () => panel({ id: '" onmouseover="alert(1)' }) },
+  ];
+
+  it.each(camposDeTexto)("inyectar por «$campo» no crea nada ejecutable", ({ p }) => {
+    expect(tieneAlgoEjecutable(interpretar(popupHtml(p(), true)))).toBe(false);
+  });
+
+  it.each(camposDeTexto)("inyectar por «$campo» no crea etiquetas nuevas", ({ p }) => {
+    const limpio = interpretar(popupHtml(panel(), true)).querySelectorAll("*").length;
+    const atacado = interpretar(popupHtml(p(), true)).querySelectorAll("*").length;
+    // Si el escape fallara, la carga agregaría al menos un <img> extra.
+    expect(atacado).toBeLessThanOrEqual(limpio);
+  });
+
+  it("el intento de inyección se muestra como TEXTO, no se ejecuta", () => {
+    const cont = interpretar(popupHtml(panel({ nombre: CARGA }), true));
+    expect(cont.textContent).toContain(CARGA);
+  });
+
+  it("sigue mostrando el contenido legítimo (el escape no rompe lo normal)", () => {
+    const cont = interpretar(popupHtml(panel({ nombre: "Mural Javier Prado" }), true));
+    expect(cont.textContent).toContain("Mural Javier Prado");
   });
 });

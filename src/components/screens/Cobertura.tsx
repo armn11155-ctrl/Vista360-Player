@@ -247,7 +247,19 @@ const DIAS_AVISO_RENOVACION = 10;
 /** El popup del pin se arma como HTML plano (Leaflet no acepta JSX) --
  *  escapamos nombre/direccion/ciudad porque vienen de datos cargados
  *  por el admin, no queremos que un "<" o "&" suelto rompa el markup. */
-function escapeHtml(value: string) {
+/** Escapa texto que va a caer dentro del HTML crudo del popup del mapa
+ *  (Leaflet arma esos popups con strings, no con JSX, así que React no
+ *  puede protegerlo solo como hace en el resto de la app).
+ *
+ *  REGLA: dentro de popupHtml, TODO valor interpolado pasa por acá --
+ *  incluidos los que hoy parecen inofensivos, como el id del panel.
+ *  Ese id lo genera Firestore y siempre es alfanumérico, así que hoy no
+ *  se puede inyectar nada por ahí; pero el día que alguien importe
+ *  paneles con ids propios (una migración, una carga masiva) se
+ *  convertiría en un agujero real, y nadie se acordaría de revisar este
+ *  archivo. Escaparlo igual no cuesta nada y cierra la pregunta para
+ *  siempre. Hay tests que lo verifican (Cobertura.test.ts). */
+export function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -269,7 +281,7 @@ function escapeHtml(value: string) {
  *  contrato, igual que en Mis Campañas) -- si el panel no tiene
  *  campaña asignada, se usa el id del panel como reemplazo, para que
  *  siempre se vea una foto en vez de un cuadro vacio. */
-function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
+export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   const nombre = escapeHtml(panel.nombre);
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
   const label = estadoTexto(panel);
@@ -331,13 +343,13 @@ function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
     ? ""
     : !contrato
     ? `
-        <button type="button" class="coverage-popup-action" data-cobertura-accion="disponibilidad" data-panel-id="${panel.id}">
+        <button type="button" class="coverage-popup-action" data-cobertura-accion="disponibilidad" data-panel-id="${escapeHtml(panel.id)}">
           ${libreDesde ? "Reservar para cuando se libere" : "Solicitar disponibilidad"}
         </button>
       `
     : enRenovacion
     ? `
-        <button type="button" class="coverage-popup-action" data-cobertura-accion="renovacion" data-panel-id="${panel.id}">
+        <button type="button" class="coverage-popup-action" data-cobertura-accion="renovacion" data-panel-id="${escapeHtml(panel.id)}">
           Solicitar renovación
         </button>
       `
