@@ -1,5 +1,5 @@
-import type { Contrato } from "../../types";
-import { useEffect } from "react";
+import type { Contrato, SolicitudCampana } from "../../types";
+import { useEffect, useMemo } from "react";
 import BackChevron from "../BackChevron";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
 import { usePushEstado } from "../../hooks/usePushEstado";
@@ -44,14 +44,21 @@ function tiempoRelativo(isoFecha: string): string {
   return d === 1 ? "Ayer" : `Hace ${d} días`;
 }
 
+/** Vacio compartido, ver el comentario de abajo. */
+const SIN_SOLICITUDES: SolicitudCampana[] = [];
+
 export default function Notificaciones({ clienteId, contratos, uid, onBack }: Props) {
   // Del mismo documento resumen que ya tiene la sesion: 0 lecturas.
   const solicitudesCliente = useSolicitudesDelCliente(clienteId);
-  const state = useNotificaciones(
-    clienteId,
-    contratos,
-    solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : []
+  // El `: []` iba ANTES en linea, aqui mismo. useNotificaciones lo usa
+  // como dependencia de su efecto, y ese efecto hace setState: array
+  // nuevo en cada render -> efecto -> setState -> render -> array nuevo.
+  // Bucle infinito, sin error y sin que el DOM se mueva.
+  const misSolicitudes = useMemo(
+    () => (solicitudesCliente.status === "ready" ? solicitudesCliente.solicitudes : SIN_SOLICITUDES),
+    [solicitudesCliente]
   );
+  const state = useNotificaciones(clienteId, contratos, misSolicitudes);
   const idsVisibles = state.status === "ready" ? state.notifs.map((n) => n.id).join("|") : "";
 
   useEffect(() => {

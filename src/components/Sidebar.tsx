@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode, useMemo } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
   IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
@@ -73,7 +73,11 @@ const ITEMS: {
 ];
 
 export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = true, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
-  const items = ITEMS.filter((it) => !it.adminOnly || isAdmin);
+  // useMemo OBLIGATORIO: `items` es dependencia del useLayoutEffect de
+  // abajo, y ese efecto llama a setPill con un OBJETO nuevo. Sin
+  // memoizar: efecto -> setPill -> render -> filter() da otro array ->
+  // efecto... Un bucle infinito sin ningun sintoma visible.
+  const items = useMemo(() => ITEMS.filter((it) => !it.adminOnly || isAdmin), [isAdmin]);
   // Si algún llamador todavía no pasa esInterno, se cae al criterio
   // viejo (isAdmin) para no romper nada.
   const identidadInterna = esInterno ?? isAdmin;

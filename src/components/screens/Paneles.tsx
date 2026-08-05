@@ -62,10 +62,18 @@ function numeroCoordenada(value: string): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/** Vacio compartido: un `[]` en el render es un objeto nuevo cada vez. */
+const SIN_PANELES: Panel[] = [];
+
 export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props) {
   const { confirmar } = useDialogos();
   const state = usePanelesDisponibles(true);
-  const panelesTodos = state.status === "ready" ? state.paneles : [];
+  // `: []` crea un array nuevo en cada render, y esto es dependencia del
+  // useMemo de abajo: sin memoizar, ese useMemo se recalcula siempre.
+  const panelesTodos = useMemo(
+    () => (state.status === "ready" ? state.paneles : SIN_PANELES),
+    [state]
+  );
   const [busqueda, setBusqueda] = useState("");
   // Busca por nombre, ciudad, tipo y dirección: cuando el inventario
   // crece, encontrar "el de la avenida" es más rápido escribiendo que

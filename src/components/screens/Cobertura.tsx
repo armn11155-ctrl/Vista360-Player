@@ -384,6 +384,9 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   `;
 }
 
+/** Vacio compartido: un `[]` en el render es un objeto nuevo cada vez. */
+const SIN_PANELES: Panel[] = [];
+
 export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onSolicitarPanel }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -405,7 +408,14 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   // (prop, ahora eliminada); ahora se trae la lista completa igual
   // que hace el admin en la pantalla Paneles.
   const panelesState = usePanelesDisponibles(true);
-  const todosPaneles = panelesState.status === "ready" ? panelesState.paneles : [];
+  // `: []` crea un array nuevo en cada render, y esto es dependencia del
+  // useMemo de abajo: sin memoizar, ese useMemo se recalcula siempre y no
+  // sirve de nada. (Aqui no hay bucle porque un useMemo no hace setState,
+  // pero es trabajo tirado en cada render de una pantalla con mapa.)
+  const todosPaneles = useMemo(
+    () => (panelesState.status === "ready" ? panelesState.paneles : SIN_PANELES),
+    [panelesState]
+  );
 
   const lista = useMemo<PanelConUso[]>(() => {
     const usados = contratoVigentePorPanel(contratos);
