@@ -74,7 +74,26 @@ export function useTareasPeriodicas(esPersonalInterno: boolean): void {
         }
 
         if (paradas.length === 0) return;
+
+        // "Nunca ha corrido" y "lleva días sin correr" NO son lo mismo, y
+        // confundirlos hace ruido: la primera vez que se despliega esto,
+        // ninguna tarea ha latido todavía y el aviso salta entero aunque
+        // no pase nada malo. Se separan para que el mensaje diga qué
+        // hacer en cada caso.
+        const nuncaCorrieron = paradas.filter((p) => p.dias === -1);
+        const seDetuvieron = paradas.filter((p) => p.dias !== -1);
+        const soloEstreno = seDetuvieron.length === 0;
+
         console.error("[tarea periódica detenida]", {
+          ...(soloEstreno
+            ? {
+                ojo:
+                  "Ninguna ha latido TODAVÍA. Si acabas de desplegar, es lo normal: cada tarea " +
+                  "deja su marca la primera vez que corre. Vuelve a mirar mañana. Si en 48 h " +
+                  "siguen diciendo lo mismo, entonces sí es que no están desplegadas.",
+                nuncaHanCorrido: nuncaCorrieron.length,
+              }
+            : {}),
           tareas: paradas.map((p) => ({
             nombre: p.tarea,
             diasSinCorrer: p.dias === -1 ? "nunca ha corrido" : p.dias,
