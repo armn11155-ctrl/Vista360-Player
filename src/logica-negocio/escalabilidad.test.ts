@@ -225,18 +225,30 @@ describe("campañas: en cada sesión solo se lee lo vigente", () => {
     readFileSync(resolve(__dirname, "../components/screens/MisCampanas.tsx"), "utf-8"),
   );
 
-  it("la consulta de cada sesión descarta el historial cerrado", () => {
-    // Era where("cliente_id","==",clienteId) a secas: TODAS las campañas
-    // que el cliente hubiera tenido nunca, en cada apertura de la app.
-    expect(contratos).toContain('where("fin", ">=", hoyEnPeru())');
+  it("las campañas se leen del resumen, no una por una", () => {
+    // Antes era una lectura por campaña en CADA sesión. Ahora es 1,
+    // tenga el cliente dos campañas o doscientas.
+    expect(contratos).toContain("`agregados/cliente-${clienteId}`");
   });
 
-  it("el historial solo se consulta bajo demanda", () => {
-    // useContratosHistoricos con activo=false debe pasar "" como
-    // clienteId, que es lo que corta la consulta antes de empezar.
+  it("el resumen guarda TODAS las campañas y el filtro por fecha va acá", () => {
+    // Guardar solo "las vigentes" haría que el documento dependiera del
+    // día de hoy: una campaña terminada anoche seguiría saliendo como
+    // activa hasta que alguien escribiera algo.
+    expect(contratos).toContain('c.fin ?? "") >= hoy');
+  });
+
+  it("UNA sola escucha por cliente, compartida", () => {
+    // App y Mis campañas piden lo mismo; dos onSnapshot sobre el mismo
+    // documento serían dos lecturas.
+    expect(contratos).toContain("suscriptores");
+    expect(contratos).toContain("if (suscriptores.size === 0) { detener(); clienteActual = \"\"; }");
+  });
+
+  it("el historial ya no cuesta ninguna lectura extra", () => {
+    // Sale del mismo documento que la sesión ya pagó.
     expect(contratos).toContain("useContratosHistoricos");
-    expect(contratos).toMatch(/activo \? clienteId : ""/);
-    expect(contratos).toContain('if (!clienteId || !db) { setState({ status: "ready", contratos: [] }); return; }');
+    expect(contratos).toMatch(/useResumen\(activo \? clienteId : ""\)/);
   });
 
   it("Mis campañas pide el historial SOLO en las pestañas que lo enseñan", () => {
@@ -272,29 +284,19 @@ describe("campañas: en cada sesión solo se lee lo vigente", () => {
   });
 });
 
-describe("respaldo si falta el índice de campañas", () => {
+describe("respaldo si el resumen del cliente no está", () => {
   const contratos = sinComentarios(readFileSync(resolve(HOOKS, "useContratos.ts"), "utf-8"));
 
-  it("si falta el índice se lee el historial completo, no se deja vacío", () => {
-    // Es LA pantalla principal del cliente. Quedarse sin ninguna campaña
-    // sería peor que pagar de más unos minutos.
-    expect(contratos).toContain('code === "failed-precondition"');
-    expect(contratos).toContain("escuchando = escuchar(false);");
+  it("cubre las DOS ramas: documento ausente y fallo de la escucha", () => {
+    // Cubrir solo una fue exactamente el fallo que dejó Cobertura en
+    // blanco en producción. Es LA pantalla principal del cliente.
+    const llamadas = (contratos.match(/leerColeccionDirecta\(\);/g) ?? []).length;
+    expect(llamadas).toBe(2);
   });
 
-  it("el respaldo no se reintenta en bucle", () => {
-    expect(contratos).toContain("if (conFiltroDeFecha && (err as { code?: string }).code");
-  });
-
-  it("un fallo de permisos SÍ se muestra como error", () => {
-    // Disfrazar cualquier fallo de "falta el índice" esconde problemas
-    // reales y encima dispara la consulta cara sin motivo.
-    const bloque = contratos.slice(contratos.indexOf("failed-precondition"));
-    expect(bloque).toContain('status: "error"');
-  });
-
-  it("se cancela la escucha vigente al desmontar, sea cual sea", () => {
-    expect(contratos).toContain("return () => { escuchando?.(); };");
+  it("el respaldo lee la colección, no deja la lista vacía", () => {
+    expect(contratos).toContain('collection(bd, "contratos")');
+    expect(contratos).toContain('where("cliente_id", "==", clienteId)');
   });
 });
 
@@ -375,9 +377,21 @@ describe("selector de clientes: sin crecimiento lineal", () => {
     expect(reglas).toContain("data.role in ['admin', 'trabajador']");
   });
 
+  it("REGLAS: un cliente solo puede leer SU propio resumen", () => {
+    // El id va en la RUTA del documento y se compara contra el clienteId
+    // que consta en portalUsers, no contra nada que mande el navegador:
+    // cambiar la URL no sirve de nada.
+    expect(reglas).toContain("documento == 'cliente-' + clienteIdDelPortal()");
+    // Y NO puede ser un `esCuentaDePortal()` suelto: eso dejaría a
+    // cualquier cliente leer el resumen de cualquier otro.
+    const bloque = reglas.slice(reglas.indexOf("documento.matches('cliente-.*')"));
+    expect(bloque.slice(0, 300)).toContain("clienteIdDelPortal()");
+  });
+
   it("REGLAS: agregados sigue cerrado a escritura desde el navegador", () => {
-    const bloque = reglas.slice(reglas.indexOf("match /agregados/"));
-    expect(bloque.slice(0, 800)).toContain("allow write: if false;");
+    const inicio = reglas.indexOf("match /agregados/");
+    const bloque = reglas.slice(inicio, reglas.indexOf("match /", inicio + 20));
+    expect(bloque).toContain("allow write: if false;");
   });
 });
 
@@ -410,5 +424,43 @@ describe("el agregado del selector se regenera desde TODOS los sitios que lo inv
     // Sin esto el contador se congela hasta el siguiente cambio manual.
     const sync = readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8");
     expect(sync).toContain("regenerarAgregadoClientes(db)");
+  });
+});
+
+describe("el resumen por cliente se regenera desde TODOS los sitios que lo invalidan", () => {
+  const OBLIGATORIAS = ["crearContrato", "actualizarContrato", "eliminarContrato"];
+  for (const nombre of OBLIGATORIAS) {
+    it(`${nombre} regenera el resumen del cliente`, () => {
+      expect(readFileSync(resolve(FUNCIONES, `${nombre}.ts`), "utf-8")).toContain(
+        "regenerarResumenCliente(db,",
+      );
+    });
+  }
+
+  it("el barrido diario los reconstruye todos (red de seguridad)", () => {
+    expect(readFileSync(resolve(FUNCIONES, "sincronizarEstadoPaneles.ts"), "utf-8")).toContain(
+      "regenerarResumenesDeTodos(db)",
+    );
+  });
+
+  it("las solicitudes NO entran en el resumen", () => {
+    // Se actualizan directamente desde el navegador del admin, sin pasar
+    // por ninguna función: un resumen que las incluyera se quedaría
+    // desfasado en cuanto marcara una como revisada, sin forma de
+    // enterarse. Si algún día se cierra ese camino, se podrán añadir.
+    const agregado = readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8");
+    expect(agregado).not.toContain('collection("solicitudesCampana")');
+  });
+
+  it("el resumen nunca hace fallar la operación que lo dispara", () => {
+    const agregado = sinComentarios(readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8"));
+    expect(agregado).toContain("catch (error)");
+    expect(agregado).not.toContain("throw");
+  });
+
+  it("avisa antes de acercarse al límite de 1 MB", () => {
+    const agregado = readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8");
+    expect(agregado).toMatch(/AVISO_CONTRATOS = \d+/);
+    expect(agregado).toContain("console.warn");
   });
 });

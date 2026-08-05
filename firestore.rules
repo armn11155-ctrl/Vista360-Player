@@ -165,7 +165,15 @@ service cloud.firestore {
         (documento == 'paneles' && esCuentaDePortal())
         // Lista de clientes para el selector, repartida en partes
         // (clientes-0, clientes-1...). SOLO personal interno.
-        || (documento.matches('clientes-[0-9]+') && esPersonalDePortal());
+        || (documento.matches('clientes-[0-9]+') && esPersonalDePortal())
+        // Resumen de UN cliente (sus campañas): cliente-<id>. Solo lo lee
+        // ese mismo cliente, o el personal interno. El id va en la RUTA,
+        // así que cambiar la URL no sirve de nada: la comparación es
+        // contra el clienteId que consta en portalUsers, no contra nada
+        // que mande el navegador.
+        || (documento.matches('cliente-.*') &&
+            (esPersonalDePortal() ||
+             (esCuentaDePortal() && documento == 'cliente-' + clienteIdDelPortal())));
       allow write: if false;
     }
 

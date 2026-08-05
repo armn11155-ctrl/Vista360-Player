@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { hoyEnPeru } from "../utils/fechas";
 import type { Contrato } from "../types";
@@ -10,119 +10,144 @@ export type ContratosState =
   | { status: "error"; message: string; retry: () => void };
 
 /**
- * Contratos de ESTE cliente (filtrado por cliente_id). Las reglas de
- * Firestore también lo exigen del lado del servidor — esto es además, no
- * en vez de, esa protección.
+ * Campañas del cliente, desde SU documento resumen.
  *
- * POR DEFECTO SOLO TRAE LO VIGENTE (fin >= hoy): las campañas activas y
- * las programadas. El historial cerrado NO se lee.
+ * POR QUÉ. Este hook corre en cada sesión. Antes costaba una lectura por
+ * campaña; ahora cuesta 1, tenga el cliente dos campañas o doscientas.
  *
- * POR QUÉ. Este hook se ejecuta en CADA sesión, y antes traía todas las
- * campañas que el cliente hubiera tenido nunca. Un cliente de diez años
- * pagaba cuarenta documentos cada vez que abría la aplicación, para
- * mostrar dos campañas activas. Era el último gasto que crecía con la
- * antigüedad del cliente.
+ * EL RESUMEN GUARDA TODAS LAS CAMPAÑAS, no solo las vigentes, y el
+ * filtro por fecha se hace acá. Es deliberado: "vigente" depende del día
+ * de hoy, así que un resumen de "vigentes" mostraría como activa una
+ * campaña terminada anoche. Guardando todo, el documento no depende de
+ * la fecha y solo cambia cuando alguien escribe -- que es lo que sí
+ * sabemos controlar (los contratos solo se escriben desde Cloud
+ * Functions, y cada una regenera el resumen).
  *
- * Y quien lo necesitaba, no lo necesitaba. Se revisó uno por uno:
- *  - Cobertura DESCARTA las finalizadas en tres sitios distintos, y el
- *    "libre desde" del panel viene del propio panel, no del contrato.
- *  - Las notificaciones solo avisan de vencimientos en 30 días.
- *  - Facturas las usa para elegir a qué campaña asociar una factura
- *    nueva, que siempre es una vigente.
+ * Efecto secundario bueno: el historial completo ya viene en el mismo
+ * documento, así que la pestaña "Finalizadas" pasa a costar CERO.
  *
- * El ÚNICO sitio que sí quiere el historial es Mis campañas, con sus
- * pestañas "Finalizadas" y "Todas". Ese carga el historial aparte y solo
- * cuando la persona lo pide (ver useContratosHistoricos). La mayoría de
- * las sesiones nunca pulsan esa pestaña, así que la mayoría no lo paga.
- *
- * NO LLEVA orderBy. Firestore exige que el primer orden sea el campo de
- * la desigualdad, y ordenar por "fin" no es lo que quiere la pantalla.
- * Con el filtro puesto son unos pocos documentos: ordenarlos en el
- * navegador es gratis y no ata la consulta a un índice de más.
+ * UNA SOLA ESCUCHA POR CLIENTE, compartida entre todos los componentes
+ * que la piden (App y Mis campañas). Dos onSnapshot sobre el mismo
+ * documento serían dos lecturas.
  */
+
+interface Suscriptor { (estado: ContratosState): void }
+
+let clienteActual = "";
+let estadoActual: ContratosState = { status: "loading" };
+let suscriptores = new Set<Suscriptor>();
+let cortar: (() => void) | null = null;
+
+function publicar(estado: ContratosState) {
+  estadoActual = estado;
+  suscriptores.forEach((s) => s(estado));
+}
+
+function arrancar(clienteId: string) {
+  if (!db) { publicar({ status: "ready", contratos: [] }); return; }
+  const bd = db;
+  const reintentar = () => { detener(); arrancar(clienteId); };
+
+  const desdeDocumentos = (docs: Array<{ id: string; data: () => unknown }>) =>
+    docs
+      .map((d) => ({ id: d.id, ...(d.data() as Omit<Contrato, "id">) }))
+      .filter((c) => !c.deleted);
+
+  // Respaldo: la consulta de siempre, contra la colección. Más cara,
+  // pero correcta. Se usa si el resumen no existe todavía o si las
+  // reglas aún no permiten leerlo.
+  const leerColeccionDirecta = () => {
+    cortar = onSnapshot(
+      query(collection(bd, "contratos"), where("cliente_id", "==", clienteId)),
+      (snap) => publicar({ status: "ready", contratos: ordenar(desdeDocumentos(snap.docs)) }),
+      (err) => publicar({ status: "error", message: err.message, retry: reintentar })
+    );
+  };
+
+  cortar = onSnapshot(
+    doc(bd, `agregados/cliente-${clienteId}`),
+    (snap) => {
+      const datos = snap.data() as { contratos?: Contrato[] } | undefined;
+      if (!snap.exists() || !Array.isArray(datos?.contratos)) {
+        console.warn(
+          "No existe el resumen de este cliente; se leen las campañas de la colección. " +
+            "Lanza el barrido diario para generarlo."
+        );
+        leerColeccionDirecta();
+        return;
+      }
+      publicar({
+        status: "ready",
+        contratos: ordenar(datos!.contratos!.filter((c) => !c.deleted)),
+      });
+    },
+    (err) => {
+      console.warn(
+        "No se pudo leer el resumen del cliente; se leen las campañas de la colección. " +
+          "Revisa que las reglas permitan leer agregados/cliente-<id>.",
+        err
+      );
+      leerColeccionDirecta();
+    }
+  );
+}
+
+function ordenar(contratos: Contrato[]): Contrato[] {
+  return [...contratos].sort((a, b) =>
+    String(b.inicio ?? "").localeCompare(String(a.inicio ?? ""))
+  );
+}
+
+function detener() {
+  cortar?.();
+  cortar = null;
+}
+
+function suscribir(clienteId: string, fn: Suscriptor): () => void {
+  if (clienteId !== clienteActual) {
+    detener();
+    clienteActual = clienteId;
+    estadoActual = { status: "loading" };
+    if (clienteId) arrancar(clienteId);
+    else estadoActual = { status: "ready", contratos: [] };
+  }
+  suscriptores.add(fn);
+  fn(estadoActual);
+  return () => {
+    suscriptores.delete(fn);
+    // Al quedarse sin nadie escuchando se corta: si no, cambiar de
+    // cliente en modo administrador dejaría escuchas vivas de todos los
+    // clientes visitados, cobrando cada cambio de cada uno.
+    if (suscriptores.size === 0) { detener(); clienteActual = ""; }
+  };
+}
+
+function useResumen(clienteId: string): ContratosState {
+  const [state, setState] = useState<ContratosState>({ status: "loading" });
+  useEffect(() => {
+    if (!clienteId) { setState({ status: "ready", contratos: [] }); return; }
+    return suscribir(clienteId, setState);
+  }, [clienteId]);
+  return state;
+}
+
+/** Las campañas VIGENTES (activas y programadas). Es lo que usa toda la
+ *  aplicación salvo la pestaña de historial. */
 export function useContratos(clienteId: string): ContratosState {
-  return useConsultaDeContratos(clienteId, true);
+  const state = useResumen(clienteId);
+  if (state.status !== "ready") return state;
+  const hoy = hoyEnPeru();
+  return { status: "ready", contratos: state.contratos.filter((c) => String(c.fin ?? "") >= hoy) };
 }
 
 /**
- * El historial COMPLETO, incluidas las campañas ya terminadas.
+ * El historial COMPLETO, incluidas las terminadas.
  *
- * Solo debe activarse bajo demanda -- es la consulta cara, la que crece
- * con los años. `activo` en false no consulta nada y devuelve vacío.
+ * Ya no cuesta ninguna lectura extra: sale del mismo documento que
+ * useContratos, que la sesión ya pagó. `activo` se mantiene en la firma
+ * para no cambiar quien lo llama, pero solo decide si se devuelve.
  */
 export function useContratosHistoricos(clienteId: string, activo: boolean): ContratosState {
-  return useConsultaDeContratos(activo ? clienteId : "", false);
-}
-
-function useConsultaDeContratos(clienteId: string, soloVigentes: boolean): ContratosState {
-  const [state, setState] = useState<ContratosState>({ status: "loading" });
-  const [retryNonce, setRetryNonce] = useState(0);
-
-  useEffect(() => {
-    // Salir sin fijar estado dejaba el hook en "loading" PARA SIEMPRE:
-    // la pantalla se quedaba con el spinner girando en vez de mostrar
-    // algo. Cuando no hay nada que consultar, el resultado correcto es
-    // "listo y vacío", no "cargando".
-    if (!clienteId || !db) { setState({ status: "ready", contratos: [] }); return; }
-    setState({ status: "loading" });
-    const bd = db;
-    const consulta = (conFiltroDeFecha: boolean) =>
-      conFiltroDeFecha
-        ? query(
-            collection(bd, "contratos"),
-            where("cliente_id", "==", clienteId),
-            where("fin", ">=", hoyEnPeru())
-          )
-        : query(collection(bd, "contratos"), where("cliente_id", "==", clienteId));
-
-    // RESPALDO SI FALTA EL INDICE contratos(cliente_id, fin).
-    //
-    // Sin el, Firestore rechaza la consulta con failed-precondition y el
-    // cliente se queda SIN NINGUNA campana -- la pantalla principal
-    // vacia. Y la ventana existe de verdad: Cloudflare publica el
-    // frontend en cuanto se empuja, pero el indice solo se crea al
-    // lanzar el despliegue.
-    //
-    // El respaldo lee todo el historial: mas caro, exactamente lo que
-    // haciamos antes, pero CORRECTO. Vale mas pagar de mas unos minutos
-    // que ensenar una lista vacia.
-    let escuchando: (() => void) | null = null;
-    const escuchar = (conFiltroDeFecha: boolean) => onSnapshot(
-      consulta(conFiltroDeFecha),
-      (snap) => {
-        const contratos = snap.docs
-          .map((d) => ({ id: d.id, ...(d.data() as Omit<Contrato, "id">) }))
-          .filter((c) => !c.deleted)
-          // Lo ordenaba Firestore con orderBy("inicio","desc"); ahora se
-          // hace acá por lo explicado arriba. Mismo resultado.
-          .sort((a, b) => String(b.inicio ?? "").localeCompare(String(a.inicio ?? "")));
-        setState({ status: "ready", contratos });
-      },
-      (err) => {
-        // Solo failed-precondition significa "falta el indice". Un fallo
-        // de permisos o de red debe verse como error, no disfrazarse de
-        // consulta cara. Y la guarda `conFiltroDeFecha &&` impide que el
-        // respaldo se reintente a si mismo en bucle.
-        if (conFiltroDeFecha && (err as { code?: string }).code === "failed-precondition") {
-          console.warn(
-            "Falta el indice contratos(cliente_id, fin); se lee el historial completo " +
-              "hasta que el indice termine de construirse.",
-            err
-          );
-          escuchando = escuchar(false);
-          return;
-        }
-        setState({
-          status: "error",
-          message: err.message,
-          retry: () => setRetryNonce((n) => n + 1),
-        });
-      }
-    );
-
-    escuchando = escuchar(soloVigentes);
-    return () => { escuchando?.(); };
-  }, [clienteId, soloVigentes, retryNonce]);
-
+  const state = useResumen(activo ? clienteId : "");
   return state;
 }

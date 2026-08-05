@@ -7,6 +7,7 @@ import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { auditar, auditarFallo } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { regenerarResumenCliente } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -115,4 +116,11 @@ export async function ejecutarEliminarContrato(db: Firestore, contratoId: string
   // crearContrato y la tarea diaria, para que las tres no queden
   // desalineadas entre sí.
   await recalcularEstadoPaneles(db, panelIds);
+
+  // Resumen del cliente al dia. Va aca dentro y no en el manejador de
+  // arriba porque resolverSolicitudAccion tambien llama a esta funcion
+  // (cuando un Gerente aprueba el borrado que pidio un Trabajador):
+  // poniendolo en el unico sitio que borra de verdad, no hay forma de
+  // que un camino se olvide.
+  await regenerarResumenCliente(db, String(contrato.cliente_id ?? ""));
 }

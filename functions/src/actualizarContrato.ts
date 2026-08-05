@@ -6,6 +6,7 @@ import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { regenerarResumenCliente } from "./agregadoCliente.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -62,6 +63,9 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
   // dos ediciones casi al mismo tiempo no deben poder colarse las dos
   // a la vez con fechas que se crucen entre si).
   let panelIdsAfectados: string[] = [];
+  // Se saca de la transaccion para poder regenerar el resumen del
+  // cliente DESPUES de que la escritura haya quedado confirmada.
+  let clienteAfectado = "";
 
   await db.runTransaction(async (tx) => {
     const actual = await tx.get(ref);
@@ -72,6 +76,7 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
       : (contratoActual.panel_id ? [contratoActual.panel_id] : []);
     const clienteId = String(contratoActual.cliente_id ?? "");
     panelIdsAfectados = panelIds;
+    clienteAfectado = clienteId;
 
     if (clienteId && panelIds.length > 0) {
       // Misma regla que al crear (ver crearContrato.ts): en pantallas LED
@@ -135,5 +140,7 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
   // conteo de campanas activas). No lanza: si falla, el selector cae
   // a leer la coleccion directamente.
   await regenerarAgregadoClientes(db);
+  // Resumen del cliente al dia: sus campanas en un solo documento.
+  await regenerarResumenCliente(db, clienteAfectado);
   return { ok: true };
 });

@@ -5,6 +5,7 @@ import { cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { regenerarResumenesDeTodos } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -102,6 +103,12 @@ async function sincronizar(): Promise<{ revisados: number; actualizados: number;
   // sin que nadie escriba nada, y sin esto el contador del selector
   // se quedaria congelado hasta el siguiente cambio manual.
   await regenerarAgregadoClientes(db);
+  // Red de seguridad: reconstruye el resumen de TODOS los clientes por
+  // si alguna escritura no lo hubiera hecho. Los contratos solo se
+  // escriben desde Cloud Functions, asi que no deberia hacer falta --
+  // pero un resumen desfasado se veria en la pantalla principal del
+  // cliente, y eso no se puede dejar a la confianza.
+  await regenerarResumenesDeTodos(db);
 
   return { revisados: panelesSnap.size, actualizados: cambios.length, detalle };
 }
