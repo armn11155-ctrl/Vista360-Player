@@ -88,6 +88,15 @@ createRoot(document.getElementById("root")!).render(
 // setupFullscreenOnTouch();
 
 if ("serviceWorker" in navigator) {
+  // El Service Worker avisa cuando se activa una version nueva. Sin
+  // esto, una pestana abierta desde antes del despliegue se queda con el
+  // JavaScript viejo: sus pantallas piden archivos que ya no existen y,
+  // como se cargan dentro de un startTransition, el fallo NO produce
+  // ningun error -- la pantalla simplemente no cambia al pulsar.
+  navigator.serviceWorker?.addEventListener("message", (evento) => {
+    if (evento.data?.tipo === "version-nueva") recargarPorVersionDesactualizada();
+  });
+
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("/sw.js").catch(() => {
       /* sin service worker, el player sigue funcionando online */

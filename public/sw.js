@@ -10,11 +10,35 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: "window" }))
+      .then((clientes) => {
+        // AVISAR A LAS PESTANAS QUE YA ESTABAN ABIERTAS.
+        //
+        // Una pestana abierta desde ANTES del despliegue sigue
+        // ejecutando el JavaScript viejo, y ese codigo pide archivos
+        // .js con nombres que ya no existen. Como esas pantallas se
+        // cargan dentro de un startTransition de React, el fallo no
+        // produce ningun error visible: la pantalla simplemente NO
+        // cambia. La persona pulsa un boton y no pasa nada.
+        //
+        // El Service Worker es lo unico que alcanza a esa pestana, asi
+        // que desde aca se le avisa. El codigo nuevo escucha este
+        // mensaje y recarga; el viejo lo ignora sin romperse.
+        clientes.forEach((cliente) => {
+          try {
+            cliente.postMessage({ tipo: "version-nueva" });
+          } catch (e) {
+            /* una pestana que ya no acepta mensajes no debe frenar al resto */
+          }
+        });
+      })
   );
-  self.clients.claim();
 });
 
 // Dos estrategias segun el tipo de archivo:

@@ -94,3 +94,29 @@ describe("el Service Worker confirma cuando terminó de limpiar", () => {
     expect(Number(v![1])).toBeGreaterThanOrEqual(10);
   });
 });
+
+describe("una pestaña abierta desde antes del despliegue se entera sola", () => {
+  it("el Service Worker avisa a las pestañas ya abiertas al activarse", () => {
+    // Es lo ÚNICO que alcanza a una pestaña que sigue ejecutando el
+    // JavaScript viejo: ese código no puede arreglarse a sí mismo.
+    expect(sw).toContain('self.clients.matchAll({ type: "window" })');
+    expect(sw).toContain('cliente.postMessage({ tipo: "version-nueva" })');
+  });
+
+  it("reclama las pestañas ANTES de avisarles", () => {
+    // Sin claim(), el Service Worker nuevo no controla las pestañas
+    // viejas y el aviso no sirve de nada.
+    const act = sw.slice(sw.indexOf('addEventListener("activate"'));
+    expect(act.indexOf("clients.claim()")).toBeLessThan(act.indexOf("postMessage"));
+  });
+
+  it("un fallo al avisar a una pestaña no frena a las demás", () => {
+    const act = sw.slice(sw.indexOf('addEventListener("activate"'));
+    expect(act.slice(0, 1600)).toContain("try {");
+  });
+
+  it("la app escucha ese aviso y recarga", () => {
+    expect(main).toContain('evento.data?.tipo === "version-nueva"');
+    expect(main).toContain("recargarPorVersionDesactualizada()");
+  });
+});
