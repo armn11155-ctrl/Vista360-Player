@@ -49,8 +49,28 @@ describe("las versiones viejas se destruyen", () => {
     expect(script).toContain(":destroy");
   });
 
-  it("solo cuentan las ENABLED: una destruida ya no se cobra", () => {
-    expect(script).toContain("v.state === 'ENABLED'");
+  it("se destruyen también las DISABLED, que TAMBIÉN se cobran", () => {
+    // Google factura las versiones ENABLED **y** las DISABLED:
+    // deshabilitar una no deja de cobrarla, solo destruirla. Filtrar por
+    // ENABLED dejaría las deshabilitadas pagando para siempre -- que es
+    // justo lo que se venía a arreglar. Solo DESTROYED deja de costar.
+    expect(script).toContain("v.state !== 'DESTROYED'");
+    expect(script).not.toContain("v.state === 'ENABLED'");
+  });
+
+  it("se conservan DOS, y el motivo está escrito", () => {
+    // Una función fija la versión del secreto al desplegarse, y este
+    // script corre ANTES del redespliegue: con una sola versión, las
+    // funciones ya desplegadas se quedarían sin secreto en esa ventana.
+    expect(script).toContain("VERSIONES_A_CONSERVAR = 2");
+    // El comentario va partido en varias líneas con `*` delante, así que
+    // se normalizan los espacios antes de buscar la frase.
+    const doc = script
+      .slice(0, script.indexOf("const VERSIONES_A_CONSERVAR"))
+      .replace(/\n\s*\*\s*/g, " ")
+      .replace(/\s+/g, " ");
+    expect(doc).toContain("fija la versión del secreto");
+    expect(doc).toContain("plan gratuito cubre 6 versiones");
   });
 
   it("se conservan algunas para poder volver atrás", () => {
@@ -58,7 +78,7 @@ describe("las versiones viejas se destruyen", () => {
     // Con 0 se destruiría la que está en uso; con muchas vuelve el cargo.
     expect(n).toBeGreaterThanOrEqual(1);
     expect(n).toBeLessThanOrEqual(5);
-    expect(script).toContain("activas.slice(VERSIONES_A_CONSERVAR)");
+    expect(script).toContain("facturables.slice(VERSIONES_A_CONSERVAR)");
   });
 
   it("un fallo al limpiar NO tumba el despliegue", () => {

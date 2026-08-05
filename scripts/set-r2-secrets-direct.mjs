@@ -20,10 +20,22 @@ import { GoogleAuth } from 'google-auth-library';
 const PROJECT_ID = 'base-de-datos-vista360';
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-/** Cuántas versiones de cada secreto se conservan.
+/**
+ * Cuántas versiones de cada secreto se conservan.
  *
- *  Dos: la que está en uso y la anterior, por si hay que volver atrás.
- *  Cada versión activa de más cuesta ~$0.06 al mes PARA SIEMPRE. */
+ * DOS, Y NO UNA, A PROPÓSITO. Una Cloud Function fija la versión del
+ * secreto en el momento de desplegarse. Este script corre ANTES de que
+ * las funciones se redesplieguen en el mismo workflow: si se destruyera
+ * la versión que las funciones ya desplegadas están usando, quedarían
+ * rotas hasta que su redespliegue terminara -- y ese paso tolera fallos.
+ * La segunda versión cubre exactamente esa ventana.
+ *
+ * LO QUE CUESTA ESA SEGURIDAD: el plan gratuito cubre 6 versiones
+ * activas al mes. Con 6 secretos, quedarse en una sola versión saldría
+ * exactamente gratis; con dos son 12, o sea 6 de más a $0.06 = unos
+ * $0.36 al mes. Se paga a propósito: 36 centavos por no arriesgar que
+ * las funciones se queden sin secretos.
+ */
 const VERSIONES_A_CONSERVAR = 2;
 
 const SECRETS = {
@@ -135,9 +147,18 @@ for (const [name, value] of Object.entries(SECRETS)) {
     console.warn(`  ⚠️  No se pudieron listar las versiones de ${name}; se deja como está`);
     continue;
   }
-  // Vienen de más nueva a más vieja. Solo las que siguen ENABLED cuestan.
-  const activas = (lista.json.versions ?? []).filter((v) => v.state === 'ENABLED');
-  const sobran = activas.slice(VERSIONES_A_CONSERVAR);
+  // Vienen de más nueva a más vieja.
+  //
+  // OJO CON QUÉ CUENTA COMO "ACTIVA". Google factura las versiones en
+  // estado ENABLED **y también las DISABLED**: deshabilitar una NO deja
+  // de cobrarla, solo destruirla. Filtrar solo por ENABLED --como hacía
+  // la primera versión de este script-- habría dejado las deshabilitadas
+  // pagando para siempre, que es justo el problema que se venía a
+  // arreglar.
+  //
+  // Solo DESTROYED deja de costar.
+  const facturables = (lista.json.versions ?? []).filter((v) => v.state !== 'DESTROYED');
+  const sobran = facturables.slice(VERSIONES_A_CONSERVAR);
   for (const v of sobran) {
     const r = await call(`https://secretmanager.googleapis.com/v1/${v.name}:destroy`, 'POST', {});
     if (r.ok) console.log(`  🧹 Versión antigua destruida (${v.name.split('/').pop()})`);
