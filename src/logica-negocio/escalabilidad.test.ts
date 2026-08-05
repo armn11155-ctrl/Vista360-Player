@@ -717,3 +717,35 @@ describe("los resúmenes por cliente se pueden crear la PRIMERA vez", () => {
     expect(wf).toContain("--max-time 600");
   });
 });
+
+describe("publicar las reglas no puede fallar en silencio", () => {
+  const wf = readFileSync(
+    resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
+    "utf-8",
+  );
+  const paso = (() => {
+    const i = wf.indexOf("- name: Desplegar reglas de seguridad");
+    return wf.slice(i, wf.indexOf("- name: Verificar que las reglas", i));
+  })();
+
+  it("el paso de reglas NO lleva `set +e`", () => {
+    // Con `set +e`, las reglas fallaban al publicarse, el workflow salía
+    // en VERDE, y la aplicación seguía con las reglas viejas -- sin
+    // acceso a los agregados, cayendo a los respaldos, sin ahorro y sin
+    // un solo aviso. Pasó de verdad y costó horas de diagnóstico.
+    const comandos = paso.split("\n").filter((l) => !l.trim().startsWith("#")).join("\n");
+    expect(comandos).not.toContain("set +e");
+  });
+
+  it("si falla, el despliegue sale en rojo", () => {
+    expect(paso).toContain('exit "$codigo"');
+    expect(paso).toContain("::error::");
+  });
+
+  it("además se COMPRUEBA que lo publicado es lo del repositorio", () => {
+    // `firebase deploy` puede salir en 0 y aun así dejar algo distinto.
+    expect(wf).toContain("Verificar que las reglas publicadas son las del repositorio");
+    expect(wf).toContain('grep -q "match /agregados/"');
+    expect(wf).toContain('grep -q "esPersonalDePortal"');
+  });
+});
