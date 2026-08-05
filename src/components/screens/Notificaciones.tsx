@@ -1,3 +1,4 @@
+import type { Contrato } from "../../types";
 import { useEffect } from "react";
 import BackChevron from "../BackChevron";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
@@ -7,6 +8,9 @@ interface Props {
   clienteId: string;
   uid?: string;
   onBack: () => void;
+  /** Campañas ya cargadas por App.tsx -- se pasan para no volver a
+   *  consultarlas (ver el comentario de useNotificaciones). */
+  contratos: Contrato[];
 }
 
 
@@ -39,8 +43,8 @@ function tiempoRelativo(isoFecha: string): string {
   return d === 1 ? "Ayer" : `Hace ${d} días`;
 }
 
-export default function Notificaciones({ clienteId, uid, onBack }: Props) {
-  const state = useNotificaciones(clienteId);
+export default function Notificaciones({ clienteId, contratos, uid, onBack }: Props) {
+  const state = useNotificaciones(clienteId, contratos);
   const idsVisibles = state.status === "ready" ? state.notifs.map((n) => n.id).join("|") : "";
 
   useEffect(() => {

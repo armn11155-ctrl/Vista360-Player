@@ -53,7 +53,21 @@ export function eliminarNotificacion(clienteId: string, id: string) {
  *   aún no recibieron respuesta)
  * - Contratos que vencen en los próximos 30 días
  */
-export function useNotificaciones(clienteId: string): NotifState {
+/**
+ * AHORRO: los contratos llegan por parámetro, NO se vuelven a consultar.
+ *
+ * Antes este hook abría su propia escucha sobre
+ * `contratos where cliente_id == X` -- exactamente la misma consulta que
+ * ya tenía abierta useContratos para la misma pantalla. O sea que cada
+ * sesión de cliente leía TODAS sus campañas dos veces, y volvía a
+ * pagarlas dos veces con cada cambio. Solo se usaban para saber cuáles
+ * vencen en los próximos 30 días.
+ *
+ * Ahora se reciben ya cargadas desde App.tsx. Una escucha menos por
+ * sesión, mismo resultado y además sin el desfase que podía haber entre
+ * las dos copias.
+ */
+export function useNotificaciones(clienteId: string, contratos: Contrato[]): NotifState {
   const [state, setState] = useState<NotifState>({ status: "loading" });
 
   useEffect(() => {
@@ -61,11 +75,10 @@ export function useNotificaciones(clienteId: string): NotifState {
 
     const notifs: Map<string, Notificacion> = new Map();
     let solicitudesDone = false;
-    let contratosDone = false;
     const hoyBase = new Date();
 
     function emitir() {
-      if (!solicitudesDone || !contratosDone) return;
+      if (!solicitudesDone) return;
       const eliminadas = leerIds(clienteId, "eliminadas");
       const leidas = leerIds(clienteId, "leidas");
       const lista = Array.from(notifs.values()).filter((n) => !eliminadas.has(n.id)).sort((a, b) =>
@@ -128,52 +141,34 @@ export function useNotificaciones(clienteId: string): NotifState {
     }, () => { solicitudesDone = true; emitir(); });
 
     // ── Contratos por vencer (próximos 30 días) ───────────────────────────
-    const hoy = hoyBase;
-
-    const qCon = query(
-      collection(db, "contratos"),
-      where("cliente_id", "==", clienteId)
-    );
-    const unsubCon = onSnapshot(qCon, (snap) => {
-      for (const k of notifs.keys()) {
-        if (k.startsWith("con-")) notifs.delete(k);
-      }
-      snap.docs.forEach((d) => {
-        const data = d.data() as Contrato & Record<string, any>;
-        if (data.deleted) return;
-
-        // Contrato por vencer -- se compara por día calendario en Perú
-        // (utils/fechas), no con objetos Date: "2026-07-31" se
-        // interpretaba como medianoche UTC y el aviso salía con un día
-        // de desfase, además de desaparecer mientras la campaña todavía
-        // estaba corriendo su último día.
-        const fin = soloFecha(data.fin);
-        if (fin) {
-          const dias = diasHasta(fin);
-          if (dias >= 0 && dias <= 30) {
-            notifs.set(`con-${d.id}`, {
-              id: `con-${d.id}`,
-              tipo: "contrato_por_vencer",
-              titulo: "Campaña por vencer",
-              detalle:
-                dias === 0
-                  ? "Tu campaña vence hoy."
-                  : `Tu campaña vence ${dias === 1 ? "mañana" : `en ${dias} días`}.`,
-              fecha: `${fin}T00:00:00.000Z`,
-            });
-          }
-        }
+    // Sin consulta: se recorren los que ya vienen cargados.
+    contratos.forEach((data) => {
+      if (data.deleted) return;
+      // Se compara por día calendario en Perú (utils/fechas), no con
+      // objetos Date: "2026-07-31" se interpretaba como medianoche UTC y
+      // el aviso salía con un día de desfase, además de desaparecer
+      // mientras la campaña todavía estaba corriendo su último día.
+      const fin = soloFecha(data.fin);
+      if (!fin) return;
+      const dias = diasHasta(fin);
+      if (dias < 0 || dias > 30) return;
+      notifs.set(`con-${data.id}`, {
+        id: `con-${data.id}`,
+        tipo: "contrato_por_vencer",
+        titulo: "Campaña por vencer",
+        detalle:
+          dias === 0
+            ? "Tu campaña vence hoy."
+            : `Tu campaña vence ${dias === 1 ? "mañana" : `en ${dias} días`}.`,
+        fecha: `${fin}T00:00:00.000Z`,
       });
-      contratosDone = true;
-      emitir();
-    }, () => { contratosDone = true; emitir(); });
+    });
 
     return () => {
       unsubSol();
-      unsubCon();
       window.removeEventListener(EVENTO_NOTIFICACIONES, alCambiarEstado);
     };
-  }, [clienteId]);
+  }, [clienteId, contratos]);
 
   return state;
 }

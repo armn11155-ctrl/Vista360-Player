@@ -496,7 +496,7 @@ function AuthenticatedApp({
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
   const contratos = contratosState.status === "ready" ? contratosState.contratos : [];
-  const notifState = useNotificaciones(clienteId);
+  const notifState = useNotificaciones(clienteId, contratos);
   const totalNotifs = notifState.status === "ready" ? notifState.total : 0;
   const solCampState = useSolicitudesCampana(!!isAdmin);
   const solCampPendientes = solCampState.status === "ready"
@@ -761,7 +761,7 @@ function AuthenticatedApp({
         content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} contratos={contratos} />;
         break;
       case "notificaciones":
-        content = <Notificaciones clienteId={clienteId} uid={uid} onBack={() => setView("inicio")} />;
+        content = <Notificaciones clienteId={clienteId} contratos={contratos} uid={uid} onBack={() => setView("inicio")} />;
         break;
       case "nuevoCliente":
         content = isAdmin ? (
