@@ -1,0 +1,88 @@
+# Verificación automática de CADA push y cada Pull Request.
+#
+# Por qué existe: el 4 de agosto de 2026 un cambio pasó todas las
+# comprobaciones locales y aun así rompió el despliegue de Cloudflare.
+# El motivo fue que en la máquina donde se probó existían dependencias
+# (functions/node_modules) que en un checkout limpio NO están, así que
+# TypeScript resolvía un import que en el servidor no existía. El error
+# solo apareció al desplegar, con la app ya publicada a medias.
+#
+# Este workflow reproduce el entorno del despliegue -- checkout limpio,
+# `npm ci`, mismo Node -- y corre las mismas comprobaciones ANTES de que
+# el cambio llegue a producción. Si algo se rompe, se sabe acá.
+#
+# Es a propósito independiente del despliegue de Cloudflare (que se
+# dispara solo con el push): esto no impide el deploy, avisa. La marca
+# de check verde/rojo queda visible en el commit y en el listado de
+# Actions, que es donde se mira cuando algo sale mal.
+name: ✅ Verificar (tipos, tests y build)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Para poder relanzarlo a mano sin tener que hacer un commit vacío.
+  workflow_dispatch: {}
+
+# Si se empujan dos commits seguidos, cancela la verificación del
+# anterior: interesa el estado del último, no gastar minutos en uno ya
+# reemplazado.
+concurrency:
+  group: verificar-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (tipos + tests + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Mismo Node que usa Cloudflare Pages (.node-version) para que
+          # un fallo por versión aparezca acá y no en el despliegue.
+          node-version-file: .node-version
+          cache: npm
+
+      # `npm ci` (no `npm install`) a propósito: instala EXACTAMENTE lo
+      # que dice package-lock.json y falla si el lock está desalineado
+      # con package.json -- que es justo lo que hace Cloudflare.
+      - name: Instalar dependencias (limpio, igual que el despliegue)
+        run: npm ci
+
+      # OJO: acá NO se instala functions/node_modules, a propósito. Es
+      # exactamente la diferencia que dejó pasar el fallo de agosto: si
+      # algo dentro de src/ importa código del backend que arrastre sus
+      # dependencias, este paso tiene que fallar.
+      - name: Comprobar tipos del frontend
+        run: npx tsc --noEmit -p tsconfig.json
+
+      - name: Tests
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build
+
+  backend:
+    name: Cloud Functions (tipos)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22" # el que declara functions/package.json
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Instalar dependencias de functions
+        working-directory: functions
+        run: npm ci
+
+      # Las Cloud Functions se despliegan a mano (workflow_dispatch), así
+      # que sin esto un error de tipos del backend no se descubría hasta
+      # el momento del despliegue -- con la persona esperando delante.
+      - name: Comprobar tipos del backend
+        working-directory: functions
+        run: npx tsc --noEmit -p tsconfig.json
