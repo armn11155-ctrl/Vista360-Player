@@ -36,9 +36,9 @@ jobs:
     name: Frontend (tipos + tests + build)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # Mismo Node que usa Cloudflare Pages (.node-version) para que
           # un fallo por versión aparezca acá y no en el despliegue.
@@ -68,9 +68,9 @@ jobs:
     name: Cloud Functions (tipos)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: "22" # el que declara functions/package.json
           cache: npm
