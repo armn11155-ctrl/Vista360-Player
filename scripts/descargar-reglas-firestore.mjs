@@ -210,31 +210,49 @@ if (!bloquePortal) {
 }
 console.log('\n═════════════════════════════════════════════\n');
 
-// 4. Aviso automático de los patrones más peligrosos, para que salte a
-//    la vista en el log aunque nadie lea las reglas con detalle.
+// 4. Repaso del RESTO de las reglas.
+//
+//    portalUsers NO se revisa acá: ya tiene su veredicto detallado más
+//    arriba, que sigue las funciones auxiliares y distingue a quién
+//    alcanza cada regla. Antes esta parte lo repetía con una heurística
+//    mucho más tosca y acababa contradiciendo al veredicto -- decía
+//    "REVISAR CON PRIORIDAD" justo después de haber concluido que no
+//    había escalada. Dos avisos que se contradicen son peores que
+//    ninguno: no se sabe a cuál hacer caso y se acaba ignorando los dos.
+
 const alertas = [];
+
 if (/allow\s+(read|write)[^:]*:\s*if\s+true/.test(contenido)) {
-  alertas.push('Hay una regla ABIERTA A CUALQUIERA (if true).');
+  alertas.push('Hay una regla ABIERTA A CUALQUIERA (if true), incluso sin sesión.');
 }
-if (/allow\s+write[^:]*:\s*if\s+request\.auth\s*!=\s*null\s*;/.test(contenido)) {
-  alertas.push('Hay una escritura permitida a CUALQUIER usuario autenticado, sin más condiciones.');
+
+// Escrituras concedidas a cualquier autenticado sin ninguna otra
+// condición. Se excluye portalUsers (ya analizado aparte).
+for (const m of contenido.matchAll(/match\s+\/([a-zA-Z]+)\/[^{]*\{([^]*?)\n\s*\}/g)) {
+  const coleccion = m[1];
+  if (coleccion === 'portalUsers') continue;
+  const cuerpoRegla = m[2];
+  if (/allow\s+[a-z,\s]*(write|create|update|delete)[a-z,\s]*:\s*if\s+request\.auth\s*!=\s*null\s*;/.test(cuerpoRegla)) {
+    alertas.push(`"${coleccion}" permite escribir a CUALQUIER usuario con sesión, sin más condiciones.`);
+  }
 }
-if (/match\s*\/portalUsers/.test(contenido)) {
-  const bloque = contenido.slice(contenido.indexOf('match /portalUsers'));
-  const propio = bloque.slice(0, bloque.indexOf('match /', 10) === -1 ? 600 : bloque.indexOf('match /', 10));
-  if (/allow\s+(write|update)/.test(propio) && !/allow\s+(write|update)[^:]*:\s*if\s+false/.test(propio)) {
-    alertas.push(
-      'portalUsers ACEPTA ESCRITURA del cliente. Ahí vive el campo "role": ' +
-      'si la regla no acota los campos exactos, un cliente puede escribirse role:"admin" ' +
-      'y quedarse con acceso total. REVISAR CON PRIORIDAD.'
-    );
+
+// ¿Hay cierre por defecto? Sin él, una colección nueva sin regla queda
+// expuesta en vez de negada.
+if (!/match\s+\/\{document=\*\*\}/.test(contenido)) {
+  alertas.push('NO hay cierre por defecto (match /{document=**}): una colección nueva sin regla quedaría sin protección.');
+} else {
+  const cierre = contenido.slice(contenido.indexOf('match /{document=**}'));
+  if (!/allow\s+read,\s*write:\s*if\s+false/.test(cierre)) {
+    alertas.push('El cierre por defecto NO niega todo: revisar match /{document=**}.');
   }
 }
 
 if (alertas.length > 0) {
-  console.log('\n⚠️  ATENCIÓN:');
+  console.log('\n⚠️  OTROS PUNTOS A REVISAR:');
   for (const a of alertas) console.log(`   - ${a}`);
 } else {
-  console.log('\nSin patrones peligrosos evidentes en la revisión automática.');
-  console.log('(Revisión superficial: no sustituye leer las reglas.)');
+  console.log('\nEn el resto de las reglas no se detectan patrones peligrosos.');
+  console.log('(Revisión automática y superficial: no sustituye a los tests de');
+  console.log(' ataque contra el emulador, que sí ejecutan las reglas de verdad.)');
 }
