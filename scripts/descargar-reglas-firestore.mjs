@@ -68,7 +68,101 @@ console.log('──────── REGLAS ACTUALES EN PRODUCCIÓN ───�
 console.log(contenido);
 console.log('───────────────────────────────────────────────');
 
-// 3. Aviso automático de los patrones más peligrosos, para que salte a
+// 3. VEREDICTO sobre portalUsers.
+//
+//    Es la comprobación que más importa de todo el script: en ese
+//    documento vive el campo "role", del que la aplicación saca si
+//    alguien es cliente o administrador. Si el cliente puede escribir
+//    ahí sin restricción de campos, puede hacerse administrador solo.
+//
+//    Se analiza el texto de la regla en vez de pedirle a nadie que la
+//    interprete a ojo.
+
+function bloqueDe(coleccion) {
+  // OJO con las llaves de la RUTA. Un encabezado es
+  // `match /portalUsers/{uid} {` : las llaves de `{uid}` son parte del
+  // camino, no del cuerpo. Contar desde la primera llave que aparezca
+  // daba un bloque vacío (se abría y cerraba en `{uid}`), y entonces el
+  // análisis no encontraba ninguna regla de escritura y daba por
+  // SEGURO cualquier caso, incluido el peligroso. Se busca el `{` que
+  // viene DESPUÉS de cerrar los parámetros de la ruta.
+  const encabezado = new RegExp(`match\\s+/${coleccion}/(?:\\{[^}]*\\}|[^\\s{])*\\s*\\{`);
+  const m = contenido.match(encabezado);
+  if (!m) return null;
+  const inicioCuerpo = m.index + m[0].length - 1; // la llave que abre el cuerpo
+  let nivel = 0;
+  for (let j = inicioCuerpo; j < contenido.length; j += 1) {
+    if (contenido[j] === '{') nivel += 1;
+    else if (contenido[j] === '}') {
+      nivel -= 1;
+      if (nivel === 0) return contenido.slice(m.index, j + 1);
+    }
+  }
+  return contenido.slice(m.index);
+}
+
+console.log('\n════════ VEREDICTO SOBRE portalUsers ════════\n');
+const bloquePortal = bloqueDe('portalUsers');
+
+if (!bloquePortal) {
+  console.log('No hay un bloque propio para portalUsers.');
+  console.log('Puede estar cubierto por una regla comodín: revisar el texto de arriba.');
+} else {
+  console.log('Regla encontrada:\n');
+  console.log(bloquePortal.split('\n').map((l) => '    ' + l).join('\n'));
+  console.log();
+
+  // Todas las reglas de escritura del bloque.
+  const escrituras = [...bloquePortal.matchAll(/allow\s+([a-z,\s]*(?:write|update|create)[a-z,\s]*):([^;]*);/g)];
+
+  if (escrituras.length === 0) {
+    console.log('✅ SEGURO: el bloque no concede ninguna escritura.');
+  } else {
+    let peligroso = false;
+    for (const e of escrituras) {
+      const condicion = e[2].trim();
+      const cerrada = /^if\s+false$/.test(condicion);
+      const acotaCampos = /hasOnly|affectedKeys|keys\(\)/.test(condicion);
+      const mencionaRole = /role/.test(condicion);
+
+      if (cerrada) {
+        console.log(`✅ "allow ${e[1].trim()}" está cerrada (if false).`);
+      } else if (acotaCampos && !mencionaRole) {
+        console.log(`✅ "allow ${e[1].trim()}" limita los campos que se pueden tocar.`);
+        console.log('   Comprobar en el texto de arriba que "role" NO esté en esa lista.');
+      } else {
+        peligroso = true;
+        console.log(`🔴 "allow ${e[1].trim()}" NO limita qué campos se escriben.`);
+      }
+    }
+
+    console.log();
+    if (peligroso) {
+      console.log('🔴🔴🔴  ESCALADA DE PRIVILEGIOS POSIBLE  🔴🔴🔴');
+      console.log();
+      console.log('Cualquier cliente con sesión puede escribirse role:"admin" desde la');
+      console.log('consola del navegador y quedarse con acceso a TODOS los clientes.');
+      console.log();
+      console.log('ARREGLO INMEDIATO (30 segundos, sin desplegar nada):');
+      console.log('  Consola de Firebase -> Firestore -> Reglas');
+      console.log('  Cambiar la línea de escritura de portalUsers por:');
+      console.log();
+      console.log('      allow write: if false;');
+      console.log();
+      console.log('  y pulsar Publicar.');
+      console.log();
+      console.log('Es seguro: desde el cambio del 5 de agosto, la aplicación ya NO escribe');
+      console.log('ahí desde el navegador. El registro de accesos y visitas pasa por las');
+      console.log('Cloud Functions registrarAcceso/registrarVisita, que usan el Admin SDK');
+      console.log('y se saltan las reglas. No se rompe nada.');
+    } else {
+      console.log('✅ No se detecta escalada de privilegios por esta vía.');
+    }
+  }
+}
+console.log('\n═════════════════════════════════════════════\n');
+
+// 4. Aviso automático de los patrones más peligrosos, para que salte a
 //    la vista en el log aunque nadie lea las reglas con detalle.
 const alertas = [];
 if (/allow\s+(read|write)[^:]*:\s*if\s+true/.test(contenido)) {
