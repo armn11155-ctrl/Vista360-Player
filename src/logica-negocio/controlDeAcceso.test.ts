@@ -243,3 +243,14 @@ describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () =>
     expect(c).toContain("prefijoValido");
   });
 });
+
+describe("integridad: una factura sin cliente sería invisible", () => {
+  it("crearFacturaAdmin EXIGE clienteId", () => {
+    // Desde que la app dejó de consultar por RUC, una factura sin
+    // cliente_id no la vería nadie -- y sin ningún error. Se rechaza al
+    // crearla, ruidosamente, en vez de guardarla rota en silencio.
+    const c = readFileSync(resolve(DIR, "crearFacturaAdmin.ts"), "utf-8");
+    expect(c).toContain("if (!clienteId) {");
+    expect(c).toMatch(/Falta el cliente de la factura/);
+  });
+});

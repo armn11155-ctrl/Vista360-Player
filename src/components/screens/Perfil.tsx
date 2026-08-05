@@ -120,7 +120,7 @@ function ProfileMetricRow({ icon, label, value, tone }: {
 export default function Perfil({ cliente, contratos = [], email, isAdmin, esInterno, onCambiarCliente, onNotifClick, totalNotifs = 0 }: Props) {
   const empresa = cliente?.empresa ?? "Cliente";
   const ruc = rucCliente(cliente);
-  const facturasState = useFacturas(ruc);
+  const facturasState = useFacturas(ruc, cliente?.id);
   const activas = contratos.filter((contrato) => estadoCampana(contrato) === "Activa").length;
   const pantallas = new Set(contratos.flatMap((contrato) => panelesDeContrato(contrato))).size;
   const facturasPendientes = facturasState.status === "ready"

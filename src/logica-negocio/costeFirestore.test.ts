@@ -86,3 +86,20 @@ describe("las listas del administrador no crecen sin techo", () => {
     expect(sinComentarios(hook("useInvitaciones"))).toMatch(/limit\(\d+\)/);
   });
 });
+
+describe("facturas: una sola consulta, no dos", () => {
+  it("useFacturas ya no consulta por RUC", () => {
+    // Antes lanzaba DOS escuchas (por cliente_doc y por cliente_id) y
+    // fusionaba quitando duplicados: cada factura se leía y se pagaba
+    // dos veces. Verificado contra los datos reales que la consulta por
+    // RUC no aportaba ninguna factura que la otra no trajera ya.
+    const c = sinComentarios(hook("useFacturas"));
+    expect(c).not.toContain('where("cliente_doc"');
+    expect(c).toContain('where("cliente_id", "==", clienteId)');
+  });
+
+  it("solo queda UNA escucha sobre facturas", () => {
+    const c = sinComentarios(hook("useFacturas"));
+    expect((c.match(/onSnapshot\(/g) ?? []).length).toBe(1);
+  });
+});

@@ -58,6 +58,19 @@ export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) =
   const pdfPesoBytes = Number(request.data.pdfPesoBytes ?? 0);
   const pdfPesoOriginalBytes = Number(request.data.pdfPesoOriginalBytes ?? pdfPesoBytes);
 
+  // clienteId es OBLIGATORIO desde que la app dejó de consultar las
+  // facturas por RUC (ver useFacturas.ts). Antes bastaba con uno de los
+  // dos: si llegaba solo el RUC, la factura se guardaba sin cliente_id y
+  // el cliente la veía igual gracias a la segunda consulta. Ahora esa
+  // consulta ya no existe, así que una factura sin cliente_id quedaría
+  // invisible para siempre, sin ningún error -- el peor tipo de fallo.
+  // Mejor rechazarla acá, ruidosamente, que guardarla rota en silencio.
+  if (!clienteId) {
+    throw new HttpsError(
+      "invalid-argument",
+      "Falta el cliente de la factura. Sin él, el cliente no podría verla."
+    );
+  }
   if (!ruc && !clienteId) {
     throw new HttpsError("invalid-argument", "Falta el RUC o el cliente para asociar la factura.");
   }

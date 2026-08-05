@@ -31,33 +31,31 @@ function esPermisoDenegado(err: FirestoreError): boolean {
   return err.code === "permission-denied";
 }
 
+/**
+ * UNA SOLA CONSULTA, NO DOS.
+ *
+ * Antes esto lanzaba DOS escuchas: una por RUC (cliente_doc) y otra por
+ * cliente_id, y fusionaba los resultados quitando duplicados. La razón
+ * era histórica: las facturas del antiguo sistema de facturación solo
+ * traían el RUC. Pero como las que crea la app llevan AMBOS campos,
+ * cada factura aparecía en las dos consultas -- se leía y se pagaba dos
+ * veces para luego descartar la copia.
+ *
+ * Se comprobó contra los datos reales (scripts/migrar-facturas-clienteid.mjs):
+ * NO existe ninguna factura con un RUC de cliente conocido a la que le
+ * falte cliente_id. O sea que la consulta por RUC no aportaba ni una
+ * factura que la otra no trajera ya.
+ *
+ * Y para que siga siendo cierto hacia adelante, crearFacturaAdmin ahora
+ * EXIGE clienteId: sin él rechaza la factura en vez de guardarla sin ese
+ * campo, que la volvería invisible para el cliente sin dar ningún error.
+ *
+ * `ruc` se mantiene en la firma porque las pantallas lo usan para otras
+ * cosas y quitarlo obligaría a tocarlas sin ganar nada.
+ */
 export function useFacturas(ruc: string | undefined, clienteId?: string): FacturasState {
-  const [porRuc, setPorRuc] = useState<Factura[] | null>(null);
   const [porCliente, setPorCliente] = useState<Factura[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    setPorRuc(null);
-    if (!db || !ruc) {
-      setPorRuc([]);
-      return;
-    }
-    const q = query(collection(db, "facturas"), where("cliente_doc", "==", ruc));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        // Limpiar un error viejo si esta consulta ahora si funciona --
-        // antes "error" solo se ENCENDIA (nunca se apagaba), asi que un
-        // hipo pasajero de red dejaba la pantalla de Facturas mostrando
-        // el error PARA SIEMPRE, aunque el listener se reconecte solo y
-        // vuelva a traer datos buenos despues.
-        setError(null);
-        setPorRuc(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
-      },
-      (err) => (esPermisoDenegado(err) ? setPorRuc([]) : setError(err.message))
-    );
-    return unsub;
-  }, [ruc]);
 
   useEffect(() => {
     setPorCliente(null);
@@ -78,16 +76,9 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
   }, [clienteId]);
 
   if (error) return { status: "error", message: error };
-  if (porRuc === null || porCliente === null) return { status: "loading" };
+  if (porCliente === null) return { status: "loading" };
 
-  const vistos = new Set<string>();
-  const facturas: Factura[] = [];
-  for (const f of [...porRuc, ...porCliente]) {
-    if (vistos.has(f.id)) continue;
-    vistos.add(f.id);
-    facturas.push(f);
-  }
-  facturas.sort((a, b) => (b.numero ?? 0) - (a.numero ?? 0));
+  const facturas = [...porCliente].sort((a, b) => (b.numero ?? 0) - (a.numero ?? 0));
 
   return { status: "ready", facturas };
 }
