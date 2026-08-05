@@ -102,9 +102,18 @@ describe("facturas: una sola consulta, no dos", () => {
     expect(c).toContain('where("cliente_id", "==", clienteId)');
   });
 
-  it("solo queda UNA escucha sobre facturas", () => {
+  it("solo hay UNA escucha activa sobre facturas a la vez", () => {
+    // Ahora hay dos onSnapshot en el archivo: el del resumen y el del
+    // respaldo. Nunca corren a la vez -- el respaldo solo se monta desde
+    // las ramas de "no existe" y "fallo". Lo que este test protege es
+    // que la escucha del respaldo NO se arranque incondicionalmente.
     const c = sinComentarios(hook("useFacturas"));
-    expect((c.match(/onSnapshot\(/g) ?? []).length).toBe(1);
+    expect((c.match(/onSnapshot\(/g) ?? []).length).toBe(2);
+    // La del respaldo vive DENTRO de leerColeccionDirecta, no suelta.
+    const respaldo = c.slice(c.indexOf("const leerColeccionDirecta"));
+    expect(respaldo.slice(0, 400)).toContain("onSnapshot(");
+    // Y solo se llama desde las dos ramas de fallo.
+    expect((c.match(/leerColeccionDirecta\(\);/g) ?? []).length).toBe(2);
   });
 });
 

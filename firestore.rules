@@ -176,6 +176,10 @@ service cloud.firestore {
         // así que cambiar la URL no sirve de nada: la comparación es
         // contra el clienteId que consta en portalUsers, no contra nada
         // que mande el navegador.
+        // Facturas de UN cliente: facturas-<id>. Mismo criterio.
+        || (documento.matches('facturas-.*') &&
+            (esPersonalDePortal() ||
+             (esCuentaDePortal() && documento == 'facturas-' + clienteIdDelPortal())))
         || (documento.matches('cliente-.*') &&
             (esPersonalDePortal() ||
              (esCuentaDePortal() && documento == 'cliente-' + clienteIdDelPortal())));

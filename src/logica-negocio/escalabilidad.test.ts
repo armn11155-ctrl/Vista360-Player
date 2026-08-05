@@ -524,3 +524,67 @@ describe("el historial de solicitudes solo se carga donde se muestra", () => {
     expect(bloque).toContain("onSnapshot");
   });
 });
+
+describe("facturas: una lectura, no una por factura", () => {
+  const hook = sinComentarios(readFileSync(resolve(HOOKS, "useFacturas.ts"), "utf-8"));
+  const agregado = readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8");
+  const reglas = readFileSync(resolve(raiz, "firestore.rules"), "utf-8");
+
+  it("se lee del resumen, no de la colección", () => {
+    // Era una lectura por factura, sin tope: un cliente con diez años de
+    // facturas mensuales pagaba 120 documentos por abrir la pantalla.
+    expect(hook).toContain("`agregados/facturas-${clienteId}`");
+    const antesDelRespaldo = hook.slice(0, hook.indexOf("leerColeccionDirecta"));
+    expect(antesDelRespaldo).not.toMatch(/collection\((db|bd)!?,\s*"facturas"\)/);
+  });
+
+  it("cubre las DOS ramas de respaldo", () => {
+    expect((hook.match(/leerColeccionDirecta\(\);/g) ?? []).length).toBe(2);
+  });
+
+  it("va en documento APARTE del resumen de campañas", () => {
+    // El de campañas se lee en cada sesión; este solo al abrir Facturas.
+    // Juntarlos habría hecho cargar las facturas siempre.
+    expect(agregado).toContain("rutaFacturas");
+    expect(agregado).toContain('`agregados/facturas-${clienteId}`');
+  });
+
+  it("REGLAS: cada cliente solo ve SUS facturas", () => {
+    expect(reglas).toContain("documento == 'facturas-' + clienteIdDelPortal()");
+  });
+
+  it("avisa antes del límite de 1 MB", () => {
+    expect(agregado).toMatch(/AVISO_FACTURAS = \d+/);
+  });
+});
+
+describe("el resumen de facturas se regenera desde todos sus caminos", () => {
+  const OBLIGATORIAS = [
+    "crearFacturaAdmin",
+    "actualizarNombreFactura",
+    "eliminarFactura",
+    "administrarClienteAdmin",
+  ];
+  for (const nombre of OBLIGATORIAS) {
+    it(`${nombre} lo regenera`, () => {
+      expect(readFileSync(resolve(FUNCIONES, `${nombre}.ts`), "utf-8")).toContain(
+        "regenerarResumenFacturas(db,",
+      );
+    });
+  }
+
+  it("el barrido diario también", () => {
+    expect(readFileSync(resolve(FUNCIONES, "agregadoCliente.ts"), "utf-8")).toContain(
+      "regenerarResumenFacturas(db, id)",
+    );
+  });
+
+  it("no hay ninguna escritura de facturas desde el navegador", () => {
+    // Es lo que hace seguro guardarlas en un resumen.
+    const inicio = reglasTexto.indexOf("match /facturas/");
+    const bloque = reglasTexto.slice(inicio, reglasTexto.indexOf("match /", inicio + 20));
+    expect(bloque).toContain("allow write: if false;");
+  });
+});
+
+const reglasTexto = readFileSync(resolve(raiz, "firestore.rules"), "utf-8");

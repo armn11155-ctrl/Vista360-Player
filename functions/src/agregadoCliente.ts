@@ -114,9 +114,59 @@ export async function regenerarResumenesDeTodos(db: Firestore): Promise<void> {
     // De 20 en 20 para no abrir cientos de consultas a la vez.
     const ids = snap.docs.map((d) => d.id);
     for (let i = 0; i < ids.length; i += 20) {
-      await Promise.all(ids.slice(i, i + 20).map((id) => regenerarResumenCliente(db, id)));
+      await Promise.all(
+        ids.slice(i, i + 20).flatMap((id) => [
+          regenerarResumenCliente(db, id),
+          regenerarResumenFacturas(db, id),
+        ])
+      );
     }
   } catch (error) {
     console.error("No se pudieron regenerar los resúmenes de clientes.", error);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// FACTURAS: documento aparte, no dentro del resumen de arriba.
+//
+// El resumen del cliente se lee en CADA sesión. Las facturas solo se
+// miran cuando alguien abre esa pantalla, que es de vez en cuando.
+// Metiéndolas ahí, todo el mundo cargaría en cada sesión un documento
+// mucho más gordo para nada -- no más lecturas, pero sí más datos por la
+// red y más espera. Separadas, se pagan solo cuando se usan.
+//
+// Es seguro guardarlas porque la regla de facturas es `allow write: if
+// false` y no hay ninguna escritura directa desde el navegador: TODA
+// pasa por una Cloud Function que regenera esto.
+// ─────────────────────────────────────────────────────────────────────
+
+export function rutaFacturas(clienteId: string): string {
+  return `agregados/facturas-${clienteId}`;
+}
+
+/** Aviso: por encima de esto el documento se acerca al límite de 1 MB.
+ *  A ~500 bytes por factura, 1.500 son unos 750 KB. */
+const AVISO_FACTURAS = 1500;
+
+export async function regenerarResumenFacturas(db: Firestore, clienteId: string): Promise<void> {
+  if (!clienteId) return;
+  try {
+    const snap = await db.collection("facturas").where("cliente_id", "==", clienteId).get();
+    const facturas = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    if (facturas.length > AVISO_FACTURAS) {
+      console.warn(
+        `El resumen de facturas del cliente ${clienteId} ya tiene ${facturas.length}. ` +
+          "Acercándose al límite de 1 MB por documento: conviene partirlo por año."
+      );
+    }
+
+    await db.doc(rutaFacturas(clienteId)).set({
+      facturas,
+      total: facturas.length,
+      actualizadoEn: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error(`No se pudo regenerar el resumen de facturas de ${clienteId}.`, error);
   }
 }

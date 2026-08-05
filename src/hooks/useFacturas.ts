@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, where, type FirestoreError } from "firebase/firestore";
+import { collection, doc, onSnapshot, query, where, type FirestoreError } from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Factura } from "../types";
 
@@ -63,16 +63,60 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
       setPorCliente([]);
       return;
     }
-    const q = query(collection(db, "facturas"), where("cliente_id", "==", clienteId));
-    const unsub = onSnapshot(
-      q,
+    const bd = db;
+
+    // SE LEE DEL RESUMEN, NO FACTURA POR FACTURA.
+    //
+    // Era una lectura por cada factura del cliente, sin tope: un cliente
+    // con diez años de facturas mensuales pagaba 120 documentos cada vez
+    // que abría esta pantalla. Ahora es 1, tenga 5 facturas o 500.
+    //
+    // Va en un documento APARTE del resumen de campañas a propósito: ese
+    // se lee en cada sesión, y este solo cuando alguien abre Facturas.
+    // Juntarlos habría hecho que todo el mundo cargase las facturas en
+    // cada sesión aunque no las mirara.
+    let cortar: (() => void) | null = null;
+
+    // Respaldo: la consulta de siempre. Si el resumen no está todavía o
+    // las reglas aún no lo permiten, se lee la colección: más caro, pero
+    // el cliente ve sus facturas igual.
+    const leerColeccionDirecta = () => {
+      cortar = onSnapshot(
+        query(collection(bd, "facturas"), where("cliente_id", "==", clienteId)),
+        (snap) => {
+          setError(null);
+          setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
+        },
+        (err) => (esPermisoDenegado(err) ? setPorCliente([]) : setError(err.message))
+      );
+    };
+
+    cortar = onSnapshot(
+      doc(bd, `agregados/facturas-${clienteId}`),
       (snap) => {
+        const datos = snap.data() as { facturas?: Factura[] } | undefined;
+        if (!snap.exists() || !Array.isArray(datos?.facturas)) {
+          console.warn(
+            "No existe el resumen de facturas de este cliente; se lee la colección. " +
+              "Lanza el barrido diario para generarlo."
+          );
+          leerColeccionDirecta();
+          return;
+        }
         setError(null);
-        setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
+        setPorCliente(datos!.facturas!);
       },
-      (err) => (esPermisoDenegado(err) ? setPorCliente([]) : setError(err.message))
+      (err) => {
+        console.warn(
+          "No se pudo leer el resumen de facturas; se lee la colección. " +
+            "Revisa que las reglas permitan leer agregados/facturas-<id>.",
+          err
+        );
+        leerColeccionDirecta();
+      }
     );
-    return unsub;
+
+    return () => { cortar?.(); };
   }, [clienteId]);
 
   if (error) return { status: "error", message: error };

@@ -394,6 +394,8 @@ describe("ATAQUE 9: los agregados con datos de clientes", () => {
       });
       await setDoc(doc(bd, "agregados/cliente-empresa-a"), { contratos: [], solicitudes: [] });
       await setDoc(doc(bd, "agregados/cliente-empresa-b"), { contratos: [], solicitudes: [] });
+      await setDoc(doc(bd, "agregados/facturas-empresa-a"), { facturas: [] });
+      await setDoc(doc(bd, "agregados/facturas-empresa-b"), { facturas: [] });
     });
   });
 
@@ -414,6 +416,11 @@ describe("ATAQUE 9: los agregados con datos de clientes", () => {
     // El id va en la ruta: cambiarla es el ataque obvio. La regla compara
     // contra el clienteId que consta en portalUsers, no contra la URL.
     await assertFails(getDoc(doc(comoClienteA(), "agregados/cliente-empresa-b")));
+  });
+
+  it("un cliente SÍ ve SU resumen de facturas, NO el de otro", async () => {
+    await assertSucceeds(getDoc(doc(comoClienteA(), "agregados/facturas-empresa-a")));
+    await assertFails(getDoc(doc(comoClienteA(), "agregados/facturas-empresa-b")));
   });
 
   it("sin sesión no se puede leer ninguno", async () => {

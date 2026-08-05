@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { regenerarResumenFacturas } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -56,5 +57,8 @@ export const actualizarNombreFactura = onCall<ActualizarNombreFacturaData>(async
     { merge: true }
   );
 
+  // Resumen de facturas del cliente al dia: la pantalla de Facturas
+  // lo lee de una sola vez en vez de documento por documento.
+  await regenerarResumenFacturas(db, String(facturaSnap.data()?.cliente_id ?? ""));
   return { ok: true };
 });

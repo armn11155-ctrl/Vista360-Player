@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
+import { regenerarResumenFacturas } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -66,7 +67,10 @@ export const eliminarFactura = onCall({ secrets: R2_SECRETS }, async (request) =
         });
     }
 
+    // El cliente se lee ANTES de borrar; despues ya no existe.
+    const clienteDeLaFactura = String(facturaSnap.data()?.cliente_id ?? "");
     await facturaRef.delete();
+    await regenerarResumenFacturas(db, clienteDeLaFactura);
     return { ok: true };
   } catch (error) {
     if (error instanceof HttpsError) throw error;

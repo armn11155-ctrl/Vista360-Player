@@ -5,6 +5,7 @@ import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { regenerarResumenFacturas } from "./agregadoCliente.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -101,6 +102,9 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
   // Mantiene al dia el agregado del selector (lista de clientes y su
   // conteo de campanas activas). No lanza: si falla, el selector cae
   // a leer la coleccion directamente.
+  // Al eliminar un cliente se borran sus facturas: hay que vaciar su
+  // resumen o quedaria mostrando facturas de un cliente que ya no existe.
+  await regenerarResumenFacturas(db, clienteId);
   await regenerarAgregadoClientes(db);
   return { ok: true, pendiente: false };
 });
