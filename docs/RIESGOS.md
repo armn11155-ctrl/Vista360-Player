@@ -178,6 +178,30 @@ ningún error: la app simplemente falla al llamarla. Ya ocurrió una vez
 
 ---
 
+## 9. Queda una escritura directa del navegador a Firestore
+
+| | |
+|---|---|
+| **Riesgo** | 🟡 Bajo |
+| **Impacto** | Bajo — no permite escalar privilegios |
+| **Probabilidad** | Baja |
+| **Cuándo** | **Cuando duela** |
+
+`SolicitudesCampana.tsx` actualiza el estado de una solicitud con un `updateDoc`
+directo, en vez de pasar por una Cloud Function como el resto. Es una pantalla
+solo de administradores y escribe en `solicitudesCampana`, una colección donde
+**no** vive el campo `role`, así que no abre ninguna vía de escalada de
+privilegios. Pero obliga a mantener una regla de Firestore que permita esa
+escritura desde el cliente.
+
+**Ya corregido lo grave de esta familia:** el registro de accesos y visitas
+escribía directo sobre `portalUsers/{uid}`, que es justo donde vive `role`. Si la
+regla que lo permitía no acotaba los campos exactos, cualquiera podía escribirse
+`role: "admin"`. Ahora pasa por Cloud Function y las reglas pueden prohibir del
+todo que el cliente escriba en `portalUsers`.
+
+---
+
 ## Cómo quedó lo revisado
 
 Sin hallazgos pendientes en: fugas de memoria (listeners y timers se limpian
