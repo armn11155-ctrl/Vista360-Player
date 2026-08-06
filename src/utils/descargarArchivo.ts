@@ -219,6 +219,21 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     const clave = `vista360:visor-pdf:${token}`;
     sessionStorage.setItem(clave, JSON.stringify({ url, nombre: _nombre }));
     const rutaVisor = `/?visor-pdf=${encodeURIComponent(token)}`;
+
+    const pwaIOS =
+      (/iPhone|iPad|iPod/.test(navigator.userAgent) ||
+        (/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints ?? 0) > 1)) &&
+      (window.matchMedia("(display-mode: standalone)").matches ||
+        (navigator as Navigator & { standalone?: boolean }).standalone === true);
+
+    // Una ventana nueva en la PWA de iOS aparece primero como una pantalla
+    // blanca. Reutilizar la ventana actual mantiene el fondo de Vista360
+    // durante la carga y permite regresar a la app con el gesto Atrás.
+    if (pwaIOS) {
+      window.location.href = rutaVisor;
+      return;
+    }
+
     const ventanaSafari = window.open(rutaVisor, "_blank");
 
     if (ventanaSafari) {
