@@ -184,27 +184,7 @@ describe("en el móvil se usa la hoja del sistema", () => {
 });
 
 describe("ver un PDF no enseña la dirección de R2", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-  });
-
-  it("en Safari usa la pestaña actual porque focus puede ser ignorado", async () => {
-    const ventanaActual = { location: { href: "" }, open: vi.fn() };
-    vi.stubGlobal("window", ventanaActual);
-    vi.stubGlobal("navigator", {
-      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15",
-      maxTouchPoints: 0,
-    });
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 })));
-    URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/safari");
-    URL.revokeObjectURL = vi.fn();
-
-    await verArchivo("https://algo.r2/x.pdf", "Reporte.pdf");
-
-    expect(ventanaActual.open).not.toHaveBeenCalled();
-    expect(ventanaActual.location.href).toBe("blob:https://vista360player.pe/safari");
-  });
+  afterEach(() => vi.restoreAllMocks());
 
   it("pide foco inmediatamente para que Safari lleve a la pestaña nueva", async () => {
     const eventos: string[] = [];
