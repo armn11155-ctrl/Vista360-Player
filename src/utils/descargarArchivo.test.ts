@@ -184,7 +184,30 @@ describe("en el móvil se usa la hoja del sistema", () => {
 });
 
 describe("ver un PDF no enseña la dirección de R2", () => {
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("Safari abre la URL directamente dentro del clic y activa la pestaña", async () => {
+    const url = "https://algo.r2/x.pdf?firma=abc";
+    const ventana = { opener: {}, focus: vi.fn() };
+    const abrir = vi.fn(() => ventana);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("navigator", {
+      userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15",
+      maxTouchPoints: 0,
+    });
+    vi.stubGlobal("open", abrir);
+    vi.stubGlobal("fetch", fetchMock);
+
+    await verArchivo(url, "Reporte.pdf");
+
+    expect(abrir).toHaveBeenCalledWith(url, "_blank");
+    expect(ventana.opener).toBeNull();
+    expect(ventana.focus).toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 
   it("pide foco inmediatamente para que Safari lleve a la pestaña nueva", async () => {
     const eventos: string[] = [];
