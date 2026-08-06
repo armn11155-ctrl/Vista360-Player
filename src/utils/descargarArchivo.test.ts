@@ -204,7 +204,7 @@ describe("ver un PDF no enseña la dirección de R2", () => {
 
     await verArchivo(url, "Reporte.pdf");
 
-    expect(abrir).toHaveBeenCalledWith("/visor-pdf#token-prueba", "_blank");
+    expect(abrir).toHaveBeenCalledWith("/?visor-pdf=token-prueba", "_blank");
     expect(ventana.opener).toBeNull();
     expect(JSON.parse(sessionStorage.getItem("vista360:visor-pdf:token-prueba")!)).toEqual({
       url,
