@@ -814,3 +814,47 @@ describe("publicar las reglas no puede fallar en silencio", () => {
     expect(wf).toContain('grep -q "esPersonalDePortal"');
   });
 });
+
+describe("el verificador de reglas no puede acusar en falso", () => {
+  const wf = readFileSync(
+    resolve(raiz, ".github/workflows/setup-r2-secrets-and-deploy.yml"),
+    "utf-8",
+  );
+  const paso = (() => {
+    const i = wf.indexOf("- name: Verificar que las reglas publicadas");
+    return wf.slice(i, wf.indexOf("- name: Desplegar índices", i));
+  })();
+
+  it("recibe TODAS las credenciales que necesita el script", () => {
+    // Costó dos ejecuciones en rojo: el script lee
+    // FIREBASE_SERVICE_ACCOUNT, no el fichero de
+    // GOOGLE_APPLICATION_CREDENTIALS. Sin ella reventaba en el
+    // JSON.parse, el grep no encontraba nada, y este paso declaraba "las
+    // reglas NO están publicadas" aunque el despliegue hubiera ido
+    // perfecto.
+    const script = readFileSync(resolve(raiz, "scripts/descargar-reglas-firestore.mjs"), "utf-8");
+    const necesita = [...script.matchAll(/process\.env\.([A-Z_]+)/g)].map((m) => m[1]);
+    expect(necesita.length).toBeGreaterThan(0);
+    for (const variable of necesita) {
+      expect(paso, `al paso le falta ${variable}`).toContain(`${variable}:`);
+    }
+  });
+
+  it("distingue 'no pude mirar' de 'está mal'", () => {
+    // Un verificador que no consiguió descargar las reglas NO puede
+    // afirmar que estén mal. Un verificador roto que acusa a otro es
+    // peor que no tener verificador.
+    expect(paso).toContain("REGLAS ACTUALES EN PRODUC");
+    expect(paso).toContain("::warning::No se pudieron DESCARGAR");
+    // Y en ese caso NO marca el fallo.
+    const hastaElWarning = paso.slice(0, paso.indexOf("::warning::No se pudieron DESCARGAR"));
+    expect(hastaElWarning).not.toContain("/tmp/reglas-fallaron");
+  });
+
+  it("solo acusa cuando de verdad leyó las reglas y faltan los marcadores", () => {
+    const trasLaDescarga = paso.slice(paso.indexOf("::warning::No se pudieron DESCARGAR"));
+    expect(trasLaDescarga).toContain("esPersonalDePortal");
+    expect(trasLaDescarga).toContain("match /agregados/");
+    expect(trasLaDescarga).toContain("rm -f /tmp/reglas-fallaron");
+  });
+});
