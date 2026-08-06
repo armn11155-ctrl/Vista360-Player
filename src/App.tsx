@@ -43,6 +43,7 @@ import { useAvatarPropio } from "./hooks/useAvatarPropio";
 import type { Contrato, SolicitudCampana } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
 import { cargarLeaflet } from "./utils/leaflet";
+import { precargarPaneles } from "./hooks/usePanelesDisponibles";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -106,16 +107,19 @@ const PANTALLAS_SECUNDARIAS: CargaPantalla[] = [
  * todas las demás. Así no se retrasa el login, pero una vez dentro los
  * cambios de pestaña no esperan una descarga por primera vez. */
 function precargarTodasLasPantallas() {
-  for (const cargar of PANTALLAS_PRIORITARIAS) {
-    void cargar().catch(() => {
-      /* precarga optimista */
-    });
-  }
-  queueMicrotask(() => {
-    for (const cargar of PANTALLAS_SECUNDARIAS) {
-      void cargar().catch(() => {
-        /* precarga optimista */
-      });
+  const prioritarias = Promise.allSettled(PANTALLAS_PRIORITARIAS.map((cargar) => cargar()));
+
+  // La version anterior disparaba las 19 rutas casi en el mismo instante:
+  // primero seis y, en el microtask siguiente, todas las demas. En una red
+  // movil eso hace que las pantallas importantes compitan con herramientas
+  // raras y con jsPDF/Leaflet. Se siguen descargando TODAS en segundo plano,
+  // pero las secundarias van en lotes de cuatro cuando termina el grupo
+  // prioritario. El usuario conserva cambios instantaneos sin ahogar la
+  // conexion justo despues de iniciar sesion.
+  void prioritarias.then(async () => {
+    for (let inicio = 0; inicio < PANTALLAS_SECUNDARIAS.length; inicio += 4) {
+      const lote = PANTALLAS_SECUNDARIAS.slice(inicio, inicio + 4);
+      await Promise.allSettled(lote.map((cargar) => cargar()));
     }
   });
 
@@ -137,11 +141,7 @@ function precargarTodasLasPantallas() {
   // de una vez -- así, para cuando la persona realmente toca
   // "Cobertura", lo más probable es que los paneles ya hayan llegado
   // mientras miraba Inicio, y no vea "Cargando" en absoluto.
-  void import("./hooks/usePanelesDisponibles")
-    .then((m) => m.precargarPaneles())
-    .catch(() => {
-      /* precarga optimista */
-    });
+  precargarPaneles();
 }
 
 type View =

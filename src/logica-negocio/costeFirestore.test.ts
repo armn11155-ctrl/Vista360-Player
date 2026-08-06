@@ -141,6 +141,54 @@ describe("reutilizar lo que ya está en memoria", () => {
     const c = sinComentarios(hook("usePanelesDisponibles"));
     expect(c).toContain("escucharColeccionDirecta");
   });
+
+  it("Analítica reutiliza los nombres del selector y no lee clientes completos", () => {
+    const c = sinComentarios(hook("useAccesosClientes"));
+    expect(c).toContain("clientesAdminEnMemoria()");
+    expect(c).toContain('doc(db, "agregados/clientes-0")');
+    expect(c).not.toMatch(/getDocs\(collection\((db|bd)!?,\s*"clientes"\)\)/);
+  });
+
+  it("Analítica deduplica y cachea aperturas repetidas", () => {
+    const c = sinComentarios(hook("useAccesosClientes"));
+    expect(c).toContain("VIGENCIA_CACHE_MS");
+    expect(c).toContain("cargaEnCurso");
+  });
+
+  it("Reportes no vuelve a listar R2 en cada montaje", () => {
+    const c = sinComentarios(hook("useInformes"));
+    expect(c).toContain("VIGENCIA_LISTADO_MS");
+    expect(c).toContain("PETICIONES");
+  });
+
+  it("Ocupación no repite el cruce de colecciones al reentrar", () => {
+    const c = sinComentarios(hook("useOcupacion"));
+    expect(c).toContain("VIGENCIA_OCUPACION_MS");
+    expect(c).toContain("ocupacionEnCurso");
+  });
+
+  it("Mi perfil no recorre el bucket R2 en cada montaje", () => {
+    const c = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/screens/AdminPerfil.tsx"), "utf-8"),
+    );
+    expect(c).toContain("VIGENCIA_ESPACIO_MS");
+    expect(c).toContain("espacioR2EnCurso");
+  });
+
+  it("Cotizaciones carga jsPDF solo cuando se genera el archivo", () => {
+    const c = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/screens/Cotizaciones.tsx"), "utf-8"),
+    );
+    expect(c).not.toContain('import { generarCotizacionPdf } from');
+    expect(c).toContain('await import("../../utils/cotizacionPdf")');
+  });
+
+  it("los contadores de visita no vuelven a renderizar toda la app", () => {
+    const c = sinComentarios(hook("usePortalAuth"));
+    expect(c).toContain("setState((actual)");
+    expect(c).toContain('actual.status === "in"');
+    expect(c).toContain("return actual;");
+  });
 });
 
 describe("caché local: la segunda visita no vuelve a pagar los mismos datos", () => {

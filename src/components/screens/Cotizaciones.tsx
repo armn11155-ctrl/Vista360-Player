@@ -6,7 +6,6 @@ import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import type { Cotizacion, CotizacionEstado } from "../../types";
 import BackChevron from "../BackChevron";
 import { dinero, esCotizacionExonerada, esUbicacionExonerada, fechaVisible } from "../../utils/cotizaciones";
-import { generarCotizacionPdf } from "../../utils/cotizacionPdf";
 import { compartirArchivoPrecargado, puedeCompartirEsteArchivo } from "../../utils/compartirArchivo";
 import { saludoPorHora } from "../../utils/fechas";
 import { useDialogos } from "../DialogosProvider";
@@ -177,6 +176,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     const saludo = `${saludoPorHora()} ${cotizacion.clienteNombre}, te comparto tu cotización comercial de Vista360.`;
     let compartido = false;
     try {
+      const { generarCotizacionPdf } = await import("../../utils/cotizacionPdf");
       const archivo = await generarCotizacionPdf(cotizacion);
       if (puedeCompartirEsteArchivo(archivo)) {
         compartido = await compartirArchivoPrecargado(archivo, saludo, `Cotización ${cotizacion.numero}`);
@@ -198,6 +198,7 @@ export default function Cotizaciones({ onBack }: { onBack: () => void }) {
     if (accionCotizacion) return;
     setAccionCotizacion("pdf");
     try {
+      const { generarCotizacionPdf } = await import("../../utils/cotizacionPdf");
       const archivo = await generarCotizacionPdf(cotizacion);
       const url = URL.createObjectURL(archivo);
       const enlace = document.createElement("a");

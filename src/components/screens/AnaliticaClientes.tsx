@@ -1,4 +1,5 @@
 import BackChevron from "../BackChevron";
+import { useState } from "react";
 import { useAccesosClientes } from "../../hooks/useAccesosClientes";
 import type { AccesoCliente } from "../../hooks/useAccesosClientes";
 
@@ -62,6 +63,10 @@ export function colorEstado(ms: number | null): string {
 
 export default function AnaliticaClientes({ onBack }: Props) {
   const state = useAccesosClientes(true);
+  const [cantidadVisible, setCantidadVisible] = useState(40);
+  const accesosVisibles = state.status === "ready"
+    ? state.accesos.slice(0, cantidadVisible)
+    : [];
 
   return (
     <div className="admin-tool-screen analitica-screen">
@@ -101,7 +106,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
         )}
 
         {state.status === "ready" &&
-          state.accesos.map((a) => {
+          accesosVisibles.map((a) => {
             const favorita = pantallaFavorita(a.pantallasVisitadas);
             return (
               <div
@@ -161,6 +166,17 @@ export default function AnaliticaClientes({ onBack }: Props) {
               </div>
             );
           })}
+
+        {state.status === "ready" && state.accesos.length > accesosVisibles.length && (
+          <button
+            type="button"
+            className="retry-btn"
+            style={{ display: "block", margin: "14px auto 4px" }}
+            onClick={() => setCantidadVisible((cantidad) => cantidad + 40)}
+          >
+            Ver 40 clientes más
+          </button>
+        )}
       </div>
     </div>
   );

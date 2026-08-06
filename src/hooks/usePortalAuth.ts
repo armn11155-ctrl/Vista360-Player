@@ -73,12 +73,25 @@ export function usePortalAuth(): AuthState {
           // el comentario en useAvatarPropio.ts).
           publicarAvatarPropio(user.uid, String(data.avatarUrl ?? ""));
           const role: PortalRole = data.role ?? "cliente";
-          setState({
-            status: "in",
-            user,
-            role,
-            clienteId: role === "cliente" ? data.clienteId ?? null : null,
-            nombre: data.nombre ?? nombreConocidoPorEmail(user.email) ?? null,
+          const clienteId = role === "cliente" ? data.clienteId ?? null : null;
+          const nombre = data.nombre ?? nombreConocidoPorEmail(user.email) ?? null;
+          setState((actual) => {
+            // registrarAcceso/registrarVisita actualizan este MISMO
+            // documento con contadores. Firestore debe notificarlo, pero
+            // para la sesion nada cambio: publicar otro AuthState identico
+            // volveria a renderizar la aplicacion completa en cada primera
+            // visita a una pantalla. Se conserva la referencia si los
+            // campos que de verdad gobiernan la UI siguen iguales.
+            if (
+              actual.status === "in" &&
+              actual.user.uid === user.uid &&
+              actual.role === role &&
+              actual.clienteId === clienteId &&
+              actual.nombre === nombre
+            ) {
+              return actual;
+            }
+            return { status: "in", user, role, clienteId, nombre };
           });
         },
         () => {

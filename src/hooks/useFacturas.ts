@@ -80,7 +80,15 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
     // Respaldo: la consulta de siempre. Si el resumen no está todavía o
     // las reglas aún no lo permiten, se lee la colección: más caro, pero
     // el cliente ve sus facturas igual.
+    let usandoRespaldo = false;
     const leerColeccionDirecta = () => {
+      if (usandoRespaldo) return;
+      usandoRespaldo = true;
+      // La escucha del agregado ya no aporta nada una vez elegido el
+      // respaldo. Si se sobrescribe `cortar` sin cancelarla, queda
+      // huerfana cobrando reconexiones y puede abrir mas respaldos.
+      cortar?.();
+      cortar = null;
       cortar = onSnapshot(
         query(collection(bd, "facturas"), where("cliente_id", "==", clienteId)),
         (snap) => {

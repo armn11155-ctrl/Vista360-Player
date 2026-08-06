@@ -39,9 +39,38 @@ const LIMITE_ESPACIO_BYTES = 10 * 1024 * 1024 * 1024;
 
 type EspacioEstado = { status: "loading" | "ready" | "error"; bytes?: number; objetos?: number };
 
-/** Espacio total usado en R2 (todos los clientes juntos), en vivo — no cacheado. */
+const VIGENCIA_ESPACIO_MS = 5 * 60_000;
+let espacioR2Cache: { bytes: number; objetos: number; actualizadoEn: number } | null = null;
+let espacioR2EnCurso: Promise<{ bytes: number; objetos: number }> | null = null;
+
+function obtenerEspacioR2UnaVez(): Promise<{ bytes: number; objetos: number }> {
+  if (espacioR2Cache && Date.now() - espacioR2Cache.actualizadoEn < VIGENCIA_ESPACIO_MS) {
+    return Promise.resolve(espacioR2Cache);
+  }
+  if (espacioR2EnCurso) return espacioR2EnCurso;
+  if (!cloudFunctions) return Promise.reject(new Error("Firebase Functions no está configurado."));
+
+  const fn = httpsCallable<Record<string, never>, { totalBytes: number; totalObjetos: number }>(
+    cloudFunctions,
+    "obtenerEspacioR2"
+  );
+  espacioR2EnCurso = fn()
+    .then(({ data }) => {
+      const resultado = { bytes: data.totalBytes, objetos: data.totalObjetos };
+      espacioR2Cache = { ...resultado, actualizadoEn: Date.now() };
+      return resultado;
+    })
+    .finally(() => { espacioR2EnCurso = null; });
+  return espacioR2EnCurso;
+}
+
+/** Espacio total usado en R2. El listado del bucket se reutiliza cinco minutos. */
 function useEspacioR2(): EspacioEstado {
-  const [estado, setEstado] = useState<EspacioEstado>({ status: "loading" });
+  const [estado, setEstado] = useState<EspacioEstado>(
+    espacioR2Cache
+      ? { status: "ready", bytes: espacioR2Cache.bytes, objetos: espacioR2Cache.objetos }
+      : { status: "loading" }
+  );
 
   useEffect(() => {
     if (!cloudFunctions) {
@@ -49,13 +78,9 @@ function useEspacioR2(): EspacioEstado {
       return;
     }
     let cancelado = false;
-    const fn = httpsCallable<Record<string, never>, { totalBytes: number; totalObjetos: number }>(
-      cloudFunctions,
-      "obtenerEspacioR2"
-    );
-    fn()
-      .then(({ data }) => {
-        if (!cancelado) setEstado({ status: "ready", bytes: data.totalBytes, objetos: data.totalObjetos });
+    obtenerEspacioR2UnaVez()
+      .then(({ bytes, objetos }) => {
+        if (!cancelado) setEstado({ status: "ready", bytes, objetos });
       })
       .catch(() => {
         if (!cancelado) setEstado({ status: "error" });

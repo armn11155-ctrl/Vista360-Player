@@ -89,6 +89,32 @@ export type OcupacionState =
   | { status: "ready"; datos: ResumenOcupacion; recargar: () => void }
   | { status: "error"; message: string; recargar: () => void };
 
+// El calculo del tablero cruza varias colecciones en el servidor. Repetirlo
+// por salir y volver a entrar unos segundos despues era el peor caso posible:
+// misma respuesta, misma espera y todas las lecturas otra vez. Dos minutos son
+// suficientes para eliminar rebotes; el boton Recargar siempre fuerza una
+// consulta real cuando el administrador necesita el dato del instante.
+const VIGENCIA_OCUPACION_MS = 120_000;
+let cacheOcupacion: { datos: ResumenOcupacion; actualizadoEn: number } | null = null;
+let ocupacionEnCurso: Promise<ResumenOcupacion> | null = null;
+
+function pedirOcupacion(forzar: boolean): Promise<ResumenOcupacion> {
+  if (!forzar && cacheOcupacion && Date.now() - cacheOcupacion.actualizadoEn < VIGENCIA_OCUPACION_MS) {
+    return Promise.resolve(cacheOcupacion.datos);
+  }
+  if (ocupacionEnCurso) return ocupacionEnCurso;
+  if (!cloudFunctions) return Promise.reject(new Error("Sin conexión. Intenta de nuevo."));
+
+  const fn = httpsCallable<Record<string, never>, ResumenOcupacion>(cloudFunctions, "resumenOcupacion");
+  ocupacionEnCurso = fn()
+    .then(({ data }) => {
+      cacheOcupacion = { datos: data, actualizadoEn: Date.now() };
+      return data;
+    })
+    .finally(() => { ocupacionEnCurso = null; });
+  return ocupacionEnCurso;
+}
+
 /**
  * Trae el resumen de ocupación del inventario (Cloud Function
  * resumenOcupacion). Es una lectura puntual, no en vivo: cruza los
@@ -96,9 +122,13 @@ export type OcupacionState =
  * cada cambio suelto -- hay un botón de recargar para pedirlo de nuevo.
  */
 export function useOcupacion(): OcupacionState {
-  const [state, setState] = useState<OcupacionState>({ status: "loading" });
   const [nonce, setNonce] = useState(0);
   const recargar = useCallback(() => setNonce((n) => n + 1), []);
+  const [state, setState] = useState<OcupacionState>(
+    cacheOcupacion
+      ? { status: "ready", datos: cacheOcupacion.datos, recargar }
+      : { status: "loading" }
+  );
 
   useEffect(() => {
     if (!cloudFunctions) {
@@ -106,11 +136,11 @@ export function useOcupacion(): OcupacionState {
       return;
     }
     let cancelado = false;
-    setState({ status: "loading" });
+    const forzar = nonce > 0;
+    if (!cacheOcupacion) setState({ status: "loading" });
 
-    const fn = httpsCallable<Record<string, never>, ResumenOcupacion>(cloudFunctions, "resumenOcupacion");
-    fn()
-      .then(({ data }) => {
+    pedirOcupacion(forzar)
+      .then((data) => {
         if (!cancelado) setState({ status: "ready", datos: data, recargar });
       })
       .catch((error: unknown) => {

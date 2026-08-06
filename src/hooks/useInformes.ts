@@ -28,7 +28,32 @@ type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
 // visto se ve al toque, y si cambió algo (reporte nuevo, por ejemplo)
 // se actualiza solo, sin que la persona tenga que esperar mirando un
 // loader para eso.
-const CACHE = new Map<string, InformeCliente[]>();
+const VIGENCIA_LISTADO_MS = 60_000;
+const CACHE = new Map<string, { informes: InformeCliente[]; actualizadoEn: number }>();
+const PETICIONES = new Map<string, Promise<InformeCliente[]>>();
+
+function listar(clienteId: string, forzar: boolean): Promise<InformeCliente[]> {
+  const cacheado = CACHE.get(clienteId);
+  if (!forzar && cacheado && Date.now() - cacheado.actualizadoEn < VIGENCIA_LISTADO_MS) {
+    return Promise.resolve(cacheado.informes);
+  }
+  const existente = PETICIONES.get(clienteId);
+  if (existente) return existente;
+  if (!cloudFunctions) return Promise.resolve([]);
+
+  const listarReportesCliente = httpsCallable<{ clienteId: string }, ListarReportesResponse>(
+    cloudFunctions,
+    "listarReportesCliente"
+  );
+  const peticion = listarReportesCliente({ clienteId })
+    .then((res) => {
+      CACHE.set(clienteId, { informes: res.data.informes, actualizadoEn: Date.now() });
+      return res.data.informes;
+    })
+    .finally(() => PETICIONES.delete(clienteId));
+  PETICIONES.set(clienteId, peticion);
+  return peticion;
+}
 
 /**
  * La lista de reportes sale directo de R2 (Cloud Function
@@ -41,7 +66,7 @@ const CACHE = new Map<string, InformeCliente[]>();
 export function useInformes(clienteId: string): UseInformesResult {
   const cacheado = CACHE.get(clienteId);
   const [state, setState] = useState<InformesState>(
-    cacheado ? { status: "ready", informes: cacheado } : { status: "loading" }
+    cacheado ? { status: "ready", informes: cacheado.informes } : { status: "loading" }
   );
 
   const recargar = useCallback(() => {
@@ -54,14 +79,9 @@ export function useInformes(clienteId: string): UseInformesResult {
     if (!CACHE.has(clienteId)) {
       setState({ status: "loading" });
     }
-    const listarReportesCliente = httpsCallable<{ clienteId: string }, ListarReportesResponse>(
-      cloudFunctions,
-      "listarReportesCliente"
-    );
-    listarReportesCliente({ clienteId })
-      .then((res) => {
-        CACHE.set(clienteId, res.data.informes);
-        setState({ status: "ready", informes: res.data.informes });
+    listar(clienteId, true)
+      .then((informes) => {
+        setState({ status: "ready", informes });
       })
       .catch((err) => {
         // Si falla el refresco pero YA había algo en caché, se deja
@@ -77,8 +97,22 @@ export function useInformes(clienteId: string): UseInformesResult {
     // el nuevo -- evita el "loading" al alternar entre clientes que ya
     // se visitaron (el admin, sobre todo).
     const c = CACHE.get(clienteId);
-    setState(c ? { status: "ready", informes: c } : { status: "loading" });
-    recargar();
+    setState(c ? { status: "ready", informes: c.informes } : { status: "loading" });
+    if (!clienteId || !cloudFunctions) {
+      setState({ status: "ready", informes: [] });
+      return;
+    }
+    let cancelado = false;
+    listar(clienteId, false)
+      .then((informes) => {
+        if (!cancelado) setState({ status: "ready", informes });
+      })
+      .catch((err) => {
+        if (!cancelado && !CACHE.has(clienteId)) {
+          setState({ status: "error", message: err instanceof Error ? err.message : "Error desconocido" });
+        }
+      });
+    return () => { cancelado = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clienteId]);
 

@@ -16,6 +16,20 @@ interface Resultado {
   campanasActivas: ConteoCampanasActivas;
 }
 
+// Ultima lista buena recibida durante esta carga de la aplicacion.
+//
+// Varias herramientas administrativas necesitan resolver un clienteId a
+// nombre de empresa. Antes cada una volvia a leer `clientes` o montaba otra
+// escucha del agregado. El selector ya trae esa informacion al iniciar una
+// sesion interna, asi que conservarla permite reutilizarla sin otra lectura.
+// Es solo memoria: al recargar o cerrar la app desaparece, y la siguiente
+// sesion vuelve a validar el agregado normalmente.
+let CLIENTES_EN_MEMORIA: Cliente[] | null = null;
+
+export function clientesAdminEnMemoria(): Cliente[] | null {
+  return CLIENTES_EN_MEMORIA;
+}
+
 /**
  * Lista de clientes para el selector del administrador.
  *
@@ -52,26 +66,34 @@ export function useSelectorDeClientes(): Resultado {
     const bd = db;
     let cancelado = false;
     const cortar: Array<() => void> = [];
+    let cortarAgregado: (() => void) | null = null;
+    let respaldoActivo = false;
 
     const publicar = (filas: FilaAgregada[]) => {
       if (cancelado) return;
       const conteo: ConteoCampanasActivas = {};
       filas.forEach((f) => { conteo[f.id] = f.campanasActivas ?? 0; });
+      CLIENTES_EN_MEMORIA = filas as unknown as Cliente[];
       setCampanas(conteo);
-      setState({ status: "ready", clientes: filas as unknown as Cliente[] });
+      setState({ status: "ready", clientes: CLIENTES_EN_MEMORIA });
     };
 
     // Respaldo: la colección entera, como se hacía antes.
     const leerColeccionDirecta = () => {
-      if (cancelado) return;
+      if (cancelado || respaldoActivo) return;
+      respaldoActivo = true;
+      cortarAgregado?.();
+      cortarAgregado = null;
       cortar.push(
         onSnapshot(
           query(collection(bd, "clientes"), orderBy("empresa", "asc")),
           (snap) => {
             if (cancelado) return;
+            const clientes = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Cliente, "id">) }));
+            CLIENTES_EN_MEMORIA = clientes;
             setState({
               status: "ready",
-              clientes: snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Cliente, "id">) })),
+              clientes,
             });
           },
           (err) => { if (!cancelado) setState({ status: "error", message: err.message }); }
@@ -97,8 +119,7 @@ export function useSelectorDeClientes(): Resultado {
       publicar(filas);
     };
 
-    cortar.push(
-      onSnapshot(
+    cortarAgregado = onSnapshot(
         doc(bd, "agregados/clientes-0"),
         (snap) => {
           if (cancelado) return;
@@ -126,10 +147,13 @@ export function useSelectorDeClientes(): Resultado {
           );
           leerColeccionDirecta();
         }
-      )
-    );
+      );
 
-    return () => { cancelado = true; cortar.forEach((c) => c()); };
+    return () => {
+      cancelado = true;
+      cortarAgregado?.();
+      cortar.forEach((c) => c());
+    };
   }, []);
 
   return { state, campanasActivas };
