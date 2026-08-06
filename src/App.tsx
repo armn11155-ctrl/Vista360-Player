@@ -101,21 +101,24 @@ const PANTALLAS_SECUNDARIAS: CargaPantalla[] = [
   () => import("./components/screens/Perfil"),
 ];
 
-/** Descarga como máximo dos pantallas a la vez. Antes se lanzaban 19
- * pedidos simultáneos apenas arrancaba la app; en un iPhone eso saturaba
- * la conexión y hacía más lentos el inicio, los datos y hasta los PDFs. */
-async function precargarGrupo(cargas: CargaPantalla[]) {
-  for (let i = 0; i < cargas.length; i += 2) {
-    await Promise.allSettled(cargas.slice(i, i + 2).map((cargar) => cargar()));
+/** Deja todas las pantallas en caché apenas la sesión ya está lista.
+ * Primero se solicitan las rutas más usadas y, en el siguiente microtask,
+ * todas las demás. Así no se retrasa el login, pero una vez dentro los
+ * cambios de pestaña no esperan una descarga por primera vez. */
+function precargarTodasLasPantallas() {
+  for (const cargar of PANTALLAS_PRIORITARIAS) {
+    void cargar().catch(() => {
+      /* precarga optimista */
+    });
   }
-}
+  queueMicrotask(() => {
+    for (const cargar of PANTALLAS_SECUNDARIAS) {
+      void cargar().catch(() => {
+        /* precarga optimista */
+      });
+    }
+  });
 
-function precargarPantallasPrioritarias() {
-  void precargarGrupo(PANTALLAS_PRIORITARIAS);
-}
-
-function precargarPantallasSecundarias() {
-  void precargarGrupo(PANTALLAS_SECUNDARIAS);
   // Cobertura necesita además el chunk de Leaflet (ahora empaquetado con
   // la app, ya no un CDN externo -- ver utils/leaflet.ts). Pedirlo acá
   // igual sirve: aunque ya esté en el mismo paquete Vite, sigue siendo
@@ -584,22 +587,14 @@ function AuthenticatedApp({
   const adminAvatarUrl = useAvatarPropio(esInterno ? uid : undefined);
 
   useEffect(() => {
+    // No competir con la autenticación. En cuanto ya existe una sesión,
+    // sí se descargan todas las rutas para que la navegación sea instantánea.
+    if (!uid) return;
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
     const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
-    // Primero las rutas que más se usan. Las restantes esperan unos
-    // segundos y se descargan de dos en dos para no competir con Firebase
-    // ni con lo que la persona acaba de pedir al abrir la aplicación.
-    const prioritarias = idle(precargarPantallasPrioritarias, { timeout: 1500 });
-    let secundarias: number | undefined;
-    const esperaSecundarias = window.setTimeout(() => {
-      secundarias = idle(precargarPantallasSecundarias, { timeout: 5000 });
-    }, 6000);
-    return () => {
-      cancelar(prioritarias);
-      if (secundarias !== undefined) cancelar(secundarias);
-      window.clearTimeout(esperaSecundarias);
-    };
-  }, []);
+    const id = idle(precargarTodasLasPantallas, { timeout: 1200 });
+    return () => cancelar(id);
+  }, [uid]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Precarga del formulario de Nueva campaña cuando se pide desde un
