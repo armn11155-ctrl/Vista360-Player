@@ -26,18 +26,40 @@ export default defineConfig({
         // (app, analytics, etc.) — pantallas que solo necesitan leer datos
         // (la mayoría) no tienen que esperar a que cargue todo el SDK de
         // autenticación de una, se pueden descargar en paralelo.
+        // NOMBRES NEUTROS, Y NO ES COSMETICA.
+        //
+        // Estos trozos se llamaban vendor-firebase-firestore, vendor-firebase-auth
+        // y vendor-firebase. Dos problemas distintos, los dos resueltos por
+        // cambiar el nombre:
+        //
+        // 1. Cloudflare cachea por URL exacta. Si alguien pide una de estas
+        //    rutas ANTES de que el despliegue la publique, el borde guarda la
+        //    respuesta de "no existe" (el index.html del SPA) y sigue
+        //    sirviendola cuando el archivo ya existe. El navegador pide un
+        //    modulo, recibe HTML, y la aplicacion se queda en negro. Paso de
+        //    verdad: el trozo de Firestore quedo envenenado en el borde y la
+        //    aplicacion no cargaba ni en escritorio ni en movil, mientras la
+        //    MISMA url con "?x=1" devolvia 200 application/javascript.
+        //
+        // 2. Los bloqueadores de publicidad filtran por texto de la URL.
+        //    Un cliente con uBlock que caiga en una regla contra "firebase"
+        //    ve la aplicacion en blanco, y eso es una llamada a soporte que
+        //    no se diagnostica nunca.
+        //
+        // Los nombres nuevos describen para que sirve cada trozo, que ademas
+        // se lee mejor en el panel de red.
         manualChunks(id) {
           if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
-            return "vendor-react";
+            return "nucleo-interfaz";
           }
           if (id.includes("node_modules/firebase/auth") || id.includes("node_modules/@firebase/auth")) {
-            return "vendor-firebase-auth";
+            return "nucleo-sesion";
           }
           if (id.includes("node_modules/firebase/firestore") || id.includes("node_modules/@firebase/firestore")) {
-            return "vendor-firebase-firestore";
+            return "nucleo-datos";
           }
           if (id.includes("node_modules/firebase") || id.includes("node_modules/@firebase")) {
-            return "vendor-firebase";
+            return "nucleo-base";
           }
         },
       },

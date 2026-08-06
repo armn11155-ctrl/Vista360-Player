@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vista360 Player</title>
+    <!--
+      ESTE ARCHIVO EXISTE POR UNA RAZON DE PESO, no es decoracion.
+
+      Sin un 404.html, Cloudflare Pages resuelve CUALQUIER ruta que no
+      reconoce devolviendo el index.html de la aplicacion con estado 200.
+      Combinado con la regla /assets/* del archivo _headers, que marca
+      todo lo que cuelga de ahi como "immutable, un año", el resultado es
+      que pedir una ruta de /assets/ que todavia no se publico deja ESA
+      respuesta HTML cacheada un año bajo la URL de un archivo .js.
+
+      Cuando el archivo real aparece, el borde sigue sirviendo el HTML, el
+      navegador intenta ejecutarlo como modulo y la aplicacion se queda en
+      negro. Paso de verdad y tumbo el portal en escritorio y en movil.
+
+      Con este archivo, Pages responde 404 a lo que no existe. Un 404 no se
+      cachea como si fuera un asset valido, asi que la ventana de
+      envenenamiento se cierra.
+
+      Es seguro porque la aplicacion NO usa rutas de URL: es una sola
+      pagina con estado interno. Nadie enlaza a /facturas ni /campanas.
+    -->
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #050a12;
+        color: #e6edf5;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+      }
+      a { color: #7cc4ff; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>Esta página no existe.</p>
+      <p><a href="/">Ir a Vista360 Player</a></p>
+    </div>
+  </body>
+</html>

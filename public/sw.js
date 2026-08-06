@@ -109,12 +109,49 @@ self.addEventListener("fetch", (event) => {
           // navegador la reintenta en vez de quedarse pegado con la
           // copia envenenada.
           const tipo = res.headers.get("content-type") || "";
-          if (!res.ok || tipo.includes("text/html")) {
-            throw new Error("Respuesta inesperada (no JS/CSS) para " + event.request.url);
+          if (res.ok && !tipo.includes("text/html")) {
+            const copy = res.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
+            return res;
           }
-          const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(event.request, copy)).catch(() => {});
-          return res;
+
+          // LLEGO HTML DONDE DEBIA HABER JAVASCRIPT.
+          //
+          // Antes esto lanzaba, y la peticion moria como fallo de red: la
+          // aplicacion se quedaba EN NEGRO sin decir nada. No cachear la
+          // basura era correcto; rendirse no.
+          //
+          // La causa es el borde de Cloudflare. La regla /assets/* del
+          // archivo _headers marca todo lo que cuelga de ahi como
+          // "immutable, un año". Si alguien pide una ruta de /assets/
+          // ANTES de que el despliegue la publique, Pages responde con el
+          // index.html del SPA (200, text/html) y ESA respuesta se queda
+          // cacheada un año bajo la URL del archivo. Cuando el archivo
+          // real aparece, el borde sigue sirviendo el HTML viejo.
+          //
+          // Lo importante: el ORIGEN si tiene el archivo bueno. Se
+          // comprobo que la misma URL con un parametro cualquiera devuelve
+          // 200 application/javascript, porque el parametro cambia la
+          // clave de cache y el borde va a buscarlo de nuevo.
+          //
+          // Asi que se reintenta una vez con un parametro. Si vuelve bien,
+          // se guarda bajo la URL ORIGINAL (sin parametro) para que las
+          // siguientes cargas no tengan que repetir el rodeo: la
+          // aplicacion se cura sola, sin esperar a que expire el cache ni
+          // a que nadie lo purgue a mano.
+          const url = new URL(event.request.url);
+          url.searchParams.set("reintento", String(Date.now()));
+          return fetch(url.toString(), { cache: "reload" }).then((res2) => {
+            const tipo2 = res2.headers.get("content-type") || "";
+            if (!res2.ok || tipo2.includes("text/html")) {
+              // El reintento tampoco trajo JavaScript: ahora si es un
+              // fallo real y se deja fallar en vez de servir basura.
+              throw new Error("Respuesta inesperada (no JS/CSS) para " + event.request.url);
+            }
+            const copia2 = res2.clone();
+            caches.open(CACHE).then((cache) => cache.put(event.request, copia2)).catch(() => {});
+            return res2;
+          });
         });
       })
     );
