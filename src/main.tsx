@@ -75,7 +75,7 @@ createRoot(document.getElementById("root")!).render(
           ErrorBoundary para que, si un diálogo rompiera algo, igual caiga
           en la pantalla de error normal y no en blanco. */}
       <DialogosProvider>
-        {window.location.pathname === "/visor-pdf" ? <VisorPdf /> : <App />}
+        {new URLSearchParams(window.location.search).has("visor-pdf") ? <VisorPdf /> : <App />}
       </DialogosProvider>
     </ErrorBoundary>
   </StrictMode>
