@@ -670,6 +670,7 @@ async function paginaEvidenciaOscura(
 const CONTACTO_NOMBRE = "Alan Martínez";
 const CONTACTO_CARGO = "DIRECTOR GENERAL";
 const CONTACTO_EMAIL = "gestion@vista360player.pe";
+const CONTACTO_WEB = "www.vista360player.pe";
 // Sin "+51" -- se pidio calcar la tarjeta de presentacion de
 // referencia, ahi el numero va sin el codigo de pais.
 const CONTACTO_TELEFONO = "947 957 971";
@@ -709,6 +710,22 @@ function drawEmailIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: numb
     .lineJoin("round")
     .stroke();
   doc.path("M22 6l-10 7L2 6").lineWidth(1.6).strokeColor(color).lineJoin("round").lineCap("round").stroke();
+  doc.restore();
+}
+
+/** Icono de globo/web, basado en Feather Icons "globe" (viewBox
+ *  24x24). Mantiene exactamente el mismo tamaño y peso visual que los
+ *  iconos de teléfono y correo. */
+function drawWebsiteIcon(doc: PDFKit.PDFDocument, x: number, y: number, size: number, color: string) {
+  doc.save();
+  doc.translate(x, y).scale(size / 24);
+  doc.circle(12, 12, 10).lineWidth(1.6).strokeColor(color).stroke();
+  doc.path("M2 12h20").lineWidth(1.6).strokeColor(color).lineCap("round").stroke();
+  doc.path("M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20z")
+    .lineWidth(1.6)
+    .strokeColor(color)
+    .lineJoin("round")
+    .stroke();
   doc.restore();
 }
 
@@ -789,7 +806,7 @@ function cierre(doc: PDFKit.PDFDocument) {
 
   // ── Columna derecha: nombre, cargo, raya horizontal y contacto ──
   // Centrada en pageCenterY igual que la columna izquierda.
-  const rBlockH = 315;
+  const rBlockH = 410;
   const rTop = pageCenterY - rBlockH / 2;
   doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
     .text(CONTACTO_NOMBRE, rightColX, rTop, { width: rightColW });
@@ -806,10 +823,16 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
     .text(CONTACTO_EMAIL, rightColX + 46, rTop + 236, { width: rightColW - 46 });
 
-  // Categoria del negocio, como en la tarjeta de presentacion de
-  // referencia ("PUBLICIDAD EXTERIOR · PANELES PREMIUM" al pie).
-  doc.font("Helvetica-Bold").fontSize(13).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, rTop + 302, { characterSpacing: 1, width: rightColW });
+  // Tercera fila con la MISMA separación vertical de 66 pt que hay
+  // entre teléfono y correo: icono 164/230/296, texto 170/236/302.
+  drawWebsiteIcon(doc, rightColX, rTop + 296, 32, iconColor);
+  doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
+    .text(CONTACTO_WEB, rightColX + 46, rTop + 302, { width: rightColW - 46 });
+
+  // Categoria del negocio mas grande (13 -> 18) y con aire propio
+  // debajo de las tres filas de contacto.
+  doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.muted)
+    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, rTop + 374, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
