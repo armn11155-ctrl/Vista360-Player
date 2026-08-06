@@ -62,6 +62,15 @@ function esIOS(): boolean {
   return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
 }
 
+/** Safari necesita abrir una página REAL dentro del clic para tratarla
+ * como un enlace normal y activar la pestaña. Esa página es una ruta de
+ * Vista360; el PDF se carga dentro sin enseñar la dirección firmada. */
+function esSafari(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /Safari\//.test(ua) && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(ua);
+}
+
 /**
  * ¿Hay que usar la hoja de compartir del sistema en vez de descargar?
  *
@@ -196,6 +205,35 @@ function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string):
 
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
+
+  // Safari deja en segundo plano una pestaña about:blank cuyo contenido
+  // cambia después de un await. En cambio, sí activa una ruta real abierta
+  // directamente por el clic. Guardamos los datos antes de abrirla:
+  // sessionStorage se copia al nuevo contexto del mismo origen, y la ruta
+  // /visor-pdf trae el archivo y lo muestra como blob bajo nuestro dominio.
+  if (esSafari()) {
+    const token =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const clave = `vista360:visor-pdf:${token}`;
+    sessionStorage.setItem(clave, JSON.stringify({ url, nombre: _nombre }));
+    const rutaVisor = `/visor-pdf#${token}`;
+    const ventanaSafari = window.open(rutaVisor, "_blank");
+
+    if (ventanaSafari) {
+      try {
+        ventanaSafari.opener = null;
+      } catch {
+        // La ruta ya está abierta; esto es solo aislamiento adicional.
+      }
+    } else {
+      // Si el navegador bloquea la pestaña, usamos la misma ruta en la
+      // ventana actual. El dominio propio se conserva en ambos caminos.
+      window.location.href = rutaVisor;
+    }
+    return;
+  }
 
   // Dentro del gesto, antes de cualquier espera.
   //
