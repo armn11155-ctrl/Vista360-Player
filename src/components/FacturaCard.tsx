@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -278,24 +278,39 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     }
   }
 
-  useEffect(() => {
-    if (!esKeyR2 || !f.pdfUrl || !cloudFunctions) return;
-    let cancelado = false;
-    const fn = httpsCallable<{ key: string; nombre: string }, { url: string }>(
-      cloudFunctions,
-      "firmarDescargaFactura"
-    );
-    fn({ key: f.pdfUrl, nombre: nombreArchivoFactura(f).replace(/\.pdf$/i, "") })
-      .then((res) => {
-        if (!cancelado) setUrlDescarga(res.data.url);
-      })
-      .catch(() => {
-        // si falla, el botón Descargar simplemente usa la misma URL de Ver
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [esKeyR2, f.pdfUrl, f.numero_fmt, f.serie, f.fecha_emision]);
+  /**
+   * La URL de descarga se pide AL PULSAR, no al pintar la tarjeta.
+   *
+   * ANTES esto vivía en un useEffect: cada tarjeta de factura que
+   * aparecía en pantalla llamaba a `firmarDescargaFactura` aunque nadie
+   * tocara "Descargar". Y esa función, para un cliente, hace hasta TRES
+   * lecturas de Firestore (su ficha de portal, la factura por pdfUrl y
+   * el cliente por RUC) antes de firmar nada.
+   *
+   * Con 20 facturas en pantalla eran 20 invocaciones y hasta 60 lecturas
+   * solo por abrir la pantalla, de las que casi ninguna se usaba. Ahora
+   * se paga solo por la factura que de verdad se descarga.
+   *
+   * La URL se guarda por si se pulsa dos veces: la segunda no vuelve a
+   * pedirla mientras siga viva.
+   */
+  const pedirUrlDescarga = useCallback(async (): Promise<string> => {
+    if (urlDescarga) return urlDescarga;
+    if (!esKeyR2 || !f.pdfUrl || !cloudFunctions) return urlVer ?? "";
+    try {
+      const fn = httpsCallable<{ key: string; nombre: string }, { url: string }>(
+        cloudFunctions,
+        "firmarDescargaFactura"
+      );
+      const res = await fn({ key: f.pdfUrl, nombre: nombreArchivoFactura(f).replace(/\.pdf$/i, "") });
+      setUrlDescarga(res.data.url);
+      return res.data.url;
+    } catch {
+      // Si falla, el botón usa la misma URL de Ver: peor nombre de
+      // archivo, pero nunca un botón muerto.
+      return urlVer ?? "";
+    }
+  }, [urlDescarga, esKeyR2, f, cloudFunctions, urlVer]);
 
   const nombreFactura = f.numero_fmt ?? f.serie ?? "Sin número";
   const badge = BADGE[f.estado] ?? BADGE.Borrador;
@@ -528,10 +543,9 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
             disabled={descargando}
             onClick={() => {
               setDescargando(true);
-              void descargarArchivo(
-                urlDescarga || urlVer,
-                nombreArchivoFactura(f)
-              ).finally(() => setDescargando(false));
+              void pedirUrlDescarga()
+                .then((url) => descargarArchivo(url, nombreArchivoFactura(f)))
+                .finally(() => setDescargando(false));
             }}
           >
             {descargando ? "Descargando…" : "Descargar"}

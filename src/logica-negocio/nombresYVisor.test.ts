@@ -103,3 +103,49 @@ describe("el nombre de descarga no puede inyectar cabeceras", () => {
     expect(r2).toContain("nombreDescargaSeguro(nombreDescarga)");
   });
 });
+
+describe("firmar la descarga cuesta lecturas: solo al pulsar", () => {
+  /**
+   * `firmarDescargaFactura` hace, para un CLIENTE, hasta tres lecturas de
+   * Firestore antes de firmar nada: su ficha de portal, la factura por
+   * pdfUrl, y el cliente por RUC.
+   *
+   * Estaba en un useEffect, así que cada tarjeta que aparecía en pantalla
+   * la llamaba aunque nadie tocara "Descargar". Con 20 facturas eran 20
+   * invocaciones y hasta 60 lecturas solo por abrir la pantalla.
+   */
+  const codigo = leer("src/components/FacturaCard.tsx");
+
+  it("no se llama al pintar la tarjeta", () => {
+    const efectos = codigo.match(/useEffect\(\(\) => \{[\s\S]*?\n  \}, \[/g) ?? [];
+    const enEfecto = efectos.filter((e) => e.includes("firmarDescargaFactura"));
+    expect(enEfecto).toEqual([]);
+  });
+
+  it("se llama desde el botón, y una sola vez", () => {
+    expect(codigo).toContain("const pedirUrlDescarga = useCallback");
+    expect(codigo).toContain("void pedirUrlDescarga()");
+    // Si ya se pidió, no se vuelve a pedir: pulsar dos veces no cuesta el doble.
+    expect(codigo).toContain("if (urlDescarga) return urlDescarga;");
+  });
+
+  it("si firmar falla, el botón sigue descargando", () => {
+    // Nunca un botón muerto: peor nombre de archivo, pero descarga.
+    const fn = codigo.slice(codigo.indexOf("const pedirUrlDescarga"), codigo.indexOf("}, [urlDescarga"));
+    // Se mira DENTRO del catch, no en toda la función: `return urlVer` también
+    // aparece en la salida temprana, así que buscarlo suelto daba por buena
+    // una versión que relanzaba el error y dejaba el botón muerto.
+    const catchBlock = fn.slice(fn.indexOf("} catch"), fn.indexOf("\n  }", fn.indexOf("} catch")));
+    expect(catchBlock).toContain('return urlVer ?? ""');
+    expect(catchBlock).not.toContain("throw");
+  });
+
+  it("la precarga del admin para COMPARTIR sigue siendo anticipada, y es correcto", () => {
+    // navigator.share exige que la llamada ocurra dentro del gesto de la
+    // persona. Si el archivo se pidiera al pulsar, el await perdería esa
+    // activación y la hoja de compartir no abriría. Por eso esta SÍ va
+    // por adelantado -- y solo para el admin.
+    expect(codigo).toContain("precargarArchivoR2(urlVer, nombreArchivoFactura(f))");
+    expect(codigo).toContain("if (!isAdmin || !urlVer) return;");
+  });
+});
