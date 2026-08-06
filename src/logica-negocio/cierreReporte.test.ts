@@ -11,7 +11,7 @@ describe("cierre del reporte", () => {
   it("es institucional y no muestra nombre ni cargo personal", () => {
     expect(codigo).toContain('const CIERRE_TITULO = "PUBLICIDAD EXTERIOR"');
     expect(codigo).toContain('const CIERRE_SUBTITULO = "PANELES PREMIUM"');
-    expect(codigo).toContain("VISIBILIDAD · PRESENCIA · IMPACTO");
+    expect(codigo).toContain("ALCANCE · IMPACTO · RESULTADOS");
     expect(codigo).not.toContain("Alan Martínez");
     expect(codigo).not.toContain("DIRECTOR GENERAL");
   });
@@ -35,6 +35,6 @@ describe("cierre del reporte", () => {
     const inicio = codigo.indexOf("// Remate institucional");
     const bloque = codigo.slice(inicio, inicio + 400);
     expect(bloque).toContain('fontSize(18)');
-    expect(bloque).toContain("VISIBILIDAD · PRESENCIA · IMPACTO");
+    expect(bloque).toContain("ALCANCE · IMPACTO · RESULTADOS");
   });
 });

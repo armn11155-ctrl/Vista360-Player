@@ -832,7 +832,7 @@ function cierre(doc: PDFKit.PDFDocument) {
   // Remate institucional: evita repetir el titulo/subtitulo y resume
   // la promesa de marca con el mismo tratamiento elegante del rubro.
   doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.muted)
-    .text("VISIBILIDAD · PRESENCIA · IMPACTO", rightColX, rTop + 374, { characterSpacing: 1, width: rightColW });
+    .text("ALCANCE · IMPACTO · RESULTADOS", rightColX, rTop + 374, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
