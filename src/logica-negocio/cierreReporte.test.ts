@@ -8,6 +8,14 @@ const codigo = readFileSync(
 );
 
 describe("cierre del reporte", () => {
+  it("es institucional y no muestra nombre ni cargo personal", () => {
+    expect(codigo).toContain('const CIERRE_TITULO = "PUBLICIDAD EXTERIOR"');
+    expect(codigo).toContain('const CIERRE_SUBTITULO = "PANELES PREMIUM"');
+    expect(codigo).toContain("VISIBILIDAD · PRESENCIA · IMPACTO");
+    expect(codigo).not.toContain("Alan Martínez");
+    expect(codigo).not.toContain("DIRECTOR GENERAL");
+  });
+
   it("muestra la web debajo del correo con icono de globo", () => {
     expect(codigo).toContain('const CONTACTO_WEB = "www.vista360player.pe"');
     expect(codigo).toContain("drawWebsiteIcon(doc, rightColX, rTop + 296, 32, iconColor)");
@@ -24,9 +32,9 @@ describe("cierre del reporte", () => {
   });
 
   it("agranda el rubro del negocio", () => {
-    const inicio = codigo.indexOf("// Categoria del negocio mas grande");
+    const inicio = codigo.indexOf("// Remate institucional");
     const bloque = codigo.slice(inicio, inicio + 400);
     expect(bloque).toContain('fontSize(18)');
-    expect(bloque).toContain("PUBLICIDAD EXTERIOR · PANELES PREMIUM");
+    expect(bloque).toContain("VISIBILIDAD · PRESENCIA · IMPACTO");
   });
 });

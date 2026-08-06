@@ -667,8 +667,8 @@ async function paginaEvidenciaOscura(
 /** Datos de contacto de Vista360 para el pie de la pagina de cierre.
  *  TODO: mover esto a config/Firestore si se necesita cambiar sin
  *  tocar codigo. Por ahora son valores de prueba. */
-const CONTACTO_NOMBRE = "Alan Martínez";
-const CONTACTO_CARGO = "DIRECTOR GENERAL";
+const CIERRE_TITULO = "PUBLICIDAD EXTERIOR";
+const CIERRE_SUBTITULO = "PANELES PREMIUM";
 const CONTACTO_EMAIL = "gestion@vista360player.pe";
 const CONTACTO_WEB = "www.vista360player.pe";
 // Sin "+51" -- se pidio calcar la tarjeta de presentacion de
@@ -809,9 +809,9 @@ function cierre(doc: PDFKit.PDFDocument) {
   const rBlockH = 410;
   const rTop = pageCenterY - rBlockH / 2;
   doc.font("Helvetica-Bold").fontSize(42).fillColor(COLORS.white)
-    .text(CONTACTO_NOMBRE, rightColX, rTop, { width: rightColW });
+    .text(CIERRE_TITULO, rightColX, rTop, { width: rightColW });
   doc.font("Helvetica-Bold").fontSize(19).fillColor(COLORS.muted)
-    .text(CONTACTO_CARGO, rightColX, rTop + 66, { characterSpacing: 1.5, width: rightColW });
+    .text(CIERRE_SUBTITULO, rightColX, rTop + 66, { characterSpacing: 1.5, width: rightColW });
 
   doc.moveTo(rightColX, rTop + 124).lineTo(rightColX + rightColW, rTop + 124).lineWidth(1).strokeColor("#26324a").stroke();
 
@@ -829,10 +829,10 @@ function cierre(doc: PDFKit.PDFDocument) {
   doc.font("Helvetica-Bold").fontSize(26).fillColor(COLORS.white)
     .text(CONTACTO_WEB, rightColX + 46, rTop + 302, { width: rightColW - 46 });
 
-  // Categoria del negocio mas grande (13 -> 18) y con aire propio
-  // debajo de las tres filas de contacto.
+  // Remate institucional: evita repetir el titulo/subtitulo y resume
+  // la promesa de marca con el mismo tratamiento elegante del rubro.
   doc.font("Helvetica-Bold").fontSize(18).fillColor(COLORS.muted)
-    .text("PUBLICIDAD EXTERIOR · PANELES PREMIUM", rightColX, rTop + 374, { characterSpacing: 1, width: rightColW });
+    .text("VISIBILIDAD · PRESENCIA · IMPACTO", rightColX, rTop + 374, { characterSpacing: 1, width: rightColW });
 }
 
 /** Divisoria de panel -- fondo OSCURO solido a todo lo ancho (antes
