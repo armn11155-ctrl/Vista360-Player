@@ -7,7 +7,7 @@ import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, 
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, InformeCliente } from "../types";
 import { useDialogos } from "./DialogosProvider";
-import { descargarArchivo } from "../utils/descargarArchivo";
+import { descargarArchivo, verArchivo } from "../utils/descargarArchivo";
 
 interface Props {
   informe: InformeCliente;
@@ -94,6 +94,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   // El botón muestra "Descargando…" mientras trae el archivo: en el
   // móvil la espera se nota y sin aviso parece que no hizo nada.
   const [descargando, setDescargando] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState<"whatsapp" | "correo" | null>(null);
   const [archivoCompartir, setArchivoCompartir] = useState<File | null>(null);
@@ -340,9 +341,18 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
         </div>
       )}
       <div className="report-actions">
-        <a className="report-action report-action-primary" href={url} target="_blank" rel="noreferrer" onClick={marcarVisto}>
-          Ver
-        </a>
+        <button
+          type="button"
+          className="report-action report-action-primary"
+          disabled={abriendo}
+          onClick={() => {
+            marcarVisto();
+            setAbriendo(true);
+            void verArchivo(url, `Reporte ${informe.mes ?? ""}.pdf`).finally(() => setAbriendo(false));
+          }}
+        >
+          {abriendo ? "Abriendo…" : "Ver"}
+        </button>
         <button
           type="button"
           className="report-action report-action-download"

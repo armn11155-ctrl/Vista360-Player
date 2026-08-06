@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { descargarArchivo } from "./descargarArchivo";
+import { descargarArchivo, verArchivo } from "./descargarArchivo";
 
 /**
  * El botón "Descargar" no descargaba en el móvil.
@@ -102,3 +102,93 @@ describe("los botones usan la descarga nueva", () => {
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+
+describe("en el móvil se usa la hoja del sistema", () => {
+  beforeEach(() => {
+    URL.createObjectURL = vi.fn(() => "blob:local/abc");
+    URL.revokeObjectURL = vi.fn();
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 })));
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it("si el sistema puede compartir archivos, se ofrece 'Guardar en Archivos'", async () => {
+    // Safari en iOS abre los PDF en su visor pase lo que pase: ni con
+    // blob ni con Content-Disposition los guarda. La hoja del sistema es
+    // lo ÚNICO que de verdad los guarda ahí.
+    const share = vi.fn(async (_datos: { files: File[]; title?: string }) => undefined);
+    vi.stubGlobal("navigator", { share, canShare: () => true });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    await descargarArchivo("https://x/y.pdf", "Reporte.pdf");
+    expect(share).toHaveBeenCalled();
+    expect(share.mock.calls[0]![0].files[0]!.name).toBe("Reporte.pdf");
+    // Y NO se intenta además la descarga por enlace.
+    expect(click).not.toHaveBeenCalled();
+  });
+
+  it("si la persona CANCELA la hoja, no se descarga nada por su cuenta", async () => {
+    // Cancelar es una decisión suya, no un fallo que haya que arreglar.
+    const abortar = Object.assign(new Error("cancelado"), { name: "AbortError" });
+    vi.stubGlobal("navigator", { share: vi.fn(async () => { throw abortar; }), canShare: () => true });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    const abrir = vi.fn();
+    vi.stubGlobal("open", abrir);
+    await descargarArchivo("https://x/y.pdf", "a.pdf");
+    expect(click).not.toHaveBeenCalled();
+    expect(abrir).not.toHaveBeenCalled();
+  });
+
+  it("en escritorio (sin hoja) se descarga por enlace, como siempre", async () => {
+    vi.stubGlobal("navigator", {});
+    let clicado: HTMLAnchorElement | null = null;
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+      clicado = this;
+    });
+    await descargarArchivo("https://x/y.pdf", "a.pdf");
+    expect(clicado).not.toBeNull();
+    expect(clicado!.download).toBe("a.pdf");
+  });
+});
+
+describe("ver un PDF no enseña la dirección de R2", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it("abre la pestaña ANTES de esperar, o el navegador la bloquea", () => {
+    // Si se abriera después del await, el navegador ya no lo considera
+    // una acción de la persona y lo trata como publicidad.
+    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
+    const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
+    expect(cuerpo.indexOf("window.open")).toBeLessThan(cuerpo.indexOf("await fetch"));
+  });
+
+  it("carga el PDF como blob, bajo el dominio propio", async () => {
+    URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
+    URL.revokeObjectURL = vi.fn();
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 })));
+    const ventana = { closed: false, location: { href: "" } };
+    vi.stubGlobal("open", vi.fn(() => ventana));
+    await verArchivo("https://algo.r2.cloudflarestorage.com/x.pdf?X-Amz-Signature=abc", "x.pdf");
+    expect(ventana.location.href).toContain("blob:");
+    expect(ventana.location.href).not.toContain("r2.cloudflarestorage.com");
+  });
+
+  it("si no se puede, cae al enlace directo en la MISMA pestaña ya abierta", async () => {
+    // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("CORS"); }));
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const ventana = { closed: false, location: { href: "" } };
+    vi.stubGlobal("open", vi.fn(() => ventana));
+    await verArchivo("https://algo.r2/x.pdf", "x.pdf");
+    expect(ventana.location.href).toBe("https://algo.r2/x.pdf");
+  });
+});
+
+describe("las tarjetas usan las funciones nuevas también para Ver", () => {
+  const leer = (p: string) => readFileSync(resolve(__dirname, p), "utf-8");
+  for (const archivo of ["../components/ReportCard.tsx", "../components/FacturaCard.tsx"]) {
+    it(`${archivo.split("/").pop()} ya no enlaza directo a la URL firmada`, () => {
+      const codigo = leer(archivo);
+      expect(codigo).toContain("verArchivo(");
+      expect(codigo).not.toMatch(/<a[^>]*href=\{url(Ver)?\}[^>]*target="_blank"/);
+    });
+  }
+});

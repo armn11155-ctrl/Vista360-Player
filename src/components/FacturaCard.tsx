@@ -7,7 +7,7 @@ import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, 
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 import { useDialogos } from "./DialogosProvider";
-import { descargarArchivo } from "../utils/descargarArchivo";
+import { descargarArchivo, verArchivo } from "../utils/descargarArchivo";
 
 interface Props {
   factura: Factura;
@@ -145,6 +145,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
   const [urlDescarga, setUrlDescarga] = useState("");
   const [descargando, setDescargando] = useState(false);
+  const [abriendo, setAbriendo] = useState(false);
 
   // ── Editar el nombre (numero_fmt) que se muestra -- el lapicito al
   // costado del badge de estado abre este editor inline. Pasa por
@@ -490,9 +491,19 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
 
       {urlVer && (
         <div className="report-actions">
-          <a className="report-action factura-action-primary" href={urlVer} target="_blank" rel="noreferrer">
-            Ver
-          </a>
+          <button
+            type="button"
+            className="report-action factura-action-primary"
+            disabled={abriendo}
+            onClick={() => {
+              setAbriendo(true);
+              void verArchivo(urlVer, `${f.numero_fmt || f.serie || "factura"}.pdf`).finally(() =>
+                setAbriendo(false)
+              );
+            }}
+          >
+            {abriendo ? "Abriendo…" : "Ver"}
+          </button>
           <button
             type="button"
             className="report-action report-action-download"
