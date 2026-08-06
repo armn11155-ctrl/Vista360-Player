@@ -32,7 +32,7 @@ describe("cierre del reporte", () => {
   });
 
   it("agranda el rubro del negocio", () => {
-    const inicio = codigo.indexOf("// Categoria del negocio mas grande");
+    const inicio = codigo.indexOf("// Remate institucional");
     const bloque = codigo.slice(inicio, inicio + 400);
     expect(bloque).toContain('fontSize(18)');
     expect(bloque).toContain("VISIBILIDAD · PRESENCIA · IMPACTO");
