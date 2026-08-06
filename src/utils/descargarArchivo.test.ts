@@ -103,6 +103,17 @@ describe("los botones usan la descarga nueva", () => {
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+/**
+ * La hoja del sistema SOLO debe salir en iOS. Chrome en macOS tambien
+ * soporta navigator.share con archivos, y en produccion eso hacia que
+ * "Descargar" abriera AirDrop/Mail en vez de bajar el PDF -- y la hoja de
+ * macOS no trae "Guardar en Archivos", asi que no habia forma de
+ * descargarlo. Por eso los agentes de usuario son parte de la prueba.
+ */
+const UA_IPHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Safari/604.1";
+const UA_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36";
+const UA_IPAD_MODERNO = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Safari/604.1";
+
 describe("en el móvil se usa la hoja del sistema", () => {
   beforeEach(() => {
     URL.createObjectURL = vi.fn(() => "blob:local/abc");
@@ -116,7 +127,7 @@ describe("en el móvil se usa la hoja del sistema", () => {
     // blob ni con Content-Disposition los guarda. La hoja del sistema es
     // lo ÚNICO que de verdad los guarda ahí.
     const share = vi.fn(async (_datos: { files: File[]; title?: string }) => undefined);
-    vi.stubGlobal("navigator", { share, canShare: () => true });
+    vi.stubGlobal("navigator", { share, canShare: () => true, userAgent: UA_IPHONE, maxTouchPoints: 5 });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     await descargarArchivo("https://x/y.pdf", "Reporte.pdf");
     expect(share).toHaveBeenCalled();
@@ -125,10 +136,33 @@ describe("en el móvil se usa la hoja del sistema", () => {
     expect(click).not.toHaveBeenCalled();
   });
 
+  it("en una Mac de ESCRITORIO se descarga, no se abre la hoja", async () => {
+    // Comprobado en produccion: Chrome en macOS soporta canShare con
+    // archivos, asi que "Descargar" abria AirDrop/Mail y el boton se
+    // quedaba en "Descargando..." para siempre. La hoja de macOS no trae
+    // "Guardar en Archivos": no habia forma de obtener el PDF.
+    const share = vi.fn(async () => undefined);
+    vi.stubGlobal("navigator", { share, canShare: () => true, userAgent: UA_MAC, maxTouchPoints: 0 });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    await descargarArchivo("https://x/y.pdf", "Factura 05 Ago 2026.pdf");
+    expect(share).not.toHaveBeenCalled();
+    expect(click).toHaveBeenCalled();
+  });
+
+  it("un iPad moderno SI usa la hoja, aunque diga que es un Mac", async () => {
+    // iPadOS 13+ se hace pasar por Mac; solo se delata por el tactil.
+    const share = vi.fn(async () => undefined);
+    vi.stubGlobal("navigator", { share, canShare: () => true, userAgent: UA_IPAD_MODERNO, maxTouchPoints: 5 });
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    await descargarArchivo("https://x/y.pdf", "a.pdf");
+    expect(share).toHaveBeenCalled();
+    expect(click).not.toHaveBeenCalled();
+  });
+
   it("si la persona CANCELA la hoja, no se descarga nada por su cuenta", async () => {
     // Cancelar es una decisión suya, no un fallo que haya que arreglar.
     const abortar = Object.assign(new Error("cancelado"), { name: "AbortError" });
-    vi.stubGlobal("navigator", { share: vi.fn(async () => { throw abortar; }), canShare: () => true });
+    vi.stubGlobal("navigator", { share: vi.fn(async () => { throw abortar; }), canShare: () => true, userAgent: UA_IPHONE, maxTouchPoints: 5 });
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     const abrir = vi.fn();
     vi.stubGlobal("open", abrir);
