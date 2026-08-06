@@ -63,18 +63,6 @@ function esIOS(): boolean {
 }
 
 /**
- * Safari puede crear una pestaña nueva pero dejarla en segundo plano aunque
- * se llame a focus(). El navegador no ofrece una API para forzar el cambio.
- * En Safari, "Ver" usa por eso la pestaña actual: es la única forma fiable
- * de mostrar el documento inmediatamente.
- */
-function esSafari(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent || "";
-  return /Safari\//.test(ua) && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(ua);
-}
-
-/**
  * ¿Hay que usar la hoja de compartir del sistema en vez de descargar?
  *
  * SOLO en iOS, Y ESTO IMPORTA MÁS DE LO QUE PARECE.
@@ -220,11 +208,7 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
   //
   // La protección que daba noopener se consigue igual anulando `opener`
   // a mano justo después, que es lo que se hace abajo.
-  // Safari ignora focus() según la preferencia de pestañas del usuario y
-  // puede dejar el documento oculto en segundo plano. Allí se navega en la
-  // pestaña actual; los demás navegadores conservan una pestaña nueva.
-  const enSafari = esSafari();
-  const ventana = enSafari ? null : window.open("", "_blank");
+  const ventana = window.open("", "_blank");
   if (ventana) {
     // Que la pestaña nueva no pueda tocar la que la abrió.
     try {
@@ -282,7 +266,6 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     console.warn("No se pudo abrir el archivo desde el dominio propio; se usa el enlace directo.", error);
     // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
     if (ventana && !ventana.closed) ventana.location.href = url;
-    else if (enSafari) window.location.href = url;
     else abrirComoAntes(url);
   } finally {
     clearTimeout(reloj);
