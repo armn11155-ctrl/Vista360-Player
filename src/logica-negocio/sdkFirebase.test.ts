@@ -124,4 +124,50 @@ describe("superficie del SDK de Firebase que usa la aplicación", () => {
     ).version;
     expect(instalada.startsWith(declarada.replace(/^[\^~]/, "").split(".")[0])).toBe(true);
   });
+  it("ningun paquete exige una version de firebase distinta a la instalada", () => {
+    /**
+     * ESTO ES LO QUE ROMPIO EL DESPLIEGUE, y no lo vi.
+     *
+     * Al subir firebase a la 12, `@firebase/rules-unit-testing@3.0.4` se
+     * quedo pidiendo `firebase@^10.0.0` como peer. `npm run build` seguia
+     * pasando -- yo lo probe y dije que estaba listo -- pero Cloudflare
+     * hace `npm clean-install` ANTES de compilar, y npm ci es estricto
+     * con los peers: fallaba con ERESOLVE sin llegar a compilar nunca.
+     *
+     * Verificar el build no es verificar el despliegue. Esta prueba mira
+     * los peers, que es donde estaba el problema real.
+     */
+    const raiz = resolve(__dirname, "../..");
+    const paquete = JSON.parse(readFileSync(resolve(raiz, "package.json"), "utf-8"));
+    const instalada = JSON.parse(
+      readFileSync(resolve(raiz, "node_modules/firebase/package.json"), "utf-8"),
+    ).version;
+    const mayorInstalada = instalada.split(".")[0];
+
+    const conflictos: string[] = [];
+    const dependencias = [
+      ...Object.keys(paquete.dependencies ?? {}),
+      ...Object.keys(paquete.devDependencies ?? {}),
+    ];
+    for (const nombre of dependencias) {
+      if (nombre === "firebase") continue;
+      let manifiesto;
+      try {
+        manifiesto = JSON.parse(
+          readFileSync(resolve(raiz, `node_modules/${nombre}/package.json`), "utf-8"),
+        );
+      } catch {
+        continue;
+      }
+      const exigido = manifiesto.peerDependencies?.firebase;
+      if (!exigido) continue;
+      // Se compara solo la mayor: "^12.0.0" contra la 12 instalada.
+      const mayorExigida = exigido.replace(/[^\d.]/g, "").split(".")[0];
+      if (mayorExigida && mayorExigida !== mayorInstalada) {
+        conflictos.push(`${nombre} exige firebase ${exigido} pero hay ${instalada}`);
+      }
+    }
+    expect(conflictos).toEqual([]);
+  });
+
 });
