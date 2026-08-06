@@ -183,36 +183,44 @@ describe("en el móvil se usa la hoja del sistema", () => {
   });
 });
 
-describe("ver un PDF no enseña la dirección de R2", () => {
-  afterEach(() => vi.restoreAllMocks());
-
-  it("abre la pestaña ANTES de esperar, o el navegador la bloquea", () => {
-    // Si se abriera después del await, el navegador ya no lo considera
-    // una acción de la persona y lo trata como publicidad.
-    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
-    const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
-    expect(cuerpo.indexOf("window.open")).toBeLessThan(cuerpo.indexOf("await fetch"));
+describe("ver un PDF en la pestaña actual", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
-  it("carga el PDF como blob, bajo el dominio propio", async () => {
+  it("no abre una pestaña ni una ventana nueva", () => {
+    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
+    const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
+    expect(cuerpo).not.toContain("window.open");
+    expect(cuerpo).not.toContain('"_blank"');
+  });
+
+  it("carga el PDF como blob y navega en ESTA pestaña", async () => {
     URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
     URL.revokeObjectURL = vi.fn();
     vi.stubGlobal("fetch", vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 })));
-    const ventana = { closed: false, location: { href: "" } };
-    vi.stubGlobal("open", vi.fn(() => ventana));
-    await verArchivo("https://algo.r2.cloudflarestorage.com/x.pdf?X-Amz-Signature=abc", "x.pdf");
-    expect(ventana.location.href).toContain("blob:");
-    expect(ventana.location.href).not.toContain("r2.cloudflarestorage.com");
+    const navegar = vi.fn();
+    vi.stubGlobal("window", { location: { assign: navegar } });
+
+    await verArchivo(
+      "https://algo.r2.cloudflarestorage.com/x.pdf?X-Amz-Signature=abc",
+      "x.pdf",
+    );
+
+    expect(navegar).toHaveBeenCalledWith("blob:https://vista360player.pe/abc");
+    expect(navegar.mock.calls[0]![0]).not.toContain("r2.cloudflarestorage.com");
   });
 
-  it("si no se puede, cae al enlace directo en la MISMA pestaña ya abierta", async () => {
-    // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
+  it("si falla el blob, usa el enlace directo en la MISMA pestaña", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("CORS"); }));
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    const ventana = { closed: false, location: { href: "" } };
-    vi.stubGlobal("open", vi.fn(() => ventana));
+    const navegar = vi.fn();
+    vi.stubGlobal("window", { location: { assign: navegar } });
+
     await verArchivo("https://algo.r2/x.pdf", "x.pdf");
-    expect(ventana.location.href).toBe("https://algo.r2/x.pdf");
+
+    expect(navegar).toHaveBeenCalledWith("https://algo.r2/x.pdf");
   });
 });
 
