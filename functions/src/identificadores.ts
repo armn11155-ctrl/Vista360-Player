@@ -1,4 +1,5 @@
 import { HttpsError } from "firebase-functions/v2/https";
+import { esIdValido } from "./validaciones.js";
 
 /**
  * Validación de identificadores que llegan del navegador.
@@ -30,17 +31,11 @@ import { HttpsError } from "firebase-functions/v2/https";
  * seguidos ni cadenas vacías.
  */
 
-/** Firestore genera ids de 20 caracteres; se deja margen de sobra. */
-const LARGO_MAXIMO = 128;
-const FORMATO = /^[A-Za-z0-9_-]{1,128}$/;
-
-export function esIdValido(id: unknown): id is string {
-  if (typeof id !== "string") return false;
-  if (id.length === 0 || id.length > LARGO_MAXIMO) return false;
-  // Nombres reservados de Firestore.
-  if (id === "." || id === "..") return false;
-  return FORMATO.test(id);
-}
+// La comprobación en sí vive en validaciones.ts, que no importa nada:
+// las pruebas del frontend la EJECUTAN, y si este archivo la tuviera,
+// el `tsc --noEmit` del despliegue de Cloudflare seguiría el import
+// hasta firebase-functions, que allí no está instalado.
+export { esIdValido } from "./validaciones.js";
 
 /**
  * Devuelve el id ya validado, o lanza el error que corresponde.
@@ -48,7 +43,7 @@ export function esIdValido(id: unknown): id is string {
  * Se usa `invalid-argument` a propósito, NO `permission-denied`: un id
  * mal formado es un error de la petición, no un intento de acceso a algo
  * ajeno. Contestar "no tienes permiso" a un id inventado le confirmaría
- * a quien pregunta que ese recurso existe cuando escribe uno correcto.
+ * al atacante que el recurso existe.
  */
 export function exigirId(id: unknown, nombreDelCampo: string): string {
   if (!esIdValido(id)) {
@@ -61,8 +56,8 @@ export function exigirId(id: unknown, nombreDelCampo: string): string {
  * Igual que exigirId, pero acepta que NO venga.
  *
  * Hay campos opcionales de verdad: una cotización sin panel elegido, una
- * factura sin campaña asociada. Devolver "" en esos casos es correcto;
- * lo que no se puede permitir es que llegue algo con forma de ruta.
+ * factura sin campaña asociada. Devolver "" en esos casos es correcto; lo
+ * que no se puede permitir es que llegue algo con forma de ruta.
  */
 export function idOpcional(id: unknown, nombreDelCampo: string): string {
   if (id === undefined || id === null || id === "") return "";
