@@ -252,6 +252,13 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     expect(ramaEscritorio.indexOf("window.open")).toBeLessThan(ramaEscritorio.indexOf("await fetch"));
   });
 
+  it("limpia la pantalla de carga al volver del PDF en la PWA", () => {
+    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
+    expect(fuente).toContain('window.addEventListener(\n        "pageshow"');
+    expect(fuente).toContain("cargando.remove()");
+    expect(fuente).toContain("document.title = tituloAnterior");
+  });
+
   it("carga el PDF como blob, bajo el dominio propio", async () => {
     URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
     URL.revokeObjectURL = vi.fn();

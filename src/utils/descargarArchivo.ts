@@ -250,6 +250,19 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
       });
       document.body.appendChild(cargando);
 
+      // iOS conserva el documento de la PWA en su back-forward cache.
+      // Al volver desde el PDF restaura exactamente ese DOM, incluida esta
+      // capa. La quitamos en pageshow para regresar a la app al instante.
+      const tituloAnterior = document.title;
+      window.addEventListener(
+        "pageshow",
+        () => {
+          cargando.remove();
+          document.title = tituloAnterior;
+        },
+        { once: true },
+      );
+
       try {
         const respuesta = await fetch(url);
         if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);

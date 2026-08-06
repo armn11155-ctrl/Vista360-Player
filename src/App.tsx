@@ -74,51 +74,48 @@ const Reportes = pantallaLazy(() => import("./components/screens/Reportes"));
 const Perfil = pantallaLazy(() => import("./components/screens/Perfil"));
 const OnboardingTour = pantallaLazy(() => import("./components/OnboardingTour"));
 
-/** Precarga en segundo plano (cuando el navegador está libre, sin
- *  competir con nada urgente) el código de TODAS las pantallas que
- *  se abren desde el menú lateral o al tocar una campaña. Sin esto,
- *  la PRIMERA vez que se entra a cada una hay que esperar a que el
- *  navegador la descargue -- eso es el "corte"/destello que se ve al
- *  cambiar de sección. Pedirla de antemano hace que, para cuando el
- *  admin realmente toca "Paneles" (o Cobertura, Facturas, etc), el
- *  código ya esté en caché y la pantalla aparezca al toque. */
-function precargarPantallas() {
-  // OJO con el .catch(): una precarga que falla es TOTALMENTE inofensiva
-  // (la pantalla se vuelve a pedir sola cuando la persona entra de
-  // verdad), pero sin capturar el error cada fallo se convertía en un
-  // "unhandled promise rejection". Y fallan seguido: esto corre al
-  // arrancar la app, cuando el celular todavía está enganchándose a la
-  // red, y son 19 pedidos de golpe. Peor aún, después de un despliegue
-  // nuevo, una pestaña vieja pide chunks que ya no existen -- ahí
-  // fallan TODOS a la vez. Ese ruido tapaba errores de verdad en la
-  // consola y, en algunos navegadores, llegaba a los reportes de error
-  // como si la app se hubiera roto. Ahora se ignoran en silencio, que es
-  // exactamente lo que corresponde para una precarga optimista.
-  const precargar = (cargar: () => Promise<unknown>) => {
-    void cargar().catch(() => {
-      /* precarga optimista: si falla, la pantalla se pide de nuevo al abrirla */
-    });
-  };
+type CargaPantalla = () => Promise<unknown>;
 
-  precargar(() => import("./components/screens/DetalleCampana"));
-  precargar(() => import("./components/screens/NuevaCampana"));
-  precargar(() => import("./components/screens/Cobertura"));
-  precargar(() => import("./components/screens/MisPantallas"));
-  precargar(() => import("./components/screens/AnaliticaClientes"));
-  precargar(() => import("./components/screens/AprobacionesGerente"));
-  precargar(() => import("./components/screens/SolicitudesCampana"));
-  precargar(() => import("./components/screens/Accesos"));
-  precargar(() => import("./components/screens/Facturas"));
-  precargar(() => import("./components/screens/Notificaciones"));
-  precargar(() => import("./components/screens/CrearCliente"));
-  precargar(() => import("./components/screens/Paneles"));
-  precargar(() => import("./components/screens/Ocupacion"));
-  precargar(() => import("./components/screens/Cotizaciones"));
-  precargar(() => import("./components/AdminClientPicker"));
-  precargar(() => import("./components/screens/AdminPerfil"));
-  precargar(() => import("./components/screens/MisCampanas"));
-  precargar(() => import("./components/screens/Reportes"));
-  precargar(() => import("./components/screens/Perfil"));
+const PANTALLAS_PRIORITARIAS: CargaPantalla[] = [
+  () => import("./components/screens/Reportes"),
+  () => import("./components/screens/MisCampanas"),
+  () => import("./components/screens/DetalleCampana"),
+  () => import("./components/screens/Facturas"),
+  () => import("./components/AdminClientPicker"),
+  () => import("./components/screens/Cobertura"),
+];
+
+const PANTALLAS_SECUNDARIAS: CargaPantalla[] = [
+  () => import("./components/screens/NuevaCampana"),
+  () => import("./components/screens/MisPantallas"),
+  () => import("./components/screens/AnaliticaClientes"),
+  () => import("./components/screens/AprobacionesGerente"),
+  () => import("./components/screens/SolicitudesCampana"),
+  () => import("./components/screens/Accesos"),
+  () => import("./components/screens/Notificaciones"),
+  () => import("./components/screens/CrearCliente"),
+  () => import("./components/screens/Paneles"),
+  () => import("./components/screens/Ocupacion"),
+  () => import("./components/screens/Cotizaciones"),
+  () => import("./components/screens/AdminPerfil"),
+  () => import("./components/screens/Perfil"),
+];
+
+/** Descarga como máximo dos pantallas a la vez. Antes se lanzaban 19
+ * pedidos simultáneos apenas arrancaba la app; en un iPhone eso saturaba
+ * la conexión y hacía más lentos el inicio, los datos y hasta los PDFs. */
+async function precargarGrupo(cargas: CargaPantalla[]) {
+  for (let i = 0; i < cargas.length; i += 2) {
+    await Promise.allSettled(cargas.slice(i, i + 2).map((cargar) => cargar()));
+  }
+}
+
+function precargarPantallasPrioritarias() {
+  void precargarGrupo(PANTALLAS_PRIORITARIAS);
+}
+
+function precargarPantallasSecundarias() {
+  void precargarGrupo(PANTALLAS_SECUNDARIAS);
   // Cobertura necesita además el chunk de Leaflet (ahora empaquetado con
   // la app, ya no un CDN externo -- ver utils/leaflet.ts). Pedirlo acá
   // igual sirve: aunque ya esté en el mismo paquete Vite, sigue siendo
@@ -137,7 +134,11 @@ function precargarPantallas() {
   // de una vez -- así, para cuando la persona realmente toca
   // "Cobertura", lo más probable es que los paneles ya hayan llegado
   // mientras miraba Inicio, y no vea "Cargando" en absoluto.
-  precargar(() => import("./hooks/usePanelesDisponibles").then((m) => m.precargarPaneles()));
+  void import("./hooks/usePanelesDisponibles")
+    .then((m) => m.precargarPaneles())
+    .catch(() => {
+      /* precarga optimista */
+    });
 }
 
 type View =
@@ -583,20 +584,21 @@ function AuthenticatedApp({
   const adminAvatarUrl = useAvatarPropio(esInterno ? uid : undefined);
 
   useEffect(() => {
-    // timeout:1500 es la parte importante acá -- sin él,
-    // requestIdleCallback puede demorar mucho más de lo que parece
-    // "ocioso" (el navegador nunca lo considera libre de verdad si hay
-    // animaciones corriendo, como el logo de BrandLoader, o la persona
-    // sigue tocando la pantalla) y la precarga podía terminar
-    // disparándose recién cuando la persona YA estaba navegando entre
-    // pantallas -- exactamente el "cargando, cargando" que se quiere
-    // evitar. Con el timeout, el navegador SÍ o SÍ la corre antes de
-    // 1.5s, esté "libre" o no, aunque sea compitiendo un poco con otra
-    // cosa -- mejor eso que dejar la app entera sintiéndose pesada.
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
     const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
-    const id = idle(precargarPantallas, { timeout: 1500 });
-    return () => cancelar(id);
+    // Primero las rutas que más se usan. Las restantes esperan unos
+    // segundos y se descargan de dos en dos para no competir con Firebase
+    // ni con lo que la persona acaba de pedir al abrir la aplicación.
+    const prioritarias = idle(precargarPantallasPrioritarias, { timeout: 1500 });
+    let secundarias: number | undefined;
+    const esperaSecundarias = window.setTimeout(() => {
+      secundarias = idle(precargarPantallasSecundarias, { timeout: 5000 });
+    }, 6000);
+    return () => {
+      cancelar(prioritarias);
+      if (secundarias !== undefined) cancelar(secundarias);
+      window.clearTimeout(esperaSecundarias);
+    };
   }, []);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
