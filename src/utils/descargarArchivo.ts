@@ -218,7 +218,7 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const clave = `vista360:visor-pdf:${token}`;
     sessionStorage.setItem(clave, JSON.stringify({ url, nombre: _nombre }));
-    const rutaVisor = `/visor-pdf#${token}`;
+    const rutaVisor = `/?visor-pdf=${encodeURIComponent(token)}`;
     const ventanaSafari = window.open(rutaVisor, "_blank");
 
     if (ventanaSafari) {
