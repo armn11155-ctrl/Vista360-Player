@@ -43,6 +43,21 @@ describe("el despliegue no deja basura que se cobre para siempre", () => {
     );
   });
 
+  it("NO pisa una política de limpieza que ya exista", () => {
+    // El proyecto ya tenía una de 1 día, más agresiva --y más barata--
+    // que los 3 días que pedía este paso. Sobrescribirla habría sido un
+    // retroceso disfrazado de mejora.
+    const paso = comandosDelPaso("imagenes de contenedor viejas");
+    expect(paso).not.toContain("--force");
+    expect(paso).toContain("currently deletes images older than");
+    expect(paso).toContain("No se toca.");
+  });
+
+  it("si de verdad no se pudo programar, avisa (sin tumbar el despliegue)", () => {
+    const paso = comandosDelPaso("imagenes de contenedor viejas");
+    expect(paso).toContain("::warning::");
+  });
+
   it("conserva algunos días de imágenes para poder revertir un despliegue malo", () => {
     // Con --days 0 se borraría la imagen en uso y no habría a dónde volver
     // si el despliegue nuevo sale defectuoso.
