@@ -139,15 +139,104 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
 }
 
 /**
- * Abre el PDF en la pestaña actual.
+ * Abre un PDF SIN enseñar la dirección de R2.
  *
- * No se usa window.open: Safari puede crear una pestaña nueva que pasa
- * desapercibida para la persona. Primero se trae el archivo como blob para
- * no exponer la URL firmada de R2 y luego se navega en esta misma pestaña.
- * El botón Atrás del navegador devuelve al portal.
+ * EL PROBLEMA. "Ver" era un `<a href={urlFirmada} target="_blank">`, así
+ * que la barra de direcciones mostraba algo como
+ * `https://vista360-evidencias.a1b2c3....r2.cloudflarestorage.com/vista360/
+ * facturas/1784438525571-witr63am.pdf?X-Amz-Algorithm=...&X-Amz-Signature=...`
+ *
+ * Eso es feo, deja a la vista dónde está alojado todo, y expone una URL
+ * firmada que quien la copie puede reenviar hasta que expire.
+ *
+ * LA SOLUCIÓN. Se trae el PDF y se abre como `blob:`, que el navegador
+ * muestra bajo el dominio de la aplicación:
+ * `blob:https://vista360player.pe/6f2a...`. Mismo PDF, sin firma a la
+ * vista y con la marca propia.
+ *
+ * EL ORDEN IMPORTA. La pestaña se abre PRIMERO, dentro del clic. Si se
+ * abriera después del `await`, el navegador ya no lo considera una
+ * acción de la persona y lo bloquea como si fuera publicidad.
  */
+/**
+ * Muestra el PDF en la pestaña YA ABIERTA, con el nombre en el título.
+ *
+ * Navegar directamente a la URL `blob:` funciona, pero deja la pestaña
+ * llamándose "untitled": un `blob:` no lleva nombre de archivo, así que
+ * el visor de Chrome no tiene de dónde sacarlo. Con varias facturas
+ * abiertas no hay forma de saber cuál es cuál.
+ *
+ * Metiendo el PDF en un <embed> dentro de una página propia se controla
+ * el <title>, y la barra de direcciones sigue mostrando el dominio de la
+ * aplicación en vez de la URL firmada de R2.
+ */
+function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string): void {
+  const titulo = (nombre || "Documento").replace(/\.pdf$/i, "");
+  // Se escapa: el nombre sale de datos (el número o la fecha de la
+  // factura) y aquí se está construyendo HTML.
+  const seguro = titulo.replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
+  );
+  try {
+    ventana.document.open();
+    ventana.document.write(
+      '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+        `<title>${seguro}</title>` +
+        '<style>html,body{margin:0;height:100%;background:#050a12}' +
+        "embed{width:100%;height:100%;border:0}</style></head><body>" +
+        `<embed src="${urlLocal}" type="application/pdf"></body></html>`
+    );
+    ventana.document.close();
+  } catch {
+    // Si por lo que sea no se puede escribir en la pestaña, se navega a
+    // la URL del blob como antes: se pierde el título, no el documento.
+    ventana.location.href = urlLocal;
+  }
+}
+
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
+
+  // Dentro del gesto, antes de cualquier espera.
+  //
+  // SIN "noopener", Y ES A PROPÓSITO. `window.open` DEVUELVE null cuando
+  // se le pasa noopener -- está en la especificación, no es un fallo del
+  // navegador. Con noopener puesto, esta función abría una pestaña en
+  // blanco, se quedaba sin referencia a ella, y cargaba el PDF en la
+  // pestaña original: la persona veía una pestaña `about:blank` huérfana
+  // que nunca se llenaba. Era justo el síntoma reportado.
+  //
+  // La protección que daba noopener se consigue igual anulando `opener`
+  // a mano justo después, que es lo que se hace abajo.
+  const ventana = window.open("", "_blank");
+  if (ventana) {
+    // Que la pestaña nueva no pueda tocar la que la abrió.
+    try {
+      ventana.opener = null;
+    } catch {
+      // Algún navegador no deja escribirlo; no es motivo para no abrir.
+    }
+    // Safari a veces crea la pestaña en segundo plano. Pedir el foco aquí,
+    // todavía dentro del gesto de la persona, le da la mejor oportunidad
+    // de llevarla inmediatamente al documento.
+    try {
+      ventana.focus();
+    } catch {
+      // La política del navegador puede impedirlo; el PDF abrirá igual.
+    }
+    // Algo mientras carga: una pestaña en blanco parece que se colgó.
+    try {
+      ventana.document.write(
+        '<!doctype html><html><head><meta charset="utf-8"><title>Vista360</title>' +
+          '<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;' +
+          'justify-content:center;height:100vh;margin:0;color:#555}</style></head>' +
+          "<body>Abriendo el documento…</body></html>",
+      );
+      ventana.document.close();
+    } catch {
+      // Idem: si no se puede escribir, se sigue igual.
+    }
+  }
 
   const corte = new AbortController();
   const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA_MS);
@@ -159,14 +248,25 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
       blob.type ? blob : new Blob([blob], { type: "application/pdf" })
     );
 
-    window.location.assign(urlLocal);
-    // En la navegación normal la página se descarga y este temporizador no
-    // llega a ejecutarse. Si la navegación se cancela, libera la memoria.
+    if (ventana && !ventana.closed) {
+      mostrarPdfConTitulo(ventana, urlLocal, _nombre);
+      // Repetirlo al terminar cubre Safari cuando el cambio de contenido
+      // hizo que la pestaña perdiera el foco durante la espera.
+      try {
+        ventana.focus();
+      } catch {
+        // El navegador decide en última instancia si cambia de pestaña.
+      }
+    } else {
+      // Pestaña bloqueada: se navega en la actual, que también sirve.
+      window.location.href = urlLocal;
+    }
     setTimeout(() => URL.revokeObjectURL(urlLocal), 60_000);
   } catch (error) {
     console.warn("No se pudo abrir el archivo desde el dominio propio; se usa el enlace directo.", error);
-    // Peor presentación, pero el PDF se ve en la misma pestaña.
-    window.location.assign(url);
+    // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
+    if (ventana && !ventana.closed) ventana.location.href = url;
+    else abrirComoAntes(url);
   } finally {
     clearTimeout(reloj);
   }
