@@ -6,35 +6,26 @@ import { nombreDescargaSeguro } from "../../functions/src/validaciones.js";
 const RAIZ = resolve(__dirname, "../..");
 const leer = (f: string) => readFileSync(resolve(RAIZ, f), "utf-8");
 
-describe("el visor no puede volver a dejar una pestaña en blanco", () => {
+describe("el visor usa la pestaña actual", () => {
   /**
-   * EL FALLO. `verArchivo` abría la pestaña con
-   * `window.open("", "_blank", "noopener")`. Con `noopener`, window.open
-   * DEVUELVE null -- está en la especificación, no es cosa de un
-   * navegador concreto. Así que la función se quedaba sin referencia a la
-   * pestaña que acababa de abrir, y cargaba el PDF en la pestaña
-   * ORIGINAL. La persona veía una pestaña `about:blank` huérfana que
-   * nunca se llenaba.
+   * Safari puede abrir una pestaña nueva que pasa desapercibida para la
+   * persona. Ver reporte y Ver factura deben navegar en la pestaña desde
+   * la que se pulsó el botón.
    */
   const codigo = leer("src/utils/descargarArchivo.ts");
   const verArchivo = codigo.slice(codigo.indexOf("export async function verArchivo"));
 
-  it("no pide noopener en el window.open cuya referencia necesita", () => {
-    const apertura = verArchivo.match(/window\.open\((.*?)\);/s)?.[1] ?? "";
-    expect(apertura).not.toContain("noopener");
+  it("no abre ventanas ni pestañas nuevas", () => {
+    expect(verArchivo).not.toContain("window.open");
+    expect(verArchivo).not.toContain('"_blank"');
   });
 
-  it("pero sigue anulando opener, que es lo que noopener protegía", () => {
-    // Quitar noopener sin esto dejaría a la pestaña nueva tocando la
-    // original: se cambiaría un fallo visible por uno de seguridad.
-    expect(verArchivo).toContain("ventana.opener = null");
+  it("navega al blob dentro de la pestaña actual", () => {
+    expect(verArchivo).toContain("window.location.assign(urlLocal)");
   });
 
-  it("comprueba que la ventana existe antes de usarla", () => {
-    // Si el navegador bloquea la pestaña emergente, window.open devuelve
-    // null igual. Sin esta guarda, el fallo vuelve por otra puerta.
-    expect(verArchivo).toMatch(/if \(ventana && !ventana\.closed\)/);
-    expect(verArchivo).toContain("window.location.href = urlLocal");
+  it("el respaldo directo también conserva la pestaña actual", () => {
+    expect(verArchivo).toContain("window.location.assign(url)");
   });
 });
 
@@ -150,33 +141,13 @@ describe("firmar la descarga cuesta lecturas: solo al pulsar", () => {
   });
 });
 
-describe("la pestaña del visor lleva el nombre del documento", () => {
-  /**
-   * Navegar directo a la URL `blob:` funciona pero deja la pestaña
-   * llamándose "untitled": un blob no lleva nombre, así que el visor de
-   * Chrome no tiene de dónde sacarlo. Verificado en producción.
-   */
+describe("el visor no expone la URL firmada cuando puede traer el PDF", () => {
   const codigo = leer("src/utils/descargarArchivo.ts");
-  const fn = codigo.slice(codigo.indexOf("function mostrarPdfConTitulo"), codigo.indexOf("export async function verArchivo"));
+  const verArchivo = codigo.slice(codigo.indexOf("export async function verArchivo"));
 
-  it("el PDF se muestra dentro de una página propia, con título", () => {
-    expect(codigo).toContain("mostrarPdfConTitulo(ventana, urlLocal, _nombre)");
-    expect(fn).toContain("<title>");
-    expect(fn).toContain('type="application/pdf"');
-  });
-
-  it("el nombre se ESCAPA antes de meterlo en el HTML", () => {
-    // Sale de datos (número o fecha de la factura) y se está armando
-    // HTML: sin escapar, un nombre con < o " inyecta etiquetas.
-    expect(fn).toContain('replace(/[&<>"\']/g');
-    expect(fn).toContain("&lt;");
-    expect(fn).toContain("&quot;");
-  });
-
-  it("si no se puede escribir en la pestaña, se sigue viendo el PDF", () => {
-    // Perder el título es aceptable; perder el documento no.
-    const bloqueCatch = fn.slice(fn.indexOf("} catch"));
-    expect(bloqueCatch).toContain("ventana.location.href = urlLocal");
+  it("crea una URL local y navega hacia ella", () => {
+    expect(verArchivo).toContain("URL.createObjectURL");
+    expect(verArchivo).toContain("window.location.assign(urlLocal)");
   });
 });
 
