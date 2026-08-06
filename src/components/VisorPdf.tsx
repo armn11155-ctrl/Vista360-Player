@@ -12,7 +12,7 @@ export default function VisorPdf() {
   const [urlLocal, setUrlLocal] = useState("");
 
   useEffect(() => {
-    const token = window.location.hash.slice(1);
+    const token = new URLSearchParams(window.location.search).get("visor-pdf") || "";
     const clave = `${PREFIJO_VISOR}${token}`;
     let datos: DatosVisor | null = null;
 
