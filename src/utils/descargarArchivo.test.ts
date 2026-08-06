@@ -189,23 +189,27 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     vi.unstubAllGlobals();
   });
 
-  it("Safari abre la URL directamente dentro del clic y activa la pestaña", async () => {
+  it("Safari abre una ruta real del dominio propio dentro del clic", async () => {
     const url = "https://algo.r2/x.pdf?firma=abc";
-    const ventana = { opener: {}, focus: vi.fn() };
+    const ventana = { opener: {} };
     const abrir = vi.fn(() => ventana);
     const fetchMock = vi.fn();
     vi.stubGlobal("navigator", {
       userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 Version/18.0 Safari/605.1.15",
       maxTouchPoints: 0,
     });
+    vi.stubGlobal("crypto", { randomUUID: () => "token-prueba" });
     vi.stubGlobal("open", abrir);
     vi.stubGlobal("fetch", fetchMock);
 
     await verArchivo(url, "Reporte.pdf");
 
-    expect(abrir).toHaveBeenCalledWith(url, "_blank");
+    expect(abrir).toHaveBeenCalledWith("/visor-pdf#token-prueba", "_blank");
     expect(ventana.opener).toBeNull();
-    expect(ventana.focus).toHaveBeenCalled();
+    expect(JSON.parse(sessionStorage.getItem("vista360:visor-pdf:token-prueba")!)).toEqual({
+      url,
+      nombre: "Reporte.pdf",
+    });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
