@@ -227,10 +227,41 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
         (navigator as Navigator & { standalone?: boolean }).standalone === true);
 
     // Una ventana nueva en la PWA de iOS aparece primero como una pantalla
-    // blanca. Reutilizar la ventana actual mantiene el fondo de Vista360
-    // durante la carga y permite regresar a la app con el gesto Atrás.
+    // blanca. Además, pasar primero por la ruta interna obliga a recargar
+    // todo React antes de empezar a traer el PDF. Lo descargamos desde la
+    // pantalla actual: la respuesta al toque es inmediata y, al terminar,
+    // entramos directamente al visor nativo con zoom.
     if (pwaIOS) {
-      window.location.href = rutaVisor;
+      const cargando = document.createElement("div");
+      cargando.setAttribute("role", "status");
+      cargando.setAttribute("aria-live", "polite");
+      cargando.textContent = "Abriendo el documento…";
+      Object.assign(cargando.style, {
+        alignItems: "center",
+        background: "#050a12",
+        color: "#dce6f5",
+        display: "flex",
+        fontFamily: "system-ui, sans-serif",
+        inset: "0",
+        justifyContent: "center",
+        padding: "24px",
+        position: "fixed",
+        zIndex: "2147483647",
+      });
+      document.body.appendChild(cargando);
+
+      try {
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        const blob = await respuesta.blob();
+        const pdf = blob.type ? blob : new Blob([blob], { type: "application/pdf" });
+        document.title = (_nombre || "Documento").replace(/\.pdf$/i, "");
+        window.location.href = URL.createObjectURL(pdf);
+      } catch {
+        cargando.remove();
+        // La ruta existente conserva el manejo de error y sirve de respaldo.
+        window.location.href = rutaVisor;
+      }
       return;
     }
 

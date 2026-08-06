@@ -248,7 +248,8 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     // una acción de la persona y lo trata como publicidad.
     const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
     const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
-    expect(cuerpo.indexOf("window.open")).toBeLessThan(cuerpo.indexOf("await fetch"));
+    const ramaEscritorio = cuerpo.slice(cuerpo.indexOf('const ventana = window.open("", "_blank")'));
+    expect(ramaEscritorio.indexOf("window.open")).toBeLessThan(ramaEscritorio.indexOf("await fetch"));
   });
 
   it("carga el PDF como blob, bajo el dominio propio", async () => {
