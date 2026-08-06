@@ -16,7 +16,8 @@ La compilación, TypeScript, los detectores de renders y la suite completa pasan
 - Los respaldos de clientes y facturas cortan la escucha agregada antes de abrir la escucha directa; nunca quedan dos listeners activos.
 - La pantalla de Cotizaciones ya no incluye jsPDF al precargarse. El generador se importa solo al guardar o compartir el PDF.
 - Las pantallas prioritarias se precargan juntas y las secundarias en lotes de cuatro. Se siguen precargando todas, sin competir las 19 por red y CPU al mismo tiempo.
-- Los cambios de contadores de acceso/visita ya no vuelven a renderizar toda la aplicación.
+- La autenticación ya no mantiene un listener sobre el mismo documento donde se guardan los contadores. El rol se comprueba al entrar y al volver a la PWA, con una vigencia de cinco minutos; las operaciones sensibles continúan protegidas por reglas y Functions.
+- Las pantallas visitadas durante una navegación se agrupan en una sola actualización. El servidor conserva compatibilidad con las PWA antiguas que todavía envían una pantalla por llamada.
 - La imagen móvil de acceso pasó de 968,918 a 421,996 bytes: 56.4% menos, conservando resolución suficiente para pantallas Retina.
 - Analítica presenta 40 clientes inicialmente y añade más bajo demanda, evitando montar cientos de tarjetas de golpe.
 
@@ -43,13 +44,14 @@ Inicio frío normal, con los agregados presentes:
 - 1 cliente seleccionado.
 - 1 agregado del cliente.
 - 1 agregado de paneles.
-- 2 notificaciones posteriores del mismo `portalUsers/{uid}` causadas por `registrarAcceso` y la primera `registrarVisita`.
 
-Resultado de aplicación: **6 lecturas**. Con hasta una lectura dependiente de reglas por cada solicitud o reevaluación, el techo conservador es **aproximadamente 12 lecturas** en el inicio frío. Además se producen **2 escrituras** de analítica.
+Resultado de aplicación: **4 lecturas**. Con hasta una lectura dependiente de reglas por cada solicitud, el techo conservador es **aproximadamente 8 lecturas** en el inicio frío. Además se producen normalmente **2 escrituras** de analítica: acceso y lote de pantallas.
 
-Cada pantalla distinta visitada por primera vez en esa sesión añade una escritura y, mientras el listener de autenticación siga abierto, una actualización leída del documento propio. Volver a una pantalla ya visitada no vuelve a escribir. La actualización ya no provoca un render completo de la app.
+Cada pantalla distinta sigue contándose una vez por sesión, pero varias se envían juntas. Esas escrituras ya no producen lecturas de autenticación. Volver a una pantalla ya visitada no vuelve a escribir. Si la PWA se oculta, el lote pendiente se envía inmediatamente.
 
-Abrir Facturas añade normalmente 1 documento agregado, más hasta 1 lectura dependiente de reglas. Abrir Reportes no hace lecturas directas de Firestore: usa la función/listado de R2, ahora reutilizado durante 60 segundos.
+Abrir Facturas añade normalmente 1 documento agregado, más hasta 1 lectura dependiente de reglas. Abrir Reportes no hace lecturas directas de Firestore: usa la función/listado de R2, ahora reutilizado durante 60 segundos. Una sesión que recorre todas las pantallas del cliente queda normalmente alrededor de **8 a 12 lecturas conservadoras**, no 35–40.
+
+Al volver a enfocar la PWA después de más de cinco minutos se comprueba de nuevo el rol: 1 lectura de resultado y hasta 1 dependiente de reglas. No se consulta en cada cambio de pantalla.
 
 ### Administrador
 
@@ -58,7 +60,7 @@ Sea:
 - `A = ceil(clientes / 2000)`, cantidad de partes del agregado de clientes; hoy el caso normal es `A = 1`.
 - `P = solicitudes pendientes devueltas`; una consulta vacía tiene un mínimo facturable de una lectura.
 
-El inicio administrativo lee `A + max(P, 1) + 3` documentos de aplicación: usuario propio, agregado(s) de clientes, agregado de paneles, solicitudes pendientes y tareas. Las dos actualizaciones de analítica añaden 2 lecturas del listener propio y 2 escrituras. Con `A = 1` y ninguna solicitud pendiente: **7 lecturas de resultado**; incluyendo un máximo conservador de reglas para las cinco solicitudes iniciales, **aproximadamente 12 lecturas**.
+El inicio administrativo lee `A + max(P, 1) + 3` documentos de aplicación: usuario propio, agregado(s) de clientes, agregado de paneles, solicitudes pendientes y tareas. Las actualizaciones de analítica ya no añaden lecturas. Con `A = 1` y ninguna solicitud pendiente: **5 lecturas de resultado**; incluyendo un máximo conservador de reglas para las cinco solicitudes iniciales, **aproximadamente 10 lecturas**.
 
 Seleccionar un cliente añade normalmente 2 documentos de resultado (cliente y agregado del cliente), o aproximadamente 4 contando el máximo conservador de reglas.
 
@@ -89,7 +91,7 @@ La base `(default)` usa Firestore Native Standard en `nam5` y tiene cuota gratui
 - 100 lecturas fuera de cuota: USD 0.00003.
 - 1,000,000 de lecturas fuera de cuota: USD 0.30.
 
-En una sesión fría típica de cliente, incluso usando el techo conservador de 12 lecturas, 1,000 sesiones serían unas 12,000 lecturas, todavía dentro de la cuota diaria si no existen otras cargas importantes. La consola de facturación sigue siendo la fuente definitiva porque las reconexiones, cambios en tiempo real y evaluaciones de reglas dependen del uso real.
+Usando 10 lecturas conservadoras por sesión completa, 1,000 sesiones serían unas 10,000 lecturas, todavía dentro de la cuota diaria si no existen otras cargas importantes. La consola de facturación sigue siendo la fuente definitiva porque las reconexiones, cambios en tiempo real y evaluaciones de reglas dependen del uso real.
 
 Fuentes oficiales:
 
@@ -100,9 +102,9 @@ Fuentes oficiales:
 ## Verificación ejecutada
 
 - `npm run typecheck`
-- `npm test`: 44 archivos, 819 pruebas.
+- `npm test`: 45 archivos, 822 pruebas.
+- `npm --prefix functions run build`: Cloud Functions correctas.
 - `node scripts/detectar-renders.mjs`: 0 riesgos directos y 0 inline.
 - `node scripts/detectar-riesgos-render.mjs`: 0 riesgos.
 - `npm run build`: compilación de producción correcta.
 - Navegador local: pantalla de acceso correcta y consola sin errores ni advertencias.
-

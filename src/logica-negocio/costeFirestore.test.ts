@@ -183,11 +183,23 @@ describe("reutilizar lo que ya está en memoria", () => {
     expect(c).toContain('await import("../../utils/cotizacionPdf")');
   });
 
-  it("los contadores de visita no vuelven a renderizar toda la app", () => {
+  it("los contadores de visita no generan lecturas del listener de autenticación", () => {
     const c = sinComentarios(hook("usePortalAuth"));
-    expect(c).toContain("setState((actual)");
-    expect(c).toContain('actual.status === "in"');
-    expect(c).toContain("return actual;");
+    expect(c).toContain("getDoc(");
+    expect(c).not.toContain("onSnapshot(");
+    expect(c).toContain('document.addEventListener("visibilitychange"');
+    expect(c).toContain("VIGENCIA_VERIFICACION_MS");
+  });
+
+  it("las visitas a varias pantallas se guardan en un solo lote", () => {
+    const cliente = sinComentarios(hook("useRegistrarVisita"));
+    const servidor = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/registrarVisita.ts"), "utf-8"),
+    );
+    expect(cliente).toContain("pendientesPorUsuario");
+    expect(cliente).toContain("pantallas: lote");
+    expect(servidor).toContain("request.data?.pantallas");
+    expect(servidor).toContain("db.doc(`portalUsers/${uid}`).update(cambios)");
   });
 });
 

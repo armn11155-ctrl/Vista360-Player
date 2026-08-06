@@ -5,7 +5,7 @@ import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 
 import { auth, cloudFunctions, logout } from "../../config/firebase";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
-import { useAvatarPropio } from "../../hooks/useAvatarPropio";
+import { publicarAvatarPropio, useAvatarPropio } from "../../hooks/useAvatarPropio";
 import BackChevron from "../BackChevron";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
@@ -274,12 +274,12 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
     }
     const webp = await comprimirAvatarWebp(file, posicion);
     const { key: url } = await subirAvatarR2(webp);
-    // No hace falta setear el estado local: useAvatarPropio escucha el
-    // mismo documento en vivo y se actualiza solo apenas se confirma
-    // el guardado (también refleja el cambio en el ícono "Mi perfil"
-    // del selector de cuentas, que usa el mismo hook).
     const fn = httpsCallable<{ avatarUrl: string }, { avatarUrl: string }>(cloudFunctions, "actualizarAvatarPropio");
     await fn({ avatarUrl: url });
+    // Se publica localmente al confirmar el guardado. Así la foto cambia
+    // al instante en todas las vistas sin mantener una escucha de pago
+    // sobre portalUsers solo para esperar este caso excepcional.
+    publicarAvatarPropio(uid, url);
   }
 
   return (

@@ -33,8 +33,11 @@ const PANTALLAS_VALIDAS = new Set([
 ]);
 
 /**
- * Registra que el cliente autenticado visitó `pantalla` — un contador +
- * la fecha de la última vez. Es la base de "qué mira cada cliente", no
+ * Registra las pantallas visitadas por el usuario autenticado — contador +
+ * fecha de la última vez. Acepta `pantallas` para agrupar una navegación
+ * completa en una sola escritura y conserva `pantalla` para clientes que
+ * todavía tengan abierta una versión anterior de la PWA.
+ * Es la base de "qué mira cada cliente", no
  * solo "cuándo entró" (ver registrarAcceso). Igual que esa función,
  * usa Admin SDK y solo puede tocar el documento del propio uid.
  */
@@ -47,16 +50,28 @@ export const registrarVisita = onCall(async (request) => {
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "registrarVisita", 60);
 
-  const pantalla = request.data?.pantalla;
-  if (typeof pantalla !== "string" || !PANTALLAS_VALIDAS.has(pantalla)) {
+  const recibidas: unknown[] = Array.isArray(request.data?.pantallas)
+    ? request.data.pantallas
+    : [request.data?.pantalla];
+  if (
+    recibidas.length === 0 ||
+    recibidas.length > PANTALLAS_VALIDAS.size ||
+    recibidas.some(
+      (pantalla: unknown) => typeof pantalla !== "string" || !PANTALLAS_VALIDAS.has(pantalla)
+    )
+  ) {
     throw new HttpsError("invalid-argument", "Pantalla no reconocida.");
   }
 
-  const db = getFirestore();
-  await db.doc(`portalUsers/${uid}`).update({
-    [`pantallasVisitadas.${pantalla}.count`]: FieldValue.increment(1),
-    [`pantallasVisitadas.${pantalla}.lastVisit`]: FieldValue.serverTimestamp(),
+  const pantallas = [...new Set(recibidas as string[])];
+  const cambios: Record<string, FieldValue> = {};
+  pantallas.forEach((pantalla) => {
+    cambios[`pantallasVisitadas.${pantalla}.count`] = FieldValue.increment(1);
+    cambios[`pantallasVisitadas.${pantalla}.lastVisit`] = FieldValue.serverTimestamp();
   });
 
-  return { ok: true };
+  const db = getFirestore();
+  await db.doc(`portalUsers/${uid}`).update(cambios);
+
+  return { ok: true, registradas: pantallas.length };
 });

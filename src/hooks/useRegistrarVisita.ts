@@ -35,6 +35,48 @@ export const PANTALLAS_VALIDAS = new Set([
  * hook el contador se reiniciaba y se volvía a registrar todo de cero.
  */
 const registradasEnEstaSesion = new Set<string>();
+const pendientesPorUsuario = new Map<string, Set<string>>();
+const temporizadores = new Map<string, ReturnType<typeof setTimeout>>();
+const enviosEnCurso = new Map<string, Promise<void>>();
+const ESPERA_AGRUPACION_MS = 8_000;
+
+function enviarPendientes(uid: string): Promise<void> {
+  const existente = enviosEnCurso.get(uid);
+  if (existente) return existente;
+  const pendientes = pendientesPorUsuario.get(uid);
+  if (!cloudFunctions || !pendientes?.size) return Promise.resolve();
+
+  const temporizador = temporizadores.get(uid);
+  if (temporizador) clearTimeout(temporizador);
+  temporizadores.delete(uid);
+
+  const lote = [...pendientes];
+  pendientes.clear();
+  const envio = httpsCallable<{ pantallas: string[] }, { ok: boolean }>(
+    cloudFunctions,
+    "registrarVisita"
+  )({ pantallas: lote })
+    .then(() => undefined)
+    .catch(() => {
+      // Si falla, las pantallas vuelven a quedar habilitadas para que una
+      // navegación posterior pueda reintentarlas sin bloquear la app.
+      lote.forEach((pantalla) => registradasEnEstaSesion.delete(`${uid}:${pantalla}`));
+    })
+    .finally(() => {
+      enviosEnCurso.delete(uid);
+      if (pendientesPorUsuario.get(uid)?.size) programarEnvio(uid);
+    });
+  enviosEnCurso.set(uid, envio);
+  return envio;
+}
+
+function programarEnvio(uid: string) {
+  if (temporizadores.has(uid)) return;
+  temporizadores.set(uid, setTimeout(() => {
+    temporizadores.delete(uid);
+    void enviarPendientes(uid);
+  }, ESPERA_AGRUPACION_MS));
+}
 
 /**
  * Cuenta qué pantallas usa cada persona. Alimenta la Analítica del admin.
@@ -61,6 +103,10 @@ const registradasEnEstaSesion = new Set<string>();
  *    usó esta pantalla" describe mejor cuál es la favorita que un
  *    número inflado por alguien que rebota entre dos pantallas.
  *
+ * 3. LAS PANTALLAS SE AGRUPAN. Recorrer cinco secciones en unos segundos
+ *    produce una sola llamada y una sola escritura, no cinco. Al mandar la
+ *    PWA al fondo se vacía el lote inmediatamente para no perder la visita.
+ *
  * Es "dispara y olvida": si falla no se avisa. Son datos de uso interno.
  */
 export function useRegistrarVisita(uid: string | undefined, pantalla: string) {
@@ -71,13 +117,23 @@ export function useRegistrarVisita(uid: string | undefined, pantalla: string) {
     const clave = `${uid}:${pantalla}`;
     if (registradasEnEstaSesion.has(clave)) return;
     registradasEnEstaSesion.add(clave);
-
-    void httpsCallable(cloudFunctions, "registrarVisita")({ pantalla })
-      .catch(() => {
-        // Si no se pudo registrar, se quita de la lista para que un
-        // fallo puntual de red no deje esa pantalla sin contar durante
-        // toda la sesión.
-        registradasEnEstaSesion.delete(clave);
-      });
+    const pendientes = pendientesPorUsuario.get(uid) ?? new Set<string>();
+    pendientes.add(pantalla);
+    pendientesPorUsuario.set(uid, pendientes);
+    programarEnvio(uid);
   }, [uid, pantalla]);
+
+  useEffect(() => {
+    if (!uid) return;
+    const vaciarSiSeOculta = () => {
+      if (document.visibilityState === "hidden") void enviarPendientes(uid);
+    };
+    const vaciarAlSalir = () => { void enviarPendientes(uid); };
+    document.addEventListener("visibilitychange", vaciarSiSeOculta);
+    window.addEventListener("pagehide", vaciarAlSalir);
+    return () => {
+      document.removeEventListener("visibilitychange", vaciarSiSeOculta);
+      window.removeEventListener("pagehide", vaciarAlSalir);
+    };
+  }, [uid]);
 }

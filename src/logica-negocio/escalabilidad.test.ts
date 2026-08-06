@@ -656,7 +656,7 @@ describe("no leer dos veces el mismo documento propio", () => {
   const avatar = sinComentarios(readFileSync(resolve(HOOKS, "useAvatarPropio.ts"), "utf-8"));
   const auth = sinComentarios(readFileSync(resolve(HOOKS, "usePortalAuth.ts"), "utf-8"));
 
-  it("la foto propia sale del documento que usePortalAuth ya escucha", () => {
+  it("la foto propia sale del documento que usePortalAuth ya verificó", () => {
     // portalUsers/{uid} se leía hasta CUATRO veces por sesión: una por
     // usePortalAuth y otra por cada sitio donde se muestra la foto
     // (selector, barra lateral, Mi perfil).

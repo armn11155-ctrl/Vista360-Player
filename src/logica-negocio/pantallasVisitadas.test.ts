@@ -49,6 +49,12 @@ describe("la lista de pantallas del navegador y la del servidor no pueden separa
     expect(faltan).toEqual([]);
   });
 
+  it("el servidor acepta un lote y conserva compatibilidad con una sola pantalla", () => {
+    expect(servidor).toContain("Array.isArray(request.data?.pantallas)");
+    expect(servidor).toContain("[request.data?.pantalla]");
+    expect(servidor).toContain("new Set(recibidas");
+  });
+
   it("el navegador ya NO escribe directo en portalUsers (donde vive el rol)", () => {
     // Si alguien volviera a poner un updateDoc acá, las reglas de
     // Firestore tendrían que volver a permitir escritura del cliente

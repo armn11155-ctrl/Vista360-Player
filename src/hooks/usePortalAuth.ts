@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import type { User } from "firebase/auth";
-import { auth, db, logout, onUserChange } from "../config/firebase";
+import { db, logout, onUserChange } from "../config/firebase";
 import type { PortalRole, PortalUser } from "../types";
 import { nombreConocidoPorEmail } from "../utils/nombresConocidos";
 import { publicarAvatarPropio } from "./useAvatarPropio";
+
+// El rol se vuelve a validar al regresar a la app, pero no mas de una vez
+// cada cinco minutos. Mantener un listener sobre portalUsers hacia que cada
+// contador de acceso o pantalla (que vive en el mismo documento) se cobrara
+// tambien como una lectura nueva, aunque el rol no hubiera cambiado.
+const VIGENCIA_VERIFICACION_MS = 5 * 60_000;
 
 export type AuthState =
   | { status: "loading" }
@@ -23,34 +29,21 @@ export function usePortalAuth(): AuthState {
   const [state, setState] = useState<AuthState>({ status: "loading" });
 
   useEffect(() => {
-    // Suscripción al documento del usuario. Vive fuera del callback para
-    // poder cortarla cuando cambia la sesión (o al desmontar): si no, al
-    // cerrar sesión seguiría escuchando un documento que ya no se puede
-    // leer, y Firestore lanzaría un error de permisos.
-    let desuscribirDoc: (() => void) | undefined;
+    let cancelado = false;
+    let usuarioActual: User | null = null;
+    let verificadoEn = 0;
+    let verificacionEnCurso: Promise<void> | null = null;
 
-    const unsub = onUserChange(async (user) => {
-      if (!user) {
-        desuscribirDoc?.();
-        desuscribirDoc = undefined;
-        setState({ status: "out" });
-        return;
+    const verificar = (user: User, forzar: boolean): Promise<void> => {
+      if (!db) return Promise.reject(new Error("Firebase no configurado."));
+      if (!forzar && Date.now() - verificadoEn < VIGENCIA_VERIFICACION_MS) {
+        return Promise.resolve();
       }
-      if (!db) {
-        setState({ status: "error", message: "Firebase no configurado." });
-        return;
-      }
-      // onSnapshot y no getDoc: antes el rol se leía UNA sola vez al
-      // iniciar sesión, así que archivar a alguien o cambiarle el rol no
-      // tenía ningún efecto hasta que esa persona recargara la app -- y
-      // en una PWA que se deja abierta, eso puede ser días. El servidor
-      // igual la frenaba (las Cloud Functions revalidan), pero seguía
-      // viendo pantallas que ya no le correspondían. Ahora el cambio se
-      // aplica en el momento.
-      desuscribirDoc?.();
-      desuscribirDoc = onSnapshot(
-        doc(db, "portalUsers", user.uid),
-        async (snap) => {
+      if (verificacionEnCurso) return verificacionEnCurso;
+
+      verificacionEnCurso = getDoc(doc(db, "portalUsers", user.uid))
+        .then(async (snap) => {
+          if (cancelado || usuarioActual?.uid !== user.uid) return;
           if (!snap.exists()) {
             setState({
               status: "error",
@@ -62,26 +55,21 @@ export function usePortalAuth(): AuthState {
           const data = snap.data() as Omit<PortalUser, "uid">;
           if (data.archived) {
             await logout();
-            setState({
-              status: "error",
-              message: "Tu usuario está archivado. Pide al administrador que lo restaure.",
-            });
+            if (!cancelado) {
+              setState({
+                status: "error",
+                message: "Tu usuario está archivado. Pide al administrador que lo restaure.",
+              });
+            }
             return;
           }
-          // La foto propia sale de ESTE mismo documento: se reparte para
-          // que useAvatarPropio no abra su propia escucha sobre él (ver
-          // el comentario en useAvatarPropio.ts).
+
           publicarAvatarPropio(user.uid, String(data.avatarUrl ?? ""));
           const role: PortalRole = data.role ?? "cliente";
           const clienteId = role === "cliente" ? data.clienteId ?? null : null;
           const nombre = data.nombre ?? nombreConocidoPorEmail(user.email) ?? null;
+          verificadoEn = Date.now();
           setState((actual) => {
-            // registrarAcceso/registrarVisita actualizan este MISMO
-            // documento con contadores. Firestore debe notificarlo, pero
-            // para la sesion nada cambio: publicar otro AuthState identico
-            // volveria a renderizar la aplicacion completa en cada primera
-            // visita a una pantalla. Se conserva la referencia si los
-            // campos que de verdad gobiernan la UI siguen iguales.
             if (
               actual.status === "in" &&
               actual.user.uid === user.uid &&
@@ -93,14 +81,50 @@ export function usePortalAuth(): AuthState {
             }
             return { status: "in", user, role, clienteId, nombre };
           });
-        },
-        () => {
+        })
+        .finally(() => {
+          verificacionEnCurso = null;
+        });
+      return verificacionEnCurso;
+    };
+
+    const unsub = onUserChange(async (user) => {
+      usuarioActual = user;
+      if (!user) {
+        verificadoEn = 0;
+        setState({ status: "out" });
+        return;
+      }
+      if (!db) {
+        setState({ status: "error", message: "Firebase no configurado." });
+        return;
+      }
+      try {
+        await verificar(user, true);
+      } catch {
+        if (!cancelado) {
           setState({ status: "error", message: "No se pudo verificar tu cuenta. Intenta de nuevo." });
         }
-      );
+      }
     });
+
+    // Si el dueño archiva o cambia el rol mientras la PWA está en segundo
+    // plano, se aplica al volver. Las Functions y las reglas siguen
+    // comprobando permisos en cada operación sensible durante todo el tiempo.
+    const revalidarAlVolver = () => {
+      if (document.visibilityState === "visible" && usuarioActual) {
+        void verificar(usuarioActual, false).catch(() => {
+          /* una pérdida momentánea de red no expulsa a quien ya estaba dentro */
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", revalidarAlVolver);
+    window.addEventListener("focus", revalidarAlVolver);
+
     return () => {
-      desuscribirDoc?.();
+      cancelado = true;
+      document.removeEventListener("visibilitychange", revalidarAlVolver);
+      window.removeEventListener("focus", revalidarAlVolver);
       unsub();
     };
   }, []);
