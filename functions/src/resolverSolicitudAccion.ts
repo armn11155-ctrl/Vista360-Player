@@ -8,6 +8,7 @@ import { ejecutarEliminarClienteDefinitivo } from "./administrarClienteAdmin.js"
 import { ejecutarAdministrarUsuarioPortal } from "./administrarUsuarioPortal.js";
 import { ejecutarCrearPanel, type PanelValidado } from "./crearPanel.js";
 import { ejecutarActualizarPanel, type PanelEditadoValidado } from "./actualizarPanel.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -43,7 +44,7 @@ export const resolverSolicitudAccion = onCall<ResolverSolicitudAccionData>({ sec
     throw new HttpsError("permission-denied", "Solo el Gerente puede aprobar o rechazar solicitudes.");
   }
 
-  const solicitudId = String(request.data?.solicitudId ?? "").trim();
+  const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   const accion = request.data?.accion;
   if (!solicitudId) {
     throw new HttpsError("invalid-argument", "Falta la solicitud.");

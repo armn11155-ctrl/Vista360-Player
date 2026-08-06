@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -27,12 +28,16 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
       throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar reportes.");
     }
 
-    const clienteId = String(request.data?.clienteId ?? "");
+    // VALIDADO: este id se pega directo a la key de R2 mas abajo
+    // (`clientes/${clienteId}/reportes/...`). Sin validar, un
+    // "../../vista360/facturas" saldria de la carpeta de reportes, y del
+    // lado de R2 no hay reglas de seguridad que frenen nada.
+    const clienteId = exigirId(request.data?.clienteId, "clienteId");
     const mes = String(request.data?.mes ?? "");
     const diaRaw = String(request.data?.dia ?? "").padStart(2, "0");
     const dia = /^\d{2}$/.test(diaRaw) ? diaRaw : "";
-    if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {
-      throw new HttpsError("invalid-argument", "Envia clienteId y mes en formato YYYY-MM.");
+    if (!/^\d{4}-\d{2}$/.test(mes)) {
+      throw new HttpsError("invalid-argument", "Envia el mes en formato YYYY-MM.");
     }
 
     // Desde que existe un reporte por dia (no solo por mes), la key en

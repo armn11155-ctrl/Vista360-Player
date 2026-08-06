@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -38,7 +39,7 @@ export const eliminarPanel = onCall<EliminarPanelData>(async (request) => {
     throw new HttpsError("permission-denied", "Solo el Gerente puede eliminar paneles.");
   }
 
-  const panelId = (request.data.panelId ?? "").trim();
+  const panelId = exigirId(request.data?.panelId, "panelId");
   if (!panelId) {
     throw new HttpsError("invalid-argument", "Falta el panel a eliminar.");
   }

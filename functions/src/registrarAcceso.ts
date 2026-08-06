@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -25,6 +26,9 @@ export const registrarAcceso = onCall(async (request) => {
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "registrarAcceso", 10);
 
   const db = getFirestore();
   await db.doc(`portalUsers/${uid}`).update({

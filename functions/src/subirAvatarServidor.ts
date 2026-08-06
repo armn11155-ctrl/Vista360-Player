@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, nuevaKey, subirBufferR2 } from "./r2Storage.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -38,6 +39,9 @@ export const subirAvatarServidor = onCall({ secrets: R2_SECRETS }, async (reques
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "subirAvatarServidor", 10);
 
   const db = getFirestore();
   const snap = await db.doc(`portalUsers/${uid}`).get();

@@ -8,6 +8,7 @@ import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { auditar, auditarFallo } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -45,7 +46,7 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
     throw new HttpsError("permission-denied", "Solo el equipo interno puede eliminar campañas.");
   }
 
-  const contratoId = String(request.data?.contratoId ?? "").trim();
+  const contratoId = exigirId(request.data?.contratoId, "contratoId");
   if (!contratoId) {
     throw new HttpsError("invalid-argument", "Falta contratoId.");
   }

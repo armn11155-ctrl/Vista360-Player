@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { MAX_SUBIDA_BYTES, R2_SECRETS, esCarpetaValida, firmarSubidaR2, nuevaKey } from "./r2Storage.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -41,6 +42,9 @@ export const crearSubidaR2 = onCall({ secrets: R2_SECRETS }, async (request) => 
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "crearSubidaR2", 60);
 
   const db = getFirestore();
   const snap = await db.doc(`portalUsers/${uid}`).get();

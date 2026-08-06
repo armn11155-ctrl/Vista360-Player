@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -51,7 +52,7 @@ export const actualizarClienteInfo = onCall<ActualizarClienteInfoData>(async (re
     throw new HttpsError("permission-denied", "Solo el equipo interno puede editar clientes.");
   }
 
-  const clienteId = limpiar(request.data.clienteId);
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
   if (!clienteId) {
     throw new HttpsError("invalid-argument", "Falta el cliente a editar.");
   }

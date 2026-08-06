@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -31,7 +32,7 @@ export const actualizarAvatarCliente = onCall<ActualizarAvatarClienteData>({ sec
 
   const propio = propioSnap.data() ?? {};
   const role = String(propio.role ?? "cliente");
-  const solicitadoClienteId = limpiar(request.data.clienteId);
+  const solicitadoClienteId = exigirId(request.data?.clienteId, "clienteId");
   const clienteId = role === "admin" ? solicitadoClienteId : limpiar(String(propio.clienteId ?? ""));
   const avatarUrl = limpiar(request.data.avatarUrl);
 

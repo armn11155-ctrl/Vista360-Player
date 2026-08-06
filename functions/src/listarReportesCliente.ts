@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { R2_SECRETS, firmarLecturaR2, r2Bucket, r2Client } from "./r2Storage.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -67,7 +68,7 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
     }
 
-    const clienteId = String(request.data?.clienteId ?? "");
+    const clienteId = exigirId(request.data?.clienteId, "clienteId");
     if (!clienteId) {
       throw new HttpsError("invalid-argument", "Falta clienteId.");
     }

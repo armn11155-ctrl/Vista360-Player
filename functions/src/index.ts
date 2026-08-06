@@ -1,3 +1,36 @@
+import { setGlobalOptions } from "firebase-functions/v2/options";
+
+/**
+ * TOPE DE INSTANCIAS PARA TODAS LAS FUNCIONES.
+ *
+ * POR QUE. Las Cloud Functions escalan solas y sin limite. Eso esta muy
+ * bien hasta que algo va mal, y entonces es una factura abierta:
+ *
+ *  - Un cliente AUTENTICADO llamando en bucle desde la consola del
+ *    navegador. No hace falta romper nada: basta con repetir una llamada
+ *    legitima. firmarUrlsR2, por ejemplo, hace una consulta a Firestore
+ *    por cada factura pedida.
+ *  - Un fallo nuestro: un useEffect en bucle que llame a una funcion, o
+ *    un reintento sin freno.
+ *  - Un bot que encuentre el endpoint HTTPS del barrido.
+ *
+ * En cualquiera de los tres casos, sin tope el gasto crece tan rapido
+ * como aguante Google. Con tope, el peor escenario esta ACOTADO: 20
+ * instancias a la vez, no dos mil. Las llamadas de mas esperan o fallan,
+ * pero la factura no se dispara y la aplicacion sigue en pie para todos
+ * los demas.
+ *
+ * POR QUE 20 Y NO MENOS. Cada instancia atiende varias peticiones a la
+ * vez, asi que 20 dan de sobra para cientos de personas usando la
+ * aplicacion al mismo tiempo. Si algun dia se queda corto, el sintoma es
+ * lentitud --no errores-- y se sube el numero. Es mucho mejor equivocarse
+ * por este lado que por el de la factura.
+ *
+ * NO SUSTITUYE a las comprobaciones de permisos de cada funcion: es la
+ * capa de abajo, la que limita el dano cuando algo se escapa.
+ */
+setGlobalOptions({ maxInstances: 20 });
+
 export { crearSubidaR2 } from "./crearSubidaR2.js";
 export { actualizarAvatarPropio } from "./actualizarAvatarPropio.js";
 export { actualizarNombrePropio } from "./actualizarNombrePropio.js";

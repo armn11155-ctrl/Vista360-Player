@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -52,7 +53,7 @@ export const actualizarEstadoSolicitud = onCall<Datos>(async (request) => {
     throw new HttpsError("permission-denied", "Solo el personal de Vista360 puede resolver solicitudes.");
   }
 
-  const solicitudId = String(request.data?.solicitudId ?? "").trim();
+  const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   if (!solicitudId) {
     throw new HttpsError("invalid-argument", "Falta solicitudId.");
   }

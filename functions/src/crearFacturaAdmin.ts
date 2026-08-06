@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -51,10 +52,10 @@ export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) =
   }
 
   const ruc = limpiar(request.data.ruc);
-  const clienteId = limpiar(request.data.clienteId);
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
   const numeroFmt = limpiar(request.data.numeroFmt);
   const pdfUrl = limpiar(request.data.pdfUrl);
-  const contratoId = limpiar(request.data.contratoId);
+  const contratoId = idOpcional(request.data?.contratoId, "contratoId");
   const contratoNombre = limpiar(request.data.contratoNombre);
   const pdfPesoBytes = Number(request.data.pdfPesoBytes ?? 0);
   const pdfPesoOriginalBytes = Number(request.data.pdfPesoOriginalBytes ?? pdfPesoBytes);

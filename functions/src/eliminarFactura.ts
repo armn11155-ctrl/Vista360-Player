@@ -5,6 +5,7 @@ import { esGerente } from "./rolesInternos.js";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -44,7 +45,7 @@ export const eliminarFactura = onCall({ secrets: R2_SECRETS }, async (request) =
       throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar facturas.");
     }
 
-    const facturaId = String((request.data as EliminarFacturaData)?.facturaId ?? "").trim();
+    const facturaId = exigirId(request.data?.facturaId, "facturaId");
     if (!facturaId) {
       throw new HttpsError("invalid-argument", "Falta la factura a eliminar.");
     }

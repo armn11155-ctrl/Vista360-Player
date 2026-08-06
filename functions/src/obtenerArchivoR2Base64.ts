@@ -1,7 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { R2_SECRETS, leerObjetoR2 } from "./r2Storage.js";
+import { R2_SECRETS, leerObjetoR2, esKeyValida } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -43,6 +43,12 @@ export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (req
     }
 
     const key = String(request.data?.key ?? "").trim();
+    // La key entra cruda desde el navegador: se exige que este dentro de
+    // una carpeta conocida y sin "..". Sin esto, cualquier ruta del
+    // bucket seria legible -- el Admin SDK no pasa por reglas.
+    if (!esKeyValida(key)) {
+      throw new HttpsError("invalid-argument", "La ruta del archivo no es valida.");
+    }
     const prefijoValido = key.startsWith("clientes/") || key.startsWith("vista360/facturas/");
     if (!key || key.includes("..") || key.startsWith("/") || !prefijoValido) {
       throw new HttpsError("invalid-argument", "Key inválida.");

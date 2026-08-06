@@ -8,6 +8,7 @@ import { esPersonalInterno } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -60,7 +61,7 @@ export const crearContrato = onCall<CrearContratoData>(async (request) => {
       throw new HttpsError("permission-denied", "Solo el equipo interno puede crear campañas.");
     }
 
-    const clienteId = limpiar(request.data.clienteId);
+    const clienteId = exigirId(request.data?.clienteId, "clienteId");
     const panelIds = Array.from(
       new Set((Array.isArray(request.data.panelIds) ? request.data.panelIds : []).map((id) => limpiar(id)).filter(Boolean))
     );

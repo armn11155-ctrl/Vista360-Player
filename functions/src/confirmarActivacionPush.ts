@@ -2,6 +2,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -34,6 +35,11 @@ interface ConfirmarActivacionPushData {
 export const confirmarActivacionPush = onCall<ConfirmarActivacionPushData>(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+
+  // Lee el documento del usuario en cada llamada: sin tope, un bucle
+  // desde la consola quema la cuota de LECTURAS igual que las otras la de
+  // escrituras. Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "confirmarActivacionPush", 10);
 
   const tokenNuevo = String(request.data?.token ?? "").trim();
 

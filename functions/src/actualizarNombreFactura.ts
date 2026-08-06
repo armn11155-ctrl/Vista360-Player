@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -37,7 +38,7 @@ export const actualizarNombreFactura = onCall<ActualizarNombreFacturaData>(async
     throw new HttpsError("permission-denied", "Solo la cuenta admin puede editar facturas.");
   }
 
-  const facturaId = limpiar(request.data.facturaId);
+  const facturaId = exigirId(request.data?.facturaId, "facturaId");
   const numeroFmt = limpiar(request.data.numeroFmt);
   if (!facturaId) {
     throw new HttpsError("invalid-argument", "Falta la factura a editar.");

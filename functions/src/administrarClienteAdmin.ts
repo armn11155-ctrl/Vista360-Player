@@ -6,6 +6,7 @@ import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -45,7 +46,7 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
     throw new HttpsError("permission-denied", "Solo el equipo interno puede administrar clientes.");
   }
 
-  const clienteId = String(request.data?.clienteId ?? "").trim();
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
   const accion = request.data?.accion;
   if (!clienteId) {
     throw new HttpsError("invalid-argument", "Falta clienteId.");

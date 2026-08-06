@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -28,7 +29,7 @@ export const actualizarImagenCampania = onCall<ActualizarImagenCampaniaData>({ s
     throw new HttpsError("permission-denied", "Solo la cuenta admin puede cambiar la foto de campaña.");
   }
 
-  const contratoId = limpiar(request.data.contratoId);
+  const contratoId = exigirId(request.data?.contratoId, "contratoId");
   const imagenUrl = limpiar(request.data.imagenUrl);
   if (!contratoId) {
     throw new HttpsError("invalid-argument", "Campaña requerida.");

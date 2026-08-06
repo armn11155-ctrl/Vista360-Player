@@ -8,6 +8,7 @@ import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { R2_SECRETS, borrarObjetoR2, firmarLecturaR2, leerObjetoR2, subirBufferR2 } from "./r2Storage.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -1086,7 +1087,7 @@ export const generarReporteCliente = onCall(
         throw new HttpsError("permission-denied", "Solo el equipo interno puede generar reportes.");
       }
 
-      const clienteId = String(request.data?.clienteId ?? "");
+      const clienteId = exigirId(request.data?.clienteId, "clienteId");
       const mes = String(request.data?.mes ?? new Date().toISOString().slice(0, 7));
       if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {
         throw new HttpsError("invalid-argument", "Envía clienteId y mes en formato YYYY-MM.");
@@ -1103,8 +1104,8 @@ export const generarReporteCliente = onCall(
         throw new HttpsError("invalid-argument", "El día enviado no es válido para ese mes.");
       }
 
-      const panelId = String(request.data?.panelId ?? "").trim();
-      const contratoId = String(request.data?.contratoId ?? "").trim();
+      const panelId = idOpcional(request.data?.panelId, "panelId");
+      const contratoId = idOpcional(request.data?.contratoId, "contratoId");
 
       const clienteSnap = await db.doc(`clientes/${clienteId}`).get();
       if (!clienteSnap.exists) throw new HttpsError("not-found", "Cliente no encontrado.");

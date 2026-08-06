@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -38,7 +39,7 @@ export const eliminarSolicitudCampana = onCall<EliminarSolicitudCampanaData>({ s
     throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar solicitudes.");
   }
 
-  const solicitudId = String(request.data?.solicitudId ?? "").trim();
+  const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   if (!solicitudId) {
     throw new HttpsError("invalid-argument", "Falta solicitudId.");
   }

@@ -1,6 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -30,8 +32,11 @@ export const marcarReporteVisto = onCall(async (request) => {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
 
-  const clienteId = String(request.data?.clienteId ?? "").trim();
-  const informeId = String(request.data?.informeId ?? "").trim();
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "marcarReporteVisto", 120);
+
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
+  const informeId = exigirId(request.data?.informeId, "informeId");
   if (!clienteId || !informeId || !informeId.startsWith(`${clienteId}_`)) {
     throw new HttpsError("invalid-argument", "Envía clienteId e informeId válidos.");
   }

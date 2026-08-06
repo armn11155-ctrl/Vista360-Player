@@ -2,6 +2,8 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -57,6 +59,9 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
 
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "crearSolicitudCampana", 20);
+
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
   if (!propio.exists) {
@@ -65,7 +70,7 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
   const datosPropio = propio.data() ?? {};
   const rol = datosPropio.role === "admin" ? "admin" : "cliente";
 
-  const clienteId = limpiar(request.data?.clienteId);
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
   if (!clienteId) {
     throw new HttpsError("invalid-argument", "Falta el cliente.");
   }
@@ -98,7 +103,7 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
   const fechaFinDeseada = request.data?.fechaFinDeseada ? limpiar(request.data.fechaFinDeseada) : null;
 
   const mesesDeseados = request.data?.mesesDeseados;
-  const panelSolicitadoId = limpiar(request.data?.panelSolicitadoId);
+  const panelSolicitadoId = idOpcional(request.data?.panelSolicitadoId, "panelSolicitadoId");
   const panelSolicitadoNombre = limpiar(request.data?.panelSolicitadoNombre);
 
   // Evitar duplicados: se pidió específicamente esto porque un cliente

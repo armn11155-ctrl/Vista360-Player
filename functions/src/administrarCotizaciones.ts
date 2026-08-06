@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -60,9 +61,9 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
 
   if (accion === "crear") {
     const nombre = limpiar(request.data.nombre, 100);
-    const clienteId = limpiar(request.data.clienteId, 120);
+    const clienteId = exigirId(request.data?.clienteId, "clienteId");
     const clienteNombre = limpiar(request.data.clienteNombre, 160);
-    const panelId = limpiar(request.data.panelId, 120);
+    const panelId = idOpcional(request.data?.panelId, "panelId");
     const panelNombre = limpiar(request.data.panelNombre, 160);
     const panelCiudad = limpiar(request.data.panelCiudad, 100);
     const inicio = limpiar(request.data.inicio, 10);
@@ -133,7 +134,7 @@ export const administrarCotizaciones = onCall<Data>(async (request) => {
     return { ok: true, id: cotizacionRef.id, numero };
   }
 
-  const id = limpiar(request.data.id, 120);
+  const id = idOpcional(request.data?.id, "id");
   if (!id) throw new HttpsError("invalid-argument", "Falta la cotización.");
   const ref = db.doc(`cotizaciones/${id}`);
 

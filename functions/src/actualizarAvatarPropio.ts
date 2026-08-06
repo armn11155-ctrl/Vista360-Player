@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esKeyValida } from "./r2Storage.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -23,6 +24,9 @@ export const actualizarAvatarPropio = onCall<ActualizarAvatarPropioData>(async (
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "actualizarAvatarPropio", 10);
 
   const avatarUrl = String(request.data?.avatarUrl ?? "").trim();
   if (!avatarUrl || !esKeyValida(avatarUrl)) {

@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { modalidadDePanel, cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -37,7 +38,7 @@ export const diagnosticoPanel = onCall<DiagnosticoPanelData>(async (request) => 
     throw new HttpsError("permission-denied", "Solo el equipo interno puede ver esto.");
   }
 
-  const panelId = String(request.data?.panelId ?? "").trim();
+  const panelId = exigirId(request.data?.panelId, "panelId");
   if (!panelId) {
     throw new HttpsError("invalid-argument", "Falta el panel.");
   }

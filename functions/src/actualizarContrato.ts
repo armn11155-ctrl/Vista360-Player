@@ -7,6 +7,7 @@ import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
 import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -41,7 +42,7 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
     throw new HttpsError("permission-denied", "Solo el equipo interno puede editar campañas.");
   }
 
-  const contratoId = limpiar(request.data.contratoId);
+  const contratoId = exigirId(request.data?.contratoId, "contratoId");
   const nombre = nombreConMayuscula(limpiar(request.data.nombre));
   const inicio = limpiar(request.data.inicio);
   const fin = limpiar(request.data.fin);

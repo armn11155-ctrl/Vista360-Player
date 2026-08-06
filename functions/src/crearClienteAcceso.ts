@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
+import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -51,7 +52,7 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
     throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear usuarios.");
   }
 
-  const clienteId = limpiar(request.data.clienteId);
+  const clienteId = exigirId(request.data?.clienteId, "clienteId");
   const email = limpiar(request.data.email).toLowerCase();
   const contacto = limpiar(request.data.contacto);
   const celular = limpiar(request.data.celular);
