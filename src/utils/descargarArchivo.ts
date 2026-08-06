@@ -62,6 +62,15 @@ function esIOS(): boolean {
   return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
 }
 
+/** Safari necesita abrir la URL REAL dentro del clic para tratarla como
+ * un enlace normal y activar la pestaña. Abrir una pestaña vacía y
+ * rellenarla después de un await la deja en segundo plano. */
+function esSafari(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /Safari\//.test(ua) && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(ua);
+}
+
 /**
  * ¿Hay que usar la hoja de compartir del sistema en vez de descargar?
  *
@@ -196,6 +205,26 @@ function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string):
 
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
+
+  // En Safari se abre la URL real DIRECTAMENTE dentro del clic. Si se
+  // abre primero about:blank y se rellena después del fetch, Safari crea
+  // la pestaña pero la deja en segundo plano. Este camino replica un
+  // enlace normal, que sí activa la pestaña automáticamente.
+  if (esSafari()) {
+    const ventanaSafari = window.open(url, "_blank");
+    if (ventanaSafari) {
+      try {
+        ventanaSafari.opener = null;
+        ventanaSafari.focus();
+      } catch {
+        // La navegación ya fue solicitada; focus es solo un refuerzo.
+      }
+    } else {
+      // Si bloqueó la pestaña, no se pierde el documento.
+      window.location.href = url;
+    }
+    return;
+  }
 
   // Dentro del gesto, antes de cualquier espera.
   //
