@@ -179,3 +179,60 @@ describe("la pestaña del visor lleva el nombre del documento", () => {
     expect(bloqueCatch).toContain("ventana.location.href = urlLocal");
   });
 });
+
+describe("la hoja de compartir SOLO en iOS", () => {
+  /**
+   * COMPROBADO EN PRODUCCION, en una Mac.
+   *
+   * `descargarArchivo` usaba la hoja del sistema en cuanto el navegador
+   * soportara `navigator.canShare` con archivos. El comentario decia "en
+   * escritorio no existe esa hoja" -- y era falso: Chrome en macOS SI la
+   * tiene. Pulsar "Descargar" abria el menu de compartir (AirDrop, Mail,
+   * Mensajes) en vez de bajar el archivo, y esa hoja en macOS NO trae
+   * "Guardar en Archivos": el boton se quedaba en "Descargando..." para
+   * siempre y no habia forma de obtener el PDF.
+   *
+   * iOS es el unico sitio donde la descarga normal no funciona de verdad.
+   */
+  const codigo = leer("src/utils/descargarArchivo.ts");
+
+  it("solo se usa la hoja si es iOS", () => {
+    const fn = codigo.slice(codigo.indexOf("function puedeUsarLaHojaDelSistema"));
+    expect(fn.slice(0, 200)).toContain("if (!esIOS()) return false;");
+  });
+
+  it("detecta tambien el iPad moderno, que se hace pasar por Mac", () => {
+    const fn = codigo.slice(codigo.indexOf("function esIOS"), codigo.indexOf("function puedeUsarLaHojaDelSistema"));
+    expect(fn).toContain("/iPhone|iPad|iPod/");
+    expect(fn).toContain("maxTouchPoints");
+    expect(fn).toContain("Macintosh");
+  });
+
+  it("una Mac de escritorio NO cuenta como iOS", () => {
+    // La Mac tiene userAgent con "Macintosh" pero maxTouchPoints 0.
+    const fn = codigo.slice(codigo.indexOf("function esIOS"), codigo.indexOf("function puedeUsarLaHojaDelSistema"));
+    expect(fn).toMatch(/maxTouchPoints[^)]*\)?\s*(\?\?\s*0\s*\)?)?\s*>\s*1/);
+  });
+});
+
+describe("un solo nombre por documento, venga por donde venga", () => {
+  it("el reporte usa mesLabel, no el mes crudo", () => {
+    // Habia TRES nombres para el mismo archivo: "Reporte 2026-08.pdf" al
+    // descargar, "Reporte-17-Jun-2026.pdf" al compartir, y
+    // "Reporte 05 Ago 2026.pdf" en la url firmada del servidor.
+    const codigo = leer("src/components/ReportCard.tsx");
+    expect(codigo).not.toContain('`Reporte ${informe.mes ?? ""}.pdf`');
+    const usos = codigo.match(/nombreArchivoReporte\(informe\.mesLabel\)/g) ?? [];
+    expect(usos.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("reporte y factura usan el MISMO formato", () => {
+    // En la misma carpeta se ordenan y se reconocen igual.
+    const rep = leer("src/components/ReportCard.tsx");
+    const fac = leer("src/components/FacturaCard.tsx");
+    expect(rep).toContain("return `Reporte ${limpio");
+    expect(fac).toContain("return `Factura ${dia}");
+    // Con espacios, no con guiones.
+    expect(rep).not.toContain('`Reporte-${');
+  });
+});

@@ -47,10 +47,40 @@ function abrirComoAntes(url: string): void {
   window.open(url, "_blank", "noopener");
 }
 
-/** ¿Este navegador puede ofrecer la hoja de compartir con archivos?
- *  En iOS y Android incluye "Guardar en Archivos" / "Descargas". */
-function puedeUsarLaHojaDelSistema(archivo: File): boolean {
+/**
+ * ¿Estamos en iOS (o iPadOS)?
+ *
+ * Es el ÚNICO sitio donde la descarga normal no funciona: Safari abre los
+ * PDF en su visor pase lo que pase, ni con blob ni con
+ * Content-Disposition: attachment.
+ */
+function esIOS(): boolean {
   if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/.test(ua)) return true;
+  // iPadOS 13+ se hace pasar por Mac; se delata por el táctil.
+  return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
+}
+
+/**
+ * ¿Hay que usar la hoja de compartir del sistema en vez de descargar?
+ *
+ * SOLO en iOS, Y ESTO IMPORTA MÁS DE LO QUE PARECE.
+ *
+ * Antes bastaba con que el navegador soportara `navigator.canShare` con
+ * archivos. El comentario decía "en escritorio no existe esa hoja" -- y
+ * era falso: Chrome en macOS SÍ la tiene. Resultado comprobado en
+ * producción: pulsar "Descargar" en una Mac abría el menú de compartir
+ * (AirDrop, Mail, Mensajes) en vez de bajar el archivo. Y esa hoja, en
+ * macOS, NO trae "Guardar en Archivos", así que no había forma de
+ * descargar el PDF: el botón quedaba en "Descargando…" para siempre.
+ *
+ * En iOS la hoja es la única salida real. En todo lo demás (macOS,
+ * Windows, Linux, Android) la descarga por blob funciona perfecta y es
+ * lo que la persona espera al pulsar un botón que dice "Descargar".
+ */
+function puedeUsarLaHojaDelSistema(archivo: File): boolean {
+  if (!esIOS()) return false;
   if (typeof navigator.share !== "function" || typeof navigator.canShare !== "function") return false;
   try {
     return navigator.canShare({ files: [archivo] });

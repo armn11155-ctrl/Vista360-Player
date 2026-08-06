@@ -75,11 +75,21 @@ function mensajeReporteConLink(mesLabel: string, cliente: Cliente | null, url: s
   ].join("\n");
 }
 
-/** Nombre de archivo para el PDF compartido -- mismo mesLabel que se
- *  muestra en la tarjeta ("17 Jun 2026"), sin caracteres raros. */
+/**
+ * Nombre del PDF de un reporte, UNO SOLO para todos los caminos.
+ *
+ * Había tres nombres distintos para el mismo archivo, según por dónde se
+ * pidiera: "Reporte 2026-08.pdf" al descargar (usaba el mes crudo),
+ * "Reporte-17-Jun-2026.pdf" al compartir (guiones), y
+ * "Reporte 05 Ago 2026.pdf" en la URL firmada del servidor.
+ *
+ * Se unifica en el del servidor, que además es el mismo formato que usan
+ * ahora las facturas: en la misma carpeta, reportes y facturas se ordenan
+ * y se reconocen igual.
+ */
 function nombreArchivoReporte(mesLabel: string) {
-  const limpio = mesLabel.replace(/[^\p{L}\p{N} -]/gu, "").trim().replace(/\s+/g, "-");
-  return `Reporte-${limpio || "Vista360"}.pdf`;
+  const limpio = (mesLabel || "").replace(/[^\p{L}\p{N} -]/gu, "").replace(/\s+/g, " ").trim();
+  return `Reporte ${limpio || "Vista360"}.pdf`;
 }
 
 /**
@@ -348,7 +358,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           onClick={() => {
             marcarVisto();
             setAbriendo(true);
-            void verArchivo(url, `Reporte ${informe.mes ?? ""}.pdf`).finally(() => setAbriendo(false));
+            void verArchivo(url, nombreArchivoReporte(informe.mesLabel)).finally(() => setAbriendo(false));
           }}
         >
           {abriendo ? "Abriendo…" : "Ver"}
@@ -362,7 +372,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
             setDescargando(true);
             void descargarArchivo(
               informe.urlDescarga || url,
-              `Reporte ${informe.mes ?? ""}.pdf`
+              nombreArchivoReporte(informe.mesLabel)
             ).finally(() => setDescargando(false));
           }}
         >
