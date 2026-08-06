@@ -128,6 +128,42 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
  * abriera después del `await`, el navegador ya no lo considera una
  * acción de la persona y lo bloquea como si fuera publicidad.
  */
+/**
+ * Muestra el PDF en la pestaña YA ABIERTA, con el nombre en el título.
+ *
+ * Navegar directamente a la URL `blob:` funciona, pero deja la pestaña
+ * llamándose "untitled": un `blob:` no lleva nombre de archivo, así que
+ * el visor de Chrome no tiene de dónde sacarlo. Con varias facturas
+ * abiertas no hay forma de saber cuál es cuál.
+ *
+ * Metiendo el PDF en un <embed> dentro de una página propia se controla
+ * el <title>, y la barra de direcciones sigue mostrando el dominio de la
+ * aplicación en vez de la URL firmada de R2.
+ */
+function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string): void {
+  const titulo = (nombre || "Documento").replace(/\.pdf$/i, "");
+  // Se escapa: el nombre sale de datos (el número o la fecha de la
+  // factura) y aquí se está construyendo HTML.
+  const seguro = titulo.replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
+  );
+  try {
+    ventana.document.open();
+    ventana.document.write(
+      '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
+        `<title>${seguro}</title>` +
+        '<style>html,body{margin:0;height:100%;background:#050a12}' +
+        "embed{width:100%;height:100%;border:0}</style></head><body>" +
+        `<embed src="${urlLocal}" type="application/pdf"></body></html>`
+    );
+    ventana.document.close();
+  } catch {
+    // Si por lo que sea no se puede escribir en la pestaña, se navega a
+    // la URL del blob como antes: se pierde el título, no el documento.
+    ventana.location.href = urlLocal;
+  }
+}
+
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
 
@@ -175,7 +211,7 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     );
 
     if (ventana && !ventana.closed) {
-      ventana.location.href = urlLocal;
+      mostrarPdfConTitulo(ventana, urlLocal, _nombre);
     } else {
       // Pestaña bloqueada: se navega en la actual, que también sirve.
       window.location.href = urlLocal;

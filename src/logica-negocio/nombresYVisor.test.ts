@@ -149,3 +149,33 @@ describe("firmar la descarga cuesta lecturas: solo al pulsar", () => {
     expect(codigo).toContain("if (!isAdmin || !urlVer) return;");
   });
 });
+
+describe("la pestaña del visor lleva el nombre del documento", () => {
+  /**
+   * Navegar directo a la URL `blob:` funciona pero deja la pestaña
+   * llamándose "untitled": un blob no lleva nombre, así que el visor de
+   * Chrome no tiene de dónde sacarlo. Verificado en producción.
+   */
+  const codigo = leer("src/utils/descargarArchivo.ts");
+  const fn = codigo.slice(codigo.indexOf("function mostrarPdfConTitulo"), codigo.indexOf("export async function verArchivo"));
+
+  it("el PDF se muestra dentro de una página propia, con título", () => {
+    expect(codigo).toContain("mostrarPdfConTitulo(ventana, urlLocal, _nombre)");
+    expect(fn).toContain("<title>");
+    expect(fn).toContain('type="application/pdf"');
+  });
+
+  it("el nombre se ESCAPA antes de meterlo en el HTML", () => {
+    // Sale de datos (número o fecha de la factura) y se está armando
+    // HTML: sin escapar, un nombre con < o " inyecta etiquetas.
+    expect(fn).toContain('replace(/[&<>"\']/g');
+    expect(fn).toContain("&lt;");
+    expect(fn).toContain("&quot;");
+  });
+
+  it("si no se puede escribir en la pestaña, se sigue viendo el PDF", () => {
+    // Perder el título es aceptable; perder el documento no.
+    const bloqueCatch = fn.slice(fn.indexOf("} catch"));
+    expect(bloqueCatch).toContain("ventana.location.href = urlLocal");
+  });
+});
