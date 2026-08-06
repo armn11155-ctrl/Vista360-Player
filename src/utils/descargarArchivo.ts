@@ -216,6 +216,14 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     } catch {
       // Algún navegador no deja escribirlo; no es motivo para no abrir.
     }
+    // Safari a veces crea la pestaña en segundo plano. Pedir el foco aquí,
+    // todavía dentro del gesto de la persona, le da la mejor oportunidad
+    // de llevarla inmediatamente al documento.
+    try {
+      ventana.focus();
+    } catch {
+      // La política del navegador puede impedirlo; el PDF abrirá igual.
+    }
     // Algo mientras carga: una pestaña en blanco parece que se colgó.
     try {
       ventana.document.write(
@@ -242,6 +250,13 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
 
     if (ventana && !ventana.closed) {
       mostrarPdfConTitulo(ventana, urlLocal, _nombre);
+      // Repetirlo al terminar cubre Safari cuando el cambio de contenido
+      // hizo que la pestaña perdiera el foco durante la espera.
+      try {
+        ventana.focus();
+      } catch {
+        // El navegador decide en última instancia si cambia de pestaña.
+      }
     } else {
       // Pestaña bloqueada: se navega en la actual, que también sirve.
       window.location.href = urlLocal;

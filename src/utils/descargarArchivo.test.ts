@@ -186,6 +186,36 @@ describe("en el móvil se usa la hoja del sistema", () => {
 describe("ver un PDF no enseña la dirección de R2", () => {
   afterEach(() => vi.restoreAllMocks());
 
+  it("pide foco inmediatamente para que Safari lleve a la pestaña nueva", async () => {
+    const eventos: string[] = [];
+    const ventana = {
+      closed: false,
+      opener: {},
+      focus: vi.fn(() => eventos.push("focus")),
+      document: {
+        write: vi.fn(),
+        close: vi.fn(),
+        open: vi.fn(),
+      },
+      location: { href: "" },
+    };
+    vi.stubGlobal("open", vi.fn(() => {
+      eventos.push("open");
+      return ventana;
+    }));
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      eventos.push("fetch");
+      return new Response(new Blob(["pdf"]), { status: 200 });
+    }));
+    URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
+    URL.revokeObjectURL = vi.fn();
+
+    await verArchivo("https://algo.r2/x.pdf", "Reporte.pdf");
+
+    expect(eventos.slice(0, 3)).toEqual(["open", "focus", "fetch"]);
+    expect(ventana.focus).toHaveBeenCalledTimes(2);
+  });
+
   it("abre la pestaña ANTES de esperar, o el navegador la bloquea", () => {
     // Si se abriera después del await, el navegador ya no lo considera
     // una acción de la persona y lo trata como publicidad.
