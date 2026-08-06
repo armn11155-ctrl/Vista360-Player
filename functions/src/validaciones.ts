@@ -114,3 +114,36 @@ export function tamanoRecordado(): number {
 export function reiniciarLimitador(): void {
   marcas.clear();
 }
+
+// ---------------------------------------------------------------------
+// Nombres de archivo que van a una cabecera HTTP
+// ---------------------------------------------------------------------
+
+/** Tope de largo del nombre descargado. */
+const LARGO_NOMBRE = 120;
+
+/**
+ * Limpia un nombre de archivo antes de meterlo en Content-Disposition.
+ *
+ * El nombre lo elige el navegador y termina dentro de una cabecera HTTP:
+ *
+ *     attachment; filename="<aquí>"
+ *
+ * Unas comillas cierran el campo antes de tiempo y un salto de línea
+ * abre una cabecera nueva. Hoy ese valor va firmado dentro de una URL de
+ * R2, así que manipularlo rompe la firma -- pero eso es una defensa
+ * prestada del SDK de AWS, no propia: el día que este nombre se use en
+ * una respuesta que sirvamos nosotros, la inyección funciona sola.
+ *
+ * Se quedan solo letras, números, espacios, guiones y puntos.
+ */
+export function nombreDescargaSeguro(nombre: unknown, porDefecto = "archivo"): string {
+  if (typeof nombre !== "string") return porDefecto;
+  const limpio = nombre
+    .replace(/[\r\n]/g, " ")
+    .replace(/[^\p{L}\p{N} .()-]/gu, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, LARGO_NOMBRE);
+  return limpio || porDefecto;
+}

@@ -128,11 +128,41 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
  * abriera después del `await`, el navegador ya no lo considera una
  * acción de la persona y lo bloquea como si fuera publicidad.
  */
-export async function verArchivo(url: string, nombre: string): Promise<void> {
+export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
 
   // Dentro del gesto, antes de cualquier espera.
-  const ventana = window.open("", "_blank", "noopener");
+  //
+  // SIN "noopener", Y ES A PROPÓSITO. `window.open` DEVUELVE null cuando
+  // se le pasa noopener -- está en la especificación, no es un fallo del
+  // navegador. Con noopener puesto, esta función abría una pestaña en
+  // blanco, se quedaba sin referencia a ella, y cargaba el PDF en la
+  // pestaña original: la persona veía una pestaña `about:blank` huérfana
+  // que nunca se llenaba. Era justo el síntoma reportado.
+  //
+  // La protección que daba noopener se consigue igual anulando `opener`
+  // a mano justo después, que es lo que se hace abajo.
+  const ventana = window.open("", "_blank");
+  if (ventana) {
+    // Que la pestaña nueva no pueda tocar la que la abrió.
+    try {
+      ventana.opener = null;
+    } catch {
+      // Algún navegador no deja escribirlo; no es motivo para no abrir.
+    }
+    // Algo mientras carga: una pestaña en blanco parece que se colgó.
+    try {
+      ventana.document.write(
+        '<!doctype html><html><head><meta charset="utf-8"><title>Vista360</title>' +
+          '<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;' +
+          'justify-content:center;height:100vh;margin:0;color:#555}</style></head>' +
+          "<body>Abriendo el documento…</body></html>",
+      );
+      ventana.document.close();
+    } catch {
+      // Idem: si no se puede escribir, se sigue igual.
+    }
+  }
 
   const corte = new AbortController();
   const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA_MS);
@@ -159,5 +189,4 @@ export async function verArchivo(url: string, nombre: string): Promise<void> {
   } finally {
     clearTimeout(reloj);
   }
-  void nombre;
 }

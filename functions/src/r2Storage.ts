@@ -1,6 +1,7 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { HttpsError } from "firebase-functions/v2/https";
+import { nombreDescargaSeguro } from "./validaciones.js";
 
 /**
  * Cliente único de R2 (compatible con S3) para todas las Cloud Functions.
@@ -109,10 +110,14 @@ export async function leerObjetoR2(key: string): Promise<Buffer> {
 }
 
 export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nombreDescarga?: string) {
+  // El nombre viene del navegador y entra en una cabecera HTTP: se limpia
+  // acá, en el único punto que la arma, para que ninguna función que se
+  // añada mañana pueda saltarse el filtro. Ver nombreDescargaSeguro.
+  const nombreLimpio = nombreDescarga ? nombreDescargaSeguro(nombreDescarga) : undefined;
   const command = new GetObjectCommand({
     Bucket: r2Bucket(),
     Key: key,
-    ...(nombreDescarga ? { ResponseContentDisposition: `attachment; filename="${nombreDescarga}"` } : {}),
+    ...(nombreLimpio ? { ResponseContentDisposition: `attachment; filename="${nombreLimpio}"` } : {}),
   });
   return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
 }

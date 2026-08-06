@@ -121,11 +121,29 @@ function mensajeFacturaConLink(f: Factura, cliente: Cliente | null, url: string)
   ].join("\n");
 }
 
-/** Nombre de archivo para el PDF compartido. */
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+/**
+ * Nombre del PDF al descargar o ver una factura.
+ *
+ * Mismo formato que los reportes ("Reporte 05 Ago 2026.pdf"), que es el
+ * que se pidió: guardadas en la misma carpeta, las dos cosas se ordenan
+ * y se reconocen igual. Antes salía "F001-123.pdf", que no dice nada
+ * sobre cuándo es sin abrirlo.
+ *
+ * Si la factura no trae fecha de emisión se cae al número, que es el
+ * único identificador que queda: peor nombre, pero nunca un archivo
+ * llamado "undefined".
+ */
 function nombreArchivoFactura(f: Factura) {
+  const fecha = fechaDeFactura(f.fecha_emision);
+  if (fecha) {
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return `Factura ${dia} ${MESES_CORTOS[fecha.getMonth()]} ${fecha.getFullYear()}.pdf`;
+  }
   const base = f.numero_fmt || f.serie || "Vista360";
   const limpio = base.replace(/[^\p{L}\p{N} -]/gu, "").trim().replace(/\s+/g, "-");
-  return `Factura-${limpio || "Vista360"}.pdf`;
+  return `Factura ${limpio || "Vista360"}.pdf`;
 }
 
 /**
@@ -267,7 +285,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       cloudFunctions,
       "firmarDescargaFactura"
     );
-    fn({ key: f.pdfUrl, nombre: f.numero_fmt || "factura" })
+    fn({ key: f.pdfUrl, nombre: nombreArchivoFactura(f).replace(/\.pdf$/i, "") })
       .then((res) => {
         if (!cancelado) setUrlDescarga(res.data.url);
       })
@@ -277,7 +295,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     return () => {
       cancelado = true;
     };
-  }, [esKeyR2, f.pdfUrl, f.numero_fmt]);
+  }, [esKeyR2, f.pdfUrl, f.numero_fmt, f.serie, f.fecha_emision]);
 
   const nombreFactura = f.numero_fmt ?? f.serie ?? "Sin número";
   const badge = BADGE[f.estado] ?? BADGE.Borrador;
@@ -497,7 +515,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
             disabled={abriendo}
             onClick={() => {
               setAbriendo(true);
-              void verArchivo(urlVer, `${f.numero_fmt || f.serie || "factura"}.pdf`).finally(() =>
+              void verArchivo(urlVer, nombreArchivoFactura(f)).finally(() =>
                 setAbriendo(false)
               );
             }}
@@ -512,7 +530,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
               setDescargando(true);
               void descargarArchivo(
                 urlDescarga || urlVer,
-                `${f.numero_fmt || f.serie || "factura"}.pdf`
+                nombreArchivoFactura(f)
               ).finally(() => setDescargando(false));
             }}
           >
