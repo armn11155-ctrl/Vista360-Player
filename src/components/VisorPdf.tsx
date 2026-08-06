@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 const PREFIJO_VISOR = "vista360:visor-pdf:";
@@ -7,13 +8,25 @@ type DatosVisor = {
   nombre: string;
 };
 
+function esPwaIOS(): boolean {
+  const ua = navigator.userAgent || "";
+  const esIOS =
+    /iPhone|iPad|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1);
+  const navigatorIOS = navigator as Navigator & { standalone?: boolean };
+  const instalada =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    navigatorIOS.standalone === true;
+  return esIOS && instalada;
+}
+
 export default function VisorPdf() {
   const [estado, setEstado] = useState<"cargando" | "listo" | "error">("cargando");
   const [urlLocal, setUrlLocal] = useState("");
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("visor-pdf") || "";
-    const clave = `${PREFIJO_VISOR}${token}`;
+    const clave = PREFIJO_VISOR + token;
     let datos: DatosVisor | null = null;
 
     try {
@@ -35,16 +48,27 @@ export default function VisorPdf() {
     const corte = new AbortController();
     const reloj = window.setTimeout(() => corte.abort(), 20_000);
     let blobUrl = "";
+    let navegacionNativa = false;
 
     fetch(datos.url, { signal: corte.signal })
       .then((respuesta) => {
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        if (!respuesta.ok) throw new Error("HTTP " + respuesta.status);
         return respuesta.blob();
       })
       .then((blob) => {
         blobUrl = URL.createObjectURL(
           blob.type ? blob : new Blob([blob], { type: "application/pdf" }),
         );
+
+        // El <embed> de una PWA de iOS no ofrece zoom ni los controles del
+        // PDF. Como navegación principal, WebKit usa su visor nativo y sí
+        // permite pellizcar, acercar, alejar y recorrer todas las páginas.
+        if (esPwaIOS()) {
+          navegacionNativa = true;
+          window.location.replace(blobUrl);
+          return;
+        }
+
         setUrlLocal(blobUrl);
         setEstado("listo");
       })
@@ -54,7 +78,7 @@ export default function VisorPdf() {
     return () => {
       corte.abort();
       window.clearTimeout(reloj);
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
+      if (blobUrl && !navegacionNativa) URL.revokeObjectURL(blobUrl);
     };
   }, []);
 
