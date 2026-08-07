@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { exigirId, idOpcional } from "./identificadores.js";
 import { exigirRitmo } from "./limitador.js";
+import { guardarMetadataInforme, idKeyDesdeInformeId } from "./agregadoInformes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -57,14 +58,19 @@ export const marcarReporteVisto = onCall(async (request) => {
     throw new HttpsError("permission-denied", "Solo el cliente dueño del reporte puede marcarlo como visto.");
   }
 
+  const vistoEn = FieldValue.serverTimestamp();
   await db.doc(`informesCliente/${informeId}`).set(
     {
       cliente_id: clienteId,
       vistoPorCliente: true,
-      vistoEn: FieldValue.serverTimestamp(),
+      vistoEn,
     },
     { merge: true }
   );
+  await guardarMetadataInforme(db, clienteId, idKeyDesdeInformeId(clienteId, informeId), {
+    vistoPorCliente: true,
+    vistoEn,
+  });
 
   return { ok: true };
 });

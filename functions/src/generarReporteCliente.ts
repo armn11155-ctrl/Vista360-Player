@@ -1,5 +1,6 @@
 import { dirname, join } from "node:path";
 import { enviarPushACliente } from "./notificacionesPush.js";
+import { guardarMetadataInforme } from "./agregadoInformes.js";
 import { fileURLToPath } from "node:url";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
@@ -1238,6 +1239,11 @@ export const generarReporteCliente = onCall(
         },
         { merge: true }
       );
+      await guardarMetadataInforme(db, clienteId, fecha, {
+        ...(contratoId ? { contrato_id: contratoId } : {}),
+        ...(contratoNombre ? { contratoNombre } : {}),
+        ...(panelesIncluidos.length > 0 ? { panelesIncluidos } : {}),
+      });
 
       // Las fotos ya están dentro del PDF: las copias sueltas en R2 no
       // sirven para nada más y solo ocuparían espacio. Se borran acá para

@@ -25,9 +25,9 @@ const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
  * para firmarla, apoyándose en que un cliente "nunca llega a conocer
  * una key que no sea suya" -- seguridad por oscuridad, y encima
  * inconsistente, porque firmarDescargaFactura (la otra puerta al mismo
- * archivo) sí valida al dueño con cuidado. Ahora las dos hacen lo
- * mismo: el admin puede firmar cualquiera, y un cliente solo las
- * facturas que le corresponden por cliente_id o por RUC.
+ * archivo) sí valida al dueño con cuidado. Ahora el admin puede firmar
+ * cualquiera, y un cliente solo las keys presentes en su agregado de
+ * facturas (con respaldo por cliente_id).
  *
  * Las otras carpetas (campañas, avatares) no llevan datos financieros
  * y sus keys viven dentro de documentos que Firestore Rules ya limita
@@ -60,23 +60,29 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   const esAdmin = propio.role === "admin";
   const clienteIdPropio = String(propio.clienteId ?? "");
 
-  /** ¿Esta factura es del cliente que la está pidiendo? Misma lógica
-   *  que firmarDescargaFactura: por cliente_id directo, o por el RUC
-   *  (cliente_doc) que usa el sistema de facturación externo. */
-  async function facturaEsDelCliente(key: string): Promise<boolean> {
-    const facturaSnap = await db.collection("facturas").where("pdfUrl", "==", key).limit(1).get();
-    if (facturaSnap.empty) return false;
-    const factura = facturaSnap.docs[0].data();
-    let clienteIdFactura = String(factura.cliente_id ?? "");
-    if (!clienteIdFactura && factura.cliente_doc) {
-      const clienteSnap = await db
-        .collection("clientes")
-        .where("ruc", "==", String(factura.cliente_doc))
-        .limit(1)
-        .get();
-      if (!clienteSnap.empty) clienteIdFactura = clienteSnap.docs[0].id;
+  /**
+   * Todas las facturas propias en una lectura agregada. Antes se hacía una
+   * consulta por cada key recibida: mostrar 20 facturas costaba 20 lecturas
+   * solo para validar las URLs. Es el mismo documento que ya consume la
+   * pantalla. Si aún no existe, se conserva el respaldo por colección.
+   */
+  async function keysDeMisFacturas(): Promise<Set<string>> {
+    const propias = new Set<string>();
+    if (!clienteIdPropio) return propias;
+    const agregado = await db.doc(`agregados/facturas-${clienteIdPropio}`).get();
+    const facturasAgregadas = agregado.data()?.facturas;
+    if (agregado.exists && Array.isArray(facturasAgregadas)) {
+      facturasAgregadas.forEach((factura: { pdfUrl?: unknown }) => {
+        if (typeof factura.pdfUrl === "string") propias.add(factura.pdfUrl);
+      });
+      return propias;
     }
-    return Boolean(clienteIdFactura) && clienteIdFactura === clienteIdPropio;
+    const facturasSnap = await db.collection("facturas").where("cliente_id", "==", clienteIdPropio).get();
+    facturasSnap.docs.forEach((documento) => {
+      const pdfUrl = documento.data()?.pdfUrl;
+      if (typeof pdfUrl === "string") propias.add(pdfUrl);
+    });
+    return propias;
   }
 
   /**
@@ -129,16 +135,20 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   async function keysPermitidas(): Promise<string[]> {
     if (esAdmin) return keys;
 
-    const mias = await keysDeMisCampanas();
-    const decididas = await Promise.all(
-      keys.map(async (key) => {
-        // Facturas: tienen que ser de este cliente (por cliente_id o RUC).
+    const necesitaCampanas = keys.some((key) => key.startsWith("vista360/campanas/"));
+    const necesitaFacturas = keys.some((key) => key.startsWith("vista360/facturas/"));
+    const [campanasMias, facturasMias] = await Promise.all([
+      necesitaCampanas ? keysDeMisCampanas() : Promise.resolve(new Set<string>()),
+      necesitaFacturas ? keysDeMisFacturas() : Promise.resolve(new Set<string>()),
+    ]);
+    const decididas = keys.map((key) => {
+        // Facturas: la key tiene que estar en el agregado de este cliente.
         if (key.startsWith("vista360/facturas/")) {
-          return (await facturaEsDelCliente(key)) ? key : null;
+          return facturasMias.has(key) ? key : null;
         }
         // Fotos de campaña: solo las que están en SUS propias campañas.
         if (key.startsWith("vista360/campanas/")) {
-          return mias.has(key) ? key : null;
+          return campanasMias.has(key) ? key : null;
         }
         // Avatares: son el logo/foto de perfil que la propia app muestra
         // en cabeceras y listados; no llevan información privada y se
@@ -148,8 +158,7 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
         }
         // Cualquier otra cosa: no.
         return null;
-      })
-    );
+      });
     return decididas.filter((k): k is string => k !== null);
   }
 

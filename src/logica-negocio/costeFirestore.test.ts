@@ -118,6 +118,35 @@ describe("facturas: una sola consulta, no dos", () => {
 });
 
 describe("reutilizar lo que ya está en memoria", () => {
+  it("Detalle, Facturas y Perfil comparten el agregado reciente de facturas", () => {
+    const c = sinComentarios(hook("useFacturas"));
+    expect(c).toContain("CACHE_FACTURAS");
+    expect(c).toContain("VIGENCIA_FACTURAS_MS");
+    expect(c).toContain("setTimeout(iniciarEscucha");
+  });
+
+  it("la firma de URLs valida todas las facturas con un solo agregado", () => {
+    const c = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/firmarUrlsR2.ts"), "utf-8")
+    );
+    expect(c).toContain("keysDeMisFacturas");
+    expect(c).toContain('`agregados/facturas-${clienteIdPropio}`');
+    expect(c).toContain("necesitaCampanas ? keysDeMisCampanas()");
+    expect(c).not.toContain("facturaEsDelCliente");
+  });
+
+  it("acciones repetidas reutilizan marcado de reporte y firma de descarga", () => {
+    const reporte = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/ReportCard.tsx"), "utf-8")
+    );
+    const factura = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/FacturaCard.tsx"), "utf-8")
+    );
+    expect(reporte).toContain("REPORTES_MARCADOS_EN_SESION");
+    expect(factura).toContain("CACHE_DESCARGAS");
+    expect(factura).toContain("VIGENCIA_DESCARGA_MS");
+  });
+
   it("usePaneles se sirve del inventario cargado antes de pedir a Firestore", () => {
     // La app carga el inventario completo al arrancar (1 lectura). Antes
     // este hook lo ignoraba y pedía cada panel por separado: en una
@@ -155,10 +184,61 @@ describe("reutilizar lo que ya está en memoria", () => {
     expect(c).toContain("cargaEnCurso");
   });
 
+  it("Cambiar cliente reutiliza la lista mientras el listener refresca detrás", () => {
+    const c = sinComentarios(hook("useClientesAdmin"));
+    expect(c).toContain('CLIENTES_EN_MEMORIA\n      ? { status: "ready"');
+    expect(c).toContain("CAMPANAS_EN_MEMORIA");
+  });
+
+  it("el selector solo firma avatares que la paginación muestra", () => {
+    const c = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/AdminClientPicker.tsx"), "utf-8"),
+    );
+    expect(c).toContain("const keysR2 = clientesMostrados");
+    expect(c).not.toContain("const keysR2 = clientes\n");
+  });
+
   it("Reportes no vuelve a listar R2 en cada montaje", () => {
     const c = sinComentarios(hook("useInformes"));
     expect(c).toContain("VIGENCIA_LISTADO_MS");
     expect(c).toContain("PETICIONES");
+  });
+
+  it("Inicio pide solo el resumen y no precarga documentos ni URLs de reportes", () => {
+    const inicio = sinComentarios(readFileSync(resolve(__dirname, "../components/screens/Inicio.tsx"), "utf-8"));
+    const resumen = sinComentarios(hook("useResumenInformes"));
+    const funcion = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/listarReportesCliente.ts"), "utf-8")
+    );
+    expect(inicio).toContain("useResumenInformes(clienteId, mesActual)");
+    expect(inicio).not.toContain("useInformes(clienteId)");
+    expect(resumen).toContain("resumen: true");
+    expect(sinComentarios(hook("useInformes"))).toContain("invalidarResumenInformes(clienteId)");
+    expect(funcion).toContain("if (request.data?.resumen === true)");
+    expect(funcion.indexOf("if (request.data?.resumen === true)")).toBeLessThan(
+      funcion.indexOf("const informes: InformeListado[] = await Promise.all")
+    );
+  });
+
+  it("Reportes lee metadatos por año y mantiene el agregado en cada mutación", () => {
+    const listar = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/listarReportesCliente.ts"), "utf-8")
+    );
+    const generar = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/generarReporteCliente.ts"), "utf-8")
+    );
+    const marcar = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/marcarReporteVisto.ts"), "utf-8")
+    );
+    const eliminar = sinComentarios(
+      readFileSync(resolve(__dirname, "../../functions/src/eliminarReporteCliente.ts"), "utf-8")
+    );
+    expect(listar).toContain("rutaResumenInformes(clienteId, anio)");
+    expect(listar).toContain("datos?.completo");
+    expect(listar).toContain("metadataPorId.get(idKey)");
+    expect(generar).toContain("guardarMetadataInforme(db, clienteId, fecha");
+    expect(marcar).toContain("guardarMetadataInforme(db, clienteId");
+    expect(eliminar).toContain("eliminarMetadataInforme(db, clienteId");
   });
 
   it("Ocupación no repite el cruce de colecciones al reentrar", () => {

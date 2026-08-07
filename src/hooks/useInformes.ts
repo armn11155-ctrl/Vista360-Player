@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import type { InformeCliente } from "../types";
+import { invalidarResumenInformes } from "./useResumenInformes";
 
 export type InformesState =
   | { status: "loading" }
@@ -74,6 +75,7 @@ export function useInformes(clienteId: string): UseInformesResult {
       setState({ status: "ready", informes: [] });
       return;
     }
+    invalidarResumenInformes(clienteId);
     // Si no hay nada en caché todavía, sí hay que mostrar el loader --
     // no hay nada mejor que ofrecer mientras se espera la primera vez.
     if (!CACHE.has(clienteId)) {

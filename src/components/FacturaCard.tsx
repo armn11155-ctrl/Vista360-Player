@@ -15,6 +15,9 @@ interface Props {
   isAdmin?: boolean;
 }
 
+const VIGENCIA_DESCARGA_MS = 5 * 60 * 60_000;
+const CACHE_DESCARGAS = new Map<string, { url: string; expiraEn: number }>();
+
 const BADGE: Record<FacturaEstado, { bg: string; color: string }> = {
   Pagada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
   Aceptada: { bg: "rgba(34,197,94,0.15)", color: "#16A34A" },
@@ -161,7 +164,10 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const urlVer = f.pdfUrl ? (esKeyR2 ? urlsFirmadas[f.pdfUrl!] : f.pdfUrl) : undefined;
 
-  const [urlDescarga, setUrlDescarga] = useState("");
+  const descargaCacheada = f.pdfUrl ? CACHE_DESCARGAS.get(f.pdfUrl) : undefined;
+  const [urlDescarga, setUrlDescarga] = useState(() =>
+    descargaCacheada && descargaCacheada.expiraEn > Date.now() ? descargaCacheada.url : ""
+  );
   const [descargando, setDescargando] = useState(false);
   const [abriendo, setAbriendo] = useState(false);
 
@@ -303,6 +309,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         "firmarDescargaFactura"
       );
       const res = await fn({ key: f.pdfUrl, nombre: nombreArchivoFactura(f).replace(/\.pdf$/i, "") });
+      CACHE_DESCARGAS.set(f.pdfUrl, { url: res.data.url, expiraEn: Date.now() + VIGENCIA_DESCARGA_MS });
       setUrlDescarga(res.data.url);
       return res.data.url;
     } catch {

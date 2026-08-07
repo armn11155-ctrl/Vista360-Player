@@ -19,6 +19,11 @@ interface Props {
   onEliminado?: () => void;
 }
 
+// Ver y Descargar suelen pulsarse uno después del otro. Ambos deben marcar
+// el reporte, pero una sola llamada alcanza: el estado vive en el backend y
+// no cambia por volver a abrir el mismo PDF durante esta sesión.
+const REPORTES_MARCADOS_EN_SESION = new Set<string>();
+
 function nombreCliente(cliente: Cliente | null) {
   return cliente?.empresa || cliente?.contacto || "cliente";
 }
@@ -283,11 +288,17 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  PDF con normalidad, solo no queda marcado como visto. */
   function marcarVisto() {
     if (isAdmin || !cloudFunctions) return;
+    const clave = `${clienteId}:${informe.id}`;
+    if (REPORTES_MARCADOS_EN_SESION.has(clave)) return;
+    REPORTES_MARCADOS_EN_SESION.add(clave);
     const marcarReporteVisto = httpsCallable<{ clienteId: string; informeId: string }, { ok: boolean }>(
       cloudFunctions,
       "marcarReporteVisto"
     );
-    marcarReporteVisto({ clienteId, informeId: informe.id }).catch(() => undefined);
+    marcarReporteVisto({ clienteId, informeId: informe.id }).catch(() => {
+      // Si falló por red, un toque posterior sí puede reintentarlo.
+      REPORTES_MARCADOS_EN_SESION.delete(clave);
+    });
   }
 
   return (

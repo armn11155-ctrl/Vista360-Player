@@ -41,6 +41,16 @@ function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
 
 const CACHE = cargarCacheInicial();
 
+function frescasDesdeCache(keys: string[]): Record<string, string> {
+  const resultado: Record<string, string> = {};
+  const ahora = Date.now();
+  keys.forEach((key) => {
+    const cache = CACHE.get(key);
+    if (cache && cache.expiraEn - MARGEN_MS > ahora) resultado[key] = cache.url;
+  });
+  return resultado;
+}
+
 function guardarCache() {
   try {
     const datos: Record<string, { url: string; expiraEn: number }> = {};
@@ -125,8 +135,11 @@ function pedirFirmaAgrupada(keys: string[]): Promise<void> {
 }
 
 export function useSignedUrls(keys: (string | undefined | null)[]): Record<string, string> {
-  const [urls, setUrls] = useState<Record<string, string>>({});
   const keysLimpias = keys.filter((k): k is string => Boolean(k));
+  // En un remonte (el caso Cambiar cliente -> Gestión), las firmas de 6h
+  // ya están en CACHE. Publicarlas desde el inicializador evita incluso el
+  // render intermedio vacío que antes hacía reaparecer el loader.
+  const [urls, setUrls] = useState<Record<string, string>>(() => frescasDesdeCache(keysLimpias));
   const keysRef = useRef<string>("");
   const joined = keysLimpias.join(",");
 
@@ -139,17 +152,11 @@ export function useSignedUrls(keys: (string | undefined | null)[]): Record<strin
     }
 
     let cancelado = false;
-    const ahora = Date.now();
-    const frescas: Record<string, string> = {};
+    const frescas = frescasDesdeCache(keysLimpias);
     const faltantes: string[] = [];
 
     keysLimpias.forEach((key) => {
-      const cache = CACHE.get(key);
-      if (cache && cache.expiraEn - MARGEN_MS > ahora) {
-        frescas[key] = cache.url;
-      } else {
-        faltantes.push(key);
-      }
+      if (!(key in frescas)) faltantes.push(key);
     });
 
     setUrls((prev) => ({ ...prev, ...frescas }));

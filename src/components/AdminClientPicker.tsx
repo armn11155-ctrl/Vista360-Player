@@ -95,6 +95,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // nadie trabado si la firma tarda o falla (en ese caso se muestra
   // igual, con íconos de respaldo donde falte foto).
   const [esperaMaxima, setEsperaMaxima] = useState(false);
+  const [contenidoMostrado, setContenidoMostrado] = useState(false);
   useEffect(() => {
     const t = window.setTimeout(() => setEsperaMaxima(true), 4000);
     return () => window.clearTimeout(t);
@@ -132,7 +133,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const miAvatarEsKeyR2 = Boolean(miAvatarUrl) && !miAvatarUrl.startsWith("http");
   // Se firma todo junto (fotos de clientes + la propia del admin) en
   // una sola tanda para no hacer dos viajes al servidor por separado.
-  const keysR2 = clientes
+  // Solo se firman las fotos que la paginación realmente va a mostrar.
+  // Antes se pedían las de TODOS los clientes aunque la grilla enseñara 8:
+  // con una cartera grande eran varios lotes de Functions y la pantalla
+  // completa esperaba archivos que todavía ni se podían ver.
+  const keysR2 = clientesMostrados
     .map((c) => c.avatarUrl)
     .filter((url): url is string => Boolean(url) && !url!.startsWith("http"))
     .concat(miAvatarEsKeyR2 ? [miAvatarUrl] : []);
@@ -153,6 +158,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   const avataresPendientes = keysR2.some((k) => !(k in avataresFirmados));
   const todoListo = state.status !== "loading" && !avataresPendientes;
+  useEffect(() => {
+    if (todoListo) setContenidoMostrado(true);
+  }, [todoListo]);
 
   function cambiarTab(siguiente: "activos" | "archivados") {
     setErrorAccion("");
@@ -251,7 +259,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   return (
     <div className="admin-picker-shell">
-      {!todoListo && !esperaMaxima ? (
+      {!contenidoMostrado && !todoListo && !esperaMaxima ? (
         <div className="admin-picker-loading">
           <div className="admin-picker-loading-spinner" />
         </div>

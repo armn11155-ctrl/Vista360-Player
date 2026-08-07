@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
-import { useInformes } from "../../hooks/useInformes";
+import { useResumenInformes } from "../../hooks/useResumenInformes";
 import { usePushEstado } from "../../hooks/usePushEstado";
 import NotifPrompt from "../NotifPrompt";
 import { PersonIcon } from "../PersonIcon";
@@ -65,21 +65,19 @@ export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo,
   const notifBtnRef = useRef<HTMLButtonElement>(null);
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");
   const pantallasActivas = new Set(activas.flatMap((contrato) => panelesDeContrato(contrato))).size;
-  const informesState = useInformes(clienteId);
-  const ultimoInforme = informesState.status === "ready" ? informesState.informes[0] ?? null : null;
+  const mesActual = new Date().toISOString().slice(0, 7);
+  const informesState = useResumenInformes(clienteId, mesActual);
+  const ultimoInforme = informesState.status === "ready" ? informesState.ultimoInforme : null;
   // Para la tarjeta de "Reporte del mes" en Próximos pasos -- ¿ya existe
   // un informe generado para el mes en curso? (mismo criterio que usa
   // Mis Campañas para su barra de "Estado de reportes"). Con esto la
   // tarjeta muestra una situación real en vez de un texto fijo.
-  const mesActual = new Date().toISOString().slice(0, 7);
   const NOMBRES_MES_LARGO = [
     "enero", "febrero", "marzo", "abril", "mayo", "junio",
     "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
   ];
   const nombreMesActual = NOMBRES_MES_LARGO[Number(mesActual.slice(5, 7)) - 1] ?? "este mes";
-  const reporteEsteMesListo = informesState.status === "ready"
-    ? informesState.informes.some((informe) => informe.mes === mesActual)
-    : false;
+  const reporteEsteMesListo = informesState.status === "ready" && informesState.reporteEsteMesListo;
   const proxVenc = proximoVencimiento(contratos);
   const campanaRenovable = [...activas].sort((a, b) => a.fin.localeCompare(b.fin))[0] ?? null;
   const diasRenovacion = campanaRenovable ? diasHasta(campanaRenovable.fin) : null;

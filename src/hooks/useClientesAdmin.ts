@@ -25,6 +25,7 @@ interface Resultado {
 // Es solo memoria: al recargar o cerrar la app desaparece, y la siguiente
 // sesion vuelve a validar el agregado normalmente.
 let CLIENTES_EN_MEMORIA: Cliente[] | null = null;
+let CAMPANAS_EN_MEMORIA: ConteoCampanasActivas = {};
 
 export function clientesAdminEnMemoria(): Cliente[] | null {
   return CLIENTES_EN_MEMORIA;
@@ -58,8 +59,17 @@ export function useClientesAdmin(): ClientesAdminState {
 }
 
 export function useSelectorDeClientes(): Resultado {
-  const [state, setState] = useState<ClientesAdminState>({ status: "loading" });
-  const [campanasActivas, setCampanas] = useState<ConteoCampanasActivas>({});
+  // Stale-while-revalidate: al volver de un cliente, AdminClientPicker se
+  // monta de cero. La lista ya estaba en este módulo, pero antes el estado
+  // arrancaba otra vez en loading y ocultaba durante segundos exactamente
+  // los mismos clientes mientras Safari reconectaba el listener. Se pinta la
+  // última lista buena en el primer render y la escucha la refresca detrás.
+  const [state, setState] = useState<ClientesAdminState>(() =>
+    CLIENTES_EN_MEMORIA
+      ? { status: "ready", clientes: CLIENTES_EN_MEMORIA }
+      : { status: "loading" }
+  );
+  const [campanasActivas, setCampanas] = useState<ConteoCampanasActivas>(() => CAMPANAS_EN_MEMORIA);
 
   useEffect(() => {
     if (!db) { setState({ status: "ready", clientes: [] }); return; }
@@ -74,6 +84,7 @@ export function useSelectorDeClientes(): Resultado {
       const conteo: ConteoCampanasActivas = {};
       filas.forEach((f) => { conteo[f.id] = f.campanasActivas ?? 0; });
       CLIENTES_EN_MEMORIA = filas as unknown as Cliente[];
+      CAMPANAS_EN_MEMORIA = conteo;
       setCampanas(conteo);
       setState({ status: "ready", clientes: CLIENTES_EN_MEMORIA });
     };
@@ -96,7 +107,17 @@ export function useSelectorDeClientes(): Resultado {
               clientes,
             });
           },
-          (err) => { if (!cancelado) setState({ status: "error", message: err.message }); }
+          (err) => {
+            if (cancelado) return;
+            // Una pérdida de red no debe borrar una lista que ya se mostró.
+            // Se informa el error solo cuando nunca hubo datos utilizables.
+            if (CLIENTES_EN_MEMORIA) {
+              console.warn("No se pudo refrescar la lista de clientes; se conserva la copia en memoria.", err);
+              setState({ status: "ready", clientes: CLIENTES_EN_MEMORIA });
+            } else {
+              setState({ status: "error", message: err.message });
+            }
+          }
         )
       );
     };

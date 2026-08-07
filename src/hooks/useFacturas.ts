@@ -8,6 +8,9 @@ export type FacturasState =
   | { status: "ready"; facturas: Factura[] }
   | { status: "error"; message: string };
 
+const VIGENCIA_FACTURAS_MS = 60_000;
+const CACHE_FACTURAS = new Map<string, { facturas: Factura[]; actualizadoEn: number }>();
+
 /**
  * Facturas se identifican principalmente por RUC (cliente_doc) --
  * vienen de facturacion-web, un sistema distinto que comparte el mismo
@@ -54,16 +57,29 @@ function esPermisoDenegado(err: FirestoreError): boolean {
  * cosas y quitarlo obligaría a tocarlas sin ganar nada.
  */
 export function useFacturas(ruc: string | undefined, clienteId?: string): FacturasState {
-  const [porCliente, setPorCliente] = useState<Factura[] | null>(null);
+  const cacheInicial = clienteId ? CACHE_FACTURAS.get(clienteId) : undefined;
+  const cacheInicialVigente = cacheInicial && Date.now() - cacheInicial.actualizadoEn < VIGENCIA_FACTURAS_MS;
+  const [porCliente, setPorCliente] = useState<Factura[] | null>(
+    cacheInicialVigente ? cacheInicial.facturas : null
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setPorCliente(null);
     if (!db || !clienteId) {
       setPorCliente([]);
       return;
     }
     const bd = db;
+    let cancelado = false;
+    let reloj: ReturnType<typeof setTimeout> | null = null;
+    const cacheado = CACHE_FACTURAS.get(clienteId);
+    const edadCache = cacheado ? Date.now() - cacheado.actualizadoEn : Number.POSITIVE_INFINITY;
+    if (cacheado) {
+      setError(null);
+      setPorCliente(cacheado.facturas);
+    } else {
+      setPorCliente(null);
+    }
 
     // SE LEE DEL RESUMEN, NO FACTURA POR FACTURA.
     //
@@ -76,6 +92,13 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
     // Juntarlos habría hecho que todo el mundo cargase las facturas en
     // cada sesión aunque no las mirara.
     let cortar: (() => void) | null = null;
+
+    const publicar = (facturas: Factura[]) => {
+      if (cancelado) return;
+      CACHE_FACTURAS.set(clienteId, { facturas, actualizadoEn: Date.now() });
+      setError(null);
+      setPorCliente(facturas);
+    };
 
     // Respaldo: la consulta de siempre. Si el resumen no está todavía o
     // las reglas aún no lo permiten, se lee la colección: más caro, pero
@@ -92,39 +115,57 @@ export function useFacturas(ruc: string | undefined, clienteId?: string): Factur
       cortar = onSnapshot(
         query(collection(bd, "facturas"), where("cliente_id", "==", clienteId)),
         (snap) => {
-          setError(null);
-          setPorCliente(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
+          publicar(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Factura, "id">) })));
         },
-        (err) => (esPermisoDenegado(err) ? setPorCliente([]) : setError(err.message))
+        (err) => (esPermisoDenegado(err) ? publicar([]) : setError(err.message))
       );
     };
 
-    cortar = onSnapshot(
-      doc(bd, `agregados/facturas-${clienteId}`),
-      (snap) => {
-        const datos = snap.data() as { facturas?: Factura[] } | undefined;
-        if (!snap.exists() || !Array.isArray(datos?.facturas)) {
+    const iniciarEscucha = () => {
+      if (cancelado) return;
+      cortar = onSnapshot(
+        doc(bd, `agregados/facturas-${clienteId}`),
+        (snap) => {
+          const datos = snap.data() as { facturas?: Factura[] } | undefined;
+          if (!snap.exists() || !Array.isArray(datos?.facturas)) {
+            console.warn(
+              "No existe el resumen de facturas de este cliente; se lee la colección. " +
+                "Lanza el barrido diario para generarlo."
+            );
+            leerColeccionDirecta();
+            return;
+          }
+          publicar(datos!.facturas!);
+        },
+        (err) => {
           console.warn(
-            "No existe el resumen de facturas de este cliente; se lee la colección. " +
-              "Lanza el barrido diario para generarlo."
+            "No se pudo leer el resumen de facturas; se lee la colección. " +
+              "Revisa que las reglas permitan leer agregados/facturas-<id>.",
+            err
           );
           leerColeccionDirecta();
-          return;
         }
-        setError(null);
-        setPorCliente(datos!.facturas!);
-      },
-      (err) => {
-        console.warn(
-          "No se pudo leer el resumen de facturas; se lee la colección. " +
-            "Revisa que las reglas permitan leer agregados/facturas-<id>.",
-          err
-        );
-        leerColeccionDirecta();
-      }
-    );
+      );
+    };
 
-    return () => { cortar?.(); };
+    // Detalle, Facturas y Perfil consumen el mismo agregado. Al cambiar
+    // de pantalla el componente anterior se desmonta; sin esta vigencia,
+    // cada montaje abría otra escucha y cobraba otra lectura de un dato que
+    // acababa de llegar. Durante un minuto se sirve solo la copia reciente.
+    // Si la persona permanece en la pantalla, al vencer el plazo se vuelve
+    // a conectar y recupera el tiempo real. Al salir se cancela el reloj:
+    // nunca queda una escucha ni un temporizador huérfano.
+    if (edadCache < VIGENCIA_FACTURAS_MS) {
+      reloj = setTimeout(iniciarEscucha, VIGENCIA_FACTURAS_MS - edadCache);
+    } else {
+      iniciarEscucha();
+    }
+
+    return () => {
+      cancelado = true;
+      if (reloj) clearTimeout(reloj);
+      cortar?.();
+    };
   }, [clienteId]);
 
   if (error) return { status: "error", message: error };

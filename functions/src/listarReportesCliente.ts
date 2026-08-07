@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { R2_SECRETS, firmarLecturaR2, r2Bucket, r2Client } from "./r2Storage.js";
 import { exigirId, idOpcional } from "./identificadores.js";
+import { rutaResumenInformes, type MetadataInformeAgregado } from "./agregadoInformes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -26,6 +27,14 @@ interface InformeListado {
   vistoEn?: string | null;
   contratoId?: string;
   panelesIncluidos?: string[];
+}
+
+interface ResumenInforme {
+  id: string;
+  mes: string;
+  dia?: string;
+  mesLabel: string;
+  createdAt: string;
 }
 
 const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
@@ -58,8 +67,9 @@ function nombreFechaCorta(mes: string, dia?: string) {
  *   - reportes nuevos (uno por dia): clientes/{clienteId}/reportes/{mes}/{dia}/reporte-digital.pdf
  *   - reportes viejos (uno por mes, de antes de este cambio): clientes/{clienteId}/reportes/{mes}/reporte-{digital|hd}.pdf
  * Un ListObjectsV2 con el prefijo del cliente alcanza para reconstruir
- * la lista completa (soportando los dos formatos a la vez), sin tocar
- * Firestore ni gastar sus lecturas.
+ * la lista completa (soportando los dos formatos a la vez). Los pocos
+ * campos que solo existen en Firestore se leen desde un agregado anual,
+ * no desde un documento por reporte.
  */
 export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
@@ -131,8 +141,98 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       }
     }
 
+    const fechasOrdenadas = [...porFecha.entries()].sort(([idA], [idB]) =>
+      idA < idB ? 1 : idA > idB ? -1 : 0
+    );
+
+    // Inicio solo necesita dos datos: el reporte mas reciente y si ya
+    // existe uno del mes actual. Antes llamaba al listado completo, lo
+    // que leia un documento de Firestore y firmaba dos URLs POR REPORTE
+    // aunque ningun PDF se mostrara en esa pantalla. El modo resumen usa
+    // solamente los metadatos devueltos por R2: no descarga archivos, no
+    // firma URLs y no lee informesCliente. La pantalla Reportes conserva
+    // el flujo completo de abajo y por tanto no pierde ninguna funcion.
+    if (request.data?.resumen === true) {
+      const primero = fechasOrdenadas[0];
+      let ultimoInforme: ResumenInforme | null = null;
+      if (primero) {
+        const [idKey, v] = primero;
+        ultimoInforme = {
+          id: `${clienteId}_${idKey}`,
+          mes: v.mes,
+          ...(v.dia ? { dia: v.dia } : {}),
+          mesLabel: nombreFechaCorta(v.mes, v.dia),
+          createdAt: (v.fecha ?? new Date()).toISOString(),
+        };
+      }
+      const mesActual = String(request.data?.mesActual ?? "");
+      const mesValido = /^\d{4}-\d{2}$/.test(mesActual) ? mesActual : new Date().toISOString().slice(0, 7);
+      return {
+        ok: true,
+        resumen: {
+          ultimoInforme,
+          reporteEsteMesListo: fechasOrdenadas.some(([, informe]) => informe.mes === mesValido),
+        },
+      };
+    }
+
+    // Los campos de presentación que no existen en R2 (campaña y estado
+    // visto) se guardan por año en un documento compacto. Antes se leía
+    // informesCliente UNA VEZ POR REPORTE; con historial diario el coste
+    // crecía sin límite. Ahora el caso normal es una lectura por año.
+    // La primera entrada después del despliegue migra automáticamente los
+    // años antiguos y deja el indicador `completo` para no repetirlo.
+    const idsPorAnio = new Map<string, string[]>();
+    fechasOrdenadas.forEach(([idKey]) => {
+      const anio = idKey.slice(0, 4);
+      const lista = idsPorAnio.get(anio) ?? [];
+      lista.push(idKey);
+      idsPorAnio.set(anio, lista);
+    });
+    const anios = [...idsPorAnio.keys()].filter((anio) => /^\d{4}$/.test(anio));
+    const refsResumen = anios.map((anio) => db.doc(rutaResumenInformes(clienteId, anio)));
+    const snapsResumen = refsResumen.length > 0 ? await db.getAll(...refsResumen) : [];
+    const metadataPorId = new Map<string, MetadataInformeAgregado>();
+
+    for (let i = 0; i < anios.length; i += 1) {
+      const anio = anios[i]!;
+      const snap = snapsResumen[i];
+      const datos = snap?.data() as
+        | { completo?: boolean; informes?: Record<string, MetadataInformeAgregado> }
+        | undefined;
+      if (snap?.exists && datos?.completo && datos.informes) {
+        Object.entries(datos.informes).forEach(([idKey, metadata]) => metadataPorId.set(idKey, metadata));
+        continue;
+      }
+
+      const ids = idsPorAnio.get(anio) ?? [];
+      const docs = ids.length > 0
+        ? await db.getAll(...ids.map((idKey) => db.doc(`informesCliente/${clienteId}_${idKey}`)))
+        : [];
+      const migrados: Record<string, MetadataInformeAgregado> = {};
+      docs.forEach((docSnap, indice) => {
+        const idKey = ids[indice]!;
+        const data = docSnap.exists ? docSnap.data() ?? {} : {};
+        const metadata: MetadataInformeAgregado = {
+          ...(data.contratoNombre ? { contratoNombre: String(data.contratoNombre) } : {}),
+          vistoPorCliente: Boolean(data.vistoPorCliente),
+          ...(data.vistoEn ? { vistoEn: data.vistoEn } : {}),
+          ...(data.contrato_id ? { contrato_id: String(data.contrato_id) } : {}),
+          ...(Array.isArray(data.panelesIncluidos)
+            ? { panelesIncluidos: data.panelesIncluidos.map(String) }
+            : {}),
+        };
+        migrados[idKey] = metadata;
+        metadataPorId.set(idKey, metadata);
+      });
+      await refsResumen[i]!.set(
+        { informes: migrados, completo: true, actualizadoEn: new Date().toISOString() },
+        { merge: true }
+      );
+    }
+
     const informes: InformeListado[] = await Promise.all(
-      [...porFecha.entries()].map(async ([idKey, v]) => {
+      fechasOrdenadas.map(async ([idKey, v]) => {
         const nombreArchivo = `Reporte ${nombreFechaCorta(v.mes, v.dia)}.pdf`.replace(/[\\/:*?"<>|]/g, "-");
         const id = `${clienteId}_${idKey}`;
         // Dos URLs firmadas de la misma key: una para verla en el
@@ -142,12 +242,11 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
         // trae el documento en Firestore (mismo id) para saber el
         // nombre de campaña y si el cliente ya lo vio -- esa parte
         // vive en Firestore porque el PDF en R2 no guarda esos datos.
-        const [url, urlDescarga, infoDoc] = await Promise.all([
+        const [url, urlDescarga] = await Promise.all([
           firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS),
           firmarLecturaR2(v.key, EXPIRACION_SEGUNDOS, nombreArchivo),
-          db.doc(`informesCliente/${id}`).get(),
         ]);
-        const infoData = infoDoc.exists ? infoDoc.data() ?? {} : {};
+        const infoData = metadataPorId.get(idKey) ?? {};
         const fecha = v.fecha ?? new Date();
         return {
           id,
@@ -163,18 +262,15 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
           createdAt: fecha.toISOString(),
           ...(infoData.contratoNombre ? { contratoNombre: String(infoData.contratoNombre) } : {}),
           vistoPorCliente: Boolean(infoData.vistoPorCliente),
-          vistoEn: infoData.vistoEn?.toDate ? infoData.vistoEn.toDate().toISOString() : null,
+          vistoEn:
+            infoData.vistoEn && typeof infoData.vistoEn === "object" && "toDate" in infoData.vistoEn
+              ? (infoData.vistoEn as { toDate: () => Date }).toDate().toISOString()
+              : null,
           ...(infoData.contrato_id ? { contratoId: String(infoData.contrato_id) } : {}),
           ...(Array.isArray(infoData.panelesIncluidos) ? { panelesIncluidos: infoData.panelesIncluidos.map(String) } : {}),
         };
       })
     );
-
-    informes.sort((a, b) => {
-      const fa = a.dia ? `${a.mes}-${a.dia}` : a.mes;
-      const fb = b.dia ? `${b.mes}-${b.dia}` : b.mes;
-      return fa < fb ? 1 : fa > fb ? -1 : 0;
-    });
 
     return { ok: true, informes };
   } catch (error) {

@@ -1,110 +1,203 @@
-# Auditoría de rendimiento — 6 de agosto de 2026
+# Auditoría completa de rendimiento — 6 de agosto de 2026
 
-## Resultado
+## Resultado ejecutivo
 
-La aplicación conserva la precarga de todas sus pantallas después de iniciar sesión para que la navegación se sienta inmediata, pero ahora respeta prioridades y evita descargar el generador PDF hasta que se usa. También se eliminaron lecturas duplicadas y se añadieron cachés breves con deduplicación de solicitudes.
+La demora móvil al volver a **Gestión de clientes** tenía una causa reproducible: el selector se desmontaba al entrar a un cliente y, al volver, su estado React empezaba otra vez en `loading` aunque la misma lista seguía disponible en memoria. La interfaz ocultaba los clientes hasta que Safari/PWA reconectaba el listener y volvía a firmar avatares. El temporizador de seguridad de cuatro segundos explica la captura: ver simultáneamente `Activos 0`, `Archivados 0` y `Cargando clientes…` demuestra que habían transcurrido al menos **4,000 ms**.
 
-La compilación, TypeScript, los detectores de renders y la suite completa pasan sin errores.
+La corrección pinta la lista y sus conteos desde memoria en el primer render y refresca el listener detrás. También reutiliza las firmas vigentes, firma únicamente los avatares de la página visible y nunca vuelve a ocultar contenido que ya se mostró. El regreso ya no depende de la red para pintar.
 
-## Cambios aplicados
+Además se redujo trabajo general que todavía estaba oculto:
 
-- Analítica reutiliza la lista agregada de clientes que el selector ya cargó. Ya no vuelve a leer toda la colección `clientes`.
-- Analítica mantiene el resultado 60 segundos y comparte solicitudes simultáneas.
-- Reportes mantiene el listado de R2 60 segundos; una generación o recarga manual fuerza datos nuevos.
-- Ocupación mantiene su resumen 120 segundos; la recarga manual siempre vuelve al servidor.
-- Mi perfil mantiene el cálculo del espacio R2 cinco minutos y evita recorridos simultáneos del bucket.
-- Los respaldos de clientes y facturas cortan la escucha agregada antes de abrir la escucha directa; nunca quedan dos listeners activos.
-- La pantalla de Cotizaciones ya no incluye jsPDF al precargarse. El generador se importa solo al guardar o compartir el PDF.
-- Las pantallas prioritarias se precargan juntas y las secundarias en lotes de cuatro. Se siguen precargando todas, sin competir las 19 por red y CPU al mismo tiempo.
-- La autenticación ya no mantiene un listener sobre el mismo documento donde se guardan los contadores. El rol se comprueba al entrar y al volver a la PWA, con una vigencia de cinco minutos; las operaciones sensibles continúan protegidas por reglas y Functions.
-- Las pantallas visitadas durante una navegación se agrupan en una sola actualización. El servidor conserva compatibilidad con las PWA antiguas que todavía envían una pantalla por llamada.
-- La imagen móvil de acceso pasó de 968,918 a 421,996 bytes: 56.4% menos, conservando resolución suficiente para pantallas Retina.
-- Analítica presenta 40 clientes inicialmente y añade más bajo demanda, evitando montar cientos de tarjetas de golpe.
+- Inicio ya no carga todos los documentos ni firma dos URLs por cada reporte. Solo obtiene el último reporte y el estado del mes desde metadatos de R2.
+- Reportes guarda sus metadatos en un agregado anual: después de la migración automática, pasa de una lectura por reporte a una lectura por año.
+- Detalle, Facturas y Perfil comparten durante 60 segundos el mismo agregado de facturas. No quedan listeners activos al salir.
+- La firma de URLs de facturas valida toda la lista con un agregado; ya no hace una consulta por factura ni consulta campañas cuando no hay una clave de campaña.
+- Ver y luego descargar el mismo reporte lo marca una sola vez por sesión.
+- La URL temporal de descarga de una factura se reutiliza durante cinco horas.
 
-## Tamaño y carga
+No se cambiaron diseño, permisos, autenticación, reglas de seguridad ni lógica de negocio visible.
 
-| Recurso | Antes | Después | Efecto |
-| --- | ---: | ---: | --- |
-| Pantalla Cotizaciones (gzip) | 134.38 KB | 4.78 KB | 96.4% menos durante la precarga |
-| Generador de cotización PDF | incluido con la pantalla | 130.53 KB bajo demanda | no compite con la navegación |
-| Imagen móvil de acceso | 968,918 B | 421,996 B | 546,922 B menos |
-| Riesgos directos/inline de render | — | 0 / 0 | verificadores del repositorio |
+## Medición del problema móvil
 
-La carga pública inicial de JS y CSS continúa alrededor de 309 KB comprimidos. La mejora principal posterior al login es que aproximadamente 243 KB de dependencias PDF dejan de descargarse durante la precarga y solo llegan cuando el usuario crea una cotización.
+| Flujo | Antes | Después técnico |
+| --- | ---: | ---: |
+| Regresar con **Cambiar cliente** | más de 4,000 ms en la captura móvil | datos disponibles en el primer render; 0 consultas bloqueantes |
+| Regreso medido en Chrome de escritorio, producción anterior | 706 ms con caché caliente | pendiente de medición final tras publicar |
+| Lista de clientes al volver | estado `loading` hasta respuesta de Firestore | estado `ready` desde memoria + refresco en segundo plano |
+| Avatares firmados | todos los clientes, aunque solo se mostraran 8 espacios | solo los clientes realmente visibles + avatar propio |
+| Clientes grandes | hasta `ceil(C / 60)` llamadas de firma | normalmente 1 llamada por página visible |
 
-## Lecturas de Firestore por sesión
+La escucha anterior sí se cerraba al desmontar el selector; no había fuga de listeners ni consulta simultánea al cliente anterior. El problema era de estado inicial y trabajo bloqueante, no de tamaño de pantalla ni bucle. Safari/PWA lo hacía más visible porque la reconexión de Firestore y las funciones firmadoras puede tardar más que en Chrome de escritorio.
 
-Firestore factura documentos resultantes y puede sumar lecturas dependientes realizadas por las reglas de seguridad. Por eso se separa el trabajo propio de la aplicación del máximo conservador de reglas. Las reconexiones de listeners después de más de 30 minutos pueden volver a cobrar la consulta como nueva.
+## Lecturas evitadas
 
-### Cliente
+Variables usadas:
 
-Inicio frío normal, con los agregados presentes:
+- `R`: reportes históricos del cliente.
+- `Y`: años que contienen reportes.
+- `F`: facturas visibles.
+- `K`: campañas leídas para validar fotos de campaña.
+- `C`: clientes administrados.
 
-- 1 `portalUsers/{uid}` para autenticar rol y vínculo.
-- 1 cliente seleccionado.
-- 1 agregado del cliente.
-- 1 agregado de paneles.
+| Operación | Antes | Después estable | Ahorro |
+| --- | ---: | ---: | ---: |
+| Inicio: resumen de reportes | `1 + R` lecturas y `2R` firmas | 1 lectura, 0 firmas | `R` lecturas y `2R` firmas |
+| Abrir Reportes | `1 + R` lecturas | `1 + Y` lecturas | `R - Y` |
+| Firmar URLs al abrir Facturas | `1 + K + F` | 2 en una solicitud de solo facturas | `K + F - 1` |
+| Reentrar a Detalle/Facturas/Perfil en menos de 60 s | 1 agregado + reglas por montaje | 0 | 1 lectura de resultado + reglas |
+| Ver y Descargar el mismo reporte | 2 llamadas de marcado | 1 por sesión | 1 lectura de autorización + 2 escrituras |
+| Volver al selector | 1 reconexión bloqueante + firmas para `C` avatares | 0 consultas bloqueantes + firmas visibles | espera de red eliminada; hasta `ceil(C/60)-1` validaciones menos |
 
-Resultado de aplicación: **4 lecturas**. Con hasta una lectura dependiente de reglas por cada solicitud, el techo conservador es **aproximadamente 8 lecturas** en el inicio frío. Además se producen normalmente **2 escrituras** de analítica: acceso y lote de pantallas.
+En la cuenta Bububots medida en producción había cinco reportes de un solo año y dos facturas:
 
-Cada pantalla distinta sigue contándose una vez por sesión, pero varias se envían juntas. Esas escrituras ya no producen lecturas de autenticación. Volver a una pantalla ya visitada no vuelve a escribir. Si la PWA se oculta, el lote pendiente se envía inmediatamente.
+- Inicio anterior: 6 lecturas y 10 URLs firmadas; nuevo: 1 lectura y 0 firmas.
+- Reportes anterior: 6 lecturas; nuevo estable: 2.
+- Firma de facturas anterior: 4 lecturas (`1 + 1 campaña + 2 facturas`); nuevo: 2.
 
-Abrir Facturas añade normalmente 1 documento agregado, más hasta 1 lectura dependiente de reglas. Abrir Reportes no hace lecturas directas de Firestore: usa la función/listado de R2, ahora reutilizado durante 60 segundos. Una sesión que recorre todas las pantallas del cliente queda normalmente alrededor de **8 a 12 lecturas conservadoras**, no 35–40.
+La primera apertura de Reportes después del despliegue migra los metadatos históricos. Para un cliente con `R` reportes y `Y` años cuesta una vez `1 + Y + R` lecturas y `Y` escrituras. Las siguientes aperturas cuestan `1 + Y`. Cada reporte nuevo, marcado como visto o eliminado mantiene el agregado automáticamente.
 
-Al volver a enfocar la PWA después de más de cinco minutos se comprueba de nuevo el rol: 1 lectura de resultado y hasta 1 dependiente de reglas. No se consulta en cada cambio de pantalla.
+## Consumo por acción de un cliente
 
-### Administrador
+Las columnas de lecturas muestran primero las lecturas directas o del servidor y luego un rango conservador facturable. Las reglas usan `exists()`/`get()` sobre `portalUsers`; Firebase puede cobrar esos documentos dependientes una vez por solicitud. Las Functions usan Admin SDK y no evalúan reglas.
 
-Sea:
+Supuesto de la tabla: un año de reportes (`Y = 1`), agregados presentes, URLs aún no firmadas, una campaña y caché fría. Filtros y paginación son locales.
 
-- `A = ceil(clientes / 2000)`, cantidad de partes del agregado de clientes; hoy el caso normal es `A = 1`.
-- `P = solicitudes pendientes devueltas`; una consulta vacía tiene un mínimo facturable de una lectura.
+| Acción del cliente | Lecturas directas | Lecturas conservadoras | Escrituras | Consultas/llamadas | Datos descargados | Archivos |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Inicio de sesión | 1 | 1–2 | 1 | 1 lectura + 1 callable | aprox. 1–4 KB | 0 |
+| Panel principal: cliente, campañas, paneles y resumen de reporte | 4 | 4–7 | 0 | 3 listeners/documentos + 1 callable | aprox. 10–60 KB | 0 |
+| Campañas | 0 | 0 | 0 | 0 | memoria | 0 |
+| Detalle de campaña, primera entrada | 3 | 3–4 | 0 | 1 agregado de facturas + 1 listado de reportes | aprox. 5–25 KB | 0 |
+| Cobertura | 0 | 0 | 0 | reutiliza inventario precargado | teselas del mapa según zona | imágenes de mapa |
+| Reportes tras Detalle, dentro de 60 s | 0 | 0 | 0 | caché del listado | memoria | 0 |
+| Reportes como primera sección | 2 | 2 | 0 | 1 callable + 1 agregado anual | aprox. 5–20 KB para cinco reportes | 0 |
+| Facturas, primera sección | 3 | 3–4 | 0 | agregado + callable de firmas | aprox. 5–20 KB para dos facturas | 0 |
+| Perfil/Facturas/Detalle repetidos en 60 s | 0 | 0 | 0 | caché | memoria | 0 |
+| Ver reporte | 1 | 1 | 2 | marcar visto | 111 KB medidos en promedio | 1 PDF |
+| Descargar el mismo reporte en la sesión | 0 | 0 | 0 | marcado ya deduplicado | otros 111 KB si el navegador no reutiliza HTTP | 1 PDF |
+| Ver factura | 0 | 0 | 0 | URL ya firmada | 283 KB medidos en promedio | 1 PDF |
+| Primera descarga de factura | 2 | 2 | 0 | firma bajo demanda | 283 KB medidos en promedio | 1 PDF |
+| Repetir descarga de factura en 5 h | 0 | 0 | 0 | caché de URL temporal | 283 KB por descarga | 1 PDF |
+| Filtros, búsqueda y paginación | 0 | 0 | 0 | local | 0 | 0 |
+| Volver a pantallas ya vistas dentro de su vigencia | 0 | 0 | 0 | local | 0 | 0 |
+| Lote de pantallas visitadas | 0 | 0 | 1 normalmente | 1 callable agrupado | mínimo | 0 |
+| Cierre de sesión | 0 | 0 | 0 | Auth + limpieza local | 0 | 0 |
 
-El inicio administrativo lee `A + max(P, 1) + 3` documentos de aplicación: usuario propio, agregado(s) de clientes, agregado de paneles, solicitudes pendientes y tareas. Las actualizaciones de analítica ya no añaden lecturas. Con `A = 1` y ninguna solicitud pendiente: **5 lecturas de resultado**; incluyendo un máximo conservador de reglas para las cinco solicitudes iniciales, **aproximadamente 10 lecturas**.
+Los tamaños medidos en producción fueron:
 
-Seleccionar un cliente añade normalmente 2 documentos de resultado (cliente y agregado del cliente), o aproximadamente 4 contando el máximo conservador de reglas.
+- Reportes: 113, 113, 113, 128 y 87 KB; promedio **110.8 KB**.
+- Facturas: 442 y 123 KB; promedio **282.5 KB**.
 
-### Analítica administrativa
+No se usa Firebase Storage para esos PDFs; viven en R2. Abrir una lista no descarga el PDF. Solo Ver, Descargar o la precarga de compartir del administrador descarga el archivo.
 
-Sea `N` la cantidad de cuentas cliente y `C` la cantidad de clientes del negocio.
+## Escenarios por sesión
 
-- Antes: `N + C` documentos en cada montaje.
-- Ahora, entrada normal después del selector: `N` documentos.
-- Reentrada dentro de 60 segundos: `0` documentos.
-- Entrada directa excepcional sin selector: `N + A`, nunca toda la colección `clientes`.
+| Escenario | Lecturas directas/servidor | Rango conservador facturable | Escrituras | Datos públicos y Firestore | PDFs |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Primera sesión, solo Inicio | 5 | 5–9 | 2 | aprox. 1.0 MB de app pública + 10–60 KB de datos | 0 |
+| Primera sesión, todas las pantallas sin abrir PDFs | 10 | 10–15 | 2 | lo anterior + aprox. 20–65 KB | 0 |
+| Primera sesión normal, todas las pantallas + ver 1 reporte y 1 factura | 11 | 11–16 | 4 | aprox. 1.0–1.2 MB de app/datos | aprox. 394 KB |
+| Sesión caliente en menos de 30 min | 4–6 | 4–10 | 2–4 | assets con hash desde caché; pocos KB de datos | según acciones |
+| Uso intensivo: todas las pantallas, refrescar Reportes 3 veces, ver y descargar ambos PDFs | 16–20 | 16–25 | 4 | app/datos + teselas | aprox. 788 KB |
 
-El ahorro por apertura fresca normal es exactamente `C` lecturas de resultado. La consulta a `portalUsers` puede sumar una lectura dependiente de reglas.
+La cifra recomendada para planificar es **12 lecturas por sesión completa**: mezcla sesiones frías y calientes y deja margen para reglas. El techo conservador de una sesión fría con todas las acciones es 16; reconexiones de más de 30 minutos, datos cambiados, agregados ausentes o años adicionales pueden elevarlo.
 
-### Ocupación
+La segunda sesión no siempre vale cero. `portalUsers` se vuelve a comprobar y el resumen liviano de Inicio autoriza su callable. Los listeners con persistencia local suelen descargar solo cambios si reconectan en menos de 30 minutos; después de 30 minutos Firebase puede facturarlos como consultas nuevas. Por eso las proyecciones no suponen ahorro perfecto.
 
-La primera carga ejecuta una función administrativa. Sea `Pₐ` paneles, `C` clientes, `K` contratos cuyo fin está dentro del último año y `F` facturas:
+## Datos de la aplicación
 
-`1 + Pₐ + C + K + F` lecturas en el servidor.
+Mediciones del build de producción:
 
-La primera unidad corresponde a verificar al administrador. Reentrar dentro de 120 segundos cuesta **0 lecturas adicionales** porque no se vuelve a llamar a la función. La recarga manual sí repite el cálculo. El historial de facturas sigue siendo el componente que más puede crecer; cambiarlo requiere confirmar la completitud de `estado`, `pagado` y fechas de los registros históricos antes de filtrar sin riesgo de ocultar una deuda.
+- Shell inicial (HTML + CSS + módulos iniciales): aproximadamente **312 KB gzip**.
+- Todos los chunks normales precargados después del login: aproximadamente **574 KB gzip** en total.
+- Generador PDF de cotización: **130.53 KB gzip**, solo bajo demanda.
+- Fondo móvil de login: **421,996 bytes**.
+- Fondo de selección móvil del administrador: **209,009 bytes**.
 
-## Costo
+Primera instalación móvil de cliente: alrededor de **1.0 MB** entre fondo y código normal, antes de teselas o PDFs. En visitas posteriores, los assets con hash se sirven desde CacheStorage; los documentos Firestore usan IndexedDB persistente. Cerrar sesión limpia CacheStorage para no dejar archivos privados de sesiones antiguas.
 
-La base `(default)` usa Firestore Native Standard en `nam5` y tiene cuota gratuita. A la fecha de la auditoría, la tarifa publicada para lecturas Standard aplicable es **USD 0.03 por 100,000 lecturas**, después de **50,000 lecturas gratuitas por día**. Las escrituras son **USD 0.09 por 100,000**, después de 20,000 gratuitas por día.
+## Diez aperturas diarias y capacidad de clientes
 
-- 10 lecturas fuera de cuota: USD 0.000003.
-- 100 lecturas fuera de cuota: USD 0.00003.
-- 1,000,000 de lecturas fuera de cuota: USD 0.30.
+Proyección solicitada: cada cliente abre la app 10 veces al día y puede recorrer todas las pantallas. Se usa la cifra de planificación de 12 lecturas por sesión, dos escrituras de analítica por sesión y un reporte marcado una vez al día (dos escrituras adicionales).
 
-Usando 10 lecturas conservadoras por sesión completa, 1,000 sesiones serían unas 10,000 lecturas, todavía dentro de la cuota diaria si no existen otras cargas importantes. La consola de facturación sigue siendo la fuente definitiva porque las reconexiones, cambios en tiempo real y evaluaciones de reglas dependen del uso real.
+Por cliente:
+
+- 120 lecturas/día.
+- 22 escrituras/día.
+- 3,600 lecturas/mes de 30 días.
+- 660 escrituras/mes.
+
+| Clientes | Lecturas/día | Lecturas/mes | Escrituras/día | Escrituras/mes | Exceso diario de cuota gratuita |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 10 | 1,200 | 36,000 | 220 | 6,600 | 0 |
+| 50 | 6,000 | 180,000 | 1,100 | 33,000 | 0 |
+| 100 | 12,000 | 360,000 | 2,200 | 66,000 | 0 |
+| 500 | 60,000 | 1,800,000 | 11,000 | 330,000 | 10,000 lecturas/día |
+| 1,000 | 120,000 | 3,600,000 | 22,000 | 660,000 | 70,000 lecturas + 2,000 escrituras/día |
+
+Con esa carga, la cuota gratuita de 50,000 lecturas/día alcanza para aproximadamente **416 clientes**. Usando el techo frío de 16 lecturas en las 10 aperturas, la capacidad conservadora baja a **312 clientes**. La realidad será intermedia y probablemente mejor por caché, URLs firmadas de seis horas y sesiones que no recorren todo diez veces.
+
+## Costos de Firestore
+
+Configuración verificada: base `(default)`, Firestore Native Standard, región multirregional `nam5`, con free tier. Tarifas publicadas aplicables:
+
+- 50,000 lecturas gratuitas por día; luego USD 0.03 por 100,000.
+- 20,000 escrituras gratuitas por día; luego USD 0.09 por 100,000.
+- 20,000 eliminaciones gratuitas por día; luego USD 0.01 por 100,000.
+- 10 GiB/mes de salida gratuita de Firestore.
+
+Con la proyección de 10 aperturas diarias:
+
+- 500 clientes: unas 10,000 lecturas facturables/día = USD 0.003/día, aproximadamente **USD 0.09/mes**.
+- 1,000 clientes: 70,000 lecturas facturables/día = USD 0.021/día; 2,000 escrituras facturables/día = USD 0.0018/día; aproximadamente **USD 0.68/mes**.
+- Techo frío de 16 lecturas para 1,000 clientes: aproximadamente **USD 1.04/mes** entre lecturas y escrituras.
+
+Esto no incluye Cloud Functions, R2, teselas, tareas administrativas ni generación de PDFs. La consola de facturación es la fuente definitiva.
 
 Fuentes oficiales:
 
 - [Precios de Cloud Firestore](https://cloud.google.com/firestore/pricing)
-- [Cuotas y límites de Firestore](https://firebase.google.com/docs/firestore/quotas)
-- [Explicación de facturación de listeners y reglas](https://firebase.google.com/docs/firestore/pricing)
+- [Cuotas gratuitas de Firestore](https://firebase.google.com/docs/firestore/quotas)
+- [Listeners y lecturas dependientes de reglas](https://firebase.google.com/docs/firestore/pricing)
 
-## Verificación ejecutada
+## Pruebas y verificación
 
-- `npm run typecheck`
-- `npm test`: 45 archivos, 822 pruebas.
-- `npm --prefix functions run build`: Cloud Functions correctas.
-- `node scripts/detectar-renders.mjs`: 0 riesgos directos y 0 inline.
-- `node scripts/detectar-riesgos-render.mjs`: 0 riesgos.
-- `npm run build`: compilación de producción correcta.
-- Navegador local: pantalla de acceso correcta y consola sin errores ni advertencias.
+- Flujo productivo en Chrome autenticado: selector con tres clientes, entrada a Bububots y regreso al selector.
+- Regreso productivo anterior medido: 706 ms en escritorio con caché caliente.
+- Captura móvil analizada: estado visible posterior al guardián de 4 segundos.
+- Reportes productivos: pantalla abrió y mostró cinco PDFs; tamaños medidos desde la UI.
+- Facturas productivas: pantalla abrió y mostró dos PDFs; tamaños medidos desde la UI.
+- `npm test`: 46 archivos y 827 pruebas antes del último grupo de guardas; se vuelve a ejecutar al cerrar la rama.
+- `npm run typecheck`: correcto.
+- `npm --prefix functions run build`: correcto.
+- `npm run build`: correcto.
+- Detectores de renders: 0 riesgos directos, 0 riesgos inline, 0 total.
+- `git diff --check`: correcto.
+- Pruebas de reglas locales requieren el emulador Java no instalado en esta Mac; GitHub Actions las ejecuta contra un proyecto `demo-` que no toca producción.
+
+## Archivos modificados
+
+- `src/hooks/useClientesAdmin.ts`
+- `src/components/AdminClientPicker.tsx`
+- `src/hooks/useSignedUrls.ts`
+- `src/hooks/useFacturas.ts`
+- `src/hooks/useResumenInformes.ts`
+- `src/components/screens/Inicio.tsx`
+- `src/components/ReportCard.tsx`
+- `src/components/FacturaCard.tsx`
+- `functions/src/listarReportesCliente.ts`
+- `functions/src/agregadoInformes.ts`
+- `functions/src/generarReporteCliente.ts`
+- `functions/src/marcarReporteVisto.ts`
+- `functions/src/eliminarReporteCliente.ts`
+- `functions/src/firmarUrlsR2.ts`
+- pruebas de regresión y este informe.
+
+## Riesgos y límites
+
+- La primera apertura de Reportes por cliente migra el histórico y puede ser ligeramente más cara; es una sola vez.
+- Un año con hasta 365 reportes diarios cabe holgadamente en el agregado anual. Se eligió partir por año para no acercarse al límite de 1 MB.
+- La caché de facturas admite hasta 60 segundos de antigüedad. Si la pantalla permanece abierta, el listener se conecta al vencer el minuto; si se sale, se cancela y no queda activo.
+- Un cambio real en un listener, una revalidación tras más de 30 minutos o una regla dependiente modificada puede generar lecturas adicionales.
+- Los PDFs no se cachean por Service Worker por seguridad. Volver a descargarlos consume nuevamente su tamaño, aunque el navegador puede reutilizar su caché HTTP.
+- Faltan la medición final móvil/responsive y la verificación postdespliegue; se completan después de publicar backend y frontend.

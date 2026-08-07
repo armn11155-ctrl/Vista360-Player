@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
 import { exigirId } from "./identificadores.js";
+import { eliminarMetadataInforme } from "./agregadoInformes.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -62,6 +63,7 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
         .doc(`${clienteId}_${mes}-${dia}`)
         .delete()
         .catch(() => undefined);
+      await eliminarMetadataInforme(db, clienteId, `${mes}-${dia}`);
     } else {
       const prefix = `clientes/${clienteId}/reportes/${mes}`;
       const keys = [`${prefix}/reporte-digital.pdf`, `${prefix}/reporte-hd.pdf`];
@@ -77,6 +79,7 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
         .doc(`${clienteId}_${mes}`)
         .delete()
         .catch(() => undefined);
+      await eliminarMetadataInforme(db, clienteId, mes);
     }
 
     return { ok: true };
