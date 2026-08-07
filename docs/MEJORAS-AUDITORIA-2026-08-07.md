@@ -103,10 +103,21 @@ Se revisaron nuevamente timers, `ResizeObserver`, listeners de ventana/documento
 - Guardián de operaciones Firestore añadidas: 0.
 - Firma R2 local: aprobada.
 - Consola del build local: 0 errores y 0 warnings de la aplicación en la superficie accesible.
+- CI limpio de GitHub (`31199992612`): frontend, backend y reglas aprobados.
+- Reglas de Firestore contra emulador Java: **75/75 pruebas aprobadas**.
 
 ### Límite de la validación visual
 
-El preview local no dispone de las variables públicas de Firebase que CI inyecta durante el build, por lo que solo puede mostrar la pantalla segura de configuración faltante. El navegador integrado fue bloqueado por la protección de Cloudflare antes del render productivo. La extensión de Chrome está instalada y habilitada, pero macOS no permitió abrir Chrome porque la sesión gráfica estaba cerrada/bloqueada. Por ello no se declara una prueba autenticada final de “cambiar cliente” en este ciclo. No se modificó ninguna pantalla ni navegación; esa cobertura queda además protegida por la suite existente y el CI posterior al push.
+El preview local no dispone de las variables públicas de Firebase que CI inyecta durante el build, por lo que solo puede mostrar la pantalla segura de configuración faltante. El navegador integrado fue bloqueado por la protección de Cloudflare antes del render productivo. La extensión de Chrome está instalada y habilitada, pero macOS no permitió abrir Chrome porque la sesión gráfica estaba cerrada/bloqueada. Por ello no se declara una prueba autenticada final de “cambiar cliente” en este ciclo. No se modificó ninguna pantalla ni navegación; esa cobertura quedó protegida por la suite existente y por el CI limpio posterior al push.
+
+## Publicación
+
+- Commit de implementación: `d35b12c`.
+- Push a `main`: completado.
+- Cloudflare sirvió el nuevo artefacto `assets/index-DImkVvYF.js`.
+- Workflow de Functions `31200140904`: completado correctamente en 7 min 1 s.
+- Reglas de Firestore: no se desplegaron porque no cambiaron.
+- Advertencia no bloqueante: no se pudo configurar automáticamente la eliminación de imágenes antiguas de contenedor; deben limpiarse/configurarse manualmente para evitar almacenamiento residual.
 
 ## Archivos modificados
 
