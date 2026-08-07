@@ -1,4 +1,4 @@
-import { lazy, Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
+import { Suspense, startTransition, useEffect, useMemo, useState, useTransition } from "react";
 import { envMissing } from "./config/env";
 import { useTareasPeriodicas } from "./hooks/useTareasPeriodicas";
 import { anotarRutaActual, useDetectorDeBucles } from "./hooks/useDetectorDeBucles";

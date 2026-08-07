@@ -19,7 +19,6 @@ import { resolve } from "node:path";
  * tiempo, y deja constancia de los que se decidió NO añadir.
  */
 
-const RAIZ = resolve(__dirname, "../..");
 const bucles = readFileSync(resolve(__dirname, "../hooks/useDetectorDeBucles.ts"), "utf-8");
 const paneles = readFileSync(resolve(__dirname, "../hooks/usePanelesDisponibles.ts"), "utf-8");
 const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf-8");

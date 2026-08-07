@@ -1,8 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
+import { R2_SECRETS, listarObjetosR2, r2Bucket } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -32,7 +31,6 @@ export const obtenerEspacioR2 = onCall(
     throw new HttpsError("permission-denied", "Solo la cuenta admin puede ver esto.");
   }
 
-  const client = r2Client();
   const bucket = r2Bucket();
   let totalBytes = 0;
   let totalObjetos = 0;
@@ -41,9 +39,7 @@ export const obtenerEspacioR2 = onCall(
   const muestra: { key: string; size: number }[] = [];
 
   do {
-    const resultado = await client.send(
-      new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: continuationToken })
-    );
+    const resultado = await listarObjetosR2({ continuationToken });
     paginas += 1;
     for (const obj of resultado.Contents ?? []) {
       totalBytes += obj.Size ?? 0;

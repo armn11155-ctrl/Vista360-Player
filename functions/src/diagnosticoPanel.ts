@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { modalidadDePanel, cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();

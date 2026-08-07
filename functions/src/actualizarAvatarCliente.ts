@@ -3,7 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();

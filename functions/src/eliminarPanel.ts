@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();

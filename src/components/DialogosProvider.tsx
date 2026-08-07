@@ -133,7 +133,6 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
 }
 
 function Dialogo({ estado, onCerrar }: { estado: EstadoDialogo; onCerrar: (v: boolean) => void }) {
-  const esConfirmar = estado.tipo === "confirmar";
   const destructivo = estado.tipo === "confirmar" && Boolean(estado.opciones.destructivo);
   const esError = estado.tipo === "avisar" && Boolean(estado.opciones.esError);
   const botonInicialRef = useRef<HTMLButtonElement | null>(null);

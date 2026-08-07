@@ -9,14 +9,6 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
-interface CrearSubidaR2Data {
-  folder?: string;
-  extension?: string;
-  contentType?: string;
-  /** Tamaño real del archivo, en bytes. */
-  contentLength?: number;
-}
-
 const TIPOS_PERMITIDOS = new Set([
   "image/webp",
   "image/jpeg",

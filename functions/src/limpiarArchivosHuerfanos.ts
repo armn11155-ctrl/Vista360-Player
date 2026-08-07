@@ -1,8 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { R2_SECRETS, borrarObjetoR2, r2Bucket, r2Client } from "./r2Storage.js";
+import { R2_SECRETS, borrarObjetoR2, listarObjetosR2 } from "./r2Storage.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -103,8 +102,6 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
   const confirmar = request.data?.confirmar === true;
   const enUso = await keysEnUso(db);
 
-  const client = r2Client();
-  const bucket = r2Bucket();
   const limite = Date.now() - HORAS_DE_GRACIA * 60 * 60 * 1000;
 
   const huerfanos: { key: string; bytes: number; modificado: string }[] = [];
@@ -113,9 +110,7 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
   let continuationToken: string | undefined;
 
   do {
-    const pagina = await client.send(
-      new ListObjectsV2Command({ Bucket: bucket, ContinuationToken: continuationToken })
-    );
+    const pagina = await listarObjetosR2({ continuationToken });
     for (const obj of pagina.Contents ?? []) {
       const key = obj.Key;
       if (!key) continue;

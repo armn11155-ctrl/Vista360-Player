@@ -1,9 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { R2_SECRETS, firmarLecturaR2, r2Bucket, r2Client } from "./r2Storage.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { R2_SECRETS, firmarLecturaR2, listarObjetosR2 } from "./r2Storage.js";
+import { exigirId } from "./identificadores.js";
 import { rutaResumenInformes, type MetadataInformeAgregado } from "./agregadoInformes.js";
 
 if (getApps().length === 0) {
@@ -99,14 +98,10 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     // mismo tipo de paginacion que ya usa obtenerEspacioR2.ts para el
     // bucket completo, aca aplicada al prefijo de un cliente.
     const prefix = `clientes/${clienteId}/reportes/`;
-    const client = r2Client();
-    const bucket = r2Bucket();
     const objetos: { Key?: string; Size?: number; LastModified?: Date }[] = [];
     let continuationToken: string | undefined;
     do {
-      const pagina = await client.send(
-        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken: continuationToken })
-      );
+      const pagina = await listarObjetosR2({ prefix, continuationToken });
       objetos.push(...(pagina.Contents ?? []));
       continuationToken = pagina.IsTruncated ? pagina.NextContinuationToken : undefined;
     } while (continuationToken);

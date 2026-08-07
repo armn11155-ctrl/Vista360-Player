@@ -1,8 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
+import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { exigirId } from "./identificadores.js";
 import { eliminarMetadataInforme } from "./agregadoInformes.js";
 
@@ -48,16 +47,9 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
     // tampoco borraba nada de verdad. Si no llega "dia" (reportes
     // viejos, de antes de esa funcionalidad), se usa el esquema
     // antiguo como respaldo.
-    const bucket = r2Bucket();
-    const client = r2Client();
-
     if (dia) {
       const prefix = `clientes/${clienteId}/reportes/${mes}/${dia}`;
-      await client
-        .send(new DeleteObjectCommand({ Bucket: bucket, Key: `${prefix}/reporte-digital.pdf` }))
-        .catch((error) => {
-          console.warn(`No se pudo borrar ${prefix}/reporte-digital.pdf (puede que ya no exista).`, error);
-        });
+      await borrarObjetoR2(`${prefix}/reporte-digital.pdf`);
       await db
         .collection("informesCliente")
         .doc(`${clienteId}_${mes}-${dia}`)
@@ -67,13 +59,7 @@ export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (req
     } else {
       const prefix = `clientes/${clienteId}/reportes/${mes}`;
       const keys = [`${prefix}/reporte-digital.pdf`, `${prefix}/reporte-hd.pdf`];
-      await Promise.all(
-        keys.map((key) =>
-          client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key })).catch((error) => {
-            console.warn(`No se pudo borrar ${key} (puede que ya no exista).`, error);
-          })
-        )
-      );
+      await Promise.all(keys.map((key) => borrarObjetoR2(key)));
       await db
         .collection("informesCliente")
         .doc(`${clienteId}_${mes}`)

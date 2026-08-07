@@ -2,7 +2,6 @@ import { dirname, join } from "node:path";
 import { enviarPushACliente } from "./notificacionesPush.js";
 import { guardarMetadataInforme } from "./agregadoInformes.js";
 import { fileURLToPath } from "node:url";
-import type PDFKit from "pdfkit";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -78,7 +77,6 @@ const COLORS = {
 
 const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "assets");
 const LOGO_WORDMARK_WHITE = join(ASSETS_DIR, "logos/vista360-wordmark-white.png");
-const LOGO_PLAYER_WHITE = join(ASSETS_DIR, "logos/vista360-player-white.png");
 const LOGO_PLAYER_BLACK = join(ASSETS_DIR, "logos/vista360-player-black.png");
 // Version del logo con "PLAYER" (y las lineas) en blanco en vez de
 // azul -- se usa SOLO en paginaPanel(), donde se pidio el logo

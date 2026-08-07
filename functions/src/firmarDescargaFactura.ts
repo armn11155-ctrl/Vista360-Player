@@ -7,11 +7,6 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
-interface FirmarDescargaFacturaData {
-  key?: string;
-  nombre?: string;
-}
-
 const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
 
 /**

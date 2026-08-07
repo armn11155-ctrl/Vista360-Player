@@ -60,7 +60,7 @@ function fechaCorta(fecha: string) {
 
 const HEADER = "#050A12";
 
-export default function Inicio({ cliente, clienteId, contratos, paneles, onGoTo, onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, esGerente, uid, mostrarNotifSpotlight, onCerrarNotifSpotlight }: Props) {
+export default function Inicio({ cliente, clienteId, contratos, paneles: _paneles, onGoTo, onAbrirCampana: _onAbrirCampana, onMenuClick, onNotifClick, onCambiarCliente, totalNotifs = 0, isAdmin, adminNombre, esGerente, uid, mostrarNotifSpotlight, onCerrarNotifSpotlight }: Props) {
   const { estado: estadoPush, error: errorPush, activar: activarPush } = usePushEstado(uid);
   const notifBtnRef = useRef<HTMLButtonElement>(null);
   const activas = contratos.filter(c => estadoCampana(c) === "Activa");

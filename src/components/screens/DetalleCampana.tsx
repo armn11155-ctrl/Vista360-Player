@@ -44,15 +44,6 @@ function Badge({ estado }: { estado: string }) {
   );
 }
 
-function StatBox({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ flex: 1, textAlign: "center", padding: "12px 8px", background: "#fff", borderRadius: 12 }}>
-      <div style={{ fontSize: 12, color: "#64748B", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 19, fontWeight: 700, color: "#0B1220" }}>{value}</div>
-    </div>
-  );
-}
-
 function HeaderIcon({ type }: { type: "calendar" | "pin" }) {
   const common = {
     width: 13,
@@ -92,7 +83,7 @@ function EmptyReportsIcon() {
   );
 }
 
-export default function DetalleCampana({ contrato, paneles, clienteNombre, cliente, onBack, isAdmin }: Props) {
+export default function DetalleCampana({ contrato, paneles, clienteNombre: _clienteNombre, cliente, onBack, isAdmin }: Props) {
   const { confirmar } = useDialogos();
   const [tab, setTab] = useState<TabId>("resumen");
 

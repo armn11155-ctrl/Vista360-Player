@@ -7,10 +7,6 @@ if (getApps().length === 0) {
   initializeApp();
 }
 
-interface FirmarUrlsR2Data {
-  keys?: string[];
-}
-
 const MAX_KEYS_POR_LLAMADA = 60;
 // 6 horas: suficiente para que el cliente navegue toda la sesión sin
 // re-firmar a cada rato, pero sin dejar links "eternos" dando vueltas.

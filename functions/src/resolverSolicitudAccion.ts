@@ -8,7 +8,7 @@ import { ejecutarEliminarClienteDefinitivo } from "./administrarClienteAdmin.js"
 import { ejecutarAdministrarUsuarioPortal } from "./administrarUsuarioPortal.js";
 import { ejecutarCrearPanel, type PanelValidado } from "./crearPanel.js";
 import { ejecutarActualizarPanel, type PanelEditadoValidado } from "./actualizarPanel.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();

@@ -73,7 +73,7 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
 }
 
 export default function Accesos({ onBack, esGerente = true }: Props) {
-  const { confirmar, avisar } = useDialogos();
+  const { confirmar } = useDialogos();
   const state = useInvitaciones(true);
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);

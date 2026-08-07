@@ -56,7 +56,7 @@ function esPermisoDenegado(err: FirestoreError): boolean {
  * `ruc` se mantiene en la firma porque las pantallas lo usan para otras
  * cosas y quitarlo obligaría a tocarlas sin ganar nada.
  */
-export function useFacturas(ruc: string | undefined, clienteId?: string): FacturasState {
+export function useFacturas(_ruc: string | undefined, clienteId?: string): FacturasState {
   const cacheInicial = clienteId ? CACHE_FACTURAS.get(clienteId) : undefined;
   const cacheInicialVigente = cacheInicial && Date.now() - cacheInicial.actualizadoEn < VIGENCIA_FACTURAS_MS;
   const [porCliente, setPorCliente] = useState<Factura[] | null>(

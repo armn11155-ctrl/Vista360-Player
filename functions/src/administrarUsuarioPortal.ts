@@ -4,7 +4,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -53,7 +53,7 @@ async function requireGerente(uid?: string): Promise<Firestore> {
   return db;
 }
 
-async function resolverUid(db: Firestore, data: AdministrarUsuarioPortalData): Promise<string | null> {
+async function resolverUid(data: AdministrarUsuarioPortalData): Promise<string | null> {
   // El uid que llega del cliente se valida; el que devuelve getUserByEmail
   // lo genera Firebase Auth y no puede contener barras.
   const uid = idOpcional(data.uid, "uid");
@@ -79,7 +79,7 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
     const db = await requireGerente(request.auth?.uid);
     const invitacionId = idOpcional(request.data?.invitacionId, "invitacionId");
     const email = limpiar(request.data.email).toLowerCase();
-    const uid = await resolverUid(db, request.data);
+    const uid = await resolverUid(request.data);
     if (!uid && !invitacionId && !email) {
       throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
     }
@@ -90,7 +90,7 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
   const { db, rol, nombre } = await requireGerenteOTrabajadorParaEliminar(request.auth?.uid);
   const invitacionId = idOpcional(request.data?.invitacionId, "invitacionId");
   const email = limpiar(request.data.email).toLowerCase();
-  const uid = await resolverUid(db, request.data);
+  const uid = await resolverUid(request.data);
   if (!uid && !invitacionId && !email) {
     throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
   }

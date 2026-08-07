@@ -1,7 +1,7 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 import { exigirRitmo } from "./limitador.js";
 import { guardarMetadataInforme, idKeyDesdeInformeId } from "./agregadoInformes.js";
 

@@ -1,12 +1,4 @@
 import { useEffect, useState } from "react";
-import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-  Timestamp,
-  type QueryDocumentSnapshot,
-} from "firebase/firestore";
 import { db } from "../config/firebase";
 import type { Contrato, SolicitudCampana } from "../types";
 import { diasHasta, soloFecha } from "../utils/fechas";

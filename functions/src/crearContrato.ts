@@ -8,7 +8,7 @@ import { esPersonalInterno } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
-import { exigirId, idOpcional } from "./identificadores.js";
+import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();

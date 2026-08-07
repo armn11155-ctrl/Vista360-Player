@@ -2,17 +2,12 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esGerente } from "./rolesInternos.js";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { R2_SECRETS, r2Bucket, r2Client } from "./r2Storage.js";
+import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
   initializeApp();
-}
-
-interface EliminarFacturaData {
-  facturaId?: string;
 }
 
 /**
@@ -59,13 +54,7 @@ export const eliminarFactura = onCall({ secrets: R2_SECRETS }, async (request) =
     const pdfUrl = String(facturaSnap.data()?.pdfUrl ?? "");
     const esKeyPropia = pdfUrl && !pdfUrl.startsWith("http") && pdfUrl.startsWith("vista360/facturas/");
     if (esKeyPropia) {
-      const bucket = r2Bucket();
-      const client = r2Client();
-      await client
-        .send(new DeleteObjectCommand({ Bucket: bucket, Key: pdfUrl }))
-        .catch((error) => {
-          console.warn(`No se pudo borrar ${pdfUrl} de R2 (puede que ya no exista).`, error);
-        });
+      await borrarObjetoR2(pdfUrl);
     }
 
     // El cliente se lee ANTES de borrar; despues ya no existe.

@@ -858,3 +858,37 @@ describe("el verificador de reglas no puede acusar en falso", () => {
     expect(trasLaDescarga).toContain("rm -f /tmp/reglas-fallaron");
   });
 });
+
+describe("Cloud Functions no cargan AWS antes de necesitar R2", () => {
+  const fuentes = readdirSync(FUNCIONES)
+    .filter((archivo) => archivo.endsWith(".ts"))
+    .map((archivo) => ({
+      archivo,
+      codigo: readFileSync(resolve(FUNCIONES, archivo), "utf-8"),
+    }));
+  const almacenamiento = fuentes.find(({ archivo }) => archivo === "r2Storage.ts")!.codigo;
+
+  it("ningún módulo mantiene imports runtime estáticos de AWS", () => {
+    for (const { archivo, codigo } of fuentes) {
+      expect(
+        codigo,
+        `${archivo} vuelve a cargar AWS durante el arranque común`,
+      ).not.toMatch(/^import(?!\s+type\b).*from\s+["']@aws-sdk\//m);
+    }
+  });
+
+  it("S3 y el firmador se cargan dinámicamente en el adaptador R2", () => {
+    expect(almacenamiento).toContain('import("@aws-sdk/client-s3")');
+    expect(almacenamiento).toContain('import("@aws-sdk/s3-request-presigner")');
+    expect(almacenamiento).toContain("clienteR2");
+  });
+
+  it("los consumidores listan y borran mediante el adaptador compartido", () => {
+    const consumidores = fuentes
+      .filter(({ archivo }) => archivo !== "r2Storage.ts")
+      .map(({ codigo }) => codigo)
+      .join("\n");
+    expect(consumidores).not.toContain("new ListObjectsV2Command");
+    expect(consumidores).not.toContain("new DeleteObjectCommand");
+  });
+});

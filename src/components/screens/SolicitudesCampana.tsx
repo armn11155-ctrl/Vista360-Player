@@ -1,11 +1,10 @@
-import { doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { useState } from "react";
 import BackChevron from "../BackChevron";
 import { diasHasta, fechaCorta, fechaLarga } from "../../utils/fechas";
 import { useRecordatorioDominio } from "../../hooks/useRecordatorioDominio";
-import { db, cloudFunctions } from "../../config/firebase";
+import { cloudFunctions } from "../../config/firebase";
 import { useSolicitudesCampana } from "../../hooks/useSolicitudesCampana";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
 import { BrandThumb } from "../BrandThumb";

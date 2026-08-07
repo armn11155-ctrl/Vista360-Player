@@ -1,5 +1,3 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { HttpsError } from "firebase-functions/v2/https";
 import { nombreDescargaSeguro } from "./validaciones.js";
 
@@ -11,6 +9,28 @@ import { nombreDescargaSeguro } from "./validaciones.js";
 
 export const R2_SECRETS = ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET"];
 
+type ModuloS3 = typeof import("@aws-sdk/client-s3");
+type ClienteS3 = import("@aws-sdk/client-s3").S3Client;
+
+let promesaModuloS3: Promise<ModuloS3> | null = null;
+let promesaPresigner: Promise<typeof import("@aws-sdk/s3-request-presigner")> | null = null;
+let clienteR2: ClienteS3 | null = null;
+
+/**
+ * AWS pesa varios MB y el índice de Functions importa todos sus módulos.
+ * Cargarlo aquí bajo demanda evita que funciones sin R2 (por ejemplo,
+ * registrar una visita) paguen ese coste de memoria y arranque.
+ */
+function cargarModuloS3() {
+  promesaModuloS3 ??= import("@aws-sdk/client-s3");
+  return promesaModuloS3;
+}
+
+function cargarPresigner() {
+  promesaPresigner ??= import("@aws-sdk/s3-request-presigner");
+  return promesaPresigner;
+}
+
 function requireEnv(name: string) {
   const value = process.env[name];
   if (!value) {
@@ -19,9 +39,11 @@ function requireEnv(name: string) {
   return value;
 }
 
-export function r2Client() {
+export async function r2Client() {
+  if (clienteR2) return clienteR2;
+  const { S3Client } = await cargarModuloS3();
   const accountId = requireEnv("R2_ACCOUNT_ID");
-  return new S3Client({
+  clienteR2 = new S3Client({
     region: "auto",
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
     credentials: {
@@ -29,6 +51,7 @@ export function r2Client() {
       secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY"),
     },
   });
+  return clienteR2;
 }
 
 export function r2Bucket() {
@@ -37,7 +60,8 @@ export function r2Bucket() {
 
 /** Sube un buffer directo desde el servidor (lo usa generarReporteCliente). */
 export async function subirBufferR2(key: string, buffer: Buffer, contentType: string) {
-  await r2Client().send(
+  const [{ PutObjectCommand }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
+  await client.send(
     new PutObjectCommand({
       Bucket: r2Bucket(),
       Key: key,
@@ -74,13 +98,18 @@ export async function firmarSubidaR2(
    *  crearSubidaR2 no le firmaría nada por encima del tope. */
   contentLength?: number
 ) {
+  const [{ PutObjectCommand }, { getSignedUrl }, client] = await Promise.all([
+    cargarModuloS3(),
+    cargarPresigner(),
+    r2Client(),
+  ]);
   const command = new PutObjectCommand({
     Bucket: r2Bucket(),
     Key: key,
     ContentType: contentType,
     ...(typeof contentLength === "number" ? { ContentLength: contentLength } : {}),
   });
-  return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
 }
 
 /** Devuelve una URL firmada de lectura (GET) que expira — para mostrar imágenes/PDFs privados.
@@ -99,7 +128,8 @@ export async function firmarSubidaR2(
  * reportes con muchos paneles.
  */
 export async function leerObjetoR2(key: string): Promise<Buffer> {
-  const respuesta = await r2Client().send(
+  const [{ GetObjectCommand }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
+  const respuesta = await client.send(
     new GetObjectCommand({ Bucket: r2Bucket(), Key: key })
   );
   const cuerpo = respuesta.Body as { transformToByteArray?: () => Promise<Uint8Array> } | undefined;
@@ -110,6 +140,11 @@ export async function leerObjetoR2(key: string): Promise<Buffer> {
 }
 
 export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nombreDescarga?: string) {
+  const [{ GetObjectCommand }, { getSignedUrl }, client] = await Promise.all([
+    cargarModuloS3(),
+    cargarPresigner(),
+    r2Client(),
+  ]);
   // El nombre viene del navegador y entra en una cabecera HTTP: se limpia
   // acá, en el único punto que la arma, para que ninguna función que se
   // añada mañana pueda saltarse el filtro. Ver nombreDescargaSeguro.
@@ -119,7 +154,22 @@ export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nom
     Key: key,
     ...(nombreLimpio ? { ResponseContentDisposition: `attachment; filename="${nombreLimpio}"` } : {}),
   });
-  return getSignedUrl(r2Client(), command, { expiresIn: expiresInSeconds });
+  return getSignedUrl(client, command, { expiresIn: expiresInSeconds });
+}
+
+/** Lista una página del bucket sin exponer comandos de AWS al resto del código. */
+export async function listarObjetosR2(opciones: {
+  prefix?: string;
+  continuationToken?: string;
+}) {
+  const [{ ListObjectsV2Command }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
+  return client.send(
+    new ListObjectsV2Command({
+      Bucket: r2Bucket(),
+      ...(opciones.prefix ? { Prefix: opciones.prefix } : {}),
+      ...(opciones.continuationToken ? { ContinuationToken: opciones.continuationToken } : {}),
+    })
+  );
 }
 
 /**
@@ -132,7 +182,8 @@ export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nom
  */
 export async function borrarObjetoR2(key: string) {
   try {
-    await r2Client().send(new DeleteObjectCommand({ Bucket: r2Bucket(), Key: key }));
+    const [{ DeleteObjectCommand }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
+    await client.send(new DeleteObjectCommand({ Bucket: r2Bucket(), Key: key }));
   } catch (error) {
     console.warn(`No se pudo borrar ${key} de R2 (puede que ya no exista).`, error);
   }
