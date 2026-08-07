@@ -204,6 +204,14 @@ describe("reutilizar lo que ya está en memoria", () => {
     expect(c).toContain("PETICIONES");
   });
 
+  it("Detalle no carga ni vuelve a firmar reportes mientras muestra Resumen", () => {
+    const c = sinComentarios(
+      readFileSync(resolve(__dirname, "../components/screens/DetalleCampana.tsx"), "utf-8")
+    );
+    expect(c).toContain('useInformes(tab === "reportes" ? contrato.cliente_id : "")');
+    expect(c).not.toContain("useSignedUrls(");
+  });
+
   it("Inicio pide solo el resumen y no precarga documentos ni URLs de reportes", () => {
     const inicio = sinComentarios(readFileSync(resolve(__dirname, "../components/screens/Inicio.tsx"), "utf-8"));
     const resumen = sinComentarios(hook("useResumenInformes"));
@@ -305,6 +313,16 @@ describe("caché local: la segunda visita no vuelve a pagar los mismos datos", (
     // Iba en la misma llamada: si al añadir la caché se hubiera perdido,
     // las pantallas en vivo dejarían de actualizarse en Safari.
     expect(configSinComentarios).toContain("experimentalAutoDetectLongPolling: true");
+  });
+
+  it("cerrar sesión corta el listener global y borra URLs privadas", () => {
+    const paneles = sinComentarios(hook("usePanelesDisponibles"));
+    const urls = sinComentarios(hook("useSignedUrls"));
+    expect(configSinComentarios).toContain("limpiadoresDeSesion");
+    expect(paneles).toContain("registrarLimpiezaDeSesion(detenerPanelesAlCerrarSesion)");
+    expect(paneles).toContain("unsubEscucha?.()");
+    expect(urls).toContain("generacionDeSesion += 1");
+    expect(configSinComentarios).toContain('localStorage.removeItem("v360_signed_urls_v1")');
   });
 });
 

@@ -21,6 +21,16 @@ export let db: Firestore | null = null;
 export let auth: Auth | null = null;
 export let cloudFunctions: Functions | null = null;
 
+type LimpiadorDeSesion = () => void | Promise<void>;
+const limpiadoresDeSesion = new Set<LimpiadorDeSesion>();
+
+/** Permite que los módulos con cachés/listeners globales se limpien sin
+ * crear dependencias circulares desde la configuración de Firebase. */
+export function registrarLimpiezaDeSesion(limpiador: LimpiadorDeSesion): () => void {
+  limpiadoresDeSesion.add(limpiador);
+  return () => limpiadoresDeSesion.delete(limpiador);
+}
+
 // Solo inicializamos Firebase si TODAS las variables de entorno están
 // presentes. Si falta alguna, dejamos db/auth en null a propósito —
 // App.tsx detecta esto (vía envMissing) y muestra en pantalla qué
@@ -97,6 +107,17 @@ export function login(email: string, password: string): Promise<void> {
  * hacer, sigue siendo mucho más importante cerrar la sesión igual.
  */
 async function limpiarRastroLocal(): Promise<void> {
+  // Primero cortar listeners y vaciar cachés en memoria. allSettled evita
+  // que un limpiador secundario pueda impedir el cierre de sesión.
+  await Promise.allSettled(Array.from(limpiadoresDeSesion, (limpiar) => Promise.resolve().then(limpiar)));
+  try {
+    // Las URLs firmadas dan acceso directo a archivos privados hasta su
+    // vencimiento. No deben sobrevivir a un logout en un equipo compartido,
+    // incluso si el módulo que normalmente las gestiona no llegó a cargarse.
+    localStorage.removeItem("v360_signed_urls_v1");
+  } catch {
+    // localStorage puede no estar disponible en Safari privado.
+  }
   try {
     const registro = await navigator.serviceWorker?.ready;
     registro?.active?.postMessage({ tipo: "limpiar-cache" });

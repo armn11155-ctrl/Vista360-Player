@@ -45,6 +45,8 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
   const frameRef = useRef<HTMLDivElement>(null);
   const arrastreRef = useRef<{ startX: number; startY: number; inicio: { x: number; y: number }; slackX: number; slackY: number } | null>(null);
   const pesoTimeoutRef = useRef<number | null>(null);
+  const progresoIntervalRef = useRef<number | null>(null);
+  const cierreTimeoutRef = useRef<number | null>(null);
 
   const [archivo, setArchivo] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -63,10 +65,16 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
     };
   }, [previewUrl]);
 
+  useEffect(() => () => {
+    if (progresoIntervalRef.current) window.clearInterval(progresoIntervalRef.current);
+    if (cierreTimeoutRef.current) window.clearTimeout(cierreTimeoutRef.current);
+  }, []);
+
   // Recalcula el peso comprimido cada vez que cambia la posición/zoom,
   // con un pequeño retraso para no comprimir en cada pixel mientras se
   // arrastra — solo cuando la persona se queda quieta un momento.
   useEffect(() => {
+    let cancelado = false;
     if (!archivo) {
       setPeso(null);
       return;
@@ -75,11 +83,12 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
     setCalculandoPeso(true);
     pesoTimeoutRef.current = window.setTimeout(() => {
       comprimirAvatarWebp(archivo, posicion)
-        .then((f) => setPeso(f.size))
-        .catch(() => setPeso(null))
-        .finally(() => setCalculandoPeso(false));
+        .then((f) => { if (!cancelado) setPeso(f.size); })
+        .catch(() => { if (!cancelado) setPeso(null); })
+        .finally(() => { if (!cancelado) setCalculandoPeso(false); });
     }, 350);
     return () => {
+      cancelado = true;
       if (pesoTimeoutRef.current) window.clearTimeout(pesoTimeoutRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -151,18 +160,20 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
     setError("");
     setProgreso(6);
 
-    const intervalo = window.setInterval(() => {
+    progresoIntervalRef.current = window.setInterval(() => {
       setProgreso((p) => (p < 92 ? p + Math.max(1, (92 - p) / 8) : p));
     }, 150);
 
     try {
       await onSubir(archivo, posicion);
-      window.clearInterval(intervalo);
+      if (progresoIntervalRef.current) window.clearInterval(progresoIntervalRef.current);
+      progresoIntervalRef.current = null;
       setProgreso(100);
       setListo(true);
-      window.setTimeout(onCerrar, 550);
+      cierreTimeoutRef.current = window.setTimeout(onCerrar, 550);
     } catch (err) {
-      window.clearInterval(intervalo);
+      if (progresoIntervalRef.current) window.clearInterval(progresoIntervalRef.current);
+      progresoIntervalRef.current = null;
       setSubiendo(false);
       setProgreso(0);
       setError(err instanceof Error ? err.message : "No se pudo subir la foto.");

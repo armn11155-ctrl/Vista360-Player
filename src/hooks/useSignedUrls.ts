@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getFunctions, httpsCallable } from "firebase/functions";
-import { app } from "../config/firebase";
+import { app, registrarLimpiezaDeSesion } from "../config/firebase";
 
 /**
  * Las URLs de R2 son privadas y expiran (6h). Este hook recibe una
@@ -40,6 +40,7 @@ function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
 }
 
 const CACHE = cargarCacheInicial();
+let generacionDeSesion = 0;
 
 function frescasDesdeCache(keys: string[]): Record<string, string> {
   const resultado: Record<string, string> = {};
@@ -53,8 +54,15 @@ function frescasDesdeCache(keys: string[]): Record<string, string> {
 
 function guardarCache() {
   try {
+    const ahora = Date.now();
     const datos: Record<string, { url: string; expiraEn: number }> = {};
-    CACHE.forEach((valor, key) => { datos[key] = valor; });
+    CACHE.forEach((valor, key) => {
+      if (valor.expiraEn <= ahora) {
+        CACHE.delete(key);
+        return;
+      }
+      datos[key] = valor;
+    });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
   } catch {
     // Si falla (cuota llena, modo privado), simplemente no persiste — la caché en memoria sigue funcionando igual.
@@ -62,6 +70,7 @@ function guardarCache() {
 }
 
 async function firmar(keys: string[]): Promise<Record<string, string>> {
+  const generacionAlEmpezar = generacionDeSesion;
   const functions = getFunctions(app ?? undefined);
   const firmarUrlsR2 = httpsCallable<{ keys: string[] }, { urls: { key: string; url: string }[] }>(
     functions,
@@ -71,6 +80,9 @@ async function firmar(keys: string[]): Promise<Record<string, string>> {
   for (let i = 0; i < keys.length; i += MAX_POR_LOTE) {
     const lote = keys.slice(i, i + MAX_POR_LOTE);
     const { data } = await firmarUrlsR2({ keys: lote });
+    // Si la sesión terminó mientras la Function respondía, no volver a
+    // guardar en memoria/localStorage URLs privadas de la sesión anterior.
+    if (generacionAlEmpezar !== generacionDeSesion) return {};
     data.urls.forEach(({ key, url }) => {
       resultado[key] = url;
       CACHE.set(key, { url, expiraEn: Date.now() + DURACION_MS });
@@ -108,6 +120,17 @@ const VENTANA_AGRUPADO_MS = 20;
 
 let colaDeClaves = new Set<string>();
 let promesaDelLote: Promise<void> | null = null;
+
+registrarLimpiezaDeSesion(() => {
+  generacionDeSesion += 1;
+  CACHE.clear();
+  colaDeClaves.clear();
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage puede estar bloqueado; la caché en memoria sí se limpió.
+  }
+});
 
 function pedirFirmaAgrupada(keys: string[]): Promise<void> {
   keys.forEach((k) => colaDeClaves.add(k));

@@ -8,7 +8,10 @@ export default defineConfig({
   },
   build: {
     target: "es2019",
-    sourcemap: true,
+    // No se publican mapas con el frontend: hoy no existe un receptor
+    // privado (Sentry, etc.) que los consuma y representaban 8.1 MB del
+    // artefacto, además de exponer el fuente original de producción.
+    sourcemap: false,
     // El aviso de Vite compara el tamaño SIN comprimir (600KB), pero lo
     // que de verdad baja el navegador es el gzip (~140KB) — razonable
     // para una app con Firebase. Subimos el umbral para no generar

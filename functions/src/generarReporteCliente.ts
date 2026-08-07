@@ -2,8 +2,7 @@ import { dirname, join } from "node:path";
 import { enviarPushACliente } from "./notificacionesPush.js";
 import { guardarMetadataInforme } from "./agregadoInformes.js";
 import { fileURLToPath } from "node:url";
-import PDFDocument from "pdfkit";
-import sharp from "sharp";
+import type PDFKit from "pdfkit";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -213,6 +212,7 @@ const FOTO_CONFIG = { maxWidth: 1200, quality: 35 };
 
 async function comprimirFoto(buffer: Buffer) {
   try {
+    const { default: sharp } = await import("sharp");
     return await sharp(buffer)
       .rotate()
       .resize({ width: FOTO_CONFIG.maxWidth, withoutEnlargement: true })
@@ -890,6 +890,7 @@ function paginaPanel(doc: PDFKit.PDFDocument, nombrePanel: string, ubicacion: st
 }
 
 export async function generarReporte(cliente: ClienteReporte, elementos: ReporteElemento[]): Promise<ReportePdf> {
+  const { default: PDFDocument } = await import("pdfkit");
   const doc = new PDFDocument({ size: [PAGE.width, PAGE.height], margin: 0, autoFirstPage: false });
   const chunks: Buffer[] = [];
   doc.on("data", (chunk: Buffer) => chunks.push(chunk));
@@ -1052,32 +1053,44 @@ async function cargarElementosSubidosPorPanel(
   data: unknown
 ): Promise<ReporteElemento[]> {
   if (!Array.isArray(data)) return [];
-  const elementos: ReporteElemento[] = [];
-  for (const entradaRaw of data as PanelFotosInput[]) {
-    if (!entradaRaw || typeof entradaRaw !== "object") continue;
+  const entradas = (data as PanelFotosInput[]).flatMap((entradaRaw) => {
+    if (!entradaRaw || typeof entradaRaw !== "object") return [];
     const panelId = String(entradaRaw.panelId ?? "").trim();
     const fotos = (Array.isArray(entradaRaw.fotos) ? entradaRaw.fotos : [])
       .map(normalizeFoto)
       .filter((foto) => typeof foto.url === "string" && (foto.url.startsWith("data:image/") || esClaveR2(foto.url)))
       .slice(0, 12);
-    if (fotos.length === 0) continue;
+    if (fotos.length === 0) return [];
+    return [{ panelId, panelNombre: String(entradaRaw.panelNombre ?? "").trim(), fotos }];
+  });
 
-    let nombre = String(entradaRaw.panelNombre ?? "").trim();
+  // Una sola ida y vuelta a Firestore para todos los paneles. El flujo
+  // anterior esperaba cada get() dentro de un for, acumulando una latencia
+  // de red completa por panel antes de poder empezar a generar el PDF.
+  const idsUnicos = [...new Set(entradas.map((entrada) => entrada.panelId).filter(Boolean))];
+  const panelesPorId = new Map<string, FirebaseFirestore.DocumentData>();
+  if (idsUnicos.length > 0) {
+    const snaps = await db.getAll(...idsUnicos.map((panelId) => db.doc(`paneles/${panelId}`)));
+    snaps.forEach((snap) => {
+      if (snap.exists) panelesPorId.set(snap.id, snap.data() ?? {});
+    });
+  }
+
+  return entradas.map(({ panelId, panelNombre, fotos }) => {
+    let nombre = panelNombre;
     let ubicacion = nombre;
     if (panelId) {
-      const panelSnap = await db.doc(`paneles/${panelId}`).get();
-      const panel = panelSnap.exists ? panelSnap.data() ?? {} : {};
+      const panel = panelesPorId.get(panelId) ?? {};
       if (!nombre) nombre = String(panel.nombre ?? "Panel");
       ubicacion = [panel.nombre ?? nombre, panel.direccion, panel.ciudad].filter(Boolean).join(" - ");
     }
-    elementos.push({
+    return {
       titulo: nombre || "Panel",
       ubicacion: ubicacion || nombre || "Panel",
       fotos,
       ...(panelId ? { panelId } : {}),
-    });
-  }
-  return elementos;
+    };
+  });
 }
 
 export const generarReporteCliente = onCall(

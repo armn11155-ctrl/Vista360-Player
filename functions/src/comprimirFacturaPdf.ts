@@ -1,4 +1,3 @@
-import { PDFDocument } from "pdf-lib";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
@@ -35,6 +34,7 @@ function limpiar(value?: string) {
  * cualquier entorno de Cloud Functions.
  */
 async function comprimirConPdfLib(input: Buffer): Promise<Buffer> {
+  const { PDFDocument } = await import("pdf-lib");
   const pdfDoc = await PDFDocument.load(input, {
     updateMetadata: false,
     ignoreEncryption: true,

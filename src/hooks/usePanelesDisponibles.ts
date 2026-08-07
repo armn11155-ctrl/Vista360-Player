@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { collection, doc, onSnapshot } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db, registrarLimpiezaDeSesion } from "../config/firebase";
 import { mensajeDeError } from "../utils/errores";
 import type { Panel } from "../types";
 
@@ -278,6 +278,18 @@ function reiniciarEscucha() {
   escuchaActiva = false;
   iniciarEscuchaSiHaceFalta();
 }
+
+/** Corta la conexión global y libera el inventario al cerrar sesión.
+ * Durante una sesión sigue compartiéndose entre pantallas como antes. */
+export function detenerPanelesAlCerrarSesion() {
+  unsubEscucha?.();
+  unsubEscucha = null;
+  escuchaActiva = false;
+  CACHE_PANELES = null;
+  yaAvisoDelBarrido = false;
+}
+
+registrarLimpiezaDeSesion(detenerPanelesAlCerrarSesion);
 
 /** Arranca la escucha de paneles de antemano, sin esperar a que alguien
  *  entre a Cobertura/Paneles/Nueva campaña. La llama App.tsx durante el

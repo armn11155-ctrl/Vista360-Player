@@ -5,7 +5,6 @@ import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { useFacturas } from "../../hooks/useFacturas";
 import { FacturaCard } from "../FacturaCard";
 import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
-import { useSignedUrls } from "../../hooks/useSignedUrls";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImageHero } from "../../utils/campaignCity";
@@ -175,7 +174,10 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   // PDF del reporte mensual del cliente (el mismo que se ve en la
   // pantalla de Reportes) — se muestra tambien aca para no tener que
   // salir de la campaña a buscarlo.
-  const informesState = useInformes(contrato.cliente_id);
+  // No listar ni firmar reportes mientras la persona sigue en Resumen.
+  // Esa pestaña es la entrada por defecto y no usa ningún dato del
+  // histórico; pedirlo acá hacía trabajo de red y lecturas invisibles.
+  const informesState = useInformes(tab === "reportes" ? contrato.cliente_id : "");
   // Solo los reportes de ESTA campaña -- useInformes trae todos los del
   // cliente juntos (para la pantalla Reportes.tsx), pero acá antes se
   // mostraban sin filtrar y aparecía la lista completa de reportes del
@@ -186,9 +188,6 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre, clien
   const informes = informesState.status === "ready"
     ? informesState.informes.filter((i) => i.contratoId === contrato.id)
     : [];
-  const keysInformes = informes.flatMap((i) => (i.r2Keys ? [i.r2Keys.digital] : []));
-  const urlsInformesFirmadas = useSignedUrls(keysInformes);
-
   // Factura de esta campaña -- solo aparece si el admin la etiquetó al
   // subirla a mano desde la pantalla Facturas (ver Facturas.tsx). Las
   // facturas sincronizadas del sistema externo (facturacion-web, por
