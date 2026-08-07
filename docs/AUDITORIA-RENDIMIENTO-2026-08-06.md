@@ -22,7 +22,7 @@ No se cambiaron diseño, permisos, autenticación, reglas de seguridad ni lógic
 | Flujo | Antes | Después técnico |
 | --- | ---: | ---: |
 | Regresar con **Cambiar cliente** | más de 4,000 ms en la captura móvil | datos disponibles en el primer render; 0 consultas bloqueantes |
-| Regreso medido en Chrome de escritorio, producción anterior | 706 ms con caché caliente | pendiente de medición final tras publicar |
+| Regreso medido en producción | 706 ms en Chrome de escritorio con caché caliente | clientes visibles en la primera observación a los 100 ms; 504 ms incluyendo la captura completa de automatización |
 | Lista de clientes al volver | estado `loading` hasta respuesta de Firestore | estado `ready` desde memoria + refresco en segundo plano |
 | Avatares firmados | todos los clientes, aunque solo se mostraran 8 espacios | solo los clientes realmente visibles + avatar propio |
 | Clientes grandes | hasta `ceil(C / 60)` llamadas de firma | normalmente 1 llamada por página visible |
@@ -167,13 +167,15 @@ Fuentes oficiales:
 - Captura móvil analizada: estado visible posterior al guardián de 4 segundos.
 - Reportes productivos: pantalla abrió y mostró cinco PDFs; tamaños medidos desde la UI.
 - Facturas productivas: pantalla abrió y mostró dos PDFs; tamaños medidos desde la UI.
-- `npm test`: 46 archivos y 827 pruebas antes del último grupo de guardas; se vuelve a ejecutar al cerrar la rama.
+- `npm test`: 46 archivos y 830 pruebas aprobadas.
 - `npm run typecheck`: correcto.
 - `npm --prefix functions run build`: correcto.
 - `npm run build`: correcto.
 - Detectores de renders: 0 riesgos directos, 0 riesgos inline, 0 total.
 - `git diff --check`: correcto.
-- Pruebas de reglas locales requieren el emulador Java no instalado en esta Mac; GitHub Actions las ejecuta contra un proyecto `demo-` que no toca producción.
+- GitHub Actions: tipos de backend, tipos frontend, 830 pruebas, build y 75 pruebas de reglas con emulador aprobados.
+- Despliegue productivo aprobado: Functions actualizadas, frontend propagado y reglas omitidas expresamente porque no se modificaron.
+- Verificación posterior al despliegue en diseño móvil: selector con tres clientes listo en la primera observación, cambio de cliente correcto, Inicio con el último reporte, Reportes con cinco PDFs y Facturas con sus acciones visibles.
 
 ## Archivos modificados
 
@@ -200,4 +202,4 @@ Fuentes oficiales:
 - La caché de facturas admite hasta 60 segundos de antigüedad. Si la pantalla permanece abierta, el listener se conecta al vencer el minuto; si se sale, se cancela y no queda activo.
 - Un cambio real en un listener, una revalidación tras más de 30 minutos o una regla dependiente modificada puede generar lecturas adicionales.
 - Los PDFs no se cachean por Service Worker por seguridad. Volver a descargarlos consume nuevamente su tamaño, aunque el navegador puede reutilizar su caché HTTP.
-- Faltan la medición final móvil/responsive y la verificación postdespliegue; se completan después de publicar backend y frontend.
+- La medición automatizada incluye el tiempo de inspección de Computer Use; el contenido ya estaba visible en la primera observación a los 100 ms, por lo que 504 ms es un límite superior del flujo observado, no tiempo puro de red.
