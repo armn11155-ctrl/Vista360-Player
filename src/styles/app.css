@@ -586,7 +586,8 @@
     .header-dark::after, .detail-header::after, .profile-top::after,
     .reports-header::after, .coverage-header-compact::after,
     .inicio-header::after, .campanas-header::after, .quotes-header::after,
-    .detalle-campana-line::after {
+    .detalle-campana-line::after,
+    .profile-top-curve-shine {
       animation: none;
       display: none;
     }
@@ -613,6 +614,17 @@
     background-repeat: no-repeat;
     background-position: -100% 0;
     animation: premium-rule-shine 10s ease-in-out infinite;
+  }
+
+  /* La curva especial solo existe en Perfil móvil. En escritorio se
+     mantiene la franja horizontal compartida con los demás headers. */
+  .profile-top-curve { display: none; }
+
+  @keyframes profile-curve-shine {
+    0% { stroke-dashoffset: 116; opacity: 0; }
+    2% { opacity: .95; }
+    14% { stroke-dashoffset: -16; opacity: .95; }
+    16%, 100% { stroke-dashoffset: -16; opacity: 0; }
   }
 
   /* En mobile, Inicio.tsx monta ".inicio-content" con margin-top:-26
@@ -658,6 +670,50 @@
       bottom: -3px;
       height: 32px;
       border-radius: 29px 29px 0 0;
+    }
+
+    /* Perfil tiene un borde inferior curvo en móvil. La regla global de
+       3px era recta y cortaba visualmente las esquinas; el SVG sigue el
+       radio real del bloque negro y conserva el brillo de la franja. */
+    .profile-top::before,
+    .profile-top::after {
+      display: none;
+    }
+    .profile-top-curve {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      height: 30px;
+      display: block;
+      pointer-events: none;
+    }
+    .profile-top-curve svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    .profile-top-curve path {
+      fill: none;
+      vector-effect: non-scaling-stroke;
+      stroke-linecap: round;
+      stroke-width: 3;
+    }
+    .profile-top-curve-base { stroke: url(#profile-top-curve-gradient); }
+    .profile-top-curve-shine {
+      stroke: rgba(255,255,255,.9);
+      stroke-dasharray: 16 84;
+      stroke-dashoffset: 116;
+      animation: profile-curve-shine 10s ease-in-out infinite;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .profile-top-curve-shine {
+      animation: none;
+      display: none;
     }
   }
 
@@ -6192,6 +6248,7 @@
       padding-top: 14px;
     }
     .sidebar-bottom-section-switch { border-top: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-bottom-section-logout { border-top: 0; }
     .sidebar-pill {
       display: block;
       position: absolute;
@@ -6588,6 +6645,9 @@
     transform: translateX(-50%);
     pointer-events: none;
     transition: background-color .18s ease, color .18s ease;
+  }
+  .coverage-map-summary {
+    display: none;
   }
   .coverage-map-interaction-hint.is-active {
     color: #FFFFFF;
@@ -7021,8 +7081,8 @@
       padding: 12px 12px calc(18px + env(safe-area-inset-bottom));
     }
     .coverage-map-real {
-      height: clamp(500px, calc(100dvh - 160px), 680px);
-      min-height: 500px;
+      height: clamp(380px, 62dvh, 540px);
+      min-height: 380px;
       border-radius: 20px;
     }
     .coverage-map-interaction-hint {
@@ -7031,6 +7091,59 @@
       padding: 7px 10px;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+    .coverage-map-summary {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      z-index: 705;
+      min-height: 34px;
+      padding: 5px 8px 5px 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 13px;
+      color: rgba(255,255,255,.86);
+      background: linear-gradient(145deg, rgba(7,14,25,.94), rgba(15,29,50,.88));
+      box-shadow: 0 12px 24px rgba(2,6,23,.22), inset 0 1px 0 rgba(255,255,255,.06);
+      backdrop-filter: blur(11px);
+      -webkit-backdrop-filter: blur(11px);
+      pointer-events: none;
+      font-size: 10px;
+      font-weight: 780;
+      line-height: 1;
+    }
+    .coverage-map-summary-icon {
+      width: 23px;
+      height: 23px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #93C5FD;
+      background: rgba(8,119,255,.18);
+    }
+    .coverage-map-summary-icon svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .coverage-map-summary strong {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      background: rgba(255,255,255,.10);
+      font-size: 11px;
+      font-weight: 900;
     }
     .coverage-map-legend {
       left: 10px;
@@ -7067,6 +7180,9 @@
     }
     .coverage-selected-card {
       display: none !important;
+    }
+    .coverage-panel-card > .section-title {
+      display: none;
     }
   }
   @media (min-width: 900px) {

@@ -903,6 +903,18 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
             </div>
           )}
           {mapReady && !mapError && datosListos && (
+            <div className="coverage-map-summary" aria-label={`${conCoordenadas.length} paneles ubicados`}>
+              <span className="coverage-map-summary-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
+                  <circle cx="12" cy="10" r="2.1" />
+                </svg>
+              </span>
+              <span>Paneles ubicados</span>
+              <strong>{conCoordenadas.length}</strong>
+            </div>
+          )}
+          {mapReady && !mapError && datosListos && (
             <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
                 <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />

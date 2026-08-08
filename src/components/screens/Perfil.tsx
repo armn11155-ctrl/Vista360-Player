@@ -284,6 +284,32 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
             </div>
           </div>
         </section>
+
+        {/* En móvil el borde inferior del bloque oscuro es curvo. La
+            franja de acento necesita seguir esa misma geometría; los
+            pseudo-elementos compartidos dibujan una línea recta y se
+            conservan únicamente para escritorio. */}
+        <span className="profile-top-curve" aria-hidden="true">
+          <svg viewBox="0 0 390 30" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="profile-top-curve-gradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#2f6fed" />
+                <stop offset="0.5" stopColor="#5b93ff" />
+                <stop offset="1" stopColor="#2f6fed" />
+              </linearGradient>
+            </defs>
+            <path
+              className="profile-top-curve-base"
+              pathLength="100"
+              d="M1 1 C1 16 10 27 24 27 H366 C380 27 389 16 389 1"
+            />
+            <path
+              className="profile-top-curve-shine"
+              pathLength="100"
+              d="M1 1 C1 16 10 27 24 27 H366 C380 27 389 16 389 1"
+            />
+          </svg>
+        </span>
       </header>
 
       {modalAvatarAbierto && (
