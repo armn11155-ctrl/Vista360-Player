@@ -6,6 +6,7 @@ import VisorPdf from "./components/VisorPdf";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DialogosProvider } from "./components/DialogosProvider";
 import "./styles/app.css";
+import "./styles/design-system.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
 

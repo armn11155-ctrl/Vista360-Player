@@ -1,0 +1,846 @@
+/*
+ * Vista360 Design System
+ * ----------------------
+ * Capa semántica y visual que se carga después de app.css. Mantiene el
+ * comportamiento de cada pantalla y alinea las generaciones de UI que hoy
+ * conviven en el producto. Los componentes nuevos deben consumir estos
+ * tokens en lugar de agregar valores aislados a app.css.
+ */
+
+:root {
+  /* Color */
+  --v360-ink-950: #030711;
+  --v360-ink-900: #07101d;
+  --v360-ink-850: #0b1424;
+  --v360-ink-800: #111c2f;
+  --v360-brand-600: #0968e8;
+  --v360-brand-500: #1677ff;
+  --v360-brand-400: #5b9cff;
+  --v360-brand-soft: #eaf3ff;
+  --v360-canvas: #f3f6fa;
+  --v360-surface: #ffffff;
+  --v360-surface-subtle: #f8fafc;
+  --v360-border: #dce4ee;
+  --v360-border-strong: #cbd6e3;
+  --v360-text: #0b1220;
+  --v360-text-secondary: #475569;
+  --v360-text-tertiary: #64748b;
+  --v360-success: #16834a;
+  --v360-warning: #b86b08;
+  --v360-danger: #dc3545;
+  --v360-info: #1677ff;
+
+  /* Type */
+  --v360-font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --v360-display-size: clamp(2rem, 4vw, 3.25rem);
+  --v360-h1-size: clamp(1.25rem, 2vw, 1.75rem);
+  --v360-h2-size: clamp(1.08rem, 1.5vw, 1.35rem);
+  --v360-h3-size: 1rem;
+  --v360-body-size: 0.9375rem;
+  --v360-small-size: 0.8125rem;
+  --v360-caption-size: 0.71875rem;
+
+  /* Spacing: 4px base */
+  --v360-space-1: 4px;
+  --v360-space-2: 8px;
+  --v360-space-3: 12px;
+  --v360-space-4: 16px;
+  --v360-space-5: 20px;
+  --v360-space-6: 24px;
+  --v360-space-8: 32px;
+  --v360-space-10: 40px;
+  --v360-space-12: 48px;
+
+  /* Shape and elevation */
+  --v360-radius-control: 10px;
+  --v360-radius-card: 16px;
+  --v360-radius-panel: 22px;
+  --v360-radius-pill: 999px;
+  --v360-shadow-card: 0 1px 2px rgba(15, 23, 42, .025), 0 14px 38px -28px rgba(15, 23, 42, .32);
+  --v360-shadow-raised: 0 22px 55px -30px rgba(15, 23, 42, .42);
+  --v360-shadow-overlay: 0 28px 80px -26px rgba(2, 6, 23, .5);
+
+  /* Motion */
+  --v360-motion-fast: 120ms;
+  --v360-motion-base: 180ms;
+  --v360-motion-slow: 260ms;
+  --v360-ease: cubic-bezier(.2, .75, .25, 1);
+
+  /* Alias para que el CSS existente herede el mismo sistema. */
+  --app-bg: var(--v360-ink-950);
+  --bg: var(--v360-canvas);
+  --dark: var(--v360-ink-850);
+  --darker: var(--v360-ink-950);
+  --surface: var(--v360-ink-800);
+  --card: var(--v360-surface);
+  --text: var(--v360-text);
+  --text-2: var(--v360-text-secondary);
+  --muted: var(--v360-text-tertiary);
+  --accent: var(--v360-brand-500);
+  --accent-lt: rgba(22, 119, 255, .12);
+  --border: var(--v360-border);
+  --premium-radius-sm: var(--v360-radius-control);
+  --premium-radius-md: var(--v360-radius-card);
+  --premium-radius-lg: var(--v360-radius-panel);
+  --premium-shadow-card: var(--v360-shadow-card);
+  --premium-shadow-hover: var(--v360-shadow-raised);
+  --premium-ease: var(--v360-ease);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--v360-font);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+[role="button"],
+input,
+select,
+textarea,
+a {
+  outline: none;
+}
+
+:where(button, [role="button"], input, select, textarea, a):focus-visible {
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, .22), 0 0 0 1px var(--v360-brand-500);
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: .56;
+}
+
+/* Global product frame */
+.screens,
+.content-area,
+.campaign-list,
+.ev-content,
+.reports-screen-body,
+.quotes-scroll,
+.admin-tool-screen,
+.admin-picker-management-screen {
+  background: var(--v360-canvas);
+}
+
+.detail-header,
+.reports-header,
+.coverage-header-compact,
+.campanas-header,
+.quotes-header {
+  min-height: 68px;
+  background: var(--v360-ink-950);
+}
+
+.simple-title,
+.header-title,
+.reports-header .simple-title {
+  font-size: var(--v360-h2-size);
+  font-weight: 760;
+  letter-spacing: -.022em;
+}
+
+.back-btn,
+.notif-btn,
+.inicio-header-icon-btn,
+.mobile-sidebar-header-btn,
+.factura-menu-btn,
+.report-card-menu-btn,
+.notification-delete-btn {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: var(--v360-radius-control);
+  transition: background var(--v360-motion-fast) ease, border-color var(--v360-motion-fast) ease,
+    transform var(--v360-motion-fast) ease;
+}
+
+@media (hover: hover) {
+  :where(.back-btn, .notif-btn, .inicio-header-icon-btn, .mobile-sidebar-header-btn,
+    .factura-menu-btn, .report-card-menu-btn, .notification-delete-btn):hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Cards and data surfaces */
+.card,
+.report-card,
+.profile-card-list,
+.profile-metric-card,
+.quotes-form-card,
+.quotes-list-card,
+.factura-edit-panel,
+.report-email-preview {
+  border: 1px solid var(--v360-border);
+  border-radius: var(--v360-radius-card);
+  background: var(--v360-surface);
+  box-shadow: var(--v360-shadow-card);
+}
+
+.card {
+  padding: var(--v360-space-4);
+}
+
+.section-title,
+.inicio-section-title,
+.ev-section-title,
+.quotes-card-heading-copy strong {
+  color: var(--v360-text);
+  font-size: var(--v360-h3-size);
+  font-weight: 760;
+  letter-spacing: -.014em;
+}
+
+.section-title::before,
+.inicio-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  margin-right: 9px;
+  border-radius: var(--v360-radius-pill);
+  vertical-align: -.08em;
+  background: var(--v360-brand-500);
+}
+
+/* Buttons */
+.btn-primary,
+.login-btn,
+.quotes-primary-btn,
+.report-action-primary,
+.factura-action-primary,
+.avatar-modal-btn.primary,
+.dialogo-btn.primary,
+.panel-create-toggle {
+  border: 1px solid transparent;
+  border-radius: var(--v360-radius-control);
+  color: #fff;
+  background: var(--v360-brand-500);
+  box-shadow: 0 9px 22px -13px rgba(9, 104, 232, .72);
+  font-weight: 740;
+  transition: transform var(--v360-motion-fast) var(--v360-ease),
+    background var(--v360-motion-fast) ease, box-shadow var(--v360-motion-fast) ease;
+}
+
+.avatar-modal-btn.secondary,
+.dialogo-btn.secondary,
+.factura-edit-cancelar,
+.report-email-preview-actions .cancelar {
+  border: 1px solid var(--v360-border);
+  border-radius: var(--v360-radius-control);
+  color: var(--v360-text);
+  background: var(--v360-surface);
+  box-shadow: none;
+  font-weight: 700;
+}
+
+@media (hover: hover) {
+  :where(.btn-primary, .login-btn, .quotes-primary-btn, .report-action-primary,
+    .factura-action-primary, .avatar-modal-btn.primary, .dialogo-btn.primary,
+    .panel-create-toggle):hover {
+    background: var(--v360-brand-600);
+    box-shadow: 0 14px 28px -15px rgba(9, 104, 232, .72);
+    transform: translateY(-1px);
+  }
+}
+
+:where(.btn-primary, .login-btn, .quotes-primary-btn, .report-action-primary,
+  .factura-action-primary, .avatar-modal-btn, .dialogo-btn, .panel-create-toggle):active {
+  transform: translateY(0) scale(.985);
+}
+
+/* Fields */
+.form-input,
+.report-panel-field,
+.factura-edit-input,
+.admin-picker-search,
+.quotes-form-card input,
+.quotes-form-card select,
+.quotes-form-card textarea,
+.content-area input:not([type="checkbox"]):not([type="radio"]),
+.content-area select,
+.content-area textarea {
+  min-height: 44px;
+  border: 1px solid var(--v360-border-strong);
+  border-radius: var(--v360-radius-control);
+  background: var(--v360-surface);
+  color: var(--v360-text);
+  transition: border-color var(--v360-motion-fast) ease, box-shadow var(--v360-motion-fast) ease,
+    background var(--v360-motion-fast) ease;
+}
+
+:where(.form-input, .report-panel-field, .factura-edit-input, .admin-picker-search,
+  .quotes-form-card input, .quotes-form-card select, .quotes-form-card textarea,
+  .content-area input:not([type="checkbox"]):not([type="radio"]),
+  .content-area select, .content-area textarea):focus {
+  border-color: var(--v360-brand-500);
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, .13);
+}
+
+.form-label,
+.quotes-form-card label,
+.factura-edit-label {
+  color: var(--v360-text-secondary);
+  font-size: var(--v360-small-size);
+  font-weight: 680;
+}
+
+/* Tabs */
+.tabs,
+.detail-tabs {
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--v360-border);
+  border-radius: 12px;
+  background: #e9eef5;
+}
+
+.tab,
+.detail-tab {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--v360-text-tertiary);
+  transition: color var(--v360-motion-fast) ease, background var(--v360-motion-fast) ease,
+    box-shadow var(--v360-motion-fast) ease;
+}
+
+.tab.active,
+.detail-tab.active {
+  color: var(--v360-text);
+  border-bottom-color: transparent;
+  background: var(--v360-surface);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, .1);
+}
+
+/* Loaders, empty and error states */
+.premium-loading-panel,
+.premium-empty-panel,
+.notifications-empty-premium {
+  border: 1px solid var(--v360-border);
+  border-radius: var(--v360-radius-card);
+  background: var(--v360-surface);
+  box-shadow: var(--v360-shadow-card);
+}
+
+.premium-loading-panel,
+.premium-empty-panel {
+  min-height: 118px;
+}
+
+.state-title,
+.premium-loading-panel strong,
+.premium-empty-panel strong,
+.notifications-empty-premium strong {
+  color: var(--v360-text);
+  font-size: var(--v360-body-size);
+  font-weight: 750;
+}
+
+.state-sub,
+.premium-loading-panel small,
+.premium-empty-panel span,
+.notifications-empty-premium p {
+  color: var(--v360-text-tertiary);
+  font-size: var(--v360-small-size);
+  line-height: 1.5;
+}
+
+.config-missing-screen .state-title {
+  color: #fff;
+}
+
+.config-missing-screen .state-sub {
+  color: rgba(226, 232, 240, .72);
+}
+
+.premium-loading-orbit {
+  border-color: rgba(22, 119, 255, .18);
+  border-top-color: var(--v360-brand-500);
+}
+
+/* Dialogs and overlays */
+.dialogo-backdrop,
+.avatar-modal-backdrop,
+.solicitud-detail-overlay,
+.quote-preview-backdrop {
+  background: rgba(3, 7, 17, .64);
+}
+
+.dialogo,
+.avatar-modal,
+.solicitud-detail-panel,
+.quote-preview-shell {
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: var(--v360-radius-panel);
+  box-shadow: var(--v360-shadow-overlay);
+}
+
+.dialogo-titulo,
+.avatar-modal-title,
+.solicitud-detail-title {
+  font-weight: 780;
+  letter-spacing: -.02em;
+}
+
+/* Client selector and management */
+.admin-picker-header-panel {
+  border: 1px solid rgba(147, 197, 253, .18);
+  border-radius: var(--v360-radius-panel);
+  background: linear-gradient(145deg, rgba(5, 12, 27, .94), rgba(5, 13, 30, .84));
+  box-shadow: 0 34px 80px -42px rgba(0, 0, 0, .92), inset 0 1px 0 rgba(255, 255, 255, .07);
+}
+
+.admin-picker-title {
+  font-weight: 780;
+  letter-spacing: -.035em;
+}
+
+.admin-picker-sub {
+  color: rgba(226, 232, 240, .72);
+}
+
+.admin-picker-tile,
+.admin-picker-management-group,
+.admin-picker-management-card {
+  border-radius: var(--v360-radius-card);
+}
+
+.admin-picker-management-screen {
+  background-image: linear-gradient(180deg, #edf2f8 0%, var(--v360-canvas) 38%);
+}
+
+.admin-picker-management-header {
+  border-radius: var(--v360-radius-card);
+}
+
+.admin-picker-management-group {
+  border-color: var(--v360-border);
+  background: rgba(255, 255, 255, .94);
+  box-shadow: var(--v360-shadow-card);
+}
+
+.admin-picker-management-card {
+  min-height: 82px;
+  border-color: var(--v360-border);
+  background: var(--v360-surface-subtle);
+}
+
+@media (hover: hover) {
+  .admin-picker-management-card:hover {
+    border-color: rgba(22, 119, 255, .32);
+    background: var(--v360-surface);
+    transform: translateY(-2px);
+    box-shadow: var(--v360-shadow-raised);
+  }
+}
+
+/* Inicio */
+.inicio-screen .inicio-content {
+  background: var(--v360-canvas) !important;
+}
+
+.inicio-header {
+  background: var(--v360-ink-950) !important;
+}
+
+.inicio-current-client {
+  border: 1px solid rgba(147, 197, 253, .15);
+  border-radius: var(--v360-radius-card);
+  background: linear-gradient(135deg, var(--v360-ink-900), #101d34);
+  box-shadow: 0 20px 42px -27px rgba(2, 6, 23, .75);
+}
+
+.inicio-kpi-card,
+.inicio-quick-grid > button,
+.inicio-latest-report-card {
+  border-color: var(--v360-border) !important;
+  border-radius: var(--v360-radius-card) !important;
+  box-shadow: var(--v360-shadow-card) !important;
+}
+
+.inicio-next-section {
+  border: 1px solid rgba(147, 197, 253, .12);
+  border-radius: var(--v360-radius-panel) !important;
+  background: radial-gradient(circle at 88% 0%, rgba(22, 119, 255, .18), transparent 34%),
+    linear-gradient(145deg, var(--v360-ink-900), var(--v360-ink-950)) !important;
+}
+
+/* Campaigns */
+.campaign-list {
+  align-content: start;
+}
+
+.premium-campaign-card,
+.mis-campanas-month-status,
+.campaign-renewal-button {
+  border-radius: var(--v360-radius-card);
+}
+
+.mis-campanas-month-status {
+  border: 1px solid rgba(147, 197, 253, .14);
+  background: linear-gradient(145deg, var(--v360-ink-900), var(--v360-ink-950));
+  box-shadow: 0 18px 42px -26px rgba(2, 6, 23, .72);
+}
+
+.premium-campaign-kicker,
+.mis-campanas-month-status-header {
+  letter-spacing: .12em;
+}
+
+.premium-campaign-title {
+  letter-spacing: -.025em;
+}
+
+/* Map */
+.coverage-map-shell {
+  border-radius: var(--v360-radius-panel);
+  border: 1px solid var(--v360-border-strong);
+  box-shadow: var(--v360-shadow-raised);
+}
+
+.coverage-map-legend,
+.map-legend,
+.coverage-legend {
+  border: 1px solid rgba(255, 255, 255, .13);
+  border-radius: var(--v360-radius-card);
+  background: rgba(7, 16, 29, .92);
+  box-shadow: 0 22px 48px -24px rgba(2, 6, 23, .72);
+}
+
+.coverage-map-help {
+  border-radius: var(--v360-radius-pill);
+  background: rgba(7, 16, 29, .88);
+}
+
+/* Reports and invoices */
+.report-card {
+  overflow: visible;
+  transition: border-color var(--v360-motion-base) ease, box-shadow var(--v360-motion-base) ease,
+    transform var(--v360-motion-base) var(--v360-ease);
+}
+
+@media (hover: hover) {
+  .report-card:hover {
+    border-color: rgba(22, 119, 255, .24);
+    box-shadow: var(--v360-shadow-raised);
+    transform: translateY(-2px);
+  }
+}
+
+.report-title {
+  color: var(--v360-text);
+  font-weight: 780;
+  letter-spacing: -.025em;
+}
+
+.report-kicker {
+  color: var(--v360-text-tertiary);
+  font-weight: 720;
+  letter-spacing: .04em;
+}
+
+.report-ready-badge {
+  border: 1px solid rgba(22, 131, 74, .12);
+}
+
+.report-action {
+  min-height: 46px;
+  border-radius: var(--v360-radius-control);
+}
+
+.report-action-download {
+  background: var(--v360-ink-850);
+}
+
+.report-action-muted,
+.report-action-outline {
+  border-color: var(--v360-border);
+  color: var(--v360-text-secondary);
+  background: var(--v360-surface-subtle);
+}
+
+/* Profile and notifications */
+.admin-perfil-hero,
+.profile-top {
+  border-radius: var(--v360-radius-panel);
+}
+
+.profile-row,
+.profile-metric-row {
+  border-color: var(--v360-border);
+}
+
+.notifications-empty-premium {
+  max-width: 560px;
+  margin: 24px auto;
+  padding: 48px 28px;
+}
+
+.notification-delete-btn {
+  color: var(--v360-text-tertiary);
+}
+
+/* Admin data screens */
+.admin-tool-screen > .content-area {
+  scrollbar-gutter: stable;
+}
+
+.accesos-create-btn {
+  min-height: 44px;
+  border: 1px solid var(--v360-border) !important;
+  border-radius: var(--v360-radius-control) !important;
+  color: var(--v360-text) !important;
+  background: var(--v360-surface) !important;
+  box-shadow: var(--v360-shadow-card) !important;
+  font-weight: 720 !important;
+}
+
+.accesos-create-btn.is-primary {
+  border-color: transparent !important;
+  color: #fff !important;
+  background: var(--v360-brand-500) !important;
+}
+
+.accesos-create-btn.is-open {
+  border-color: rgba(22, 119, 255, .32) !important;
+  color: var(--v360-brand-600) !important;
+  background: var(--v360-brand-soft) !important;
+}
+
+.solicitudes-card {
+  transition: transform var(--v360-motion-base) var(--v360-ease),
+    border-color var(--v360-motion-base) ease, box-shadow var(--v360-motion-base) ease;
+}
+
+@media (hover: hover) {
+  .solicitudes-card:hover {
+    border-color: rgba(22, 119, 255, .28);
+    box-shadow: var(--v360-shadow-raised);
+    transform: translateY(-2px);
+  }
+}
+
+/* Quotes */
+.quotes-layout {
+  gap: var(--v360-space-6);
+}
+
+.quotes-form-card,
+.quotes-list-card {
+  border-color: var(--v360-border);
+}
+
+.quote-row {
+  border-color: var(--v360-border);
+  border-radius: var(--v360-radius-control);
+  transition: border-color var(--v360-motion-fast) ease, background var(--v360-motion-fast) ease;
+}
+
+@media (hover: hover) {
+  .quote-row:hover {
+    border-color: rgba(22, 119, 255, .28);
+    background: var(--v360-surface-subtle);
+  }
+}
+
+/* Desktop density and hierarchy */
+@media (min-width: 900px) {
+  .admin-tool-screen .detail-header,
+  .admin-tool-screen > .content-area,
+  .content-area,
+  .campaign-list,
+  .form-content {
+    padding-left: clamp(32px, 4vw, 64px);
+    padding-right: clamp(32px, 4vw, 64px);
+  }
+
+  .admin-tool-screen > .content-area > * {
+    width: min(1120px, 100%);
+  }
+
+  .sidebar-panel {
+    width: 188px;
+    min-width: 188px;
+  }
+
+  .sidebar-item {
+    min-height: 48px;
+    padding: 12px 14px;
+  }
+
+  .sidebar-item-label {
+    font-size: 13.5px;
+    letter-spacing: -.006em;
+  }
+
+  .inicio-header {
+    min-height: 124px;
+  }
+
+  .inicio-greeting-title {
+    font-size: 24px !important;
+    letter-spacing: -.025em !important;
+  }
+
+  .inicio-greeting-sub {
+    font-size: 14px !important;
+  }
+
+  .inicio-section-title {
+    font-size: 17px !important;
+  }
+
+  .inicio-kpi-card {
+    min-height: 92px !important;
+    padding: 16px !important;
+  }
+
+  .inicio-quick-grid > button {
+    min-height: 82px;
+    padding: 16px !important;
+  }
+
+  .campaign-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 1120px;
+    margin-inline: auto;
+  }
+
+  .mis-campanas-month-status,
+  .mis-campanas-cta {
+    grid-column: 1 / -1;
+  }
+
+  .premium-campaign-card {
+    min-height: 214px;
+  }
+
+  .premium-campaign-title {
+    font-size: 21px;
+  }
+
+  .report-card {
+    padding: 22px;
+  }
+
+  .admin-picker-management-grid {
+    gap: 20px;
+  }
+
+  .admin-picker-management-group {
+    padding: 18px;
+  }
+
+  .admin-picker-management-group-head strong,
+  .admin-picker-management-card strong {
+    font-size: 14px;
+  }
+
+  .admin-picker-management-group-head small,
+  .admin-picker-management-card small {
+    font-size: 12px;
+  }
+}
+
+/* Mobile is intentionally denser, with comfortable touch targets. */
+@media (max-width: 899px) {
+  .detail-header,
+  .reports-header,
+  .coverage-header-compact,
+  .campanas-header,
+  .quotes-header {
+    min-height: 62px;
+  }
+
+  .simple-title,
+  .header-title {
+    font-size: 18px;
+  }
+
+  .content-area,
+  .campaign-list,
+  .form-content,
+  .reports-screen-body {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .card,
+  .report-card {
+    border-radius: 14px;
+  }
+
+  .tabs,
+  .detail-tabs {
+    margin: 8px 12px;
+  }
+
+  .tab,
+  .detail-tab {
+    min-height: 40px;
+  }
+
+  .inicio-kpi-card {
+    min-height: 82px !important;
+  }
+
+  .admin-picker-header-panel {
+    border-radius: 18px;
+  }
+
+  .admin-picker-management-group {
+    padding: 13px;
+  }
+
+  .admin-picker-management-card {
+    min-height: 76px;
+  }
+
+  .accesos-create-btn-row {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
+  .accesos-create-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .inicio-summary-grid {
+    gap: 8px !important;
+  }
+
+  .inicio-kpi-card {
+    padding: 11px !important;
+  }
+
+  .report-card-main {
+    gap: 12px;
+  }
+
+  .report-action {
+    min-height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

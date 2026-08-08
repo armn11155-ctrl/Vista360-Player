@@ -701,8 +701,9 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
 
         <div className="accesos-create-btn-row" style={{ margin: "12px 0", display: "flex", gap: 8 }}>
           <button type="button"
-            className="accesos-create-btn"
+            className={`accesos-create-btn is-primary${mostrarFormNuevo ? " is-open" : ""}`}
             onClick={toggleFormNuevo}
+            aria-expanded={mostrarFormNuevo}
             style={{
               flex: 1, background: mostrarFormNuevo ? "#0B1220" : "#0877FF", color: "#fff",
               border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
@@ -713,8 +714,9 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
           </button>
           {esGerente && (
             <button type="button"
-              className="accesos-create-btn"
+              className={`accesos-create-btn${mostrarFormTrabajador ? " is-open" : ""}`}
               onClick={toggleFormTrabajador}
+              aria-expanded={mostrarFormTrabajador}
               style={{
                 flex: 1, background: mostrarFormTrabajador ? "#0B1220" : "#6D28D9", color: "#fff",
                 border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
@@ -729,8 +731,9 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
         {esGerente && (
           <div className="accesos-create-btn-row" style={{ margin: "0 0 12px" }}>
             <button type="button"
-              className="accesos-create-btn"
+              className={`accesos-create-btn${mostrarFormAcceso ? " is-open" : ""}`}
               onClick={toggleFormAcceso}
+              aria-expanded={mostrarFormAcceso}
               style={{
                 width: "100%", background: mostrarFormAcceso ? "#0B1220" : "#0EA5A5", color: "#fff",
                 border: "none", borderRadius: 12, padding: "14px", fontSize: 12,
