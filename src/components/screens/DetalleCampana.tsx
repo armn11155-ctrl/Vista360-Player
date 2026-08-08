@@ -315,7 +315,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
               <div style={{ fontSize: 13, color: "#64748B", display: "flex", flexDirection: "column", gap: 6 }}>
                 <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara?.trim() || "Sin registrar"}</strong></div>
                 <div>Monto: <strong style={{ color: "#0B1220" }}>{typeof contrato.monto === "number" && contrato.monto > 0 ? `$${contrato.monto.toLocaleString()}` : "Sin registrar"}</strong></div>
-                <div>Pago: <strong style={{ color: typeof contrato.pagado === "boolean" ? (contrato.pagado ? "#16A34A" : "#EF4444") : "#0B1220" }}>{typeof contrato.pagado === "boolean" ? (contrato.pagado ? "Pagado" : "Pendiente") : "Sin registrar"}</strong></div>
+                <div>Pago: <strong style={{ color: typeof contrato.monto === "number" && contrato.monto > 0 && typeof contrato.pagado === "boolean" ? (contrato.pagado ? "#16A34A" : "#EF4444") : "#0B1220" }}>{typeof contrato.monto === "number" && contrato.monto > 0 && typeof contrato.pagado === "boolean" ? (contrato.pagado ? "Pagado" : "Pendiente") : "Sin registrar"}</strong></div>
               </div>
 
               {/* Antes acá no había nada de tiempo/avance -- solo se veían
