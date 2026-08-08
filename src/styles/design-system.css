@@ -191,6 +191,7 @@ a {
 
 .section-title,
 .inicio-section-title,
+.reports-history-screen-body .reports-month-header,
 .ev-section-title,
 .quotes-card-heading-copy strong {
   color: var(--v360-text);
@@ -200,7 +201,8 @@ a {
 }
 
 .section-title::before,
-.inicio-section-title::before {
+.inicio-section-title::before,
+.reports-history-screen-body .reports-month-header::before {
   content: "";
   display: inline-block;
   width: 3px;
@@ -209,6 +211,18 @@ a {
   border-radius: var(--v360-radius-pill);
   vertical-align: -.08em;
   background: var(--v360-brand-500);
+}
+
+/* Los meses son secciones reales del historial, no metadatos menores.
+   Comparten la misma jerarquía visual de "Resumen general" y dejan de
+   verse como una etiqueta gris aislada. */
+.reports-history-screen-body .reports-month-header {
+  color: var(--v360-text);
+  font-size: var(--v360-h3-size);
+  font-weight: 760;
+  letter-spacing: -.014em;
+  line-height: 1.2;
+  text-transform: none;
 }
 
 /* Buttons */

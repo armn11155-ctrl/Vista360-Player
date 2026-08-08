@@ -3355,7 +3355,11 @@
      su propio margin-top de 18px y no hace falta tocar nada ahi). */
   @media (max-width: 899px) {
     .inicio-side-col .inicio-evidence-card {
-      margin-bottom: 28px;
+      /* El área principal ya reserva la altura completa del bottom-nav.
+         Los 28px anteriores generaban exactamente 20px de scroll vacío
+         aun cuando todo el Inicio cabía en pantalla. Se conservan 8px de
+         separación visual, sin movimiento vertical fantasma. */
+      margin-bottom: 8px;
     }
   }
 

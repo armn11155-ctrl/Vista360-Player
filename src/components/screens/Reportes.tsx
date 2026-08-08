@@ -295,7 +295,7 @@ function mensajeErrorReporte(error: unknown) {
         totalNotifs={totalNotifs}
       />
 
-      <div className="reports-screen-body">
+      <div className="reports-screen-body reports-history-screen-body">
         {isAdmin && (
           <details className="report-admin-panel">
             <summary className="report-admin-header">
