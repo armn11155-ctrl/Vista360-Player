@@ -214,10 +214,19 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             <button
               type="button"
               onClick={onCambiarCliente}
-              style={{ background:"#0B1220", color:"#fff", border:"none", borderRadius:12, minHeight:64, padding:"12px", textAlign:"left", cursor:"pointer", boxShadow:"0 8px 20px rgba(15,23,42,0.12)" }}
+              className="inicio-current-client"
             >
-              <div style={{ fontSize:12, color:"rgba(255,255,255,0.66)", marginBottom:3 }}>{rolInterno}</div>
-              <div style={{ fontSize:14, fontWeight:800, lineHeight:1.15 }}>Cambiar cliente</div>
+              <span className="inicio-current-client-mark" aria-hidden="true">
+                {(cliente?.empresa || "V").trim().charAt(0).toUpperCase()}
+              </span>
+              <span className="inicio-current-client-copy">
+                <small>Cuenta seleccionada · {rolInterno}</small>
+                <strong>{cliente?.empresa || "Cliente"}</strong>
+              </span>
+              <span className="inicio-current-client-action">
+                Cambiar cliente
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+              </span>
             </button>
           </div>
         )}
@@ -309,7 +318,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
         <div className="inicio-evidence-card" style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"18px", boxShadow:"0 18px 38px rgba(15,23,42,0.07)" }}>
           <div className="inicio-report-title" style={{ fontSize:18, fontWeight:800, color:"#08122B", marginBottom:14 }}>Último reporte</div>
           {informesState.status === "loading" ? (
-            <div style={{ color:"#64748B", fontSize:14, padding:"4px 0" }}>Cargando…</div>
+            <div className="premium-inline-loader inicio-report-loading" role="status">
+              <span aria-hidden="true" />
+              Actualizando información
+            </div>
           ) : ultimoInforme ? (
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
               <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:12, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:10 }}>

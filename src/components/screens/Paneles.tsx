@@ -401,6 +401,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
 
       <div className="content-area">
         <button type="button"
+          className="panel-create-toggle"
           onClick={() => {
             if (mostrarForm) {
               limpiarForm();
@@ -410,11 +411,6 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
               setMostrarForm(true);
             }
             setMensajeOk("");
-          }}
-          style={{
-            width: "100%", margin: "4px 0 12px", background: "#0877FF", color: "#fff",
-            border: "none", borderRadius: 12, padding: "13px", fontSize: 13,
-            fontWeight: 800, cursor: "pointer",
           }}
         >
           {mostrarForm ? "Cerrar formulario" : "+ Crear panel"}
@@ -544,7 +540,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
         )}
 
         {state.status === "loading" && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
+          <div className="premium-inline-loader document-list-loading" role="status"><span aria-hidden="true" />Actualizando inventario</div>
         )}
         {state.status === "error" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center", color: "var(--red)" }}>

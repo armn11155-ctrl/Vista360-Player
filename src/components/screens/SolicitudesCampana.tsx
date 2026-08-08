@@ -252,7 +252,10 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
         )}
 
         {state.status === "loading" && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
+          <div className="premium-loading-panel" role="status">
+            <span className="premium-loading-orbit" aria-hidden="true" />
+            <div><strong>Revisando solicitudes</strong><small>Sincronizando los pedidos pendientes</small></div>
+          </div>
         )}
         {state.status === "error" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center", color: "var(--red)" }}>
@@ -261,8 +264,9 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
         )}
 
         {state.status === "ready" && pendientes.length === 0 && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            No hay solicitudes pendientes.
+          <div className="premium-empty-panel">
+            <span className="premium-empty-check" aria-hidden="true">✓</span>
+            <div><strong>Todo revisado</strong><small>No hay solicitudes de campaña pendientes.</small></div>
           </div>
         )}
 

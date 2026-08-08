@@ -119,7 +119,10 @@ export default function AprobacionesGerente({ onBack }: Props) {
         )}
 
         {estado.status === "loading" && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
+          <div className="premium-loading-panel" role="status">
+            <span className="premium-loading-orbit" aria-hidden="true" />
+            <div><strong>Revisando aprobaciones</strong><small>Comprobando los pedidos de tu equipo</small></div>
+          </div>
         )}
         {estado.status === "error" && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center", color: "var(--red)" }}>
@@ -128,8 +131,9 @@ export default function AprobacionesGerente({ onBack }: Props) {
         )}
 
         {estado.status === "ready" && pendientes.length === 0 && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            No hay solicitudes pendientes.
+          <div className="premium-empty-panel">
+            <span className="premium-empty-check" aria-hidden="true">✓</span>
+            <div><strong>Todo al día</strong><small>No hay aprobaciones pendientes.</small></div>
           </div>
         )}
 

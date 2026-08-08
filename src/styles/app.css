@@ -8743,3 +8743,353 @@ details.report-admin-panel {
   .admin-picker-tile-avatar img,
   .admin-picker-management-card { transition: none; animation: none; }
 }
+
+/* ================================================================
+   COHERENCIA PREMIUM — pasada visual agosto 2026
+   Solo cambia presentación. No agrega consultas, listeners ni datos.
+   ================================================================ */
+
+/* Esperas discretas: mantienen una superficie real visible en vez de
+   dejar el centro de la pantalla en blanco con un texto aislado. */
+.premium-inline-loader {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #64748B;
+  font-size: 12px;
+  font-weight: 750;
+}
+.premium-inline-loader > span {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: #0877FF;
+  box-shadow: 0 0 0 5px rgba(8,119,255,.10);
+  animation: premium-loader-pulse 1.15s ease-in-out infinite;
+}
+.document-list-loading {
+  width: fit-content;
+  margin: 22px auto 4px;
+  padding: 7px 13px;
+  border: 1px solid #E2E8F0;
+  border-radius: 999px;
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 10px 24px -20px rgba(15,23,42,.45);
+}
+.premium-loading-panel,
+.premium-empty-panel {
+  width: min(520px, 100%);
+  min-height: 82px;
+  margin: 18px auto 0;
+  padding: 16px 18px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #DFE7F1;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(247,250,254,.96));
+  box-shadow: 0 20px 42px -32px rgba(15,23,42,.42);
+}
+.premium-loading-panel > div,
+.premium-empty-panel > div { min-width: 0; display: grid; gap: 4px; }
+.premium-loading-panel strong,
+.premium-empty-panel strong { color: #0B1220; font-size: 13px; font-weight: 850; }
+.premium-loading-panel small,
+.premium-empty-panel small { color: #718096; font-size: 11px; line-height: 1.35; font-weight: 650; }
+.premium-loading-orbit,
+.premium-empty-check {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+.premium-loading-orbit {
+  border: 2px solid #DCEAFF;
+  border-top-color: #0877FF;
+  background: #F5F9FF;
+  animation: spin .8s linear infinite;
+}
+.premium-empty-check {
+  color: #16A34A;
+  background: #ECFDF3;
+  border: 1px solid #D1FAE5;
+  font-size: 17px;
+  font-weight: 900;
+}
+.premium-empty-clock { color: #0877FF; background: #EEF5FF; border-color: #D8E8FF; }
+@keyframes premium-loader-pulse {
+  0%, 100% { opacity: .45; transform: scale(.88); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Inicio: el contexto principal es la empresa que se está gestionando,
+   no el rol del usuario interno. */
+.inicio-current-client {
+  width: 100%;
+  min-height: 70px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(126,170,232,.16);
+  border-radius: 16px;
+  color: #FFFFFF;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(8,119,255,.2), transparent 34%),
+    linear-gradient(145deg, #111B2D, #07101E);
+  box-shadow: 0 18px 38px -25px rgba(2,6,23,.62), inset 0 1px 0 rgba(255,255,255,.06);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.inicio-current-client-mark {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 13px;
+  color: #CFE3FF;
+  background: rgba(8,119,255,.15);
+  font-size: 17px;
+  font-weight: 900;
+}
+.inicio-current-client-copy { min-width: 0; display: grid; gap: 3px; }
+.inicio-current-client-copy small {
+  overflow: hidden;
+  color: rgba(255,255,255,.52);
+  font-size: 10px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inicio-current-client-copy strong {
+  overflow: hidden;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 880;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.inicio-current-client-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #9DC7FF;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.inicio-report-loading { padding: 4px 0; }
+
+/* Nueva campaña: terminología, controles y jerarquía compartidos con
+   Cotizaciones, sin tocar la selección ni la creación del contrato. */
+.new-campaign-admin-card {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid #E0E7F0;
+  border-radius: 20px;
+  background: #FFFFFF;
+  box-shadow: 0 22px 48px -35px rgba(15,23,42,.42);
+}
+.new-campaign-admin-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--premium-rule-gradient);
+}
+.new-campaign-admin-kicker {
+  margin-bottom: 5px;
+  color: #0877FF;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.new-campaign-admin-title { color: #0B1220; font-size: 16px; font-weight: 880; }
+.new-campaign-admin-sub { margin: 5px 0 20px; color: #718096; font-size: 11px; line-height: 1.4; }
+.new-campaign-admin-hint {
+  margin-bottom: 9px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #3C5575;
+  background: #F3F7FC;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.new-campaign-panel-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #DDE5EF;
+  border-radius: 14px;
+  background: #FBFCFE;
+}
+.new-campaign-panels-loading { padding: 10px 14px; }
+
+/* Perfil: las herramientas técnicas existen, pero ya no dominan la
+   primera impresión de la cuenta. */
+.admin-maintenance-panel {
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid #E0E7F0;
+  border-radius: 16px;
+  background: #FFFFFF;
+}
+.admin-maintenance-panel > summary {
+  min-height: 66px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 11px;
+  list-style: none;
+  cursor: pointer;
+}
+.admin-maintenance-panel > summary::-webkit-details-marker { display: none; }
+.admin-maintenance-panel > summary > span:nth-child(2) { min-width: 0; display: grid; gap: 3px; }
+.admin-maintenance-panel > summary strong { color: #0B1220; font-size: 13px; font-weight: 850; }
+.admin-maintenance-panel > summary small { color: #718096; font-size: 10.5px; line-height: 1.3; font-weight: 650; }
+.admin-maintenance-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #526A8C;
+  background: #F1F5F9;
+}
+.admin-maintenance-chevron { color: #94A3B8; transition: transform .16s ease; }
+.admin-maintenance-panel[open] .admin-maintenance-chevron { transform: rotate(180deg); }
+.admin-maintenance-panel[open] > summary { border-bottom: 1px solid #E7EDF5; }
+.admin-maintenance-card {
+  margin: 10px !important;
+  border: 1px solid #E7EDF5 !important;
+  box-shadow: none !important;
+}
+
+/* Estado vacío de notificaciones: útil y compacto, sin ocupar una
+   página completa con aire sin intención. */
+.notifications-empty-premium {
+  width: min(430px, 100%);
+  min-height: 210px;
+  margin: 24px auto 0;
+  padding: 30px 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid #E0E8F2;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(8,119,255,.10), transparent 42%),
+    #FFFFFF;
+  box-shadow: 0 24px 52px -40px rgba(15,23,42,.45);
+}
+.notifications-empty-icon {
+  width: 62px;
+  height: 62px;
+  margin-bottom: 16px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #D9E9FF;
+  border-radius: 20px;
+  background: #EEF5FF;
+  box-shadow: 0 12px 24px -18px rgba(8,119,255,.55);
+}
+.notifications-empty-premium > strong { color: #0D1629; font-size: 15px; font-weight: 880; }
+.notifications-empty-premium > span { max-width: 300px; margin-top: 7px; color: #718096; font-size: 12px; line-height: 1.5; }
+
+.panel-create-toggle {
+  width: 100%;
+  min-height: 44px;
+  margin: 4px 0 12px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  color: #FFFFFF;
+  background: #0877FF;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 12px 24px -18px rgba(8,119,255,.8);
+}
+
+/* Documentos: el estado deja de robar una columna completa en móvil,
+   por lo que fechas y nombres conservan una composición más limpia. */
+@media (max-width: 430px) {
+  .report-card-main,
+  .factura-card .report-card-main {
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+    gap: 15px !important;
+  }
+  .report-ready-badge {
+    position: absolute;
+    top: 18px;
+    right: 52px;
+    margin: 0;
+    min-width: 54px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .report-card-copy { padding-right: 2px; }
+  .report-title { font-size: 21px !important; line-height: 1.02; text-wrap: balance; }
+  .report-card-menu { top: 18px; right: 14px; }
+  .inicio-current-client { grid-template-columns: 40px minmax(0, 1fr); }
+  .inicio-current-client-mark { width: 40px; height: 40px; }
+  .inicio-current-client-action {
+    grid-column: 2;
+    justify-self: start;
+    margin-top: -2px;
+  }
+}
+
+/* En tablet/laptop pequeña se conservan las tres áreas del Centro de
+   gestión en vez de aplanarlas en una lista genérica. */
+@media (min-width: 650px) and (max-width: 899px) {
+  .admin-picker-management-screen { padding-left: 28px; padding-right: 28px; }
+  .admin-picker-management-head { margin-left: -28px; margin-right: -28px; padding-left: 28px; padding-right: 28px; }
+  .admin-picker-management-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .admin-picker-management-group { padding: 14px; }
+  .admin-picker-management-group-cards { grid-template-columns: 1fr; }
+}
+
+@media (min-width: 900px) {
+  .admin-picker-grid {
+    grid-template-columns: repeat(auto-fit, minmax(136px, 156px));
+    justify-content: center;
+  }
+  .inicio-admin-actions { width: min(1240px, 100%); margin-left: auto; margin-right: auto; }
+  .inicio-current-client { min-height: 74px; }
+  .panel-create-toggle {
+    width: auto;
+    min-width: 150px;
+    display: block;
+    margin-left: auto;
+  }
+  .new-campaign-admin-card { width: min(760px, 100%); margin: 0 auto; padding: 26px; }
+}
+
+/* La leyenda sigue siendo legible, pero tapa menos mapa y marcadores. */
+@media (max-width: 899px) {
+  .coverage-map-legend { padding: 5px; gap: 4px; border-radius: 15px; }
+  .coverage-map-legend > div { padding: 5px 4px; }
+  .coverage-map-interaction-hint { transition: opacity .18s ease, transform .18s ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-inline-loader > span,
+  .premium-loading-orbit { animation: none; }
+  .admin-maintenance-chevron { transition: none; }
+}

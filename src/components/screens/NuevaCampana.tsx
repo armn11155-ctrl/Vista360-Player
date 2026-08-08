@@ -220,7 +220,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           <div className="back-btn" onClick={onBack}>
             <BackChevron />
           </div>
-          <div className="simple-title">Nuevo contrato</div>
+          <div className="simple-title">Nueva campaña</div>
           <div style={{ width: 32 }} />
         </div>
 
@@ -230,10 +230,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               que le corresponde en algún navegador, que se recorte
               contra el borde redondeado en vez de salirse visualmente
               de la tarjeta blanca. */}
-          <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>
-              Crear campaña para este cliente
-            </div>
+          <div className="new-campaign-admin-card">
+            <div className="new-campaign-admin-kicker">Planificación de medios</div>
+            <div className="new-campaign-admin-title">Crear campaña para este cliente</div>
+            <div className="new-campaign-admin-sub">Define las ubicaciones y el periodo de exhibición.</div>
 
             {errorAdmin && (
               <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 12, marginBottom: 16 }}>
@@ -250,13 +250,12 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
               />
             </Field>
             <Field label={`Paneles${panelIds.length > 0 ? ` (${panelIds.length} elegido${panelIds.length > 1 ? "s" : ""})` : ""}`}>
-              <div style={{ fontSize: 11, color: "#64748B", marginBottom: 8, lineHeight: 1.4 }}>
-                Elige uno o varios paneles -- si eliges más de uno, esta campaña queda como una
-                sola con todos esos paneles (útil cuando el cliente cotiza 2+ ubicaciones juntas).
+              <div className="new-campaign-admin-hint">
+                Puedes agrupar varias ubicaciones dentro de una sola campaña.
               </div>
-              <div style={{ border: "1.5px solid #E5E7EB", borderRadius: 12, maxHeight: 220, overflowY: "auto", background: "#fff" }}>
+              <div className="new-campaign-panel-list">
                 {panelesState.status === "loading" && (
-                  <div style={{ padding: "12px 14px", fontSize: 13, color: "#64748B" }}>Cargando paneles…</div>
+                  <div className="premium-inline-loader new-campaign-panels-loading" role="status"><span aria-hidden="true" />Actualizando paneles</div>
                 )}
                 {panelesState.status === "ready" && paneles.length === 0 && (
                   <div style={{ padding: "12px 14px", fontSize: 13, color: "#64748B" }}>No hay paneles registrados.</div>

@@ -468,7 +468,7 @@ function mensajeErrorReporte(error: unknown) {
         )}
 
         {hayContratos && informesState.status === "loading" && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Cargando…</div>
+          <div className="premium-inline-loader document-list-loading" role="status"><span aria-hidden="true" />Actualizando reportes</div>
         )}
 
         {hayContratos && informesState.status === "error" && (

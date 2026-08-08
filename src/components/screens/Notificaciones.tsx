@@ -139,24 +139,22 @@ export default function Notificaciones({ clienteId, contratos, uid, onBack }: Pr
         )}
 
         {state.status === "loading" && (
-          <div className="state-screen" style={{ paddingTop: 40 }}>
-            <div className="state-title">Cargando…</div>
+          <div className="premium-loading-panel" role="status">
+            <span className="premium-loading-orbit" aria-hidden="true" />
+            <div><strong>Actualizando notificaciones</strong><small>Comprobando si hay novedades</small></div>
           </div>
         )}
 
         {state.status === "ready" && state.notifs.length === 0 && (
-          <div style={{ textAlign: "center", paddingTop: 56 }}>
-            <div style={{
-              width: 64, height: 64, borderRadius: "50%", margin: "0 auto 16px",
-              background: "#EEF4FF", display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
+          <div className="notifications-empty-premium">
+            <div className="notifications-empty-icon">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
             </div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "#0D1629" }}>Todo al día</div>
-            <div style={{ fontSize: 13, color: "#64748B", marginTop: 6 }}>No tienes notificaciones nuevas</div>
+            <strong>Todo al día</strong>
+            <span>No tienes notificaciones nuevas. Te avisaremos cuando una campaña o un documento necesite atención.</span>
           </div>
         )}
 

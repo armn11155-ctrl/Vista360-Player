@@ -273,7 +273,10 @@ export default function Ocupacion({ onBack }: Props) {
 
       <div className="content-area" style={{ paddingBottom: 28 }}>
         {state.status === "loading" && (
-          <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>Calculando ocupación…</div>
+          <div className="premium-loading-panel" role="status">
+            <span className="premium-loading-orbit" aria-hidden="true" />
+            <div><strong>Preparando ocupación</strong><small>Recuperando el último estado del inventario</small></div>
+          </div>
         )}
 
         {state.status === "error" && (

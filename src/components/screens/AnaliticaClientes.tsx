@@ -86,8 +86,9 @@ export default function AnaliticaClientes({ onBack }: Props) {
         </div>
 
         {state.status === "loading" && (
-          <div className="state-screen" style={{ paddingTop: 40 }}>
-            <div className="state-title">Cargando…</div>
+          <div className="premium-loading-panel" role="status">
+            <span className="premium-loading-orbit" aria-hidden="true" />
+            <div><strong>Preparando actividad</strong><small>Consolidando los accesos recientes</small></div>
           </div>
         )}
 
@@ -98,10 +99,9 @@ export default function AnaliticaClientes({ onBack }: Props) {
         )}
 
         {state.status === "ready" && state.accesos.length === 0 && (
-          <div className="card">
-            <div style={{ fontSize: 13, color: "#64748B" }}>
-              Todavía no hay clientes con cuenta en el portal.
-            </div>
+          <div className="premium-empty-panel">
+            <span className="premium-empty-check premium-empty-clock" aria-hidden="true">↗</span>
+            <div><strong>Sin actividad registrada</strong><small>Todavía no hay clientes con accesos al portal.</small></div>
           </div>
         )}
 
