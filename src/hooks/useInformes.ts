@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import { cloudFunctions } from "../config/firebase";
+import { cloudFunctions, registrarLimpiezaDeSesion } from "../config/firebase";
 import type { InformeCliente } from "../types";
 import { invalidarResumenInformes } from "./useResumenInformes";
 
@@ -13,10 +13,11 @@ export type UseInformesResult = InformesState & { recargar: () => void };
 
 type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
 
-// Cachea el ÚLTIMO listado bueno por cliente, en memoria (se pierde al
-// recargar la página, a propósito -- las URLs firmadas que trae cada
-// informe viven 6h, no hace falta persistirlo en localStorage como
-// useSignedUrls). Se pidió que Reportes sea más rápido: antes, CADA
+// Cachea el ÚLTIMO listado bueno por cliente en memoria y localStorage
+// durante las mismas 6h que viven sus URLs firmadas. Así cerrar o reiniciar
+// la PWA no obliga a volver a mirar un loader; el logout borra esta copia
+// privada junto con el resto de la sesión. Se pidió que Reportes sea más
+// rápido: antes, CADA
 // vez que la pantalla se abría (es lazy -- se desmonta al salir, se
 // vuelve a montar de cero al volver a entrar) tocaba esperar de nuevo
 // a la Cloud Function (que lista objetos en R2 y firma URLs, nada
@@ -30,8 +31,52 @@ type ListarReportesResponse = { ok: boolean; informes: InformeCliente[] };
 // se actualiza solo, sin que la persona tenga que esperar mirando un
 // loader para eso.
 const VIGENCIA_LISTADO_MS = 60_000;
-const CACHE = new Map<string, { informes: InformeCliente[]; actualizadoEn: number }>();
+const VIGENCIA_PERSISTIDA_MS = 6 * 60 * 60_000;
+const STORAGE_KEY = "vista360:informes:v1";
+
+function cargarCacheInicial(): Map<string, { informes: InformeCliente[]; actualizadoEn: number }> {
+  const cache = new Map<string, { informes: InformeCliente[]; actualizadoEn: number }>();
+  try {
+    const crudo = localStorage.getItem(STORAGE_KEY);
+    if (!crudo) return cache;
+    const datos = JSON.parse(crudo) as Record<string, { informes?: InformeCliente[]; actualizadoEn?: number }>;
+    const ahora = Date.now();
+    Object.entries(datos).forEach(([clienteId, valor]) => {
+      if (
+        Array.isArray(valor?.informes) &&
+        typeof valor.actualizadoEn === "number" &&
+        ahora - valor.actualizadoEn < VIGENCIA_PERSISTIDA_MS
+      ) {
+        cache.set(clienteId, { informes: valor.informes, actualizadoEn: valor.actualizadoEn });
+      }
+    });
+  } catch {
+    // Modo privado, cuota llena o JSON antiguo: se consulta normalmente.
+  }
+  return cache;
+}
+
+const CACHE = cargarCacheInicial();
 const PETICIONES = new Map<string, Promise<InformeCliente[]>>();
+
+function guardarCache() {
+  try {
+    const serializable = Object.fromEntries(CACHE.entries());
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serializable));
+  } catch {
+    // La caché en memoria sigue funcionando aunque no se pueda persistir.
+  }
+}
+
+registrarLimpiezaDeSesion(() => {
+  CACHE.clear();
+  PETICIONES.clear();
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage puede estar bloqueado; la memoria sí quedó limpia.
+  }
+});
 
 function listar(clienteId: string, forzar: boolean): Promise<InformeCliente[]> {
   const cacheado = CACHE.get(clienteId);
@@ -49,6 +94,7 @@ function listar(clienteId: string, forzar: boolean): Promise<InformeCliente[]> {
   const peticion = listarReportesCliente({ clienteId })
     .then((res) => {
       CACHE.set(clienteId, { informes: res.data.informes, actualizadoEn: Date.now() });
+      guardarCache();
       return res.data.informes;
     })
     .finally(() => PETICIONES.delete(clienteId));

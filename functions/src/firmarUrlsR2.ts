@@ -11,6 +11,10 @@ const MAX_KEYS_POR_LLAMADA = 60;
 // 6 horas: suficiente para que el cliente navegue toda la sesión sin
 // re-firmar a cada rato, pero sin dejar links "eternos" dando vueltas.
 const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
+// Los avatares son logos/fotos de perfil que la propia app muestra de
+// forma cruzada y cambian muy poco. Una firma de 7 días evita despertar
+// una Function cada pocas horas solo para volver a pintar la misma foto.
+const EXPIRACION_AVATAR_SEGUNDOS = 7 * 24 * 60 * 60;
 
 /**
  * Firma URLs de LECTURA (GET) para archivos privados en R2. Quien pide
@@ -161,10 +165,16 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   const permitidas = await keysPermitidas();
 
   const firmadas = await Promise.all(
-    permitidas.map(async (key) => ({
-      key,
-      url: await firmarLecturaR2(key, EXPIRACION_SEGUNDOS),
-    }))
+    permitidas.map(async (key) => {
+      const expiraEnSegundos = key.startsWith("vista360/avatares/")
+        ? EXPIRACION_AVATAR_SEGUNDOS
+        : EXPIRACION_SEGUNDOS;
+      return {
+        key,
+        url: await firmarLecturaR2(key, expiraEnSegundos),
+        expiraEn: Date.now() + expiraEnSegundos * 1000,
+      };
+    })
   );
 
   // Las keys que no pasaron el filtro simplemente no vuelven en la

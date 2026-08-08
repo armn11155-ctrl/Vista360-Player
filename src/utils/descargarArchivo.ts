@@ -1,3 +1,5 @@
+import { registrarLimpiezaDeSesion } from "../config/firebase";
+
 /**
  * Descarga un archivo de verdad, también en el móvil.
  *
@@ -42,6 +44,96 @@
 /** Tope de espera. Un PDF de reporte pesa ~150 KB; si en 20 s no llegó,
  *  es mejor abrirlo que dejar a la persona mirando un botón parado. */
 const ESPERA_MAXIMA_MS = 20_000;
+
+// Un mismo PDF se usa para Ver, Descargar, Correo y WhatsApp. Antes cada
+// camino hacía su propio fetch aunque la tarjeta ya lo hubiera precargado.
+// Esta caché pequeña comparte tanto la petición en curso como el Blob final:
+// el primer uso paga la red y los siguientes son locales. Se limita por
+// cantidad, peso y tiempo para no convertir el historial en memoria retenida.
+const CACHE_BLOB_TTL_MS = 10 * 60_000;
+const CACHE_BLOB_MAX_ITEMS = 8;
+const CACHE_BLOB_MAX_BYTES = 24 * 1024 * 1024;
+const CACHE_BLOBS = new Map<string, { blob: Blob; guardadoEn: number }>();
+const PETICIONES_BLOB = new Map<string, Promise<Blob>>();
+let bytesEnCache = 0;
+
+/** Libera de inmediato los documentos privados retenidos por esta sesión. */
+export function limpiarCacheArchivos(): void {
+  CACHE_BLOBS.clear();
+  PETICIONES_BLOB.clear();
+  bytesEnCache = 0;
+}
+
+registrarLimpiezaDeSesion(limpiarCacheArchivos);
+
+function guardarBlob(url: string, blob: Blob): Blob {
+  const anterior = CACHE_BLOBS.get(url);
+  if (anterior) bytesEnCache -= anterior.blob.size;
+  CACHE_BLOBS.delete(url);
+  CACHE_BLOBS.set(url, { blob, guardadoEn: Date.now() });
+  bytesEnCache += blob.size;
+
+  while (CACHE_BLOBS.size > CACHE_BLOB_MAX_ITEMS || bytesEnCache > CACHE_BLOB_MAX_BYTES) {
+    const masAntiguo = CACHE_BLOBS.entries().next().value as
+      | [string, { blob: Blob; guardadoEn: number }]
+      | undefined;
+    if (!masAntiguo) break;
+    CACHE_BLOBS.delete(masAntiguo[0]);
+    bytesEnCache -= masAntiguo[1].blob.size;
+  }
+  return blob;
+}
+
+function esperarConSignal(promesa: Promise<Blob>, signal?: AbortSignal): Promise<Blob> {
+  if (!signal) return promesa;
+  if (signal.aborted) return Promise.reject(new DOMException("Aborted", "AbortError"));
+  return new Promise((resolve, reject) => {
+    const abortar = () => reject(new DOMException("Aborted", "AbortError"));
+    signal.addEventListener("abort", abortar, { once: true });
+    promesa.then(
+      (blob) => {
+        signal.removeEventListener("abort", abortar);
+        resolve(blob);
+      },
+      (error) => {
+        signal.removeEventListener("abort", abortar);
+        reject(error);
+      },
+    );
+  });
+}
+
+/** Obtiene el archivo una sola vez aunque varias acciones lo pidan a la vez. */
+export function obtenerBlobArchivo(url: string, signal?: AbortSignal): Promise<Blob> {
+  const cacheado = CACHE_BLOBS.get(url);
+  if (cacheado && Date.now() - cacheado.guardadoEn < CACHE_BLOB_TTL_MS) {
+    // Renovar el orden LRU sin duplicar bytes.
+    CACHE_BLOBS.delete(url);
+    CACHE_BLOBS.set(url, cacheado);
+    return esperarConSignal(Promise.resolve(cacheado.blob), signal);
+  }
+  if (cacheado) {
+    CACHE_BLOBS.delete(url);
+    bytesEnCache -= cacheado.blob.size;
+  }
+
+  let peticion = PETICIONES_BLOB.get(url);
+  if (!peticion) {
+    peticion = (async () => {
+      const corte = new AbortController();
+      const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA_MS);
+      try {
+        const respuesta = await fetch(url, { signal: corte.signal });
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        return guardarBlob(url, await respuesta.blob());
+      } finally {
+        clearTimeout(reloj);
+      }
+    })().finally(() => PETICIONES_BLOB.delete(url));
+    PETICIONES_BLOB.set(url, peticion);
+  }
+  return esperarConSignal(peticion, signal);
+}
 
 function abrirComoAntes(url: string): void {
   window.open(url, "_blank", "noopener");
@@ -101,12 +193,8 @@ function puedeUsarLaHojaDelSistema(archivo: File): boolean {
 export async function descargarArchivo(url: string, nombre: string): Promise<void> {
   if (!url) return;
 
-  const corte = new AbortController();
-  const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA_MS);
   try {
-    const respuesta = await fetch(url, { signal: corte.signal });
-    if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-    const blob = await respuesta.blob();
+    const blob = await obtenerBlobArchivo(url);
 
     // Nombre limpio antes de nada: los caracteres prohibidos rompen
     // tanto el `download` como el nombre en la hoja de compartir.
@@ -142,8 +230,6 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
   } catch (error) {
     console.warn("No se pudo descargar el archivo; se abre en una pestaña.", error);
     abrirComoAntes(url);
-  } finally {
-    clearTimeout(reloj);
   }
 }
 
@@ -264,9 +350,7 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
       );
 
       try {
-        const respuesta = await fetch(url);
-        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-        const blob = await respuesta.blob();
+        const blob = await obtenerBlobArchivo(url);
         const pdf = blob.type ? blob : new Blob([blob], { type: "application/pdf" });
         document.title = (_nombre || "Documento").replace(/\.pdf$/i, "");
         window.location.href = URL.createObjectURL(pdf);
@@ -335,12 +419,8 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     }
   }
 
-  const corte = new AbortController();
-  const reloj = setTimeout(() => corte.abort(), ESPERA_MAXIMA_MS);
   try {
-    const respuesta = await fetch(url, { signal: corte.signal });
-    if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
-    const blob = await respuesta.blob();
+    const blob = await obtenerBlobArchivo(url);
     const urlLocal = URL.createObjectURL(
       blob.type ? blob : new Blob([blob], { type: "application/pdf" })
     );
@@ -364,7 +444,5 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
     if (ventana && !ventana.closed) ventana.location.href = url;
     else abrirComoAntes(url);
-  } finally {
-    clearTimeout(reloj);
   }
 }

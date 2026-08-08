@@ -1,5 +1,12 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { descargarArchivo, verArchivo } from "./descargarArchivo";
+import {
+  descargarArchivo,
+  limpiarCacheArchivos,
+  obtenerBlobArchivo,
+  verArchivo,
+} from "./descargarArchivo";
+
+beforeEach(() => limpiarCacheArchivos());
 
 /**
  * El botón "Descargar" no descargaba en el móvil.
@@ -79,6 +86,17 @@ describe("descarga de archivos", () => {
     const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
     expect(fuente).toContain("AbortController");
     expect(fuente).toMatch(/ESPERA_MAXIMA_MS = [\d_]+/);
+  });
+
+  it("comparte una sola descarga entre la precarga, Ver y Descargar", async () => {
+    const fetchMock = vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const url = "https://x/reporte-unico.pdf";
+
+    await Promise.all([obtenerBlobArchivo(url), obtenerBlobArchivo(url)]);
+    await descargarArchivo(url, "Reporte.pdf");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -249,7 +267,9 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
     const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
     const ramaEscritorio = cuerpo.slice(cuerpo.indexOf('const ventana = window.open("", "_blank")'));
-    expect(ramaEscritorio.indexOf("window.open")).toBeLessThan(ramaEscritorio.indexOf("await fetch"));
+    expect(ramaEscritorio.indexOf("window.open")).toBeLessThan(
+      ramaEscritorio.indexOf("await obtenerBlobArchivo"),
+    );
   });
 
   it("limpia la pantalla de carga al volver del PDF en la PWA", () => {

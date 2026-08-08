@@ -1,3 +1,5 @@
+import { obtenerBlobArchivo } from "./descargarArchivo";
+
 /**
  * Comparte un archivo de verdad (adjunto, no un link) usando el panel
  * nativo de "compartir" del sistema operativo (Web Share API con
@@ -62,11 +64,7 @@ export async function precargarArchivoR2(
 ): Promise<ArchivoPrecargado> {
   if (!urlFirmada) return { archivo: null, error: "No hay URL del archivo todavía." };
   try {
-    const respuesta = await fetch(urlFirmada, { signal });
-    if (!respuesta.ok) {
-      return { archivo: null, error: `El servidor respondió ${respuesta.status} al pedir el archivo.` };
-    }
-    const blob = await respuesta.blob();
+    const blob = await obtenerBlobArchivo(urlFirmada, signal);
     return { archivo: new File([blob], nombreArchivo, { type: "application/pdf" }) };
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {

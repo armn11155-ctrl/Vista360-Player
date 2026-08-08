@@ -267,11 +267,8 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     }
   }
 
-  /** El admin pidió que un solo botón haga las dos cosas: descargar el
-   *  PDF Y también llevarlo a la página donde se ve en el navegador.
-   *  Son dos URLs firmadas de la misma key -- una pensada para verse
-   *  (url) y otra que fuerza la descarga con Content-Disposition:
-   *  attachment (informe.urlDescarga, ver listarReportesCliente.ts). */
+  /** Ver y Descargar reutilizan el mismo Blob ya precargado. Mantener dos
+   *  botones reales evita bloqueos de ventanas en navegadores móviles. */
   // Intentar disparar dos acciones (ver + descargar) desde un solo
   // clic con JavaScript lo terminan bloqueando los navegadores de
   // celular de una forma u otra (window.open programado, o un segundo
@@ -405,10 +402,12 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           onClick={() => {
             marcarVisto();
             setDescargando(true);
-            void descargarArchivo(
-              informe.urlDescarga || url,
-              nombreArchivoReporte(informe.mesLabel)
-            ).finally(() => setDescargando(false));
+            // La descarga ya crea un Blob local y le pone el nombre
+            // correcto. Usar la misma URL de Ver permite reutilizar el
+            // PDF precargado en vez de bajar una segunda copia desde una
+            // URL distinta solo por Content-Disposition.
+            void descargarArchivo(url, nombreArchivoReporte(informe.mesLabel))
+              .finally(() => setDescargando(false));
           }}
         >
           {descargando ? "Descargando…" : "Descargar"}

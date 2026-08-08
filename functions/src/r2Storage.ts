@@ -152,6 +152,10 @@ export async function firmarLecturaR2(key: string, expiresInSeconds = 21600, nom
   const command = new GetObjectCommand({
     Bucket: r2Bucket(),
     Key: key,
+    // La URL ya es privada y expira. Permitir que el navegador conserve
+    // SU respuesta durante el mismo plazo evita volver a transferir la
+    // foto o el PDF al cambiar de pantalla o reabrir la PWA.
+    ResponseCacheControl: `private, max-age=${Math.max(60, Math.min(expiresInSeconds, 604800))}, immutable`,
     ...(nombreLimpio ? { ResponseContentDisposition: `attachment; filename="${nombreLimpio}"` } : {}),
   });
   return getSignedUrl(client, command, { expiresIn: expiresInSeconds });

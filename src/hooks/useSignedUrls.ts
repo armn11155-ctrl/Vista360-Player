@@ -72,7 +72,10 @@ function guardarCache() {
 async function firmar(keys: string[]): Promise<Record<string, string>> {
   const generacionAlEmpezar = generacionDeSesion;
   const functions = getFunctions(app ?? undefined);
-  const firmarUrlsR2 = httpsCallable<{ keys: string[] }, { urls: { key: string; url: string }[] }>(
+  const firmarUrlsR2 = httpsCallable<
+    { keys: string[] },
+    { urls: { key: string; url: string; expiraEn?: number }[] }
+  >(
     functions,
     "firmarUrlsR2"
   );
@@ -83,9 +86,14 @@ async function firmar(keys: string[]): Promise<Record<string, string>> {
     // Si la sesión terminó mientras la Function respondía, no volver a
     // guardar en memoria/localStorage URLs privadas de la sesión anterior.
     if (generacionAlEmpezar !== generacionDeSesion) return {};
-    data.urls.forEach(({ key, url }) => {
+    data.urls.forEach(({ key, url, expiraEn }) => {
       resultado[key] = url;
-      CACHE.set(key, { url, expiraEn: Date.now() + DURACION_MS });
+      CACHE.set(key, {
+        url,
+        expiraEn: typeof expiraEn === "number" && expiraEn > Date.now()
+          ? expiraEn
+          : Date.now() + DURACION_MS,
+      });
     });
   }
   guardarCache();
