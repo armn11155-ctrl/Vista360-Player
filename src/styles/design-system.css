@@ -435,6 +435,13 @@ a {
   background-image: linear-gradient(180deg, #edf2f8 0%, var(--v360-canvas) 38%);
 }
 
+/* El logotipo blanco independiente se perdía sobre la fotografía clara del
+   Centro de gestión. La marca ya está presente en el selector y la cabecera
+   del centro funciona mejor como una única pieza visual. */
+.admin-picker-management-logo {
+  display: none;
+}
+
 .admin-picker-management-header {
   border-radius: var(--v360-radius-card);
 }
@@ -591,6 +598,13 @@ a {
   border-radius: var(--v360-radius-panel);
 }
 
+/* Recorta también la regla azul animada a las curvas del hero. Sin este
+   recorte, los pseudo-elementos ::before/::after seguían rectos por fuera
+   de las esquinas inferiores en la versión móvil. */
+.profile-top {
+  overflow: hidden;
+}
+
 .profile-row,
 .profile-metric-row {
   border-color: var(--v360-border);
@@ -654,11 +668,43 @@ a {
 .quotes-form-card,
 .quotes-list-card {
   border-color: var(--v360-border);
+  color: var(--v360-text);
+}
+
+.quotes-card-heading h2,
+.quotes-list-head h2,
+.quotes-period-summary strong,
+.quote-row-main,
+.quote-row-main > strong,
+.quote-row-main > b,
+.quotes-empty b {
+  color: var(--v360-text);
+}
+
+.quotes-optional-label,
+.quotes-period-summary span,
+.quote-row-main > small,
+.quotes-empty {
+  color: var(--v360-text-tertiary);
+}
+
+.quotes-check span {
+  color: var(--v360-text-secondary);
+}
+
+.quotes-period-summary {
+  border-color: rgba(22, 119, 255, .16);
+  background: var(--v360-brand-soft);
+}
+
+.quotes-list-head {
+  border-bottom-color: var(--v360-border);
 }
 
 .quote-row {
   border-color: var(--v360-border);
   border-radius: var(--v360-radius-control);
+  background: var(--v360-surface-subtle);
   transition: border-color var(--v360-motion-fast) ease, background var(--v360-motion-fast) ease;
 }
 
@@ -671,6 +717,21 @@ a {
 
 /* Desktop density and hierarchy */
 @media (min-width: 900px) {
+  /* En laptop el selector debe empezar cerca de los controles superiores;
+     72px dejaban el conjunto visual innecesariamente hundido. */
+  .admin-picker-header {
+    margin-top: 28px;
+    margin-bottom: 16px;
+  }
+
+  /* La fila de acciones pertenece a la misma columna centrada que filtros,
+     buscador y tarjetas de usuario. */
+  .accesos-screen .accesos-create-btn-row {
+    width: min(1120px, 100%);
+    margin: 12px auto !important;
+    justify-content: center;
+  }
+
   .admin-tool-screen .detail-header,
   .admin-tool-screen > .content-area,
   .content-area,
@@ -694,6 +755,15 @@ a {
     flex: 0 0 auto !important;
     width: auto !important;
     padding: 0 20px !important;
+  }
+
+  /* En escritorio una acción de creación no debe convertirse en una barra
+     de 1120px. Conserva presencia, pero queda compacta y alineada con la
+     columna operativa. */
+  .panel-create-toggle {
+    width: fit-content;
+    min-width: 150px;
+    margin-left: auto;
   }
 
   .sidebar-panel {
