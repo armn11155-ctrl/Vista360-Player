@@ -1374,12 +1374,6 @@
   .reports-header .ev-logo-row {
     margin-bottom: 0;
   }
-  .reports-header-title {
-    color: #FFFFFF;
-    font-size: 16px;
-    font-weight: 900;
-    line-height: 1.1;
-  }
   .ev-logo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .ev-filter-row {
     display: flex;
@@ -6298,15 +6292,101 @@
   .coverage-screen {
     background: #050A12;
     min-height: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .coverage-header-compact {
     background: #050A12;
-    justify-content: flex-start;
-    gap: 12px;
-    padding-top: calc(12px + env(safe-area-inset-top));
-    padding-bottom: 12px;
-    min-height: 46px;
     position: relative;
+  }
+  /* Encabezado único para Campañas, Cobertura, Reportes y Facturas.
+     El grid 40/1fr/40 mantiene el título centrado en la pantalla aunque
+     el contador de la campana crezca a dos caracteres. */
+  .client-screen-header {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 69px;
+    padding: calc(16px + env(safe-area-inset-top)) 20px 14px;
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    position: relative;
+    background: #050A12;
+  }
+  .client-screen-header-side {
+    width: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+  }
+  .client-screen-header-left { justify-content: flex-start; }
+  .client-screen-header-right { justify-content: flex-end; }
+  .client-screen-header-title {
+    min-width: 0;
+    margin: 0;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -.01em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .client-screen-header .mobile-sidebar-header-btn,
+  .client-screen-notification-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+  }
+  .client-screen-notification-btn {
+    position: relative;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.14);
+    background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.06));
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(0,0,0,.18);
+    transition: background-color .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  .client-screen-notification-btn:hover {
+    background: rgba(255,255,255,.16);
+    border-color: rgba(255,255,255,.22);
+  }
+  .client-screen-notification-btn:active { transform: scale(.96); }
+  .client-screen-notification-btn span {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    padding: 0 4px;
+    border: 2px solid #050A12;
+    border-radius: 999px;
+    background: #EF4444;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .client-screen-back {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #FFFFFF;
   }
   .coverage-map-box {
     background: #0B1220;
@@ -6315,45 +6395,17 @@
   .coverage-premium-area {
     background: #050A12;
     margin-top: 0;
-    padding-top: 12px;
+    padding: 14px;
     border-radius: 0;
   }
-  .coverage-hero {
-    background: #0B1220;
-    border: 1px solid rgba(8,119,255,0.34);
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 14px;
-  }
-  .coverage-kicker { color: #0877FF; font-size: 11px; font-weight: 900; letter-spacing: .4px; text-transform: uppercase; }
-  .coverage-title { color: #fff; font-size: 19px; font-weight: 800; margin-top: 5px; }
-  .coverage-sub { color: rgba(226,232,240,.72); font-size: 12px; line-height: 1.45; margin-top: 4px; }
-  .coverage-count {
-    width: 72px;
-    min-width: 72px;
-    height: 72px;
-    border-radius: 8px;
-    background: rgba(8,119,255,.16);
-    border: 1px solid rgba(8,119,255,.32);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .coverage-count span { color: #fff; font-size: 24px; font-weight: 900; line-height: 1; }
-  .coverage-count small { color: rgba(226,232,240,.68); font-size: 11px; margin-top: 4px; }
   .coverage-map-real {
     position: relative;
-    min-height: 430px;
-    border-radius: 8px;
+    min-height: 520px;
+    border-radius: 22px;
     overflow: hidden;
-    margin-bottom: 12px;
-    border: 1px solid rgba(8,119,255,.24);
-    box-shadow: 0 22px 48px rgba(0,0,0,.28);
+    margin-bottom: 14px;
+    border: 1px solid rgba(147,197,253,.28);
+    box-shadow: 0 26px 64px -22px rgba(0,0,0,.78), 0 0 0 1px rgba(255,255,255,.04);
     background: #FFFFFF;
   }
   .coverage-map-real::after {
@@ -6792,34 +6844,67 @@
     font-weight: 900;
     text-align: right;
   }
-  .coverage-map-legend-mobile {
-    display: none;
-  }
   @media (max-width: 899px) {
-    .coverage-map-real {
-      min-height: 380px;
-    }
-    .coverage-map-legend-desktop {
+    .client-screen-header-left .mobile-sidebar-header-btn + .client-screen-back {
       display: none;
     }
-    .coverage-map-legend-mobile {
-      position: relative;
-      left: auto;
-      bottom: auto;
-      z-index: auto;
-      width: 100%;
-      margin: 0 0 12px;
-      display: grid;
-      box-sizing: border-box;
-      pointer-events: none;
+    .coverage-premium-area {
+      padding: 12px 12px calc(18px + env(safe-area-inset-bottom));
+    }
+    .coverage-map-real {
+      height: clamp(500px, calc(100dvh - 160px), 680px);
+      min-height: 500px;
+      border-radius: 20px;
+    }
+    .coverage-map-legend {
+      left: 10px;
+      right: 10px;
+      bottom: 24px;
+      width: auto;
+      padding: 7px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px;
+      border-radius: 17px;
+    }
+    .coverage-map-legend > div {
+      grid-template-columns: 18px minmax(0, 1fr);
+      grid-template-rows: auto auto;
+      column-gap: 5px;
+      row-gap: 0;
+      padding: 6px 5px;
+      border-radius: 11px;
+    }
+    .coverage-map-legend img {
+      width: 14px;
+      height: 22px;
+      grid-row: 1 / 3;
+    }
+    .coverage-map-legend span {
+      font-size: 9px;
+      line-height: 1.1;
+    }
+    .coverage-map-legend strong {
+      min-width: 0;
+      font-size: 12px;
+      line-height: 1.05;
+      text-align: left;
     }
     .coverage-selected-card {
       display: none !important;
     }
   }
   @media (min-width: 900px) {
+    .client-screen-header {
+      padding-left: 48px;
+      padding-right: 48px;
+      grid-template-columns: 40px minmax(0, 1fr) 40px;
+    }
+    .coverage-premium-area {
+      padding: 24px 32px 36px;
+    }
     .coverage-map-real {
-      min-height: 470px;
+      height: clamp(560px, calc(100dvh - 185px), 780px);
+      min-height: 560px;
     }
   }
   .coverage-maplibre-map {

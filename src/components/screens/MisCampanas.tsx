@@ -7,7 +7,7 @@ import { estadoCampana, panelesDeContrato } from "../../types";
 import { useContratosHistoricos } from "../../hooks/useContratos";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
-import MobileSidebarButton from "../MobileSidebarButton";
+import ClientScreenHeader from "../ClientScreenHeader";
 import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 import { useDialogos } from "../DialogosProvider";
@@ -35,6 +35,8 @@ interface Props {
   isAdmin?: boolean;
   clienteId?: string;
   onMenuClick?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
 }
 
 const BADGE: Record<string, { bg: string; color: string }> = {
@@ -56,7 +58,7 @@ function diasParaVencer(c: Contrato): number {
 
 type RenovacionEstado = "idle" | "confirmando" | "enviando" | "enviada" | "error";
 
-export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick }: Props) {
+export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAdmin, clienteId, onMenuClick, onNotifClick, totalNotifs }: Props) {
   // Arranca en "Activa" (no "Todas") -- se pidio que al entrar a
   // Campanas siempre se vea primero lo mas relevante/urgente (lo que
   // esta corriendo ahora), no la lista completa mezclada con
@@ -280,34 +282,13 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
-      {/* Header */}
-      <div className="campanas-header" style={{
-        background: "#050A12",
-        padding: "calc(24px + env(safe-area-inset-top)) 20px 16px",
-        flexShrink: 0,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div className="mobile-header-title-group">
-            <MobileSidebarButton onClick={onMenuClick} />
-            <div style={{ fontSize: 16, fontWeight: 900, color: "#fff" }}>Mis campañas</div>
-          </div>
-          <button
-            type="button"
-            onClick={onNueva}
-            aria-label="Nueva campaña"
-            style={{
-              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-              background: "#0877FF", border: "none", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
-        </div>
-      </div>
+      <ClientScreenHeader
+        title="Campañas"
+        className="campanas-header"
+        onMenuClick={onMenuClick}
+        onNotifClick={onNotifClick}
+        totalNotifs={totalNotifs}
+      />
 
       {/* Tabs */}
       <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>

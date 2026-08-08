@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import BackChevron from "../BackChevron";
-import MobileSidebarButton from "../MobileSidebarButton";
+import ClientScreenHeader from "../ClientScreenHeader";
 import type { Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { diasHasta, fechaLarga } from "../../utils/fechas";
@@ -26,6 +25,8 @@ interface Props {
   contratosListos: boolean;
   onBack?: () => void;
   onMenuClick?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
   /** Se dispara cuando la persona toca "Solicitar disponibilidad" o
    *  "Solicitar renovación" en el popup de un pin -- App.tsx la usa
    *  para precargar y abrir el formulario de Nueva campaña con el
@@ -387,7 +388,7 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
 /** Vacio compartido: un `[]` en el render es un objeto nuevo cada vez. */
 const SIN_PANELES: Panel[] = [];
 
-export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onSolicitarPanel }: Props) {
+export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onNotifClick, totalNotifs, onSolicitarPanel }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
@@ -849,48 +850,33 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
 
   return (
     <div className="coverage-screen">
-      <div className="detail-header coverage-header-compact">
-        <MobileSidebarButton onClick={onMenuClick} />
-        {onBack && (
-          <div className="back-btn" onClick={onBack}>
-            <BackChevron />
-          </div>
-        )}
-        <div className="simple-title">Cobertura</div>
-      </div>
+      <ClientScreenHeader
+        title="Cobertura"
+        className="detail-header coverage-header-compact"
+        onMenuClick={onMenuClick}
+        onBack={onBack}
+        onNotifClick={onNotifClick}
+        totalNotifs={totalNotifs}
+      />
 
       <div className="content-area coverage-premium-area">
-        <div className="coverage-hero">
-          <div>
-            <div className="coverage-kicker">Mapa de campaña</div>
-            <div className="coverage-title">Cobertura de paneles</div>
-            <div className="coverage-sub">
-              Ubicación de todos los paneles disponibles y el estado de los tuyos.
-            </div>
-          </div>
-          <div className="coverage-count">
-            <span>{panelesState.status === "loading" ? "…" : lista.length}</span>
-            <small>paneles</small>
-          </div>
-        </div>
-
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
           {mapReady && !mapError && datosListos && (
-            <div className="coverage-map-legend coverage-map-legend-desktop" aria-label="Leyenda del mapa">
+            <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
                 <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Paneles que puedes contratar</span>
+                <span>Disponibles</span>
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
                 <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Paneles contratados</span>
+                <span>Contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
               <div>
                 <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Paneles ocupados</span>
+                <span>Ocupados</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>
             </div>
@@ -938,26 +924,6 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
             </div>
           )}
         </div>
-
-        {mapReady && !mapError && datosListos && (
-          <div className="coverage-map-legend coverage-map-legend-mobile" aria-label="Leyenda del mapa">
-            <div>
-              <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Paneles que puedes contratar</span>
-              <strong>{panelesContratables}</strong>
-            </div>
-            <div>
-              <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Paneles contratados</span>
-              <strong>{panelesActivos}</strong>
-            </div>
-            <div>
-              <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-              <span>Paneles ocupados</span>
-              <strong>{panelesOcupadosPorOtros}</strong>
-            </div>
-          </div>
-        )}
 
         {seleccionado && (
           <div className="coverage-selected-card">

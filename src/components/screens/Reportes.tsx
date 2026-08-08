@@ -7,7 +7,7 @@ import { cloudFunctions } from "../../config/firebase";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { panelesDeContrato } from "../../types";
 import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
-import MobileSidebarButton from "../MobileSidebarButton";
+import ClientScreenHeader from "../ClientScreenHeader";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
 
@@ -19,6 +19,8 @@ interface Props {
   paneles?: Record<string, Panel>;
   isAdmin?: boolean;
   onMenuClick?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
 }
 
 type FotoReporte = {
@@ -70,7 +72,7 @@ function nombreCliente(cliente: Cliente | null) {
 
 
 
-export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick }: Props) {
+export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick, onNotifClick, totalNotifs }: Props) {
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(() => mesActual());
@@ -285,14 +287,13 @@ function mensajeErrorReporte(error: unknown) {
 
   return (
     <div>
-      <div className="evidencias-header reports-header">
-        <div className="ev-logo-row">
-          <div className="mobile-header-title-group">
-            <MobileSidebarButton onClick={onMenuClick} />
-            <div className="reports-header-title">Reportes</div>
-          </div>
-        </div>
-      </div>
+      <ClientScreenHeader
+        title="Reportes"
+        className="evidencias-header reports-header"
+        onMenuClick={onMenuClick}
+        onNotifClick={onNotifClick}
+        totalNotifs={totalNotifs}
+      />
 
       <div className="reports-screen-body">
         {isAdmin && (

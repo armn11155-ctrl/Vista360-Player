@@ -5,7 +5,7 @@ import { cloudFunctions } from "../../config/firebase";
 import { subirFacturaR2 } from "../../config/r2";
 import { formatoBytes, prepararFacturaPdf } from "../../utils/prepararFacturaPdf";
 import type { Cliente, Contrato, Factura } from "../../types";
-import MobileSidebarButton from "../MobileSidebarButton";
+import ClientScreenHeader from "../ClientScreenHeader";
 import { FacturaCard } from "../FacturaCard";
 import { etiquetaMes } from "../../utils/informesGrouping";
 
@@ -63,13 +63,15 @@ interface Props {
   onBack: () => void;
   isAdmin?: boolean;
   onMenuClick?: () => void;
+  onNotifClick?: () => void;
+  totalNotifs?: number;
   /** Campañas de este cliente -- opcional, solo para poder ofrecer
    *  "¿a qué campaña corresponde?" al subir una factura a mano. Sin
    *  esto la factura igual se sube bien, solo que sin ese vínculo. */
   contratos?: Contrato[];
 }
 
-export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick, contratos = [] }: Props) {
+export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick, onNotifClick, totalNotifs, contratos = [] }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
   const [filtroAnio, setFiltroAnio] = useState("");
@@ -166,14 +168,13 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
 
   return (
     <div className="facturas-screen">
-      <div className="evidencias-header reports-header facturas-header">
-        <div className="ev-logo-row">
-          <div className="mobile-header-title-group">
-            <MobileSidebarButton onClick={onMenuClick} />
-            <div className="reports-header-title">Facturas</div>
-          </div>
-        </div>
-      </div>
+      <ClientScreenHeader
+        title="Facturas"
+        className="evidencias-header reports-header facturas-header"
+        onMenuClick={onMenuClick}
+        onNotifClick={onNotifClick}
+        totalNotifs={totalNotifs}
+      />
 
       <div className="reports-screen-body facturas-screen-body">
         {isAdmin && (ruc || clienteId) && (

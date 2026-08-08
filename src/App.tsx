@@ -166,17 +166,17 @@ type View =
 // para sincronizar la barra de estado (ver useThemeColor).
 const VIEW_COLORS: Record<View, string> = {
   inicio: "#050A12",
-  campanas: "#0B1220",
+  campanas: "#050A12",
   detalle: "#0B1220",
-  reportes: "#0B1220",
+  reportes: "#050A12",
   perfil: "#050A12",
   nueva: "#0B1220",
-  cobertura: "#0B1220",
+  cobertura: "#050A12",
   mispantallas: "#0B1220",
   analitica: "#0B1220",
   solicitudes: "#0B1220",
   accesos: "#0B1220",
-  facturas: "#0B1220",
+  facturas: "#050A12",
   notificaciones: "#0B1220",
   nuevoCliente: "#0B1220",
   miPerfil: "#0B1220",
@@ -726,6 +726,8 @@ function AuthenticatedApp({
             isAdmin={isAdmin}
             clienteId={clienteId}
             onMenuClick={() => setSidebarOpen(true)}
+            onNotifClick={() => setView("notificaciones")}
+            totalNotifs={totalNotifs}
           />
         );
         break;
@@ -751,6 +753,8 @@ function AuthenticatedApp({
             paneles={paneles}
             isAdmin={isAdmin}
             onMenuClick={() => setSidebarOpen(true)}
+            onNotifClick={() => setView("notificaciones")}
+            totalNotifs={totalNotifs}
           />
         );
         break;
@@ -793,6 +797,8 @@ function AuthenticatedApp({
             contratos={contratos}
             contratosListos={contratosState.status === "ready"}
             onMenuClick={() => setSidebarOpen(true)}
+            onNotifClick={() => setView("notificaciones")}
+            totalNotifs={totalNotifs}
             onSolicitarPanel={(panel, tipo) => {
               setPrefillNueva({
                 nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : `Consulta - ${panel.nombre}`,
@@ -836,7 +842,7 @@ function AuthenticatedApp({
         content = isAdmin ? <Ocupacion onBack={() => setView("inicio")} /> : null;
         break;
       case "facturas":
-        content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} contratos={contratos} />;
+        content = <Facturas ruc={rucCliente(cliente)} clienteId={clienteId} cliente={cliente} onBack={() => setView("inicio")} isAdmin={isAdmin} onMenuClick={() => setSidebarOpen(true)} onNotifClick={() => setView("notificaciones")} totalNotifs={totalNotifs} contratos={contratos} />;
         break;
       case "notificaciones":
         content = <Notificaciones clienteId={clienteId} contratos={contratos} uid={uid} onBack={() => setView("inicio")} />;
