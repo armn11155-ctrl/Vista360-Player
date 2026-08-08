@@ -803,7 +803,7 @@ a {
      de "Accesos rápidos". La corrección se limita a laptop/escritorio. */
   .inicio-summary-title {
     margin-bottom: 14px !important;
-    color: var(--v360-text) !important;
+    color: #08122b !important;
     font-size: 17px !important;
     font-weight: 800 !important;
     letter-spacing: -.014em;
