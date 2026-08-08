@@ -798,6 +798,18 @@ a {
     font-size: 17px !important;
   }
 
+  /* "Resumen general" conservaba una variante antigua de escritorio:
+     13px, gris y en mayúsculas. Debe compartir exactamente la jerarquía
+     de "Accesos rápidos". La corrección se limita a laptop/escritorio. */
+  .inicio-summary-title {
+    margin-bottom: 14px !important;
+    color: var(--v360-text) !important;
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.014em;
+    text-transform: none;
+  }
+
   .inicio-kpi-card {
     min-height: 92px !important;
     padding: 16px !important;
