@@ -468,7 +468,20 @@ function mensajeErrorReporte(error: unknown) {
         )}
 
         {hayContratos && informesState.status === "loading" && (
-          <div className="premium-inline-loader document-list-loading" role="status"><span aria-hidden="true" />Actualizando reportes</div>
+          <div className="document-friendly-loader" role="status" aria-live="polite">
+            <span className="document-friendly-loader-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M7 2.5h7l4 4V21H7V2.5Z" />
+                <path d="M14 2.5V7h4M10 12h5M10 15.5h5" />
+              </svg>
+              <i />
+            </span>
+            <span className="document-friendly-loader-copy">
+              <strong>Preparando tus reportes</strong>
+              <small>Organizando los documentos más recientes…</small>
+            </span>
+            <span className="document-friendly-loader-track" aria-hidden="true"><i /></span>
+          </div>
         )}
 
         {hayContratos && informesState.status === "error" && (

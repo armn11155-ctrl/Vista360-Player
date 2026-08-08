@@ -286,7 +286,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
         </section>
 
         <span className="profile-top-curve" aria-hidden="true">
-          <svg viewBox="0 0 390 30" preserveAspectRatio="none">
+          <svg viewBox="0 0 390 32" preserveAspectRatio="none">
             <defs>
               <linearGradient id="profile-top-curve-gradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0" stopColor="#2f6fed" />
@@ -298,9 +298,14 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                 <stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.96" />
                 <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
               </linearGradient>
+              <mask id="profile-top-curve-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="32">
+                <path d="M1.5 1.5 C1.5 16 10 30.5 27 30.5 H363 C380 30.5 388.5 16 388.5 1.5" fill="none" stroke="#FFFFFF" strokeWidth="3" />
+              </mask>
             </defs>
-            <path className="profile-top-curve-base" pathLength="100" d="M1 1 C1 16 10 29 27 29 H363 C380 29 389 16 389 1" />
-            <path className="profile-top-curve-shine" pathLength="100" d="M1 1 C1 16 10 29 27 29 H363 C380 29 389 16 389 1" />
+            <path className="profile-top-curve-base" d="M1.5 1.5 C1.5 16 10 30.5 27 30.5 H363 C380 30.5 388.5 16 388.5 1.5" />
+            <g mask="url(#profile-top-curve-mask)">
+              <rect className="profile-top-curve-shine" x="-176" y="0" width="176" height="32" fill="url(#profile-top-curve-shine-gradient)" />
+            </g>
           </svg>
         </span>
 

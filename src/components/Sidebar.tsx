@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode, useMemo } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
-  IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
+  IconFacturas, IconAnalitica, IconPerfil, IconCerrar, IconCambiarCliente, IconCerrarSesion,
 } from "./SidebarIcons";
 import { BrandThumb } from "./BrandThumb";
 
@@ -12,6 +12,7 @@ type SidebarView =
   | "mispantallas"
   | "reportes"
   | "facturas"
+  | "perfil"
   | "analitica"
   | "solicitudes"
   | "accesos"
@@ -67,6 +68,7 @@ const ITEMS: {
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
+  { id: "perfil",       icon: <IconPerfil />,       label: "Perfil", desktopOnly: true },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
   // Paneles NO va en este menú -- solo se abre desde el selector de
   // cliente del admin (AdminClientPicker), a pedido explícito.
@@ -199,7 +201,11 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 it.desktopOnly ? "sidebar-item-desktop-only" : "",
                 it.mobileOnly ? "sidebar-item-mobile-only" : "",
               ].filter(Boolean).join(" ")}
-              onClick={() => { onNavigate(it.id); onClose(); }}
+              onClick={() => {
+                if (it.id === "perfil" && onOpenPerfil) onOpenPerfil();
+                else onNavigate(it.id);
+                onClose();
+              }}
             >
               <span className="sidebar-item-icon">{it.icon}</span>
               <span className="sidebar-item-label">{it.label}</span>

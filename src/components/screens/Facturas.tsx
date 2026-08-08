@@ -176,7 +176,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
         totalNotifs={totalNotifs}
       />
 
-      <div className="reports-screen-body facturas-screen-body">
+      <div className="reports-screen-body facturas-screen-body facturas-history-screen-body">
         {isAdmin && (ruc || clienteId) && (
           <div className="card factura-upload-card">
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
