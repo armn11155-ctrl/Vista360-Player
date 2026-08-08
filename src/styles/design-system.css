@@ -598,15 +598,15 @@ a {
   border-radius: var(--v360-radius-panel);
 }
 
-/* En móvil Perfil comparte el mismo encuentro curvo de Inicio; app.css
-   controla ese recorte. En escritorio el hero conserva su radio. */
+/* En móvil Perfil conserva su curva inferior invertida; app.css dibuja
+   la línea. En escritorio el hero mantiene su radio de panel. */
 @media (min-width: 900px) {
   .profile-top { overflow: hidden; }
 }
 @media (max-width: 899px) {
   .profile-top {
-    overflow: visible;
-    border-radius: 0;
+    overflow: hidden;
+    border-radius: 0 0 28px 28px;
   }
 }
 

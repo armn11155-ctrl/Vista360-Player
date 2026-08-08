@@ -582,11 +582,19 @@
     12% { background-position: 200% 0; }
     100% { background-position: 200% 0; }
   }
+
+  .profile-top-curve { display: none; }
+  @keyframes profile-curve-shine {
+    0% { stroke-dashoffset: 116; opacity: 0; }
+    2% { opacity: .95; }
+    14% { stroke-dashoffset: -16; opacity: .95; }
+    16%, 100% { stroke-dashoffset: -16; opacity: 0; }
+  }
   @media (prefers-reduced-motion: reduce) {
     .header-dark::after, .detail-header::after, .profile-top::after,
     .reports-header::after, .coverage-header-compact::after,
     .inicio-header::after, .campanas-header::after, .quotes-header::after,
-    .detalle-campana-line::after {
+    .detalle-campana-line::after, .profile-top-curve-shine {
       animation: none;
       display: none;
     }
@@ -660,29 +668,52 @@
       border-radius: 29px 29px 0 0;
     }
 
-    /* Perfil usa ahora exactamente el mismo encuentro visual que Inicio:
-       el contenido claro sube 26px y recorta la misma franja azul de
-       32px, dejando visible un borde curvo de 3px con el mismo brillo.
-       Se elimina el SVG paralelo que se parecía, pero no era idéntico. */
+    /* Perfil es deliberadamente el inverso de Inicio: el bloque oscuro
+       termina con sus esquinas inferiores redondeadas y la línea sube
+       hacia los extremos. El contenido ya no se monta sobre el header,
+       así queda aire negro real entre la cuenta verificada y el borde. */
     .profile-top::before,
     .profile-top::after {
-      display: block;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      height: 32px;
-      border-radius: 29px 29px 0 0;
+      display: none;
     }
     .profile-top {
-      overflow: visible;
-      border-radius: 0;
-      padding-bottom: 54px;
+      overflow: hidden;
+      border-radius: 0 0 28px 28px;
     }
     .profile-content {
       position: relative;
-      margin-top: -26px;
-      border-radius: 26px 26px 0 0;
+      margin-top: 0;
+      border-radius: 0;
       background: #F8FAFC;
+    }
+    .profile-top-curve {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      height: 30px;
+      display: block;
+      pointer-events: none;
+    }
+    .profile-top-curve svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+    .profile-top-curve path {
+      fill: none;
+      vector-effect: non-scaling-stroke;
+      stroke-linecap: round;
+      stroke-width: 3;
+    }
+    .profile-top-curve-base { stroke: url(#profile-top-curve-gradient); }
+    .profile-top-curve-shine {
+      stroke: rgba(255,255,255,.9);
+      stroke-dasharray: 16 84;
+      stroke-dashoffset: 116;
+      animation: profile-curve-shine 10s ease-in-out infinite;
     }
   }
 
@@ -6532,116 +6563,19 @@
   .campaign-detail-meta-first { margin-top: 10px; }
   .campaign-detail-meta svg { flex: 0 0 auto; color: #93C5FD; }
   .campaign-location-map {
-    /* Cartografía nocturna real; ya no se invierte por CSS un mapa claro. */
     height: 230px;
     position: relative;
     overflow: hidden;
     border-radius: 12px;
-    border: 1px solid rgba(96,165,250,.18);
-    background: #07111f;
-    box-shadow: 0 18px 40px -25px rgba(2,6,23,.88);
-    isolation: isolate;
+    border: 1px solid rgba(148,163,184,.28);
+    background: #E5E7EB;
+    box-shadow: 0 16px 34px -24px rgba(15,23,42,.38);
   }
-  .campaign-location-map::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      radial-gradient(circle at 50% 45%, transparent 56%, rgba(2,6,23,.18) 100%),
-      linear-gradient(145deg, rgba(8,119,255,.035), transparent 45%);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
-  }
-  .campaign-location-leaflet {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: #07111F;
-  }
-  .campaign-location-leaflet .leaflet-control-zoom {
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,.13);
-    border-radius: 11px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.32);
-  }
-  .campaign-location-leaflet .leaflet-control-zoom a {
+  .campaign-location-google-frame {
+    width: 100%;
+    height: 100%;
+    display: block;
     border: 0;
-    border-bottom: 1px solid rgba(255,255,255,.09);
-    color: #E6EEF9;
-    background: rgba(7,16,29,.92);
-  }
-  .campaign-location-leaflet .leaflet-control-attribution {
-    margin: 0 0 7px 7px;
-    padding: 3px 6px;
-    border-radius: 7px;
-    color: rgba(203,213,225,.72);
-    background: rgba(5,10,18,.76);
-  }
-  .campaign-location-leaflet .leaflet-control-attribution a { color: #93C5FD; }
-  .campaign-location-marker {
-    border: 0;
-    background: transparent;
-    filter: drop-shadow(0 10px 14px rgba(0,0,0,.58));
-  }
-  .campaign-location-marker > span {
-    position: absolute;
-    top: 3px;
-    left: 4px;
-    width: 32px;
-    height: 32px;
-    border: 3px solid #F7FAFC;
-    border-radius: 50% 50% 50% 8px;
-    background: #D9E4F1;
-    transform: rotate(-45deg);
-    box-shadow: 0 0 0 1px rgba(2,6,23,.38), inset 0 1px 0 rgba(255,255,255,.82);
-  }
-  .campaign-location-marker i {
-    position: absolute;
-    inset: 9px;
-    border-radius: 50%;
-    background: #0877FF;
-    box-shadow: 0 0 0 3px rgba(8,119,255,.14);
-  }
-  .campaign-location-google-link {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 3;
-    min-height: 32px;
-    padding: 0 10px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 10px;
-    color: #FFFFFF;
-    background: rgba(5,10,18,.84);
-    box-shadow: 0 10px 24px rgba(0,0,0,.24);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    font-size: 10px;
-    font-weight: 800;
-    text-decoration: none;
-  }
-  .campaign-location-google-link svg {
-    width: 14px;
-    height: 14px;
-    stroke: #93C5FD;
-    stroke-width: 1.9;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .campaign-location-error {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: grid;
-    place-items: center;
-    color: #CBD5E1;
-    background: #07111F;
-    font-size: 12px;
-    font-weight: 750;
   }
 
   .campaign-expiry-card {
@@ -8779,19 +8713,16 @@ select.reports-filter-select,
 
 @media (max-width: 899px) {
   .profile-top {
-    min-height: 238px;
-    padding: calc(20px + env(safe-area-inset-top)) 22px 28px;
+    min-height: 265px;
+    padding: calc(20px + env(safe-area-inset-top)) 22px 52px;
   }
   .profile-top-bar {
     margin-bottom: 24px;
   }
   .profile-content {
     padding: 22px 20px 18px;
-    /* Mantener el mismo solapamiento curvo de Inicio. Esta declaración
-       vive junto al ajuste móvil final para que no la anule la regla base
-       de .profile-content definida más adelante en la hoja. */
-    margin-top: -26px;
-    border-radius: 26px 26px 0 0;
+    margin-top: 0;
+    border-radius: 0;
   }
   .profile-section {
     margin-top: 24px;
