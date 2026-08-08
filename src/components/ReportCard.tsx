@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -103,6 +103,7 @@ function nombreArchivoReporte(mesLabel: string) {
  * Reportes), para que se vea igual en los dos lados.
  */
 export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }: Props) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const { confirmar } = useDialogos();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -117,7 +118,12 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   const [previaCorreo, setPreviaCorreo] = useState(false);
   const [correoEnviadoOk, setCorreoEnviadoOk] = useState("");
 
-  const keysAFirmar = informe.r2Keys ? [informe.r2Keys.digital] : [];
+  // listarReportesCliente ya entrega una URL firmada. Solo se pide otra
+  // firma para documentos antiguos que no la incluyan; antes cada tarjeta
+  // repetía esta llamada aunque ya tuviera una URL perfectamente válida.
+  const keysAFirmar = informe.r2Keys && !informe.urlDigital && !informe.url
+    ? [informe.r2Keys.digital]
+    : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
   const url = (informe.r2Keys && urlsFirmadas[informe.r2Keys.digital]) || informe.urlDigital || informe.url;
 
@@ -134,14 +140,32 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
    *  bucket, ver scripts/set-r2-cors.mjs). */
   useEffect(() => {
     if (!isAdmin || !url) return;
-    let cancelado = false;
-    precargarArchivoR2(url, nombreArchivoReporte(informe.mesLabel)).then(({ archivo, error }) => {
-      if (cancelado) return;
-      setArchivoCompartir(archivo);
-      setArchivoError(error ?? "");
-    });
+    const card = cardRef.current;
+    const controller = new AbortController();
+    let iniciado = false;
+    const iniciar = () => {
+      if (iniciado) return;
+      iniciado = true;
+      precargarArchivoR2(url, nombreArchivoReporte(informe.mesLabel), controller.signal)
+        .then(({ archivo, error }) => {
+          if (controller.signal.aborted) return;
+          setArchivoCompartir(archivo);
+          setArchivoError(error ?? "");
+        });
+    };
+    const observer = card && typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => {
+          if (entry?.isIntersecting) {
+            iniciar();
+            observer?.disconnect();
+          }
+        }, { rootMargin: "120px" })
+      : null;
+    if (observer && card) observer.observe(card);
+    else iniciar();
     return () => {
-      cancelado = true;
+      observer?.disconnect();
+      controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, url]);
@@ -302,7 +326,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
   }
 
   return (
-    <div className="report-card">
+    <div ref={cardRef} className="report-card">
       {isAdmin && (
         <div className="report-card-menu">
           <button

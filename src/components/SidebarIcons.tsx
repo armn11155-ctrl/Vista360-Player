@@ -48,16 +48,6 @@ export function IconReportes({ size = 20 }: Props) {
   );
 }
 
-/** Perfil individual, con el mismo peso visual que el resto del menú. */
-export function IconPerfil({ size = 20 }: Props) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.9" />
-      <path d="M5.5 20c.45-4.1 2.65-6.2 6.5-6.2s6.05 2.1 6.5 6.2" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function IconAnalitica({ size = 20 }: Props) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

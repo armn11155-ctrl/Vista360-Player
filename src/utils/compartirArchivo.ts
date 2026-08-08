@@ -55,16 +55,23 @@ export interface ArchivoPrecargado {
  * TypeError de red (no es un 403: el navegador ni deja leer la
  * respuesta) y se cae al link, igual que antes.
  */
-export async function precargarArchivoR2(urlFirmada: string, nombreArchivo: string): Promise<ArchivoPrecargado> {
+export async function precargarArchivoR2(
+  urlFirmada: string,
+  nombreArchivo: string,
+  signal?: AbortSignal,
+): Promise<ArchivoPrecargado> {
   if (!urlFirmada) return { archivo: null, error: "No hay URL del archivo todavía." };
   try {
-    const respuesta = await fetch(urlFirmada);
+    const respuesta = await fetch(urlFirmada, { signal });
     if (!respuesta.ok) {
       return { archivo: null, error: `El servidor respondió ${respuesta.status} al pedir el archivo.` };
     }
     const blob = await respuesta.blob();
     return { archivo: new File([blob], nombreArchivo, { type: "application/pdf" }) };
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return { archivo: null };
+    }
     const mensaje = error instanceof Error ? error.message : "Error desconocido al pedir el archivo.";
     console.warn("No se pudo precargar el archivo para compartir; se usará el link.", error);
     return { archivo: null, error: mensaje };

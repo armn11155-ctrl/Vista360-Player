@@ -44,6 +44,18 @@ function tiempoRelativo(isoFecha: string): string {
   return d === 1 ? "Ayer" : `Hace ${d} días`;
 }
 
+function grupoDeFecha(isoFecha: string): string {
+  const fecha = new Date(isoFecha);
+  if (Number.isNaN(fecha.getTime())) return "Anteriores";
+  const ahora = new Date();
+  const inicioHoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()).getTime();
+  const inicioFecha = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()).getTime();
+  const dias = Math.floor((inicioHoy - inicioFecha) / 86_400_000);
+  if (dias <= 0) return "Hoy";
+  if (dias <= 7) return "Esta semana";
+  return "Anteriores";
+}
+
 /** Vacio compartido, ver el comentario de abajo. */
 const SIN_SOLICITUDES: SolicitudCampana[] = [];
 
@@ -60,6 +72,12 @@ export default function Notificaciones({ clienteId, contratos, uid, onBack }: Pr
   );
   const state = useNotificaciones(clienteId, contratos, misSolicitudes);
   const idsVisibles = state.status === "ready" ? state.notifs.map((n) => n.id).join("|") : "";
+  const grupos = state.status === "ready"
+    ? ["Hoy", "Esta semana", "Anteriores"].map((titulo) => ({
+        titulo,
+        items: state.notifs.filter((n) => grupoDeFecha(n.fecha) === titulo),
+      })).filter((grupo) => grupo.items.length > 0)
+    : [];
 
   useEffect(() => {
     if (idsVisibles) {
@@ -158,34 +176,31 @@ export default function Notificaciones({ clienteId, contratos, uid, onBack }: Pr
           </div>
         )}
 
-        {state.status === "ready" && state.notifs.map((n) => (
-          <div
-            key={n.id}
-            className="card"
-            style={{ marginBottom: 8, display: "flex", gap: 12, alignItems: "flex-start" }}
-          >
-            <div style={{
-              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-              background: COLORES_BG[n.tipo],
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {ICONOS[n.tipo]}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#0D1629" }}>{n.titulo}</div>
-              <div style={{ fontSize: 12, color: "#64748B", marginTop: 3, lineHeight: 1.4 }}>{n.detalle}</div>
-              <div style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>{tiempoRelativo(n.fecha)}</div>
-            </div>
-            <button
-              type="button"
-              className="notification-delete-btn"
-              onClick={() => eliminarNotificacion(clienteId, n.id)}
-              aria-label={`Eliminar notificación: ${n.titulo}`}
-              title="Eliminar"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>
-            </button>
-          </div>
+        {state.status === "ready" && grupos.map((grupo) => (
+          <section className="notifications-group" key={grupo.titulo}>
+            <div className="notifications-group-title">{grupo.titulo}</div>
+            {grupo.items.map((n) => (
+              <div key={n.id} className="card notification-card-premium">
+                <div className="notification-card-icon" style={{ background: COLORES_BG[n.tipo] }}>
+                  {ICONOS[n.tipo]}
+                </div>
+                <div className="notification-card-copy">
+                  <strong>{n.titulo}</strong>
+                  <span>{n.detalle}</span>
+                  <small>{tiempoRelativo(n.fecha)}</small>
+                </div>
+                <button
+                  type="button"
+                  className="notification-delete-btn"
+                  onClick={() => eliminarNotificacion(clienteId, n.id)}
+                  aria-label={`Eliminar notificación: ${n.titulo}`}
+                  title="Eliminar"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/><path d="M10 11v5M14 11v5"/></svg>
+                </button>
+              </div>
+            ))}
+          </section>
         ))}
       </div>
     </div>

@@ -145,8 +145,9 @@ describe("firmar la descarga cuesta lecturas: solo al pulsar", () => {
     // persona. Si el archivo se pidiera al pulsar, el await perdería esa
     // activación y la hoja de compartir no abriría. Por eso esta SÍ va
     // por adelantado -- y solo para el admin.
-    expect(codigo).toContain("precargarArchivoR2(urlVer, nombreArchivoFactura(f))");
+    expect(codigo).toContain("precargarArchivoR2(urlVer, nombreArchivoFactura(f), controller.signal)");
     expect(codigo).toContain("if (!isAdmin || !urlVer) return;");
+    expect(codigo).toContain('new IntersectionObserver');
   });
 });
 

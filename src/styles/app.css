@@ -8444,6 +8444,123 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   }
 }
 
+/* Pulido premium final: estas reglas no cambian estructura ni datos; solo
+   mejoran jerarquía, contraste y estabilidad visual fuera de Reportes. */
+.inicio-side-col .inicio-evidence-card {
+  border-color: rgba(147,197,253,.16) !important;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(8,119,255,.22), transparent 38%),
+    linear-gradient(145deg, #111B2D, #07101E) !important;
+  box-shadow: 0 24px 54px -32px rgba(2,6,23,.88), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.inicio-side-col .inicio-report-title,
+.inicio-side-col .inicio-report-month { color: #FFFFFF !important; }
+.inicio-side-col .inicio-report-meta { color: #AFC0D8 !important; }
+.inicio-side-col .inicio-report-meta svg { stroke: #8FB7E8 !important; }
+.inicio-side-col .inicio-report-link { color: #79B6FF !important; }
+.inicio-side-col .inicio-report-link svg { stroke: #79B6FF !important; }
+.inicio-side-col .inicio-report-icon {
+  border: 1px solid rgba(147,197,253,.18);
+  box-shadow: 0 18px 30px -18px rgba(8,119,255,.8), inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.facturas-summary {
+  width: min(1080px, 100%);
+  margin: 4px auto 14px;
+  padding: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  border: 1px solid #DFE7F1;
+  border-radius: 18px;
+  background: #FFFFFF;
+  box-shadow: 0 18px 42px -36px rgba(15,23,42,.5);
+}
+.facturas-summary > div {
+  min-width: 0;
+  min-height: 58px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 13px;
+  background: #F6F8FB;
+}
+.facturas-summary > div:first-child {
+  color: #FFFFFF;
+  background: linear-gradient(145deg, #10213A, #07101E);
+}
+.facturas-summary span { color: #718096; font-size: 10px; font-weight: 750; }
+.facturas-summary strong { color: #0B1220; font-size: 19px; line-height: 1; }
+.facturas-summary > div:first-child span { color: rgba(255,255,255,.58); }
+.facturas-summary > div:first-child strong { color: #FFFFFF; }
+.factura-card .report-actions { min-height: 46px; }
+.factura-card .report-action:disabled { visibility: visible; opacity: .68; }
+
+.notifications-group { margin-top: 18px; }
+.notifications-group:first-of-type { margin-top: 8px; }
+.notifications-group-title {
+  margin: 0 4px 8px;
+  color: #52627A;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .10em;
+  text-transform: uppercase;
+}
+.notification-card-premium {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  overflow: hidden;
+  border-color: #E1E8F1;
+  box-shadow: 0 16px 34px -30px rgba(15,23,42,.5);
+}
+.notification-card-premium::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, #0877FF, #75B7FF);
+}
+.notification-card-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+}
+.notification-card-copy { min-width: 0; flex: 1; display: grid; gap: 3px; }
+.notification-card-copy strong { color: #0D1629; font-size: 13px; }
+.notification-card-copy span { color: #64748B; font-size: 12px; line-height: 1.42; }
+.notification-card-copy small { margin-top: 2px; color: #8A98AA; font-size: 10.5px; }
+
+.premium-campaign-card::after {
+  content: "";
+  position: absolute;
+  inset: 17px auto 17px 0;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(180deg, #73B8FF, #0877FF);
+  box-shadow: 0 0 18px rgba(8,119,255,.55);
+}
+
+@media (min-width: 900px) {
+  .facturas-summary { margin-top: 8px; }
+  .facturas-summary > div { min-height: 66px; padding-left: 18px; }
+  .notification-card-premium { padding: 16px 18px; }
+}
+
+@media (max-width: 430px) {
+  .facturas-summary { margin-top: 2px; border-radius: 16px; }
+  .facturas-summary > div { min-height: 54px; padding: 8px; }
+  .facturas-summary strong { font-size: 17px; }
+}
+
 /* ===== Diálogos de confirmación / aviso =====
    Reemplazan window.confirm() y window.alert() -- ver el comentario
    grande en components/DialogosProvider.tsx sobre por qué no se usan

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -158,6 +158,7 @@ function nombreArchivoFactura(f: Factura) {
  * que los reportes, deja enviar por WhatsApp y Correo.
  */
 export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const { confirmar } = useDialogos();
   const esKeyR2 = Boolean(f.pdfUrl) && !f.pdfUrl!.startsWith("http");
   const keysAFirmar = esKeyR2 ? [f.pdfUrl!] : [];
@@ -204,14 +205,32 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
    *  en el diagnostico, en vez de descartarse de antemano. */
   useEffect(() => {
     if (!isAdmin || !urlVer) return;
-    let cancelado = false;
-    precargarArchivoR2(urlVer, nombreArchivoFactura(f)).then(({ archivo, error }) => {
-      if (cancelado) return;
-      setArchivoCompartir(archivo);
-      setArchivoError(error ?? "");
-    });
+    const card = cardRef.current;
+    const controller = new AbortController();
+    let iniciado = false;
+    const iniciar = () => {
+      if (iniciado) return;
+      iniciado = true;
+      precargarArchivoR2(urlVer, nombreArchivoFactura(f), controller.signal)
+        .then(({ archivo, error }) => {
+          if (controller.signal.aborted) return;
+          setArchivoCompartir(archivo);
+          setArchivoError(error ?? "");
+        });
+    };
+    const observer = card && typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(([entry]) => {
+          if (entry?.isIntersecting) {
+            iniciar();
+            observer?.disconnect();
+          }
+        }, { rootMargin: "120px" })
+      : null;
+    if (observer && card) observer.observe(card);
+    else iniciar();
     return () => {
-      cancelado = true;
+      observer?.disconnect();
+      controller.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, urlVer]);
@@ -412,7 +431,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   }
 
   return (
-    <div className="report-card factura-card">
+    <div ref={cardRef} className="report-card factura-card">
       <div className="report-card-main">
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
           <svg width="56" height="70" viewBox="0 0 56 70" fill="none">
@@ -529,15 +548,15 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         </div>
       )}
 
-      {urlVer && (
+      {f.pdfUrl && (
         <div className="report-actions">
           <button
             type="button"
             className="report-action factura-action-primary"
-            disabled={abriendo}
+            disabled={abriendo || !urlVer}
             onClick={() => {
               setAbriendo(true);
-              void verArchivo(urlVer, nombreArchivoFactura(f)).finally(() =>
+              void verArchivo(urlVer ?? "", nombreArchivoFactura(f)).finally(() =>
                 setAbriendo(false)
               );
             }}
@@ -547,7 +566,7 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           <button
             type="button"
             className="report-action report-action-download"
-            disabled={descargando}
+            disabled={descargando || !urlVer}
             onClick={() => {
               setDescargando(true);
               void pedirUrlDescarga()

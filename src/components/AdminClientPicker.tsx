@@ -68,7 +68,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [menuCliente, setMenuCliente] = useState<Cliente | null>(null);
   const [accionandoId, setAccionandoId] = useState<string | null>(null);
   const [errorAccion, setErrorAccion] = useState("");
-  const [avataresFallidos, setAvataresFallidos] = useState<Set<string>>(new Set());
+  // Se recuerda la URL exacta que falló, no solo el cliente. Así una URL
+  // firmada vencida puede renovarse y volver a intentar; antes el cliente
+  // quedaba sin foto durante todo el montaje aunque ya hubiera una URL nueva.
+  const [avataresFallidos, setAvataresFallidos] = useState<Map<string, string>>(new Map());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
   const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
   // Se consume una sola vez al montar -- el valor ya quedó capturado
@@ -132,7 +135,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   function avatarSrc(c: Cliente) {
     if (!c.avatarUrl) return undefined;
     const url = c.avatarUrl.startsWith("http") ? c.avatarUrl : avataresFirmados[c.avatarUrl];
-    if (!url || avataresFallidos.has(c.id)) return undefined;
+    if (!url || avataresFallidos.get(c.id) === url) return undefined;
     return url;
   }
 
@@ -401,9 +404,15 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                         <img
                           src={avatarSrc(c)}
                           alt=""
-                          loading="lazy"
+                          loading="eager"
+                          fetchPriority="high"
                           decoding="async"
-                          onError={() => setAvataresFallidos((prev) => new Set(prev).add(c.id))}
+                          onError={() => setAvataresFallidos((prev) => {
+                            const siguiente = new Map(prev);
+                            const url = avatarSrc(c);
+                            if (url) siguiente.set(c.id, url);
+                            return siguiente;
+                          })}
                         />
                       ) : (
                         <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
