@@ -1,10 +1,8 @@
 import { useState, type CSSProperties } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato, Panel } from "../../types";
-import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
-import { useFacturas } from "../../hooks/useFacturas";
-import { FacturaCard } from "../FacturaCard";
-import { diasHasta, fechaCorta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
+import { estadoCampana, panelesDeContrato } from "../../types";
+import { diasHasta, fechaCorta, fechaLarga, hoyEnPeru, soloFecha, sumarDias } from "../../utils/fechas";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImageHero } from "../../utils/campaignCity";
@@ -88,6 +86,14 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
   const [tab, setTab] = useState<TabId>("resumen");
 
   const estado = estadoCampana(contrato);
+  const diasParaVencer = diasHasta(contrato.fin);
+  const etiquetaVencimiento = estado === "Finalizada"
+    ? "Campaña finalizada"
+    : diasParaVencer === 0
+      ? "Vence hoy"
+      : diasParaVencer === 1
+        ? "Vence mañana"
+        : `Vence en ${diasParaVencer} días`;
 
   // Uno o varios paneles segun sea una campaña normal o multi-panel.
   const panelesContrato = panelesDeContrato(contrato).map((id) => paneles[id]).filter((p): p is Panel => !!p);
@@ -179,16 +185,6 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
   const informes = informesState.status === "ready"
     ? informesState.informes.filter((i) => i.contratoId === contrato.id)
     : [];
-  // Factura de esta campaña -- solo aparece si el admin la etiquetó al
-  // subirla a mano desde la pantalla Facturas (ver Facturas.tsx). Las
-  // facturas sincronizadas del sistema externo (facturacion-web, por
-  // RUC) nunca van a tener este dato, así que para muchos clientes acá
-  // simplemente no va a aparecer nada -- eso es esperado, no es un bug.
-  const rucCampana = rucCliente(cliente);
-  const facturasState = useFacturas(rucCampana, contrato.cliente_id);
-  const facturas = facturasState.status === "ready" ? facturasState.facturas : [];
-  const facturaCampana = facturas.find((f) => f.contrato_id === contrato.id);
-
   const TABS: { id: TabId; label: string }[] = [
     { id: "resumen",    label: "Resumen" },
     { id: "reportes",   label: "Reportes" },
@@ -310,57 +306,31 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
               </div>
             )}
 
-            <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
-              <div style={{ fontSize: 13, color: "#64748B", display: "flex", flexDirection: "column", gap: 6 }}>
-                <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara?.trim() || "Sin registrar"}</strong></div>
-                <div>Monto: <strong style={{ color: "#0B1220" }}>{typeof contrato.monto === "number" && contrato.monto > 0 ? `$${contrato.monto.toLocaleString()}` : "Sin registrar"}</strong></div>
-                <div>Pago: <strong style={{ color: typeof contrato.monto === "number" && contrato.monto > 0 && typeof contrato.pagado === "boolean" ? (contrato.pagado ? "#16A34A" : "#EF4444") : "#0B1220" }}>{typeof contrato.monto === "number" && contrato.monto > 0 && typeof contrato.pagado === "boolean" ? (contrato.pagado ? "Pagado" : "Pendiente") : "Sin registrar"}</strong></div>
-              </div>
-
-              {/* Antes acá no había nada de tiempo/avance -- solo se veían
-                  las fechas arriba, en el encabezado, sin decir cuánto
-                  falta. MisCampanas.tsx (la lista) ya calculaba este mismo
-                  progreso (progresoCampana) para su propia barra, pero acá
-                  en el detalle nunca se mostraba -- se reusa el mismo
-                  cálculo para que ambas pantallas digan lo mismo. */}
-              {estado !== "Finalizada" && (
-                <div style={{ marginTop: 12 }}>
-                  <div style={{
-                    height: 6, borderRadius: 4, overflow: "hidden", background: "#EEF1F5",
-                  }}>
-                    <div style={{
-                      height: "100%", width: `${progresoCampana(contrato.inicio, contrato.fin)}%`,
-                      background: "linear-gradient(90deg,#0877FF,#52A5FF)", borderRadius: 4,
-                    }} />
-                  </div>
-                  <div style={{ fontSize: 12, color: "#64748B", marginTop: 6, display: "flex", justifyContent: "space-between", gap: 8 }}>
-                    <span>{progresoCampana(contrato.inicio, contrato.fin)}% del periodo transcurrido</span>
-                    <strong style={{ color: "#0B1220" }}>
-                      {estado === "Programada"
-                        ? `Empieza en ${diasHasta(contrato.inicio)} día${diasHasta(contrato.inicio) === 1 ? "" : "s"}`
-                        : diasHasta(contrato.fin) === 0
-                          ? "Vence hoy"
-                          : diasHasta(contrato.fin) === 1
-                            ? "Vence mañana"
-                            : `Vence en ${diasHasta(contrato.fin)} días`}
-                    </strong>
-                  </div>
+            <div className="campaign-expiry-card">
+              <div className="campaign-expiry-main">
+                <span className="campaign-expiry-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="4.5" width="18" height="17" rx="2" />
+                    <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
+                    <path d="m9.2 15 1.8 1.8 4-4" />
+                  </svg>
+                </span>
+                <div className="campaign-expiry-copy">
+                  <span>Vencimiento de la campaña</span>
+                  <strong>{fechaLarga(contrato.fin)}</strong>
                 </div>
-              )}
+                <span className={`campaign-expiry-status${estado === "Finalizada" ? " is-finished" : ""}`}>
+                  {etiquetaVencimiento}
+                </span>
+              </div>
 
               {estado !== "Finalizada" && (
                 <button
                   type="button"
                   onClick={agregarRecordatorio}
-                  style={{
-                    marginTop: 12, width: "100%", padding: "11px 12px", borderRadius: 10,
-                    border: "1.5px solid #E5E7EB", background: "#fff", color: "#334155",
-                    fontSize: 12, fontWeight: 700, cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  }}
+                  className="campaign-expiry-calendar-btn"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#334155" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="4.5" width="18" height="17" rx="2" />
                     <path d="M8 2.5v4M16 2.5v4M3 9.5h18" />
                   </svg>
@@ -399,19 +369,6 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                 <div style={{ marginTop: 8, fontSize: 11, color: "#DC2626" }}>{errorRenovacion}</div>
               )}
             </div>
-
-            {/* Factura de esta campaña -- solo se muestra si existe una
-                factura etiquetada con este contrato (ver comentario junto
-                a facturaCampana más arriba). Si el cliente factura por el
-                sistema externo sincronizado por RUC, esto simplemente no
-                aparece -- no es un error, es que ese sistema no conoce el
-                concepto de "campaña". */}
-            {facturaCampana && (
-              <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Factura de esta campaña</div>
-                <FacturaCard factura={facturaCampana} cliente={cliente} isAdmin={isAdmin} />
-              </div>
-            )}
 
           </>
         )}

@@ -6449,14 +6449,131 @@
        iframe interactivo de Maps, no una imagen, asi que no hay perdida
        de nitidez por agrandar el contenedor). */
     height: 230px;
+    position: relative;
     overflow: hidden;
     border-radius: 12px;
-    background: #E5E7EB;
+    border: 1px solid rgba(96,165,250,.18);
+    background: #07111f;
+    box-shadow: 0 18px 40px -25px rgba(2,6,23,.88);
+    isolation: isolate;
+  }
+  .campaign-location-map::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 45%, transparent 48%, rgba(2,6,23,.22) 100%),
+      linear-gradient(145deg, rgba(8,119,255,.08), transparent 45%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
   }
   .campaign-location-map iframe {
     display: block;
     width: 100%;
     height: 100%;
+    filter: invert(.91) hue-rotate(180deg) brightness(.76) contrast(.92) saturate(.72);
+    transform: scale(1.01);
+  }
+
+  .campaign-expiry-card {
+    margin-bottom: 12px;
+    padding: 16px;
+    border: 1px solid rgba(8,119,255,.13);
+    border-radius: 16px;
+    background: linear-gradient(145deg, #FFFFFF 0%, #F7FAFF 100%);
+    box-shadow: 0 18px 42px -31px rgba(15,23,42,.58);
+  }
+  .campaign-expiry-main {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+  }
+  .campaign-expiry-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #0877FF;
+    background: linear-gradient(145deg, rgba(8,119,255,.14), rgba(82,165,255,.07));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .campaign-expiry-icon svg {
+    width: 21px;
+    height: 21px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .campaign-expiry-copy {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .campaign-expiry-copy span {
+    color: #64748B;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+  }
+  .campaign-expiry-copy strong {
+    color: #0B1220;
+    font-size: 14px;
+    font-weight: 900;
+    line-height: 1.2;
+  }
+  .campaign-expiry-status {
+    padding: 7px 9px;
+    border-radius: 999px;
+    color: #0B63CE;
+    background: rgba(8,119,255,.09);
+    font-size: 10px;
+    font-weight: 850;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .campaign-expiry-status.is-finished {
+    color: #64748B;
+    background: #EEF2F7;
+  }
+  .campaign-expiry-calendar-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px 12px;
+    border: 1px solid rgba(8,119,255,.18);
+    border-radius: 11px;
+    color: #1E4F91;
+    background: rgba(255,255,255,.86);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+  }
+  .campaign-expiry-calendar-btn:hover {
+    border-color: rgba(8,119,255,.34);
+    background: #FFFFFF;
+  }
+  .campaign-expiry-calendar-btn:active { transform: scale(.99); }
+
+  @media (max-width: 430px) {
+    .campaign-expiry-main {
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 10px 12px;
+    }
+    .campaign-expiry-status {
+      grid-column: 2;
+      justify-self: start;
+    }
   }
 
   @media (min-width: 900px) {
