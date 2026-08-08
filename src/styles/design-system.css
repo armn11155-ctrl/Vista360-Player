@@ -408,6 +408,23 @@ a {
   color: rgba(226, 232, 240, .72);
 }
 
+.admin-picker-search {
+  border-color: rgba(147, 197, 253, .22);
+  background: rgba(255, 255, 255, .075);
+  color: #f8fafc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+
+.admin-picker-search::placeholder {
+  color: rgba(203, 213, 225, .58);
+}
+
+.admin-picker-search:focus {
+  border-color: rgba(91, 156, 255, .78);
+  background: rgba(255, 255, 255, .09);
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, .16);
+}
+
 .admin-picker-tile,
 .admin-picker-management-group,
 .admin-picker-management-card {
@@ -665,6 +682,18 @@ a {
 
   .admin-tool-screen > .content-area > * {
     width: min(1120px, 100%);
+  }
+
+  .accesos-create-btn-row {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .accesos-create-btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    padding: 0 20px !important;
   }
 
   .sidebar-panel {

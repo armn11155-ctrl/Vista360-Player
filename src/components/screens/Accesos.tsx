@@ -726,10 +726,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
               {mostrarFormTrabajador ? "Cerrar formulario" : "+ Crear trabajador"}
             </button>
           )}
-        </div>
-
-        {esGerente && (
-          <div className="accesos-create-btn-row" style={{ margin: "0 0 12px" }}>
+          {esGerente && (
             <button type="button"
               className={`accesos-create-btn${mostrarFormAcceso ? " is-open" : ""}`}
               onClick={toggleFormAcceso}
@@ -742,8 +739,8 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             >
               {mostrarFormAcceso ? "Cerrar formulario" : "+ Dar acceso a un cliente que ya existe"}
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {mostrarFormAcceso && esGerente && (
           <div className="card" style={{ marginBottom: 12 }}>
