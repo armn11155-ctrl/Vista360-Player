@@ -58,9 +58,12 @@ function esPermisoDenegado(err: FirestoreError): boolean {
  */
 export function useFacturas(_ruc: string | undefined, clienteId?: string): FacturasState {
   const cacheInicial = clienteId ? CACHE_FACTURAS.get(clienteId) : undefined;
-  const cacheInicialVigente = cacheInicial && Date.now() - cacheInicial.actualizadoEn < VIGENCIA_FACTURAS_MS;
   const [porCliente, setPorCliente] = useState<Factura[] | null>(
-    cacheInicialVigente ? cacheInicial.facturas : null
+    // Stale-while-revalidate: aunque la copia ya tenga más de un minuto,
+    // sigue siendo mejor pintarla en el primer render que enseñar un estado
+    // de carga. El efecto de abajo abre la escucha inmediatamente cuando está
+    // vencida y la reemplaza con el dato actual, sin sumar lecturas.
+    cacheInicial ? cacheInicial.facturas : null
   );
   const [error, setError] = useState<string | null>(null);
 

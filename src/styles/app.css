@@ -8490,3 +8490,256 @@ select.reports-filter-select,
     width: min(430px, 100%);
   }
 }
+
+/* ================================================================
+   PASADA PREMIUM — selector, gestión y documentos
+   Mantiene la misma estructura funcional y evita filtros pesados en
+   superficies repetidas, especialmente costosos en Safari/PWA.
+   ================================================================ */
+
+/* El formulario de creación ya no empuja el historial hacia abajo. */
+details.report-admin-panel {
+  overflow: hidden;
+  padding: 0;
+}
+.report-admin-header {
+  min-height: 72px;
+  margin: 0;
+  padding: 15px 17px;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.report-admin-header::-webkit-details-marker { display: none; }
+.report-admin-header::marker { content: ""; }
+.report-admin-header:focus { outline: none; }
+.report-admin-header:focus-visible {
+  outline: 2px solid rgba(96,165,250,.9);
+  outline-offset: -2px;
+}
+.report-admin-copy { flex: 1; min-width: 0; }
+.report-admin-toggle {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0 10px 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(147,197,253,.22);
+  background: rgba(255,255,255,.06);
+  color: #CFE2FF;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.report-admin-toggle svg {
+  width: 15px;
+  height: 15px;
+  transition: transform .2s ease;
+}
+.report-admin-panel[open] .report-admin-toggle svg { transform: rotate(180deg); }
+.report-admin-content {
+  padding: 0 17px 16px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 15px;
+}
+.report-admin-panel:not([open]) {
+  box-shadow: 0 16px 34px -24px rgba(2,6,23,.65);
+}
+
+/* Selector: una jerarquía clara en vez de muchas cajas negras compitiendo. */
+.admin-picker-header {
+  width: calc(100% - 28px);
+  margin: calc(68px + env(safe-area-inset-top)) auto 12px;
+  padding: 21px 16px 17px;
+  border: 1px solid rgba(147,197,253,.18);
+  border-radius: 24px;
+  background: linear-gradient(155deg, rgba(7,17,35,.88), rgba(3,8,18,.72));
+  box-shadow: 0 24px 52px -30px rgba(0,0,0,.86), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(10px) saturate(112%);
+  -webkit-backdrop-filter: blur(10px) saturate(112%);
+  text-shadow: none;
+}
+.admin-picker-title {
+  font-size: clamp(23px, 6.3vw, 30px);
+  letter-spacing: -.55px;
+}
+.admin-picker-sub { margin-bottom: 17px; color: rgba(220,231,248,.65); }
+.admin-picker-tabs {
+  margin: 0 auto 12px;
+  background: rgba(2,8,18,.58);
+  border-color: rgba(147,197,253,.16);
+  backdrop-filter: none;
+}
+.admin-picker-tabs button { background: transparent; }
+.admin-picker-tabs button.active {
+  background: linear-gradient(135deg, rgba(8,119,255,.92), rgba(47,111,237,.84));
+  box-shadow: 0 8px 18px -12px rgba(8,119,255,.9);
+}
+.admin-picker-search-wrap { max-width: 420px; }
+.admin-picker-search {
+  background: rgba(255,255,255,.075);
+  border-color: rgba(191,219,254,.18);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.admin-picker-search:focus {
+  border-color: rgba(96,165,250,.72);
+  box-shadow: 0 0 0 3px rgba(8,119,255,.15);
+}
+.admin-picker-body { padding-top: 10px; }
+.admin-picker-tile:not(.archived) {
+  background:
+    radial-gradient(circle at 50% -20%, rgba(82,145,255,.14), transparent 58%),
+    linear-gradient(155deg, rgba(8,18,36,.96), rgba(3,9,20,.94));
+  border-color: rgba(147,197,253,.17);
+  box-shadow: 0 22px 46px -31px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: none;
+}
+.admin-picker-tile:not(.archived)::before {
+  background: linear-gradient(90deg, transparent, rgba(96,165,250,.72), transparent);
+  box-shadow: 0 0 10px rgba(8,119,255,.28);
+}
+.admin-picker-tile-avatar { width: 92%; margin: 0 auto; }
+.admin-picker-tile-avatar img { animation: appFadeIn .22s ease both; }
+.admin-picker-tile:has(.admin-picker-tile-main:not(:disabled)):hover,
+.admin-picker-tile-vermas:hover {
+  transform: translateY(-3px);
+  border-color: rgba(96,165,250,.42);
+  background: linear-gradient(155deg, rgba(12,29,56,.98), rgba(3,10,22,.96));
+  box-shadow: 0 26px 54px -28px rgba(0,0,0,.94), 0 0 0 1px rgba(8,119,255,.08);
+}
+.admin-picker-logout {
+  background: rgba(3,9,20,.76);
+  border-color: rgba(255,255,255,.14);
+  box-shadow: 0 12px 28px -20px rgba(0,0,0,.85);
+}
+
+/* Centro de gestión: tres áreas reconocibles y tarjetas más ligeras. */
+.admin-picker-management-screen { background: #F4F7FB; }
+.admin-picker-management-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.admin-picker-management-group {
+  min-width: 0;
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid #DDE6F2;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 18px 40px -30px rgba(15,23,42,.32);
+}
+.admin-picker-management-group-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 2px 12px;
+}
+.admin-picker-management-group-head > span {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #0877FF;
+  background: #EAF3FF;
+  border: 1px solid #D5E7FF;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+.admin-picker-management-group-head > div { display: grid; gap: 1px; }
+.admin-picker-management-group-head strong { color: #0B1220; font-size: 13px; }
+.admin-picker-management-group-head small { color: #7A8799; font-size: 10px; font-weight: 650; }
+.admin-picker-management-group-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.admin-picker-management-card {
+  min-height: 82px;
+  padding: 12px;
+  border-color: #E3EAF3;
+  background: linear-gradient(155deg, #FFFFFF, #F7F9FC);
+  color: #0B1220;
+  box-shadow: none;
+  cursor: pointer;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.admin-picker-management-card strong { color: #0B1220; font-size: 13px; }
+.admin-picker-management-card small { color: #718096; font-size: 10.5px; line-height: 1.25; }
+.admin-picker-management-card i { color: #9AA8BA; }
+.admin-picker-management-card .admin-picker-action-icon {
+  color: #0877FF;
+  background: #EAF3FF;
+  border-color: #D7E8FF;
+}
+.admin-picker-management-card:hover {
+  transform: translateY(-2px);
+  border-color: #B9D6FF;
+  box-shadow: 0 16px 30px -24px rgba(8,119,255,.38);
+}
+
+@media (max-width: 430px) {
+  .report-admin-toggle > span { display: none; }
+  .report-admin-toggle { min-width: 34px; justify-content: center; padding: 0; }
+  .report-admin-sub { max-width: 205px; }
+  .admin-picker-management-card {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-content: center;
+    gap: 8px;
+  }
+  .admin-picker-management-card i { display: none; }
+  .admin-picker-management-card .admin-picker-action-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .admin-picker-management-group-cards > .admin-picker-management-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 900px) {
+  .admin-picker-header {
+    width: min(760px, calc(100% - 56px));
+    margin: 72px auto 20px;
+    padding: 23px 32px 21px;
+  }
+  .admin-picker-management-screen {
+    padding: 22px 48px 40px;
+    background:
+      linear-gradient(180deg, rgba(244,247,251,.9), rgba(239,244,250,.96)),
+      url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
+  }
+  .admin-picker-management-head,
+  .admin-picker-management-grid {
+    width: min(1040px, 100%);
+  }
+  .admin-picker-management-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .admin-picker-management-group {
+    padding: 18px;
+    box-shadow: 0 26px 54px -36px rgba(15,23,42,.42);
+  }
+  .admin-picker-management-group-cards { grid-template-columns: 1fr; }
+  .admin-picker-management-card { min-height: 86px; }
+  .report-admin-panel[open] { width: min(1200px, 100%); }
+  .report-admin-panel:not([open]) { width: min(1080px, 100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-admin-toggle svg,
+  .admin-picker-tile-avatar img,
+  .admin-picker-management-card { transition: none; animation: none; }
+}

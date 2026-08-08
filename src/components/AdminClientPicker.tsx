@@ -87,20 +87,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const solicitudesPendientes = solicitudesState.status === "ready"
     ? solicitudesState.solicitudes.length
     : 0;
-  // Antes se mostraba la grilla al toque con íconos de color por
-  // defecto y las fotos reales "aparecían" un instante después (viaje
-  // al servidor para firmar las URLs de R2) — se veía como que la
-  // pantalla cambiaba sola. Ahora se espera a tener clientes + fotos
-  // firmadas ANTES de mostrar nada, con un tope de 4s para no dejar a
-  // nadie trabado si la firma tarda o falla (en ese caso se muestra
-  // igual, con íconos de respaldo donde falte foto).
-  const [esperaMaxima, setEsperaMaxima] = useState(false);
-  const [contenidoMostrado, setContenidoMostrado] = useState(false);
-  useEffect(() => {
-    const t = window.setTimeout(() => setEsperaMaxima(true), 4000);
-    return () => window.clearTimeout(t);
-  }, []);
-
   const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
   const activos = ordenarClientesPorCampanasActivas(
     clientes.filter((c) => !c.archived),
@@ -155,12 +141,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       ? miAvatarUrl
       : avataresFirmados[miAvatarUrl]
     : undefined;
-
-  const avataresPendientes = keysR2.some((k) => !(k in avataresFirmados));
-  const todoListo = state.status !== "loading" && !avataresPendientes;
-  useEffect(() => {
-    if (todoListo) setContenidoMostrado(true);
-  }, [todoListo]);
 
   function cambiarTab(siguiente: "activos" | "archivados") {
     setErrorAccion("");
@@ -259,7 +239,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   return (
     <div className="admin-picker-shell">
-      {!contenidoMostrado && !todoListo && !esperaMaxima ? (
+      {state.status === "loading" ? (
         <div className="admin-picker-loading">
           <div className="admin-picker-loading-spinner" />
         </div>
@@ -380,9 +360,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       </div>
 
       <div className="admin-picker-body">
-        {state.status === "loading" && (
-          <div className="admin-picker-empty">Cargando clientes…</div>
-        )}
         {state.status === "error" && (
           <div className="admin-picker-empty admin-picker-empty-error">{state.message}</div>
         )}
@@ -531,44 +508,60 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             </div>
           </div>
           <div className="admin-picker-management-grid">
-            <button type="button" onClick={onOpenUsuarios} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
-              <span><strong>Usuarios</strong><small>Gestionar accesos</small></span>
-              <i>›</i>
-            </button>
-            <button type="button" onClick={onOpenSolicitudes} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
-              <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
-              {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}
-              <i>›</i>
-            </button>
-            <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
-              <span><strong>Analítica</strong><small>Actividad y accesos</small></span>
-              <i>›</i>
-            </button>
-            <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
-              <span><strong>Paneles</strong><small>Inventario digital</small></span>
-              <i>›</i>
-            </button>
-            <button type="button" onClick={onOpenOcupacion} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
-              <span><strong>Ocupación</strong><small>Qué se libera y cuándo</small></span>
-              <i>›</i>
-            </button>
-            <button type="button" onClick={onOpenCotizaciones} className="admin-picker-management-card">
-              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
-              <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span>
-              <i>›</i>
-            </button>
-            {esGerente && onOpenAprobaciones && (
-              <button type="button" onClick={onOpenAprobaciones} className="admin-picker-management-card">
-                <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 6 9 17l-5-5"/></svg></span>
-                <span><strong>Aprobaciones</strong><small>Pedidos de tu equipo</small></span>
-                <i>›</i>
-              </button>
-            )}
+            <section className="admin-picker-management-group">
+              <div className="admin-picker-management-group-head">
+                <span>01</span><div><strong>Clientes</strong><small>Personas y solicitudes</small></div>
+              </div>
+              <div className="admin-picker-management-group-cards">
+                <button type="button" onClick={onOpenUsuarios} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+                  <span><strong>Usuarios</strong><small>Gestionar accesos</small></span><i>›</i>
+                </button>
+                <button type="button" onClick={onOpenSolicitudes} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
+                  <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
+                  {solicitudesPendientes > 0 && <b>{solicitudesPendientes > 9 ? "9+" : solicitudesPendientes}</b>}<i>›</i>
+                </button>
+                {esGerente && onOpenAprobaciones && (
+                  <button type="button" onClick={onOpenAprobaciones} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 6 9 17l-5-5"/></svg></span>
+                    <span><strong>Aprobaciones</strong><small>Pedidos de tu equipo</small></span><i>›</i>
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <section className="admin-picker-management-group">
+              <div className="admin-picker-management-group-head">
+                <span>02</span><div><strong>Inventario</strong><small>Disponibilidad operativa</small></div>
+              </div>
+              <div className="admin-picker-management-group-cards">
+                <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
+                  <span><strong>Paneles</strong><small>Inventario digital</small></span><i>›</i>
+                </button>
+                <button type="button" onClick={onOpenOcupacion} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
+                  <span><strong>Ocupación</strong><small>Qué se libera y cuándo</small></span><i>›</i>
+                </button>
+              </div>
+            </section>
+
+            <section className="admin-picker-management-group">
+              <div className="admin-picker-management-group-head">
+                <span>03</span><div><strong>Negocio</strong><small>Análisis y propuestas</small></div>
+              </div>
+              <div className="admin-picker-management-group-cards">
+                <button type="button" onClick={onOpenCotizaciones} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
+                  <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span><i>›</i>
+                </button>
+                <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+                  <span><strong>Analítica</strong><small>Actividad y accesos</small></span><i>›</i>
+                </button>
+              </div>
+            </section>
           </div>
         </div>
       )}

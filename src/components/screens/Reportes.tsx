@@ -297,8 +297,8 @@ function mensajeErrorReporte(error: unknown) {
 
       <div className="reports-screen-body">
         {isAdmin && (
-          <div className="report-admin-panel">
-            <div className="report-admin-header">
+          <details className="report-admin-panel">
+            <summary className="report-admin-header">
               <div className="report-admin-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="17" rx="3" />
@@ -308,12 +308,17 @@ function mensajeErrorReporte(error: unknown) {
                 </svg>
               </div>
               <div className="report-admin-copy">
-                <div className="report-admin-title">Generar reporte del cliente</div>
+                <div className="report-admin-title">Nuevo reporte</div>
                 <div className="report-admin-sub">
-                  Solo tu cuenta admin puede crear PDFs y publicarlos en el portal del cliente.
+                  Genera y publica un PDF para este cliente.
                 </div>
               </div>
-            </div>
+              <span className="report-admin-toggle" aria-hidden="true">
+                <span>Configurar</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="m6 9 6 6 6-6" /></svg>
+              </span>
+            </summary>
+            <div className="report-admin-content">
             <div className="report-admin-controls">
               <div className="report-campaign-field">
                 <span>Campaña</span>
@@ -445,7 +450,8 @@ function mensajeErrorReporte(error: unknown) {
                 {mensajeAdmin}
               </div>
             )}
-          </div>
+            </div>
+          </details>
         )}
 
         {!hayContratos && (

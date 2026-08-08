@@ -78,13 +78,24 @@ const OnboardingTour = pantallaLazy(() => import("./components/OnboardingTour"))
 type CargaPantalla = () => Promise<unknown>;
 
 const PANTALLAS_PRIORITARIAS: CargaPantalla[] = [
-  () => import("./components/screens/Reportes"),
   () => import("./components/screens/MisCampanas"),
   () => import("./components/screens/DetalleCampana"),
-  () => import("./components/screens/Facturas"),
   () => import("./components/AdminClientPicker"),
   () => import("./components/screens/Cobertura"),
 ];
+
+// Reportes y Facturas son destinos de navegación directa y sus chunks son
+// pequeños (~5.5 kB y ~3.1 kB gzip). Esperar a requestIdleCallback para
+// pedirlos funciona bien en escritorio, pero Safari/PWA puede postergar ese
+// callback mientras termina de pintar la pantalla inicial. Se descargan apenas
+// la sesión está lista, sin montar los componentes ni abrir consultas: cero
+// lecturas adicionales y el primer toque ya encuentra el código en caché.
+function precargarDocumentos() {
+  void Promise.allSettled([
+    import("./components/screens/Reportes"),
+    import("./components/screens/Facturas"),
+  ]);
+}
 
 const PANTALLAS_SECUNDARIAS: CargaPantalla[] = [
   () => import("./components/screens/NuevaCampana"),
@@ -588,8 +599,10 @@ function AuthenticatedApp({
 
   useEffect(() => {
     // No competir con la autenticación. En cuanto ya existe una sesión,
-    // sí se descargan todas las rutas para que la navegación sea instantánea.
+    // Reportes/Facturas se piden de inmediato porque son destinos frecuentes;
+    // el resto conserva la precarga ociosa y escalonada para no saturar móvil.
     if (!uid) return;
+    precargarDocumentos();
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
     const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
     const id = idle(precargarTodasLasPantallas, { timeout: 1200 });
