@@ -8787,6 +8787,11 @@ select.reports-filter-select,
   }
   .profile-content {
     padding: 22px 20px 18px;
+    /* Mantener el mismo solapamiento curvo de Inicio. Esta declaración
+       vive junto al ajuste móvil final para que no la anule la regla base
+       de .profile-content definida más adelante en la hoja. */
+    margin-top: -26px;
+    border-radius: 26px 26px 0 0;
   }
   .profile-section {
     margin-top: 24px;
