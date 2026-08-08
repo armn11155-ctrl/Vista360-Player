@@ -119,28 +119,37 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         <div className="login-left-tagline">
           Más que visibilidad. <strong>Presencia.</strong>
         </div>
-        <div className="login-feature-list">
-          <div className="login-feature-item">
-            <span className="login-feature-icon"><IconoReportes /></span>
-            <div>
-              <div className="login-feature-title">Reportes en tiempo real</div>
-              <div className="login-feature-desc">Evidencia fotográfica y ocupación al día.</div>
+        <div className="login-feature-stage">
+          <div className="login-feature-list">
+            <div className="login-feature-item">
+              <span className="login-feature-icon"><IconoReportes /></span>
+              <div>
+                <div className="login-feature-title">Reportes en tiempo real</div>
+                <div className="login-feature-desc">Evidencia fotográfica y ocupación al día.</div>
+              </div>
+            </div>
+            <div className="login-feature-item">
+              <span className="login-feature-icon"><IconoPaneles /></span>
+              <div>
+                <div className="login-feature-title">Gestión de paneles y mapas</div>
+                <div className="login-feature-desc">Visualiza y administra tu inventario publicitario.</div>
+              </div>
+            </div>
+            <div className="login-feature-item">
+              <span className="login-feature-icon"><IconoAccesoSeguro /></span>
+              <div>
+                <div className="login-feature-title">Acceso seguro y controlado</div>
+                <div className="login-feature-desc">Protegemos tu información y la de tu empresa.</div>
+              </div>
             </div>
           </div>
-          <div className="login-feature-item">
-            <span className="login-feature-icon"><IconoPaneles /></span>
-            <div>
-              <div className="login-feature-title">Gestión de paneles y mapas</div>
-              <div className="login-feature-desc">Visualiza y administra tu inventario publicitario.</div>
-            </div>
-          </div>
-          <div className="login-feature-item">
-            <span className="login-feature-icon"><IconoAccesoSeguro /></span>
-            <div>
-              <div className="login-feature-title">Acceso seguro y controlado</div>
-              <div className="login-feature-desc">Protegemos tu información y la de tu empresa.</div>
-            </div>
-          </div>
+          <figure className="login-feature-visual" aria-hidden="true">
+            <img src="/login-ny-desktop-tailored.jpg" alt="" draggable={false} />
+            <figcaption>
+              <span>Operación conectada</span>
+              <strong>Una plataforma. Toda tu gestión.</strong>
+            </figcaption>
+          </figure>
         </div>
       </div>
       <div className="login-right-panel">
