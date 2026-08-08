@@ -265,7 +265,7 @@ a {
 .quotes-form-card input,
 .quotes-form-card select,
 .quotes-form-card textarea,
-.content-area input:not([type="checkbox"]):not([type="radio"]),
+.content-area input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
 .content-area select,
 .content-area textarea {
   min-height: 44px;
@@ -279,7 +279,7 @@ a {
 
 :where(.form-input, .report-panel-field, .factura-edit-input, .admin-picker-search,
   .quotes-form-card input, .quotes-form-card select, .quotes-form-card textarea,
-  .content-area input:not([type="checkbox"]):not([type="radio"]),
+  .content-area input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
   .content-area select, .content-area textarea):focus {
   border-color: var(--v360-brand-500);
   box-shadow: 0 0 0 3px rgba(22, 119, 255, .13);
