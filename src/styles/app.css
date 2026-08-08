@@ -585,10 +585,10 @@
 
   .profile-top-curve { display: none; }
   @keyframes profile-curve-shine {
-    0% { stroke-dashoffset: 116; opacity: 0; }
+    0% { stroke-dashoffset: 122; opacity: 0; }
     2% { opacity: .95; }
-    14% { stroke-dashoffset: -16; opacity: .95; }
-    16%, 100% { stroke-dashoffset: -16; opacity: 0; }
+    12% { stroke-dashoffset: -22; opacity: .95; }
+    14%, 100% { stroke-dashoffset: -22; opacity: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     .header-dark::after, .detail-header::after, .profile-top::after,
@@ -708,11 +708,14 @@
       stroke-linecap: round;
       stroke-width: 3;
     }
-    .profile-top-curve-base { stroke: url(#profile-top-curve-gradient); }
+    .profile-top-curve-base {
+      stroke: url(#profile-top-curve-gradient);
+      filter: drop-shadow(0 0 4px rgba(47,111,237,.36));
+    }
     .profile-top-curve-shine {
-      stroke: rgba(255,255,255,.9);
-      stroke-dasharray: 16 84;
-      stroke-dashoffset: 116;
+      stroke: url(#profile-top-curve-shine-gradient);
+      stroke-dasharray: 22 78;
+      stroke-dashoffset: 122;
       animation: profile-curve-shine 10s ease-in-out infinite;
     }
   }

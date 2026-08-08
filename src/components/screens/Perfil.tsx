@@ -293,6 +293,11 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                 <stop offset="0.5" stopColor="#5b93ff" />
                 <stop offset="1" stopColor="#2f6fed" />
               </linearGradient>
+              <linearGradient id="profile-top-curve-shine-gradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
+                <stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.96" />
+                <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
+              </linearGradient>
             </defs>
             <path className="profile-top-curve-base" pathLength="100" d="M1 1 C1 16 10 29 27 29 H363 C380 29 389 16 389 1" />
             <path className="profile-top-curve-shine" pathLength="100" d="M1 1 C1 16 10 29 27 29 H363 C380 29 389 16 389 1" />

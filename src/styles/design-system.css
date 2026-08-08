@@ -657,8 +657,31 @@ a {
   }
 
   .admin-picker-management-card {
-    background: linear-gradient(150deg, #FFFFFF 0%, #F5F8FC 100%);
-    box-shadow: inset 0 1px 0 #FFFFFF, 0 12px 24px -22px rgba(15,23,42,.32);
+    border-color: rgba(80,111,156,.36);
+    color: #FFFFFF;
+    background:
+      radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--management-accent, #2F6FED) 16%, transparent), transparent 42%),
+      linear-gradient(150deg, #111D31 0%, #07101D 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.075), 0 16px 28px -22px rgba(2,6,23,.78);
+  }
+
+  .admin-picker-management-card strong {
+    color: #F8FAFC;
+  }
+
+  .admin-picker-management-card small {
+    color: rgba(203,213,225,.62);
+  }
+
+  .admin-picker-management-card i {
+    color: rgba(219,234,254,.68);
+  }
+
+  .admin-picker-management-card .admin-picker-action-icon {
+    border-color: color-mix(in srgb, var(--management-accent, #2F6FED) 38%, transparent);
+    color: #DBEAFE;
+    background: color-mix(in srgb, var(--management-accent, #2F6FED) 19%, rgba(255,255,255,.035));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
   }
 }
 
@@ -1103,6 +1126,30 @@ a {
 
 /* Mobile is intentionally denser, with comfortable touch targets. */
 @media (max-width: 899px) {
+  /* El min-height anterior añadía unos 50px vacíos debajo de la cuenta.
+     La altura vuelve a depender del contenido y conserva aire suficiente
+     para que la curva no toque la foto ni el texto. */
+  .profile-top {
+    min-height: 0;
+    padding: calc(20px + env(safe-area-inset-top)) 22px 48px;
+  }
+
+  .profile-top-bar {
+    margin-bottom: 18px;
+  }
+
+  .profile-hero-company {
+    width: min(346px, 100%);
+    margin-inline: auto;
+  }
+
+  /* Un incremento pequeño: en un viewport de 844px pasa de ~490px a
+     ~515px, sin convertir el mapa en una pantalla interminable. */
+  .coverage-map-real {
+    height: clamp(390px, 61dvh, 520px);
+    min-height: 390px;
+  }
+
   .detail-header,
   .reports-header,
   .coverage-header-compact,

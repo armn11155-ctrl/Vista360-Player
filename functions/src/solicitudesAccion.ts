@@ -43,5 +43,31 @@ export async function crearSolicitudPendiente({
     payload,
     createdAt: FieldValue.serverTimestamp(),
   });
+
+  // Estas solicitudes no pasan por `solicitudesCampana`, por lo que el
+  // trigger que avisa sobre campañas nuevas nunca se entera de ellas.
+  // Resultado: el Gerente veía el badge al volver a abrir la app, pero no
+  // recibía ningún push cuando un Trabajador pedía crear/editar un panel.
+  //
+  // El import queda dentro del camino secundario y DESPUÉS de la escritura:
+  // la persistencia de la aprobación es el trabajo principal; el aviso no
+  // puede impedirla. Si FCM está temporalmente caído, la solicitud ya quedó
+  // guardada y no debe devolverse un falso error al Trabajador.
+  try {
+    const { enviarPushAAdmin } = await import("./notificacionesPush.js");
+    const titulo = tipo === "crearPanel"
+      ? "Nuevo panel pendiente de aprobación"
+      : tipo === "actualizarPanel"
+        ? "Cambio de panel pendiente"
+        : "Nueva aprobación pendiente";
+    await enviarPushAAdmin({
+      title: titulo,
+      body: `${solicitanteNombre}: ${resumen}`,
+      url: "/",
+    });
+  } catch (error) {
+    console.error("La solicitud se guardó, pero no se pudo avisar al Gerente.", error);
+  }
+
   return ref.id;
 }
