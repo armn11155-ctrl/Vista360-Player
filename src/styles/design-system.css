@@ -598,11 +598,16 @@ a {
   border-radius: var(--v360-radius-panel);
 }
 
-/* Recorta también la regla azul animada a las curvas del hero. Sin este
-   recorte, los pseudo-elementos ::before/::after seguían rectos por fuera
-   de las esquinas inferiores en la versión móvil. */
-.profile-top {
-  overflow: hidden;
+/* En móvil Perfil comparte el mismo encuentro curvo de Inicio; app.css
+   controla ese recorte. En escritorio el hero conserva su radio. */
+@media (min-width: 900px) {
+  .profile-top { overflow: hidden; }
+}
+@media (max-width: 899px) {
+  .profile-top {
+    overflow: visible;
+    border-radius: 0;
+  }
 }
 
 .profile-row,

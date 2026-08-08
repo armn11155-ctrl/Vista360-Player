@@ -513,12 +513,12 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
             // normal de la página en zoom accidental. Al salir con el
             // cursor se apaga otra vez (enganche inmediatamente abajo).
             scrollWheelZoom: false,
-            // En una pantalla táctil, un dedo queda reservado para
-            // desplazar la página. El mapa todavía acepta pellizco con
-            // dos dedos, botones +/- y toques en los pines; solo se
-            // desactiva el arrastre de un dedo que antes atrapaba el
-            // gesto e impedía llegar al listado inferior.
-            dragging: !esEntradaTactil,
+            // El mapa vuelve a ser totalmente táctil también en móvil:
+            // un dedo desplaza la cartografía, dos dedos hacen zoom y
+            // los pines responden al toque. El recuadro móvil es más
+            // corto (CSS) para que el contenido inferior quede visible
+            // y la página se pueda seguir desplazando desde esa zona.
+            dragging: true,
             touchZoom: true,
             // Doble click/doble toque para hacer zoom IN estaba activado
             // por defecto. En un mapa chico, un pellizco para alejar que
@@ -893,13 +893,11 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
       <div className="content-area coverage-premium-area">
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
-          {mapReady && !mapError && (
+          {mapReady && !mapError && !esEntradaTactil && (
             <div className={`coverage-map-interaction-hint${zoomRuedaActivo ? " is-active" : ""}`}>
-              {esEntradaTactil
-                ? "Desplázate con un dedo · usa dos dedos en el mapa"
-                : zoomRuedaActivo
-                  ? "Zoom activo · mueve el cursor fuera para desplazarte"
-                  : "Haz clic en el mapa para activar el zoom"}
+              {zoomRuedaActivo
+                ? "Zoom activo · mueve el cursor fuera para desplazarte"
+                : "Haz clic en el mapa para activar el zoom"}
             </div>
           )}
           {mapReady && !mapError && datosListos && (

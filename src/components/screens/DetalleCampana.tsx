@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
@@ -12,6 +12,7 @@ import { cloudFunctions } from "../../config/firebase";
 import { mensajeDeError } from "../../utils/errores";
 import { descargarRecordatorioCalendario } from "../../utils/calendarioIcs";
 import { useDialogos } from "../DialogosProvider";
+import { cargarLeaflet } from "../../utils/leaflet";
 
 interface Props {
   contrato: Contrato;
@@ -78,6 +79,94 @@ function EmptyReportsIcon() {
       <circle cx="32" cy="17" r="3" fill="#93C5FD" />
       <rect x="7" y="8" width="34" height="32" rx="7" stroke="#BFDBFE" strokeWidth="2" />
     </svg>
+  );
+}
+
+/**
+ * Mapa nocturno real para la ubicación de una pantalla.
+ *
+ * El iframe anterior seguía siendo un Google Maps claro al que CSS le
+ * invertía todos los colores. Eso oscurecía el fondo, pero también
+ * convertía vegetación, vías y etiquetas en tonos artificiales. Esta
+ * versión usa la cartografía Dark Matter directamente y conserva la
+ * coordenada, el zoom y la interacción completa del mapa.
+ */
+function CampaignLocationMap({ panel }: { panel: Panel }) {
+  const mapEl = useRef<HTMLDivElement | null>(null);
+  const [mapError, setMapError] = useState(false);
+
+  useEffect(() => {
+    let cancelado = false;
+    let mapa: any = null;
+    let frameId: number | null = null;
+    setMapError(false);
+
+    cargarLeaflet()
+      .then((L) => {
+        if (cancelado || !mapEl.current) return;
+
+        mapa = L.map(mapEl.current, {
+          zoomControl: false,
+          attributionControl: false,
+          scrollWheelZoom: false,
+          dragging: true,
+          touchZoom: true,
+          doubleClickZoom: true,
+          minZoom: 3,
+          maxZoom: 20,
+        }).setView([panel.lat!, panel.lng!], 17);
+
+        L.tileLayer("https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+          maxZoom: 20,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          keepBuffer: 3,
+        }).addTo(mapa);
+
+        L.control.zoom({ position: "bottomright" }).addTo(mapa);
+        L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapa);
+        L.marker([panel.lat!, panel.lng!], {
+          icon: L.divIcon({
+            className: "campaign-location-marker",
+            html: "<span><i></i></span>",
+            iconSize: [42, 52],
+            iconAnchor: [21, 48],
+          }),
+          keyboard: false,
+        }).addTo(mapa);
+
+        frameId = requestAnimationFrame(() => mapa?.invalidateSize());
+      })
+      .catch(() => {
+        if (!cancelado) setMapError(true);
+      });
+
+    return () => {
+      cancelado = true;
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      mapa?.remove();
+    };
+  }, [panel.id, panel.lat, panel.lng]);
+
+  const googleMapsUrl = `https://www.google.com/maps?q=${panel.lat},${panel.lng}`;
+
+  return (
+    <div className="campaign-location-map">
+      <div ref={mapEl} className="campaign-location-leaflet" />
+      <a
+        className="campaign-location-google-link"
+        href={googleMapsUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`Abrir ubicación de ${panel.nombre} en Google Maps`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
+          <circle cx="12" cy="10" r="2.1" />
+        </svg>
+        Ver en Google Maps
+      </a>
+      {mapError && <div className="campaign-location-error">No se pudo cargar el mapa.</div>}
+    </div>
   );
 }
 
@@ -287,16 +376,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                         <div style={{ fontSize: 12, fontWeight: 700, color: "#0B1220", marginBottom: 6 }}>{p.nombre}</div>
                       )}
                       {p.lat && p.lng ? (
-                        <div className="campaign-location-map">
-                          <iframe
-                            title={`Ubicación de ${p.nombre}`}
-                            width="100%"
-                            style={{ border: "none" }}
-                            loading="lazy"
-                            referrerPolicy="strict-origin-when-cross-origin"
-                            src={`https://maps.google.com/maps?q=${p.lat},${p.lng}&z=18&output=embed`}
-                          />
-                        </div>
+                        <CampaignLocationMap panel={p} />
                       ) : (
                         <div style={{ fontSize: 13, color: "#64748B" }}>{p.direccion ?? "Sin coordenadas registradas"}</div>
                       )}
