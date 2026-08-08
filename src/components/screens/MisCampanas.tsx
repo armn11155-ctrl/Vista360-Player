@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from "react";
 import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
-import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
+import { diasHasta, fechaCorta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { useContratosHistoricos } from "../../hooks/useContratos";
 import { useInformes } from "../../hooks/useInformes";
@@ -412,6 +412,14 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               key={c.id}
               className={`premium-campaign-card-hit${filtradas.length % 2 === 1 && index === filtradas.length - 1 ? " premium-campaign-card-last-single" : ""}`}
               onClick={() => onAbrir(c)}
+              role="button"
+              tabIndex={0}
+              aria-label={`Abrir campaña ${tituloCampana}`}
+              onKeyDown={(e) => {
+                if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " ")) return;
+                e.preventDefault();
+                onAbrir(c);
+              }}
             >
               <div className="premium-campaign-card-lift">
               <div className="premium-campaign-card" style={cityStyle}>
@@ -429,7 +437,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                 </div>
                 <div className="premium-campaign-meta premium-campaign-date">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {c.inicio} – {c.fin}
+                  {fechaCorta(c.inicio)} – {fechaCorta(c.fin)}
                 </div>
                 {estado !== "Finalizada" && (
                   <div>
@@ -512,20 +520,17 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           );
         })}
 
-        {/* Nueva campaña CTA */}
-        <div style={{ textAlign: "center", color: "#64748B", fontSize: 13, marginTop: 8, marginBottom: 8 }}>
-          ¿Quieres lanzar una nueva campaña?
+        {/* Nueva campaña CTA -- texto y botón son una sola unidad para
+            que el grid de escritorio no los mande a columnas distintas. */}
+        <div className="mis-campanas-cta">
+          <div>¿Quieres lanzar una nueva campaña?</div>
+          <button type="button" onClick={onNueva}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Nueva campaña
+          </button>
         </div>
-        <button type="button" onClick={onNueva} style={{
-          width: "100%", padding: "14px", background: "#0877FF", color: "#fff", fontWeight: 600,
-          fontSize: 14, border: "none", borderRadius: 16, cursor: "pointer", marginBottom: 16,
-          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-          </svg>
-          Nueva campaña
-        </button>
       </div>
 
       {editando && (

@@ -723,6 +723,25 @@
   .inicio-profile-top-btn {
     display: none;
   }
+  .inicio-header-icon-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(255,255,255,.13), rgba(255,255,255,.06));
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 12px 26px rgba(0,0,0,.16);
+  }
+  .inicio-header-icon-btn:focus-visible,
+  .inicio-quick-grid > button:focus-visible {
+    outline: 2px solid #60A5FA;
+    outline-offset: 2px;
+  }
   /* Botón "Activar" que reemplaza la campanita mientras el navegador
      todavía no tiene permiso de notificaciones -- en cuanto se activa
      (o si ya estaba bloqueado/activado antes), vuelve a mostrarse la
@@ -1048,6 +1067,12 @@
     content: none;
   }
   .premium-campaign-card-hit:active .premium-campaign-card-lift { transform: scale(.988); }
+  .premium-campaign-card-hit:focus-visible {
+    outline: none;
+  }
+  .premium-campaign-card-hit:focus-visible .premium-campaign-card-lift {
+    box-shadow: 0 0 0 3px rgba(96,165,250,.55);
+  }
   .premium-campaign-kicker {
     color: #FFFFFF;
     font-size: 11px;
@@ -1250,6 +1275,33 @@
     background: var(--bg);
     padding: 12px 16px 8px;
     flex-shrink: 0;
+  }
+  .mis-campanas-cta {
+    width: 100%;
+    margin: 8px auto 0;
+    display: grid;
+    gap: 8px;
+    text-align: center;
+    color: #64748B;
+    font-size: 13px;
+  }
+  .mis-campanas-cta button {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 16px;
+    background: #0877FF;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 750;
+    cursor: pointer;
+    box-shadow: 0 12px 24px -14px rgba(8,119,255,.62);
   }
   .hint-text { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
   .btn-primary {
@@ -2202,7 +2254,7 @@
     width: 38px;
     height: 38px;
     border: 0;
-    border-radius: 20px;
+    border-radius: 13px;
     background: rgba(255,255,255,0.10);
     border: 1px solid rgba(255,255,255,0.14);
     color: #FFFFFF;
@@ -3803,7 +3855,7 @@
     /* Iconos de accesos rapidos con un leve efecto al pasar el mouse --
        en movil no aplica (hover:hover excluye tactil), es un detalle
        solo para escritorio. */
-    .inicio-quick-grid > div {
+    .inicio-quick-grid > button {
       min-height: 82px !important;
       border-radius: 16px !important;
       flex-direction: row !important;
@@ -3812,7 +3864,7 @@
       box-sizing: border-box;
       transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
     }
-    .inicio-quick-grid > div > span {
+    .inicio-quick-grid > button > span {
       font-size: 12px !important;
       text-align: left !important;
     }
@@ -3859,7 +3911,7 @@
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
     @media (hover: hover) {
-      .inicio-quick-grid > div:hover {
+      .inicio-quick-grid > button:hover {
         transform: translateY(-3px);
         box-shadow: 0 18px 34px rgba(15,23,42,0.10);
         border-color: #C9DBFF !important;
@@ -4061,9 +4113,10 @@
     }
     .profile-top-bar {
       margin-bottom: 34px;
+      justify-content: flex-end;
     }
     .profile-top-logo {
-      width: 154px;
+      display: none;
     }
     .profile-bell {
       width: 40px;
@@ -4824,6 +4877,87 @@
     .report-action {
       font-size: 13px;
       min-height: 48px;
+    }
+  }
+
+  /* En móvil las cuatro acciones antes consumían tres filas completas:
+     Ver y Descargar medían 60px cada una y ocupaban todo el ancho. Las
+     dos acciones principales ahora comparten la primera fila y las de
+     envío la segunda, manteniendo cuatro botones reales y el mismo
+     comportamiento con casi la mitad de altura de controles. */
+  @media (max-width: 899px) {
+    .report-card {
+      padding: 18px;
+    }
+    .report-card-main {
+      grid-template-columns: 74px minmax(0, 1fr) auto;
+      gap: 16px;
+    }
+    .report-pdf-icon {
+      width: 72px;
+      height: 100px;
+    }
+    .report-pdf-icon svg {
+      width: 72px;
+      height: 84px;
+    }
+    .report-title {
+      font-size: 21px;
+    }
+    .report-actions {
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .report-action,
+    .report-action-primary,
+    .report-action-download,
+    .factura-action-primary {
+      grid-column: auto;
+      min-height: 50px;
+      font-size: 14px;
+    }
+    .report-action-muted {
+      min-height: 46px;
+    }
+    .factura-card .report-card-main {
+      grid-template-columns: 78px minmax(0, 1fr) auto;
+    }
+    .factura-card .factura-pdf-icon,
+    .factura-card .factura-pdf-icon svg {
+      width: 76px;
+      height: auto;
+    }
+  }
+  @media (max-width: 360px) {
+    .report-card {
+      padding: 16px;
+    }
+    .report-card-main {
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 13px;
+    }
+    .report-pdf-icon,
+    .report-pdf-icon svg {
+      width: 64px;
+    }
+    .factura-card .report-card-main {
+      grid-template-columns: 70px minmax(0, 1fr) auto;
+    }
+    .factura-card .factura-pdf-icon,
+    .factura-card .factura-pdf-icon svg {
+      width: 68px;
+      height: auto;
+    }
+    .report-ready-badge {
+      grid-column: 2;
+      justify-self: start;
+    }
+    .report-action,
+    .report-action-primary,
+    .report-action-download,
+    .factura-action-primary {
+      min-height: 46px;
+      font-size: 13px;
     }
   }
 
@@ -6424,6 +6558,33 @@
     inset: 0;
     z-index: 0;
   }
+  .coverage-map-interaction-hint {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    z-index: 710;
+    max-width: calc(100% - 112px);
+    padding: 7px 11px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    color: rgba(255,255,255,.88);
+    background: rgba(5,10,18,.78);
+    box-shadow: 0 10px 24px rgba(2,6,23,.20);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size: 10px;
+    font-weight: 750;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    pointer-events: none;
+    transition: background-color .18s ease, color .18s ease;
+  }
+  .coverage-map-interaction-hint.is-active {
+    color: #FFFFFF;
+    background: rgba(8,119,255,.86);
+  }
   .coverage-leaflet-map .leaflet-tile-pane {
     filter: saturate(.9) brightness(1.035) contrast(.96);
   }
@@ -6855,6 +7016,13 @@
       height: clamp(500px, calc(100dvh - 160px), 680px);
       min-height: 500px;
       border-radius: 20px;
+    }
+    .coverage-map-interaction-hint {
+      top: 10px;
+      max-width: calc(100% - 32px);
+      padding: 7px 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .coverage-map-legend {
       left: 10px;
@@ -7517,12 +7685,18 @@
     }
     .mis-campanas-list .premium-campaign-card-last-single {
       grid-column: 1 / -1;
-      width: min(520px, calc((100% - 16px) / 2));
+      width: min(700px, 100%);
       justify-self: center;
     }
     .mis-campanas-month-status,
     .mis-campanas-empty {
       grid-column: 1 / -1;
+    }
+    .mis-campanas-cta {
+      grid-column: 1 / -1;
+      width: min(460px, 100%);
+      margin-top: 12px;
+      justify-self: center;
     }
   }
 

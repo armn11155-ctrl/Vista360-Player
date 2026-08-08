@@ -108,17 +108,19 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
         {/* Logo + menú + campana */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"center", position:"relative", marginBottom:30 }}>
           {/* Botón menú lateral ☰ — solo visible en móvil, en escritorio el nav siempre está abierto */}
-          <div
+          <button
+            type="button"
+            aria-label="Abrir menú"
             onClick={onMenuClick}
-            className="mobile-menu-btn"
-            style={{ position:"absolute", left:0, width:32, height:32, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}
+            className="mobile-menu-btn inicio-header-icon-btn"
+            style={{ position:"absolute", left:0 }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
               <line x1="3" y1="6" x2="21" y2="6"/>
               <line x1="3" y1="12" x2="21" y2="12"/>
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
-          </div>
+          </button>
           <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="inicio-logo" style={{ height:28, maxWidth:"64%", objectFit:"contain" }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center", gap:10 }}>
             <button
@@ -157,20 +159,13 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                 </span>
               </button>
             ) : (
-              <div
+              <button
+                type="button"
+                aria-label="Notificaciones"
                 onClick={onNotifClick}
+                className="inicio-header-icon-btn"
                 style={{
                   position:"relative",
-                  width:38,
-                  height:38,
-                  borderRadius:20,
-                  display:"flex",
-                  alignItems:"center",
-                  justifyContent:"center",
-                  cursor:"pointer",
-                  background:"rgba(255,255,255,0.10)",
-                  border:"1px solid rgba(255,255,255,0.14)",
-                  boxShadow:"0 12px 26px rgba(0,0,0,0.16)",
                 }}
               >
                 <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.9" strokeLinecap="round">
@@ -191,7 +186,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                     {totalNotifs > 9 ? "9+" : totalNotifs}
                   </div>
                 )}
-              </div>
+              </button>
             )}
           </div>
         </div>
@@ -296,7 +291,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             { bg:"#FFFFFF", label:"Mi perfil", description:"Tus datos y accesos", tab:"perfil" as const,
               icon:<PersonIcon size={24} color="#0877FF" /> },
           ].map(q => (
-            <div key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, background:q.bg, border:"1px solid #E2E8F0", borderRadius:8, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 12px 26px rgba(15,23,42,0.05)" }}>
+            <button type="button" key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, padding:0, background:q.bg, color:"inherit", border:"1px solid #E2E8F0", borderRadius:8, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 12px 26px rgba(15,23,42,0.05)", font:"inherit" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:28 }}>
                 {q.icon}
               </div>
@@ -304,7 +299,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                 <span style={{ fontSize: 11, color:"#08122B", fontWeight:650, textAlign:"center", lineHeight:1.12 }}>{q.label}</span>
                 <small>{q.description}</small>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 

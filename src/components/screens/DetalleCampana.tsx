@@ -4,7 +4,7 @@ import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { useFacturas } from "../../hooks/useFacturas";
 import { FacturaCard } from "../FacturaCard";
-import { diasHasta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
+import { diasHasta, fechaCorta, hoyEnPeru, progresoCampana, soloFecha, sumarDias } from "../../utils/fechas";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
 import { campaignCityImageHero } from "../../utils/campaignCity";
@@ -217,7 +217,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
           </div>
           <div className="campaign-detail-meta campaign-detail-meta-first">
             <HeaderIcon type="calendar" />
-            <span>{contrato.inicio} - {contrato.fin}</span>
+            <span>{fechaCorta(contrato.inicio)} – {fechaCorta(contrato.fin)}</span>
           </div>
           {panel && (
             <div className="campaign-detail-meta">
@@ -313,9 +313,9 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
             <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 6 }}>Información de la campaña</div>
               <div style={{ fontSize: 13, color: "#64748B", display: "flex", flexDirection: "column", gap: 6 }}>
-                <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara ?? "—"}</strong></div>
-                <div>Monto: <strong style={{ color: "#0B1220" }}>${contrato.monto?.toLocaleString() ?? "—"}</strong></div>
-                <div>Pago: <strong style={{ color: contrato.pagado ? "#16A34A" : "#EF4444" }}>{contrato.pagado ? "Pagado" : "Pendiente"}</strong></div>
+                <div>Cara del panel: <strong style={{ color: "#0B1220" }}>{contrato.cara?.trim() || "Sin registrar"}</strong></div>
+                <div>Monto: <strong style={{ color: "#0B1220" }}>{typeof contrato.monto === "number" && contrato.monto > 0 ? `$${contrato.monto.toLocaleString()}` : "Sin registrar"}</strong></div>
+                <div>Pago: <strong style={{ color: typeof contrato.pagado === "boolean" ? (contrato.pagado ? "#16A34A" : "#EF4444") : "#0B1220" }}>{typeof contrato.pagado === "boolean" ? (contrato.pagado ? "Pagado" : "Pendiente") : "Sin registrar"}</strong></div>
               </div>
 
               {/* Antes acá no había nada de tiempo/avance -- solo se veían

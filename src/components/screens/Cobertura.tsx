@@ -399,8 +399,13 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   // por primera vez.
   const markersPorIdRef = useRef<Map<string, any>>(new Map());
   const reposicionarSolapadosRef = useRef<(zoomObjetivo?: number) => void>(() => undefined);
+  const limpiarInteraccionMapaRef = useRef<(() => void) | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [esEntradaTactil] = useState(() =>
+    typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches
+  );
+  const [zoomRuedaActivo, setZoomRuedaActivo] = useState(false);
 
   // Se pidió que en Cobertura se vea TODO el inventario de paneles (no
   // solo los que este cliente ya tiene contratados), para que pueda
@@ -502,14 +507,19 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           mapRef.current = L.map(mapEl.current, {
             zoomControl: false,
             attributionControl: false,
-            // Zoom con la rueda del mouse o con el pad (dos dedos,
-            // gesto de pellizcar) -- se pidió habilitarlo para
-            // escritorio/laptop, donde no hay pantalla táctil. Leaflet
-            // ya lo limita solo al recuadro del mapa (mueve el mouse
-            // afuera y el resto de la página scrollea normal), así que
-            // no hace falta ninguna condición extra para que no
-            // "atrape" el scroll del resto de la pantalla.
-            scrollWheelZoom: true,
+            // La rueda queda apagada hasta que la persona haga clic en
+            // el mapa. Como este recuadro ocupa casi toda la pantalla,
+            // dejarla activa desde el primer render convertía un scroll
+            // normal de la página en zoom accidental. Al salir con el
+            // cursor se apaga otra vez (enganche inmediatamente abajo).
+            scrollWheelZoom: false,
+            // En una pantalla táctil, un dedo queda reservado para
+            // desplazar la página. El mapa todavía acepta pellizco con
+            // dos dedos, botones +/- y toques en los pines; solo se
+            // desactiva el arrastre de un dedo que antes atrapaba el
+            // gesto e impedía llegar al listado inferior.
+            dragging: !esEntradaTactil,
+            touchZoom: true,
             // Doble click/doble toque para hacer zoom IN estaba activado
             // por defecto. En un mapa chico, un pellizco para alejar que
             // no sale perfectamente limpio (los dos dedos tocan casi a la
@@ -550,6 +560,25 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           });
           L.control.zoom({ position: "bottomright" }).addTo(mapRef.current);
           L.control.attribution({ prefix: false, position: "bottomleft" }).addTo(mapRef.current);
+
+          const mapaCreado = mapRef.current;
+          const contenedorMapa = mapaCreado.getContainer() as HTMLElement;
+          const activarZoomRueda = () => {
+            if (esEntradaTactil) return;
+            mapaCreado.scrollWheelZoom.enable();
+            setZoomRuedaActivo(true);
+          };
+          const desactivarZoomRueda = () => {
+            mapaCreado.scrollWheelZoom.disable();
+            setZoomRuedaActivo(false);
+          };
+          contenedorMapa.addEventListener("click", activarZoomRueda);
+          contenedorMapa.addEventListener("mouseleave", desactivarZoomRueda);
+          limpiarInteraccionMapaRef.current = () => {
+            contenedorMapa.removeEventListener("click", activarZoomRueda);
+            contenedorMapa.removeEventListener("mouseleave", desactivarZoomRueda);
+          };
+
           L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -842,6 +871,8 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   }, [conCoordenadas, seleccionado, seleccionadoId, datosListos]);
 
   useEffect(() => () => {
+    limpiarInteraccionMapaRef.current?.();
+    limpiarInteraccionMapaRef.current = null;
     markersRef.current?.remove();
     markersRef.current = null;
     mapRef.current?.remove();
@@ -862,6 +893,15 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
       <div className="content-area coverage-premium-area">
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
+          {mapReady && !mapError && (
+            <div className={`coverage-map-interaction-hint${zoomRuedaActivo ? " is-active" : ""}`}>
+              {esEntradaTactil
+                ? "Desplázate con un dedo · usa dos dedos en el mapa"
+                : zoomRuedaActivo
+                  ? "Zoom activo · mueve el cursor fuera para desplazarte"
+                  : "Haz clic en el mapa para activar el zoom"}
+            </div>
+          )}
           {mapReady && !mapError && datosListos && (
             <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
