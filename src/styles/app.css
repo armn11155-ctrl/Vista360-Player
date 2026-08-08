@@ -48,6 +48,14 @@
     --premium-rule-gradient: linear-gradient(90deg, #2f6fed, #5b93ff 50%, #2f6fed);
     --premium-shadow: 0 22px 52px rgba(5,10,18,0.10);
     --premium-shadow-soft: 0 12px 32px rgba(5,10,18,0.07);
+    --premium-shadow-card: 0 16px 40px -24px rgba(5,10,18,.34), 0 2px 8px rgba(15,23,42,.035);
+    --premium-shadow-hover: 0 24px 52px -26px rgba(5,10,18,.40), 0 7px 18px rgba(15,23,42,.06);
+    --premium-surface-soft: linear-gradient(145deg, #FFFFFF 0%, #F8FAFD 100%);
+    --premium-navy-surface: linear-gradient(155deg, #101B2E 0%, #060B14 100%);
+    --premium-radius-sm: 10px;
+    --premium-radius-md: 14px;
+    --premium-radius-lg: 20px;
+    --premium-ease: cubic-bezier(.22,.75,.25,1);
     --green: #22C55E;
     --red: #EF4444;
     --purple: #8B5CF6;
@@ -8188,3 +8196,297 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     from { opacity: 0; transform: translateY(8px) scale(.97); }
     to { opacity: 1; transform: none; }
   }
+
+/* ===================================================================
+   REFINAMIENTO CORPORATIVO PREMIUM
+   Unifica profundidad, radios, legibilidad y movimiento en las cuatro
+   superficies principales del portal sin alterar estructura ni lógica.
+   =================================================================== */
+
+/* Superficies claras: borde neutro, sombra contenida y una sola escala
+   de profundidad. El azul queda reservado para selección y acciones. */
+.profile-card-list,
+.profile-metric-card,
+.report-card,
+.report-empty-state {
+  border-color: rgba(203,213,225,.72);
+  box-shadow: var(--premium-shadow-card);
+}
+.profile-card-list,
+.profile-metric-card {
+  background: var(--premium-surface-soft);
+}
+.profile-section h2,
+.reports-month-header {
+  letter-spacing: -.012em;
+}
+
+/* Perfil: identidad más compacta y tarjetas con interacción delicada. */
+.profile-bell,
+.profile-row.clickable,
+.profile-row.danger {
+  transition:
+    transform .18s var(--premium-ease),
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+.profile-row.clickable:focus-visible,
+.profile-row.danger:focus-visible,
+.profile-bell:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .profile-row.clickable:hover {
+    background: #F8FBFF;
+  }
+  .profile-row.danger:hover {
+    background: #FFF8F8;
+  }
+  .profile-bell:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,.12);
+    border-color: rgba(147,197,253,.28);
+  }
+}
+
+/* Generador de reportes: conserva todos los campos, pero reduce ruido
+   visual y usa la misma superficie azul-noche que el resto del portal. */
+.report-admin-panel {
+  background:
+    radial-gradient(circle at 88% -20%, rgba(8,119,255,.22), transparent 38%),
+    var(--premium-navy-surface);
+  border-color: rgba(147,197,253,.16);
+  box-shadow: 0 24px 54px -30px rgba(2,6,23,.9), inset 0 1px 0 rgba(255,255,255,.045);
+}
+.report-admin-icon {
+  box-shadow: 0 12px 24px -12px rgba(8,119,255,.72), inset 0 1px 0 rgba(255,255,255,.24);
+}
+select.reports-panel-select,
+.report-month-select,
+select.reports-filter-select,
+.report-campaign-panel-box {
+  border-radius: var(--premium-radius-sm);
+}
+.report-month-selects {
+  border-radius: var(--premium-radius-md);
+  background: rgba(255,255,255,.045);
+}
+.report-campaign-panel-box {
+  border-color: rgba(203,213,225,.78);
+  box-shadow: 0 8px 18px -16px rgba(2,6,23,.65);
+}
+.report-generate-btn,
+.report-action,
+.report-card-menu-btn {
+  transition:
+    transform .17s var(--premium-ease),
+    box-shadow .17s ease,
+    background-color .17s ease,
+    border-color .17s ease;
+}
+.report-generate-btn:focus-visible,
+.report-action:focus-visible,
+.report-card-menu-btn:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .report-generate-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px -15px rgba(8,119,255,.78);
+  }
+  .reports-list .report-card {
+    transition: transform .2s var(--premium-ease), box-shadow .2s ease, border-color .2s ease;
+  }
+  .reports-list .report-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(8,119,255,.22);
+    box-shadow: var(--premium-shadow-hover);
+  }
+}
+
+/* Campañas: reemplaza el negro plano por azul noche y aumenta la
+   legibilidad de los datos operativos sin agrandar la tarjeta. */
+.mis-campanas-month-status {
+  border-color: rgba(147,197,253,.16);
+  border-radius: var(--premium-radius-md);
+  background:
+    radial-gradient(circle at 94% -40%, rgba(8,119,255,.18), transparent 44%),
+    #070D17;
+  box-shadow: 0 18px 38px -28px rgba(2,6,23,.95), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.mis-campanas-month-status-header {
+  color: rgba(226,232,240,.78);
+}
+.premium-campaign-title {
+  font-size: 18px;
+  letter-spacing: -.015em;
+}
+.premium-campaign-meta {
+  color: #C5D0E0;
+  font-size: 12px;
+  line-height: 1.25;
+}
+.premium-campaign-progress {
+  height: 6px;
+  background: rgba(255,255,255,.13);
+}
+.premium-campaign-progress-label {
+  color: #B4C0D2;
+  font-size: 12px;
+}
+.mis-campanas-cta button {
+  background: linear-gradient(135deg, #0877FF 0%, #316FF4 100%);
+  box-shadow: 0 16px 30px -17px rgba(8,119,255,.72), inset 0 1px 0 rgba(255,255,255,.20);
+  transition: transform .18s var(--premium-ease), box-shadow .18s ease, filter .18s ease;
+}
+.mis-campanas-cta button:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .mis-campanas-cta button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+    box-shadow: 0 20px 34px -17px rgba(8,119,255,.82), inset 0 1px 0 rgba(255,255,255,.22);
+  }
+}
+
+/* Cobertura: una cartografía más neutra deja que los marcadores y la
+   información de Vista360 sean los protagonistas. */
+.coverage-leaflet-map .leaflet-tile-pane {
+  filter: saturate(.72) brightness(1.045) contrast(.94);
+}
+.coverage-map-real::after {
+  background:
+    linear-gradient(145deg, rgba(8,119,255,.025), transparent 42%),
+    radial-gradient(circle at 85% 10%, rgba(11,63,138,.035), transparent 34%);
+}
+.coverage-leaflet-map .leaflet-control-zoom {
+  border: 1px solid rgba(203,213,225,.72);
+  box-shadow: 0 14px 30px -16px rgba(15,23,42,.34);
+}
+.coverage-map-legend {
+  background: linear-gradient(145deg, rgba(7,14,25,.94), rgba(15,29,50,.90));
+  border-color: rgba(147,197,253,.18);
+  box-shadow: 0 20px 40px -24px rgba(2,6,23,.82), inset 0 1px 0 rgba(255,255,255,.055);
+}
+
+@media (max-width: 899px) {
+  .profile-top {
+    min-height: 238px;
+    padding: calc(20px + env(safe-area-inset-top)) 22px 28px;
+  }
+  .profile-top-bar {
+    margin-bottom: 24px;
+  }
+  .profile-content {
+    padding: 22px 20px 18px;
+  }
+  .profile-section {
+    margin-top: 24px;
+  }
+
+  .reports-screen-body {
+    padding: 14px 12px 20px;
+  }
+  .report-admin-panel {
+    padding: 15px;
+    border-radius: var(--premium-radius-lg);
+  }
+  .report-admin-header {
+    gap: 10px;
+    margin-bottom: 11px;
+  }
+  .report-admin-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+  .report-admin-controls {
+    gap: 9px;
+  }
+  .report-auto-data {
+    margin-top: 8px;
+  }
+  .report-campaign-panels {
+    gap: 9px;
+    margin-top: 9px;
+  }
+  .report-campaign-panel-box {
+    padding: 10px 11px;
+  }
+  .reports-filter-bar {
+    gap: 8px;
+  }
+  .report-card {
+    border-radius: var(--premium-radius-md);
+  }
+
+  .campaign-list.mis-campanas-list {
+    padding: 14px 16px 26px;
+  }
+  .premium-campaign-card {
+    padding: 18px 16px 16px;
+  }
+  .mis-campanas-cta {
+    margin-top: 6px;
+  }
+
+  .coverage-map-real {
+    border-color: rgba(147,197,253,.34);
+    box-shadow: 0 26px 56px -30px rgba(0,0,0,.88), 0 0 0 1px rgba(255,255,255,.04);
+  }
+}
+
+@media (min-width: 900px) {
+  .profile-top {
+    padding: 28px 48px 34px;
+  }
+  .profile-top-bar {
+    margin-bottom: 18px;
+  }
+  .profile-content {
+    padding-top: 28px;
+  }
+  .profile-card-list,
+  .profile-metric-card,
+  .profile-logout-card {
+    border-radius: var(--premium-radius-lg);
+  }
+
+  .reports-screen-body {
+    padding: 18px 32px 36px;
+  }
+  .report-admin-panel {
+    width: min(1200px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .reports-filter-stack,
+  .reports-month-header {
+    width: min(1080px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mis-campanas-list {
+    width: 100%;
+    max-width: 1160px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .mis-campanas-list .premium-campaign-card-last-single {
+    width: min(760px, 100%);
+  }
+  .mis-campanas-month-status {
+    width: 100%;
+    max-width: 1056px;
+    justify-self: center;
+  }
+  .mis-campanas-cta {
+    width: min(430px, 100%);
+  }
+}
