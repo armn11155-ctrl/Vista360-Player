@@ -392,7 +392,7 @@ a {
 }
 
 /* Client selector and management */
-.admin-picker-header-panel {
+.admin-picker-header {
   border: 1px solid rgba(147, 197, 253, .18);
   border-radius: var(--v360-radius-panel);
   background: linear-gradient(145deg, rgba(5, 12, 27, .94), rgba(5, 13, 30, .84));
@@ -478,13 +478,13 @@ a {
 
 .inicio-kpi-card,
 .inicio-quick-grid > button,
-.inicio-latest-report-card {
+.inicio-evidence-card {
   border-color: var(--v360-border) !important;
   border-radius: var(--v360-radius-card) !important;
   box-shadow: var(--v360-shadow-card) !important;
 }
 
-.inicio-next-section {
+.inicio-account-status {
   border: 1px solid rgba(147, 197, 253, .12);
   border-radius: var(--v360-radius-panel) !important;
   background: radial-gradient(circle at 88% 0%, rgba(22, 119, 255, .18), transparent 34%),
@@ -518,7 +518,7 @@ a {
 }
 
 /* Map */
-.coverage-map-shell {
+.coverage-map-real {
   border-radius: var(--v360-radius-panel);
   border: 1px solid var(--v360-border-strong);
   box-shadow: var(--v360-shadow-raised);
@@ -533,7 +533,7 @@ a {
   box-shadow: 0 22px 48px -24px rgba(2, 6, 23, .72);
 }
 
-.coverage-map-help {
+.coverage-map-interaction-hint {
   border-radius: var(--v360-radius-pill);
   background: rgba(7, 16, 29, .88);
 }
@@ -823,7 +823,7 @@ a {
     min-height: 82px !important;
   }
 
-  .admin-picker-header-panel {
+  .admin-picker-header {
     border-radius: 18px;
   }
 
