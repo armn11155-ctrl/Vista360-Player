@@ -103,5 +103,26 @@ export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) =
   // Resumen de facturas del cliente al dia: la pantalla de Facturas
   // lo lee de una sola vez en vez de documento por documento.
   await regenerarResumenFacturas(db, clienteId);
+
+  // El trigger de Firestore que hacía este aviso no puede desplegarse en
+  // este proyecto porque el agente de Eventarc no tiene el rol requerido.
+  // Esta factura ya pasa por una Cloud Function activa, así que enviarla
+  // desde aquí es más fiable y mantiene la escritura como fuente única.
+  try {
+    const { enviarPushACliente } = await import("./notificacionesPush.js");
+    const mesLabel = new Intl.DateTimeFormat("es-PE", {
+      month: "long",
+      year: "numeric",
+      timeZone: "America/Lima",
+    }).format(new Date(`${hoy}T12:00:00-05:00`));
+    await enviarPushACliente(clienteId, {
+      title: "Tu factura está lista",
+      body: `Tu factura de ${mesLabel} ya está disponible en tu portal Vista360.`,
+      url: "/",
+    });
+  } catch (error) {
+    console.error("La factura se guardó, pero no se pudo avisar al cliente.", error);
+  }
+
   return { ok: true, id: facturaRef.id };
 });

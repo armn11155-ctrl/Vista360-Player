@@ -68,12 +68,39 @@ export const actualizarEstadoSolicitud = onCall<Datos>(async (request) => {
   if (!snap.exists) {
     throw new HttpsError("not-found", "No se encontró esa solicitud.");
   }
+  const solicitud = snap.data() ?? {};
+  const estadoAnterior = String(solicitud.estado ?? "");
 
   await ref.update({ estado, estadoActualizadoEn: FieldValue.serverTimestamp() });
 
   // El resumen del cliente incluye sus solicitudes: hay que regenerarlo
   // aquí o el cliente seguiría viendo la suya como pendiente.
-  await regenerarResumenCliente(db, String(snap.data()?.cliente_id ?? ""));
+  const clienteId = String(solicitud.cliente_id ?? "");
+  await regenerarResumenCliente(db, clienteId);
+
+  // El aviso se manda aquí porque el trigger onDocumentUpdated no puede
+  // desplegarse sin el rol de Eventarc. Solo cambios reales a un estado
+  // final generan push; guardar dos veces el mismo estado no duplica nada.
+  if (clienteId && estado !== estadoAnterior && (estado === "Revisada" || estado === "Rechazada")) {
+    try {
+      const { enviarPushACliente } = await import("./notificacionesPush.js");
+      const nombreSolicitud = String(solicitud.nombre ?? "").trim();
+      const esRenovacion = nombreSolicitud.startsWith("Renovación");
+      const etiqueta = esRenovacion
+        ? nombreSolicitud.replace(/^Renovación\s*—\s*/, "")
+        : (nombreSolicitud || "tu campaña");
+      const aprobada = estado === "Revisada";
+      await enviarPushACliente(clienteId, {
+        title: aprobada ? "Solicitud aprobada" : "Solicitud rechazada",
+        body: aprobada
+          ? `Tu solicitud de ${esRenovacion ? "renovación" : "campaña"} "${etiqueta}" fue aprobada.`
+          : `Tu solicitud de ${esRenovacion ? "renovación" : "campaña"} "${etiqueta}" fue rechazada.`,
+        url: "/",
+      });
+    } catch (error) {
+      console.error("La solicitud se actualizó, pero no se pudo avisar al cliente.", error);
+    }
+  }
 
   return { ok: true };
 });
