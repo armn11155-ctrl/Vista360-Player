@@ -760,7 +760,7 @@ a {
   /* En escritorio una acción de creación no debe convertirse en una barra
      de 1120px. Conserva presencia, pero queda compacta y alineada con la
      columna operativa. */
-  .panel-create-toggle {
+  .paneles-screen > .content-area > .panel-create-toggle {
     width: fit-content;
     min-width: 150px;
     margin-left: auto;
