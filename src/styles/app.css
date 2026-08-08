@@ -7368,8 +7368,8 @@
       padding: 12px 12px calc(18px + env(safe-area-inset-bottom));
     }
     .coverage-map-real {
-      height: clamp(350px, 54dvh, 470px);
-      min-height: 350px;
+      height: clamp(370px, 58dvh, 500px);
+      min-height: 370px;
       border-radius: 20px;
     }
     .coverage-map-interaction-hint {
@@ -7381,7 +7381,7 @@
     }
     .coverage-map-summary {
       position: absolute;
-      top: 50px;
+      top: 10px;
       left: 10px;
       z-index: 705;
       min-height: 34px;
