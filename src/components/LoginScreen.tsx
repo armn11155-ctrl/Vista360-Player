@@ -79,19 +79,19 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         <section className="login-left-panel" aria-label="Vista360 Player">
           <div className="login-brand-kicker">
             <span aria-hidden="true" />
-            Publicidad exterior inteligente
+            Publicidad exterior premium
           </div>
           <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
           <h1 className="login-left-heading">Claridad en cada campaña.</h1>
           <p className="login-left-tagline">
             Del despliegue a la evidencia, todo permanece bajo control.
           </p>
-          <div className="login-brand-signal" aria-label="Planificar, supervisar y demostrar">
+          <div className="login-brand-signal" aria-label="Marca, alcance e impacto">
             <span className="login-brand-signal-rail" aria-hidden="true" />
             <div className="login-brand-signal-labels" aria-hidden="true">
-              <span>Planificar</span>
-              <span>Supervisar</span>
-              <span>Demostrar</span>
+              <span>Marca</span>
+              <span>Alcance</span>
+              <span>Impacto</span>
             </div>
           </div>
         </section>

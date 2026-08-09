@@ -9,6 +9,8 @@ describe("refinamiento premium aprobado", () => {
     const login = leer("src/components/LoginScreen.tsx");
     expect(login).toContain('className="login-experience"');
     expect(login).toContain("Claridad en cada campaña.");
+    expect(login).toContain("Publicidad exterior premium");
+    expect(login).toContain("Marca, alcance e impacto");
     expect(login).toContain('className="login-brand-signal"');
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');

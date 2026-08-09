@@ -1576,8 +1576,8 @@ a {
 
   .login-shell::after {
     background:
-      radial-gradient(circle at 56% 54%, rgba(37,99,235,.07), transparent 23%),
-      linear-gradient(96deg, rgba(2,6,15,.76) 0%, rgba(2,6,15,.48) 38%, rgba(2,6,15,.14) 66%, rgba(2,6,15,.20) 100%);
+      radial-gradient(circle at 56% 54%, rgba(37,99,235,.045), transparent 23%),
+      linear-gradient(96deg, rgba(2,6,15,.78) 0%, rgba(2,6,15,.50) 37%, rgba(2,6,15,.06) 66%, rgba(2,6,15,.08) 100%);
   }
 
   .login-experience {
@@ -1607,7 +1607,11 @@ a {
     width: auto;
     max-width: none;
     min-width: 0;
-    padding: clamp(48px, 5.5vw, 76px) clamp(30px, 5vw, 68px);
+    padding:
+      clamp(46px, 4.4vw, 62px)
+      clamp(30px, 4vw, 56px)
+      clamp(78px, 7vw, 100px)
+      clamp(20px, 3vw, 42px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -1749,15 +1753,14 @@ a {
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 1px solid rgba(255,255,255,.12);
+    border: 1px solid rgba(166,198,241,.17);
+    border-radius: 24px;
     background:
-      radial-gradient(circle at 100% 8%, rgba(47,111,237,.075), transparent 34%),
-      linear-gradient(180deg, rgba(3,8,19,.42) 0%, rgba(3,8,19,.72) 13%, rgba(2,7,17,.82) 50%, rgba(3,8,19,.72) 87%, rgba(3,8,19,.42) 100%);
-    box-shadow: 30px 34px 84px -50px rgba(0,0,0,.92), inset 1px 0 0 rgba(255,255,255,.025);
-    backdrop-filter: blur(9px) saturate(108%);
-    -webkit-backdrop-filter: blur(9px) saturate(108%);
+      radial-gradient(circle at 100% 0%, rgba(45,105,205,.15), transparent 38%),
+      linear-gradient(155deg, rgba(12,25,45,.94) 0%, rgba(4,11,24,.96) 58%, rgba(3,8,18,.95) 100%);
+    box-shadow: 0 34px 82px -34px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     animation: login-access-reveal .9s .08s cubic-bezier(.2,.75,.2,1) both;
   }
 
@@ -1771,7 +1774,7 @@ a {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: -1px;
+    left: 0;
     width: 1px;
     background: linear-gradient(180deg, transparent 8%, rgba(148,183,234,.16) 34%, #75A9FF 50%, rgba(148,183,234,.16) 66%, transparent 92%);
     background-size: 100% 220%;
@@ -1811,6 +1814,15 @@ a {
   .login-sub {
     max-width: 300px;
     color: rgba(203,213,225,.64);
+  }
+
+  .login-message-stack {
+    min-height: 34px;
+    margin-bottom: 6px;
+  }
+
+  .login-message-stack.has-error {
+    min-height: 64px;
   }
 
   .login-access-kicker strong { display: none; }
@@ -1874,7 +1886,7 @@ a {
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
-  .login-left-panel { padding-right: 34px; padding-left: 34px; }
+  .login-left-panel { padding-right: 34px; padding-left: 26px; }
   .login-left-heading { font-size: clamp(29px, 3.5vw, 38px); }
   .login-brand-signal { width: min(380px, 92%); }
 }
