@@ -995,10 +995,11 @@ a {
 
 /* Desktop density and hierarchy */
 @media (min-width: 900px) {
-  /* En laptop el selector debe empezar cerca de los controles superiores;
-     72px dejaban el conjunto visual innecesariamente hundido. */
+  /* Reserva una franja limpia para Gestión/Vista cliente. Con 28px la
+     tarjeta de "¿Qué cuenta gestionas?" empezaba detrás de los botones
+     en laptops de 900–1100px y ambos bloques parecían tocarse. */
   .admin-picker-header {
-    margin-top: 28px;
+    margin-top: 80px;
     margin-bottom: 16px;
   }
 

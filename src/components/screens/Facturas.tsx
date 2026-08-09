@@ -74,8 +74,6 @@ interface Props {
 export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick, onNotifClick, totalNotifs, contratos = [] }: Props) {
   const state = useFacturas(ruc, clienteId);
   const facturas = state.status === "ready" ? state.facturas : [];
-  const facturasPendientes = facturas.filter((f) => f.estado === "Pendiente" || f.estado === "Vencida").length;
-  const facturasPagadas = facturas.filter((f) => f.estado === "Pagada").length;
   const [filtroAnio, setFiltroAnio] = useState("");
   const [filtroMes, setFiltroMes] = useState("");
   const facturasFiltradas = facturas.filter((f) => {
@@ -250,23 +248,6 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
             <div className="report-empty-title">Aún no hay facturas registradas</div>
             <div className="report-empty-sub">La primera factura aparecerá aquí después de que el admin la suba.</div>
           </div>
-        )}
-
-        {state.status === "ready" && facturas.length > 0 && (
-          <section className="facturas-summary" aria-label="Resumen de facturas">
-            <div>
-              <span>Documentos</span>
-              <strong>{facturas.length}</strong>
-            </div>
-            <div>
-              <span>Pendientes</span>
-              <strong>{facturasPendientes}</strong>
-            </div>
-            <div>
-              <span>Pagadas</span>
-              <strong>{facturasPagadas}</strong>
-            </div>
-          </section>
         )}
 
         {facturas.length > 0 && (
