@@ -86,6 +86,15 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
         .some((campo) => String(campo ?? "").toLowerCase().includes(q))
     );
   }, [panelesTodos, busqueda]);
+  const resumenEstados = useMemo(() => {
+    const resumen = { disponibles: 0, ocupados: 0, mantenimiento: 0 };
+    for (const panel of panelesTodos) {
+      if (panel.estado === "Ocupado") resumen.ocupados += 1;
+      else if (panel.estado === "Mantenimiento") resumen.mantenimiento += 1;
+      else resumen.disponibles += 1;
+    }
+    return resumen;
+  }, [panelesTodos]);
 
   // ── Eliminar panel (solo Gerente) -- botón de tres puntos, mismo
   // patrón que Usuarios (Accesos.tsx). ──
@@ -556,6 +565,14 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
         {errorEliminar && (
           <div style={{ marginTop: 12, fontSize: 12, color: "#DC2626", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 12, padding: "10px 12px" }}>
             {errorEliminar}
+          </div>
+        )}
+
+        {state.status === "ready" && panelesTodos.length > 0 && (
+          <div className="panel-status-legend" aria-label="Resumen del inventario">
+            <div className="is-available"><span /> <strong>{resumenEstados.disponibles}</strong><small>Disponibles</small></div>
+            <div className="is-occupied"><span /> <strong>{resumenEstados.ocupados}</strong><small>Ocupados</small></div>
+            <div className="is-maintenance"><span /> <strong>{resumenEstados.mantenimiento}</strong><small>Mantenimiento</small></div>
           </div>
         )}
 

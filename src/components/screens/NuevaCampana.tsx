@@ -62,6 +62,16 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
+function CampaignFormProgress({ complete = false }: { complete?: boolean }) {
+  return (
+    <div className={`campaign-form-progress${complete ? " is-complete" : ""}`} aria-label={complete ? "Solicitud enviada" : "Paso 1 de 2: completa tu solicitud"}>
+      <div className="is-active"><span>{complete ? "✓" : "1"}</span><small>Solicitud</small></div>
+      <i aria-hidden="true" />
+      <div className={complete ? "is-active" : ""}><span>{complete ? "✓" : "2"}</span><small>Confirmación</small></div>
+    </div>
+  );
+}
+
 const inputStyle = campoBase;
 
 const selectStyle: React.CSSProperties = {
@@ -324,22 +334,25 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           <div style={{ width: 32 }} />
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "#fff", borderRadius: 16, padding: "28px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", textAlign: "center", maxWidth: 340 }}>
-            <div style={{
-              width: 52, height: 52, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
-              display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
-            }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>
-              {enviadoYaExistia ? "Solicitud en proceso" : "Solicitud recibida"}
-            </div>
-            <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
-              {enviadoYaExistia
-                ? "Tu solicitud ya está siendo atendida. Nuestro equipo se comunicará contigo a la brevedad para coordinar los siguientes pasos."
-                : "La solicitud fue enviada correctamente. Nuestro equipo la revisará y se comunicará contigo a la brevedad para coordinar los siguientes pasos."}
+          <div className="new-campaign-success-wrap">
+            <CampaignFormProgress complete />
+            <div style={{ background: "#fff", borderRadius: 16, padding: "28px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", textAlign: "center", maxWidth: 340 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
+                display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
+              }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>
+                {enviadoYaExistia ? "Solicitud en proceso" : "Solicitud recibida"}
+              </div>
+              <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
+                {enviadoYaExistia
+                  ? "Tu solicitud ya está siendo atendida. Nuestro equipo se comunicará contigo a la brevedad para coordinar los siguientes pasos."
+                  : "La solicitud fue enviada correctamente. Nuestro equipo la revisará y se comunicará contigo a la brevedad para coordinar los siguientes pasos."}
+              </div>
             </div>
           </div>
         </div>
@@ -368,6 +381,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
 
       {/* Form */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
+        <CampaignFormProgress />
         <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
 

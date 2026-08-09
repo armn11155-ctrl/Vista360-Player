@@ -110,7 +110,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
     : "#";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8FAFD" }}>
+    <div className="create-client-screen" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8FAFD" }}>
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />
@@ -120,6 +120,13 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: 16, WebkitOverflowScrolling: "touch" as any }}>
+        <div className={`create-client-progress${resultado ? " is-complete" : ""}`} aria-label={resultado ? "Acceso creado y listo para entregar" : "Paso 1 de 3: datos del usuario"}>
+          <div className="is-active"><span>1</span><small>Datos</small></div>
+          <i aria-hidden="true" />
+          <div className={resultado ? "is-active" : ""}><span>2</span><small>Acceso</small></div>
+          <i aria-hidden="true" />
+          <div className={resultado ? "is-active" : ""}><span>3</span><small>Entrega</small></div>
+        </div>
         <div style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
           <div style={{ fontSize: 12, color: "#64748B", marginBottom: 16 }}>

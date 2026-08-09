@@ -646,18 +646,13 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                 {personalInterno.personal.map((p) => {
                   const nombreMostrado = p.nombre || nombreConocidoPorEmail(p.email) || p.email;
                   return (
-                  <div key={p.uid} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div key={p.uid} className={`access-person-row${p.archived ? " is-archived" : ""}`}>
                     <BrandThumb name={nombreMostrado} avatarUrl={p.avatarUrl} size={36} radius={10} />
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {nombreMostrado}
                       </div>
-                      <div
-                        style={{
-                          fontSize: 11, fontWeight: 700, marginTop: 1,
-                          color: p.role === "Gerente" ? "#0B3F8A" : "#6D28D9",
-                        }}
-                      >
+                      <div className={`access-role-chip is-${p.role.toLowerCase()}`}>
                         {p.role}{p.archived ? " · archivado" : ""}
                       </div>
                       <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -955,7 +950,7 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
             )}`;
             return (
               <div
-                className="card"
+                className="card access-user-card"
                 key={inv.id}
                 onClick={() => void abrirEdicionUsuario(inv)}
                 style={{ padding: 12, position: "relative", cursor: inv.clienteId ? "pointer" : "default" }}
@@ -966,12 +961,12 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6 }}>
                       <span>{nombreDeUsuario(inv)}</span>
                       {inv.esAdmin && (
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#0B3F8A", padding: "3px 8px", borderRadius: 20, letterSpacing: ".02em" }}>
+                        <span className="access-role-chip is-gerente">
                           GERENTE
                         </span>
                       )}
                       {inv.esTrabajador && (
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", background: "#6D28D9", padding: "3px 8px", borderRadius: 20, letterSpacing: ".02em" }}>
+                        <span className="access-role-chip is-trabajador">
                           TRABAJADOR
                         </span>
                       )}

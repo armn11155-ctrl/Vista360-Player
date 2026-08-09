@@ -121,7 +121,7 @@ const ICONO_OCUPACION = (
 function FilaPorVencer({ item }: { item: PorVencer }) {
   const c = colorUrgencia(item.diasRestantes);
   return (
-    <div style={{
+    <div className="occupancy-timeline-item" style={{
       background: "#fff", border: `1px solid ${c.borde}`, borderRadius: 12,
       padding: "11px 13px", display: "flex", alignItems: "center", gap: 12,
     }}>
@@ -403,7 +403,7 @@ export default function Ocupacion({ onBack }: Props) {
                   Nada vence en los próximos {state.datos.ventanaDias} días.
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="occupancy-timeline">
                   {state.datos.porVencer.map((item) => (
                     <FilaPorVencer key={`${item.panelId}-${item.clienteId}-${item.fin}`} item={item} />
                   ))}

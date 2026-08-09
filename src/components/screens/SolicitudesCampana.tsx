@@ -154,6 +154,8 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
     setEliminandoId(null);
   }
 
+  const ahora = Date.now();
+
   return (
     <div className="admin-tool-screen solicitudes-screen">
       <div className="detail-header">
@@ -272,8 +274,16 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
 
         {pendientes.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-            {pendientes.map((s) => (
-              <div className="card solicitudes-card" key={s.id} onClick={() => setSeleccionada(s)}>
+            {pendientes.map((s) => {
+              const creada = s.createdAt?.toMillis?.() ?? 0;
+              const diasPendiente = creada ? Math.max(0, Math.floor((ahora - creada) / 86_400_000)) : 0;
+              const urgencia = diasPendiente >= 7 ? "is-critical" : diasPendiente >= 3 ? "is-attention" : "is-new";
+              return (
+                <div className={`card solicitudes-card ${urgencia}`} key={s.id} onClick={() => setSeleccionada(s)}>
+                <div className="request-priority-row">
+                  <span className="request-status-chip">Pendiente</span>
+                  <small>{diasPendiente === 0 ? "Reciente" : `${diasPendiente} día${diasPendiente === 1 ? "" : "s"} en espera`}</small>
+                </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 12 }}>
                   <BrandThumb name={nombreCliente(s.cliente_id)} avatarKey={clientePorId(s.cliente_id)?.avatarKey} avatarUrl={clientePorId(s.cliente_id)?.avatarUrl} size={40} radius={10} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -341,8 +351,9 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     ✕
                   </button>
                 </div>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
 

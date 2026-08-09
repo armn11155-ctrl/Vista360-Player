@@ -140,7 +140,11 @@ export default function AprobacionesGerente({ onBack }: Props) {
         {pendientes.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
             {pendientes.map((s) => (
-              <div className="card solicitudes-card" key={s.id}>
+              <div className="card solicitudes-card approval-card is-attention" key={s.id}>
+                <div className="request-priority-row">
+                  <span className="request-status-chip">Requiere aprobación</span>
+                  <small>{fechaCorta(s.createdAt)}</small>
+                </div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "var(--accent)", marginBottom: 4 }}>
                   {ETIQUETAS_TIPO[s.tipo]}
                 </div>
@@ -235,13 +239,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
                       {s.motivoRechazo ? ` · ${s.motivoRechazo}` : ""}
                     </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 20, flexShrink: 0,
-                      color: s.estado === "Rechazada" ? "var(--red)" : "var(--green)",
-                      background: s.estado === "Rechazada" ? "rgba(239,68,68,0.1)" : "rgba(34,197,94,0.12)",
-                    }}
-                  >
+                  <div className={`approval-history-status ${s.estado === "Rechazada" ? "is-rejected" : "is-approved"}`}>
                     {s.estado}
                   </div>
                 </div>

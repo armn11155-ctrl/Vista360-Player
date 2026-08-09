@@ -1,5 +1,5 @@
 import BackChevron from "../BackChevron";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAccesosClientes } from "../../hooks/useAccesosClientes";
 import type { AccesoCliente } from "../../hooks/useAccesosClientes";
 
@@ -67,6 +67,17 @@ export default function AnaliticaClientes({ onBack }: Props) {
   const accesosVisibles = state.status === "ready"
     ? state.accesos.slice(0, cantidadVisible)
     : [];
+  const resumen = useMemo(() => {
+    if (state.status !== "ready") return null;
+    const ahora = Date.now();
+    let recientes = 0;
+    let sinActividad = 0;
+    for (const acceso of state.accesos) {
+      if (acceso.lastLogin === null) sinActividad += 1;
+      else if (ahora - acceso.lastLogin < 14 * 86_400_000) recientes += 1;
+    }
+    return { total: state.accesos.length, recientes, sinActividad };
+  }, [state]);
 
   return (
     <div className="admin-tool-screen analitica-screen">
@@ -84,6 +95,14 @@ export default function AnaliticaClientes({ onBack }: Props) {
             Última vez que cada cliente entró a su portal. Solo tú puedes ver esta pantalla.
           </div>
         </div>
+
+        {resumen && resumen.total > 0 && (
+          <div className="analytics-summary" aria-label="Resumen de actividad de clientes">
+            <div><strong>{resumen.total}</strong><span>Clientes</span></div>
+            <div><strong>{resumen.recientes}</strong><span>Activos 14 días</span></div>
+            <div><strong>{resumen.sinActividad}</strong><span>Sin ingreso</span></div>
+          </div>
+        )}
 
         {state.status === "loading" && (
           <div className="premium-loading-panel" role="status">

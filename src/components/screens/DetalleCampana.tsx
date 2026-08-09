@@ -332,6 +332,12 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                 </span>
               </div>
 
+              <div className="campaign-period-rail" aria-label={`Periodo: ${fechaCorta(contrato.inicio)} a ${fechaCorta(contrato.fin)}`}>
+                <div><span>Inicio</span><strong>{fechaCorta(contrato.inicio)}</strong></div>
+                <i aria-hidden="true"><b className={`is-${estado.toLowerCase()}`} /></i>
+                <div><span>Fin</span><strong>{fechaCorta(contrato.fin)}</strong></div>
+              </div>
+
               {estado !== "Finalizada" && (
                 <button
                   type="button"
