@@ -333,13 +333,13 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             </div>
           ) : ultimoInforme ? (
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
-              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:12, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center", position:"relative", top:10 }}>
+              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:12, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
                   <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
                 </svg>
               </div>
-              <div className="inicio-report-body" style={{ flex:1, paddingTop:2 }}>
+              <div className="inicio-report-body" style={{ flex:1 }}>
                 <div className="inicio-report-month" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
                   {ultimoInforme.mesLabel}
                 </div>

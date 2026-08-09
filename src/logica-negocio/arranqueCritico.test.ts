@@ -22,5 +22,7 @@ describe("la curva móvil de Perfil recorta el fondo oscuro", () => {
     expect(perfil).toContain('className="profile-top-curve-base"');
     expect(estilos).toContain(".profile-top-curve-cutout");
     expect(estilos).toContain("fill: #F8FAFC !important");
+    expect(estilos).toContain("left: -24px");
+    expect(estilos).toContain("right: -24px");
   });
 });

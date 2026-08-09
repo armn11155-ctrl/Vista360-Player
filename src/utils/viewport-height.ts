@@ -34,7 +34,11 @@ export function setupRealViewportHeight() {
     }
 
     document.documentElement.style.setProperty("--app-height", `${stableHeight}px`);
-    document.documentElement.style.setProperty("--visual-height", `${currentHeight}px`);
+    // --app-height se mantiene estable a propósito mientras aparece el
+    // teclado. El login, en cambio, necesita conocer el área que de verdad
+    // queda visible para subir el formulario sin habilitar scroll manual.
+    const visibleHeight = Math.round(visualHeight || window.innerHeight || currentHeight);
+    document.documentElement.style.setProperty("--visual-height", `${visibleHeight}px`);
   };
 
   const resetAfterKeyboard = () => {

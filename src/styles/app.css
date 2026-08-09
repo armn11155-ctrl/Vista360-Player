@@ -687,8 +687,11 @@
     }
     .profile-top-curve {
       position: absolute;
-      left: 0;
-      right: 0;
+      /* La curva continúa fuera del viewport. Así sus remates verticales
+         quedan recortados y en pantalla solo se percibe una línea que se
+         desvanece hacia los laterales, igual de limpia que en Inicio. */
+      left: -24px;
+      right: -24px;
       bottom: 0;
       z-index: 2;
       height: 32px;
@@ -8377,16 +8380,6 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
 .notification-card-copy span { color: #64748B; font-size: 12px; line-height: 1.42; }
 .notification-card-copy small { margin-top: 2px; color: #8A98AA; font-size: 10.5px; }
 
-.premium-campaign-card::after {
-  content: "";
-  position: absolute;
-  inset: 17px auto 17px 0;
-  width: 3px;
-  border-radius: 0 4px 4px 0;
-  background: linear-gradient(180deg, #73B8FF, #0877FF);
-  box-shadow: 0 0 18px rgba(8,119,255,.55);
-}
-
 @media (min-width: 900px) {
   .notification-card-premium { padding: 16px 18px; }
 }
@@ -9452,7 +9445,13 @@ details.report-admin-panel {
   .report-title { font-size: 21px !important; line-height: 1.02; text-wrap: balance; }
   .report-card-menu { top: 18px; right: 14px; }
   .inicio-current-client { grid-template-columns: 42px minmax(0, 1fr); }
-  .inicio-current-client-mark { width: 42px; height: 42px; }
+  .inicio-current-client-mark {
+    width: 42px;
+    height: 42px;
+    grid-row: 1 / span 2;
+    align-self: center;
+    transform: none;
+  }
   .inicio-current-client-action {
     grid-column: 2;
     justify-self: start;

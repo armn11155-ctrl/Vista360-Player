@@ -40,9 +40,23 @@ describe("refinamiento premium aprobado", () => {
     expect(cobertura).toContain("aria-pressed={seleccionado?.id === panel.id}");
   });
 
-  it("no añade cambios de Inicio dentro de esta pasada", () => {
+  it("mantiene fijo el login móvil cuando aparece el teclado", () => {
+    const login = leer("src/components/LoginScreen.tsx");
     const estilos = leer("src/styles/design-system.css");
-    const refinamiento = estilos.split("EXPERIENCIA PREMIUM APROBADA")[1] ?? "";
-    expect(refinamiento).not.toContain(".inicio-");
+    const viewport = leer("src/utils/viewport-height.ts");
+    expect(login).toContain("login-field-focused");
+    expect(estilos).toContain(".login-shell.login-field-focused");
+    expect(estilos).toContain("height: var(--visual-height, 100dvh)");
+    expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
+  });
+
+  it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
+    const inicio = leer("src/components/screens/Inicio.tsx");
+    const estilosApp = leer("src/styles/app.css");
+    const estilos = leer("src/styles/design-system.css");
+    expect(inicio).not.toContain("top:10");
+    expect(estilosApp).toContain("grid-row: 1 / span 2");
+    expect(estilos).toContain(".inicio-side-col .inicio-evidence-card");
+    expect(estilosApp).not.toContain(".premium-campaign-card::after");
   });
 });

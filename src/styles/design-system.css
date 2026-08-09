@@ -2032,3 +2032,90 @@ a {
   .campanas-filter-bar { width: calc(100% - 20px); margin-top: 9px; }
   .campanas-filter-tab { min-height: 40px; padding-inline: 3px; font-size: 10.5px; }
 }
+
+/* Safari PWA conserva el viewport de la pantalla completa mientras abre el
+   teclado. El modo de foco usa la altura visual medida en JavaScript, ancla
+   la tarjeta arriba y bloquea el desplazamiento: el campo sube solo, pero la
+   pantalla ya no se puede arrastrar. Solo existe durante la edición móvil. */
+@media (max-width: 899px) {
+  .login-shell.login-field-focused {
+    top: 0;
+    bottom: auto;
+    height: var(--visual-height, 100dvh);
+    min-height: var(--visual-height, 100dvh);
+    max-height: var(--visual-height, 100dvh);
+    justify-content: flex-start;
+    padding: calc(8px + env(safe-area-inset-top)) 20px 8px;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+  .login-field-focused .login-experience,
+  .login-field-focused .login-right-panel {
+    min-height: 0;
+    justify-content: flex-start;
+  }
+  .login-field-focused .login-logo,
+  .login-field-focused .login-foot {
+    max-height: 0;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .login-field-focused .login-card {
+    margin-top: 0;
+    padding: 21px 24px 18px;
+    border-radius: 18px;
+  }
+  .login-field-focused .login-access-kicker {
+    min-height: 19px;
+    margin-bottom: 10px;
+  }
+  .login-field-focused .login-title {
+    font-size: 21px;
+    margin-bottom: 5px;
+  }
+  .login-field-focused .login-message-stack {
+    min-height: 36px;
+    margin-bottom: 3px;
+  }
+  .login-field-focused .login-card .form-group { margin-bottom: 10px; }
+  .login-field-focused .login-card .form-input { min-height: 46px; }
+  .login-field-focused .login-remember { margin: 9px 0 10px; }
+  .login-field-focused .login-btn { margin-top: 3px; padding: 13px; }
+
+  /* Último reporte: el ícono y el texto comparten el mismo eje y el aire
+     superior/inferior de la tarjeta queda matemáticamente parejo. */
+  .inicio-side-col .inicio-evidence-card { padding: 16px 18px !important; }
+  .inicio-side-col .inicio-report-title { margin-bottom: 12px !important; }
+  .inicio-side-col .inicio-report-icon { top: auto !important; }
+  .inicio-side-col .inicio-report-body { padding-top: 0 !important; }
+
+  /* La lista de paneles se lee como una sola superficie premium, con cada
+     estado contenido y una selección completa en lugar de una franja. */
+  .coverage-panel-card {
+    padding: 4px;
+    border-color: rgba(147,197,253,.24);
+    border-radius: 18px;
+    background: linear-gradient(155deg, rgba(255,255,255,.99), rgba(244,248,253,.98));
+    box-shadow: 0 24px 48px -30px rgba(2,6,23,.72), inset 0 1px 0 #FFFFFF;
+  }
+  .coverage-panel-row {
+    min-height: 58px;
+    padding: 12px 10px;
+    border-radius: 13px;
+    border-bottom-color: rgba(148,163,184,.16);
+  }
+  .coverage-panel-row.is-selected {
+    background: linear-gradient(100deg, rgba(8,119,255,.12), rgba(8,119,255,.035));
+    box-shadow: inset 0 0 0 1px rgba(8,119,255,.18), 0 10px 22px -18px rgba(8,119,255,.75);
+  }
+  .coverage-panel-state {
+    padding: 5px 7px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: rgba(255,255,255,.72);
+    font-size: 10px;
+    line-height: 1;
+  }
+}

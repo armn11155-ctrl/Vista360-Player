@@ -42,6 +42,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   const [remember, setRemember] = useState(savedRemember);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [campoEnFoco, setCampoEnFoco] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -73,7 +74,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   }
 
   return (
-    <div className="login-shell">
+    <div className={`login-shell${campoEnFoco ? " login-field-focused" : ""}`}>
       <main className="login-experience">
         <section className="login-left-panel" aria-label="Vista360 Player">
           <div className="login-brand-kicker">
@@ -125,6 +126,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-describedby={error ? "login-error" : undefined}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setCampoEnFoco(true)}
+                  onBlur={() => setCampoEnFoco(false)}
                   placeholder="correo@empresa.com"
                 />
               </div>
@@ -143,6 +146,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-describedby={error ? "login-error" : undefined}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setCampoEnFoco(true)}
+                  onBlur={() => setCampoEnFoco(false)}
                   placeholder="••••••••"
                 />
                 <button
