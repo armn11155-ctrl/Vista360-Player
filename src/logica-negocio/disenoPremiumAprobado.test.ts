@@ -55,8 +55,13 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("body.login-keyboard-open");
     expect(estilos).toContain("touch-action: none");
     expect(estilos).toContain("font-size: 16px");
+    expect(estilos).toContain("top: var(--visual-offset-top, 0px)");
+    expect(estilos).toContain("width: var(--visual-width, 100vw)");
     expect(estilos).toContain("height: var(--visual-height, 100dvh)");
     expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
+    expect(viewport).toContain('setProperty("--visual-offset-top"');
+    expect(viewport).toContain('addEventListener("scroll", set)');
+    expect(login).not.toContain("window.scrollTo(0, 0)");
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {

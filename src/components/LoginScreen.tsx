@@ -57,10 +57,8 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
     raiz.classList.add(clase);
     cuerpo.classList.add(clase);
-    const frame = window.requestAnimationFrame(() => window.scrollTo(0, 0));
 
     return () => {
-      window.cancelAnimationFrame(frame);
       raiz.classList.remove(clase);
       cuerpo.classList.remove(clase);
     };

@@ -25,7 +25,8 @@ export function setupRealViewportHeight() {
   };
 
   const set = () => {
-    const visualHeight = window.visualViewport?.height ?? 0;
+    const visualViewport = window.visualViewport;
+    const visualHeight = visualViewport?.height ?? 0;
     const currentHeight = readViewportHeight();
     const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
 
@@ -38,7 +39,13 @@ export function setupRealViewportHeight() {
     // teclado. El login, en cambio, necesita conocer el área que de verdad
     // queda visible para subir el formulario sin habilitar scroll manual.
     const visibleHeight = Math.round(visualHeight || window.innerHeight || currentHeight);
+    const visibleWidth = Math.round(visualViewport?.width || document.documentElement.clientWidth || window.innerWidth);
+    const visualOffsetTop = Math.max(0, Math.round(visualViewport?.offsetTop ?? 0));
+    const visualOffsetLeft = Math.max(0, Math.round(visualViewport?.offsetLeft ?? 0));
     document.documentElement.style.setProperty("--visual-height", `${visibleHeight}px`);
+    document.documentElement.style.setProperty("--visual-width", `${visibleWidth}px`);
+    document.documentElement.style.setProperty("--visual-offset-top", `${visualOffsetTop}px`);
+    document.documentElement.style.setProperty("--visual-offset-left", `${visualOffsetLeft}px`);
   };
 
   const resetAfterKeyboard = () => {
@@ -65,6 +72,6 @@ export function setupRealViewportHeight() {
   });
   if (window.visualViewport) {
     window.visualViewport.addEventListener("resize", set);
-    window.visualViewport.addEventListener("scroll", resetAfterKeyboard);
+    window.visualViewport.addEventListener("scroll", set);
   }
 }
