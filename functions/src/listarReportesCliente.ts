@@ -70,7 +70,13 @@ function nombreFechaCorta(mes: string, dia?: string) {
  * campos que solo existen en Firestore se leen desde un agregado anual,
  * no desde un documento por reporte.
  */
-export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
+// Esta llamada determina cuándo aparecen las tarjetas PDF. Los registros de
+// producción mostraron ~2 s solo levantando el contenedor después de estar
+// inactivo. Mantener una instancia lista quita esa espera sin aumentar las
+// lecturas ni alterar la lista/caché existente.
+export const listarReportesCliente = onCall(
+  { secrets: R2_SECRETS, minInstances: 1, cpu: "gcf_gen1" },
+  async (request) => {
   try {
     const uid = request.auth?.uid;
     if (!uid) {
@@ -267,4 +273,5 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     const detail = error instanceof Error ? error.message : "Error desconocido";
     throw new HttpsError("internal", `No se pudo leer la lista de reportes en R2: ${detail}`);
   }
-});
+  },
+);

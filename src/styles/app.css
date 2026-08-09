@@ -707,6 +707,15 @@
       stroke-linecap: butt;
       stroke-width: 3;
     }
+    /* La curva ya tenía la forma correcta, pero el header negro seguía
+       existiendo por debajo del trazo y asomaba en los laterales. Esta
+       pieza pinta solo el área exterior con el fondo de la pantalla: no
+       cambia la curva, únicamente hace que el negro termine en ella. */
+    .profile-top-curve-cutout {
+      fill: #F8FAFC !important;
+      stroke: none;
+      filter: none;
+    }
     .profile-top-curve-base {
       stroke: url(#profile-top-curve-gradient);
       filter: drop-shadow(0 0 4px rgba(47,111,237,.36));
