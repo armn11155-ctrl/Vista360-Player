@@ -23,7 +23,7 @@ describe("refinamiento premium aprobado", () => {
   it("expone visualmente qué panel está seleccionado en Cobertura", () => {
     const cobertura = leer("src/components/screens/Cobertura.tsx");
     expect(cobertura).toContain('" is-selected"');
-    expect(cobertura).toContain("aria-pressed={seleccionadoId === panel.id}");
+    expect(cobertura).toContain("aria-pressed={seleccionado?.id === panel.id}");
   });
 
   it("no añade cambios de Inicio dentro de esta pasada", () => {
