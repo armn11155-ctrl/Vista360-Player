@@ -1258,3 +1258,603 @@ a {
     transition-duration: .01ms !important;
   }
 }
+
+/* =====================================================================
+   EXPERIENCIA PREMIUM APROBADA — LOGIN Y PANTALLAS OPERATIVAS
+   Inicio queda deliberadamente fuera de esta pasada. El objetivo es
+   reforzar selección, respuesta táctil y jerarquía sin añadir datos,
+   consultas ni superficies informativas nuevas.
+   ===================================================================== */
+
+/* Login móvil: una sola pieza de marca y acceso. */
+.login-experience {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-access-kicker {
+  min-height: 24px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(219,234,254,.72);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+.login-access-kicker::before {
+  content: "";
+  width: 24px;
+  height: 2px;
+  flex: 0 0 24px;
+  border-radius: 99px;
+  background: #438BFF;
+  box-shadow: 0 0 16px rgba(67,139,255,.75);
+}
+
+.login-access-kicker span { margin-right: auto; }
+.login-access-kicker strong { color: rgba(255,255,255,.46); font-size: 9px; }
+
+.login-card .form-label {
+  color: rgba(241,245,249,.88);
+  font-weight: 750;
+}
+
+.login-card .form-input {
+  border-color: rgba(255,255,255,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.login-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.login-logo .login-tagline {
+  display: block;
+  margin-top: 10px;
+  color: rgba(226,232,240,.72);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .025em;
+  text-shadow: 0 2px 8px rgba(0,0,0,.7);
+}
+
+@media (max-width: 899px) {
+  .login-card {
+    border-radius: 26px 10px 26px 26px;
+    background:
+      radial-gradient(circle at 96% 0%, rgba(47,111,237,.20), transparent 34%),
+      rgba(3,8,17,.76);
+    border-color: rgba(147,197,253,.22);
+    backdrop-filter: blur(18px) saturate(118%);
+    -webkit-backdrop-filter: blur(18px) saturate(118%);
+    box-shadow: 0 34px 90px -30px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.10);
+  }
+
+  .login-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 28px;
+    left: 28px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #438BFF, transparent);
+    box-shadow: 0 0 18px rgba(67,139,255,.55);
+  }
+
+  .login-title { font-size: 26px; letter-spacing: -.025em; }
+  .login-btn { border-radius: 14px; }
+}
+
+/* Escritorio: no son dos tarjetas flotantes. Es una sola arquitectura
+   horizontal, abierta sobre la ciudad, con el acceso integrado en el
+   mismo plano que la narrativa de marca. */
+@media (min-width: 900px) {
+  .login-shell {
+    padding-left: clamp(34px, 4.8vw, 82px);
+    padding-right: clamp(34px, 4.8vw, 82px);
+  }
+
+  .login-shell::after {
+    background:
+      radial-gradient(circle at 72% 38%, rgba(23,94,205,.13), transparent 25%),
+      linear-gradient(96deg, rgba(2,6,15,.91) 0%, rgba(2,6,15,.72) 38%, rgba(2,6,15,.34) 63%, rgba(2,6,15,.24) 100%);
+  }
+
+  .login-experience {
+    width: min(1320px, 100%);
+    min-height: min(720px, calc(100dvh - 72px));
+    max-height: 760px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(340px, .72fr);
+    overflow: hidden;
+    border-top: 1px solid rgba(255,255,255,.18);
+    border-bottom: 1px solid rgba(255,255,255,.16);
+    background:
+      linear-gradient(90deg, rgba(3,8,18,.84), rgba(3,8,18,.50) 58%, rgba(3,8,18,.82) 100%);
+    box-shadow: 0 44px 120px -50px rgba(0,0,0,.96), inset 0 1px 0 rgba(147,197,253,.05);
+    isolation: isolate;
+  }
+
+  .login-experience::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: -1px;
+    left: 0;
+    width: clamp(150px, 22%, 290px);
+    height: 2px;
+    background: linear-gradient(90deg, #438BFF, rgba(67,139,255,0));
+    box-shadow: 0 0 22px rgba(67,139,255,.5);
+  }
+
+  .login-experience::after {
+    content: "V360  /  OPERACIÓN DIGITAL";
+    position: absolute;
+    z-index: 2;
+    right: 24px;
+    bottom: 14px;
+    color: rgba(191,219,254,.34);
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: .2em;
+    pointer-events: none;
+  }
+
+  .login-left-panel {
+    position: relative;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    padding: clamp(38px, 4.6vw, 66px) clamp(36px, 5vw, 72px) 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .login-brand-kicker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    color: rgba(191,219,254,.68);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+  }
+
+  .login-brand-kicker > span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #438BFF;
+    box-shadow: 0 0 0 5px rgba(67,139,255,.10), 0 0 18px rgba(67,139,255,.7);
+  }
+
+  .login-left-logo {
+    width: clamp(205px, 18vw, 270px);
+    margin: 0 0 24px;
+    filter: drop-shadow(0 16px 28px rgba(0,0,0,.48));
+  }
+
+  .login-left-heading {
+    max-width: 680px;
+    margin: 0;
+    color: #FFFFFF;
+    font-size: clamp(32px, 3.05vw, 48px);
+    line-height: 1.02;
+    font-weight: 790;
+    letter-spacing: -.052em;
+    text-wrap: balance;
+    text-shadow: 0 10px 36px rgba(0,0,0,.38);
+  }
+
+  .login-left-tagline {
+    margin: 15px 0 29px;
+    color: rgba(203,213,225,.72);
+    font-size: 15px;
+    line-height: 1.4;
+    font-weight: 620;
+    text-shadow: none;
+  }
+
+  .login-left-tagline strong { color: #FFFFFF; font-weight: 820; }
+
+  .login-feature-stage {
+    width: min(660px, 100%);
+    min-height: 0;
+    padding: 0;
+    display: block;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .login-feature-list {
+    position: relative;
+    display: grid;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    padding: 0 0 0 20px;
+  }
+
+  .login-feature-list::before {
+    top: 5px;
+    bottom: 5px;
+    left: 2px;
+    width: 3px;
+    border-radius: 3px;
+    background: #030507;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.30), 0 0 17px rgba(47,111,237,.36);
+    opacity: 1;
+  }
+
+  .login-feature-list::after {
+    top: 16.666%;
+    left: 3px;
+    width: 12px;
+    height: 12px;
+    border-color: rgba(255,255,255,.84);
+    background: #020305;
+    box-shadow: 0 0 0 5px rgba(67,139,255,.09), 0 0 18px rgba(67,139,255,.66);
+    animation: login-feature-cursor-pro 9s cubic-bezier(.4,0,.2,1) infinite;
+  }
+
+  @keyframes login-feature-cursor-pro {
+    0%, 30% { top: 16.666%; }
+    33.333%, 63.333% { top: 50%; }
+    66.666%, 96.666% { top: 83.333%; }
+    100% { top: 16.666%; }
+  }
+
+  .login-feature-item {
+    min-width: 0;
+    min-height: 62px;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: 28px 34px minmax(0, 1fr);
+    align-content: center;
+    align-items: center;
+    column-gap: 10px;
+    border-top: 1px solid rgba(255,255,255,.10);
+    border-left: 0;
+    opacity: .42;
+    transform: translateY(2px);
+    animation: login-feature-focus 9s ease-in-out infinite;
+  }
+
+  .login-feature-item:first-child { padding: 10px 12px; border-top: 0; }
+  .login-feature-item:last-child { padding: 10px 12px; }
+  .login-feature-item:nth-child(2) { animation-delay: -6s; }
+  .login-feature-item:nth-child(3) { animation-delay: -3s; }
+
+  @keyframes login-feature-focus {
+    0%, 29% { opacity: 1; transform: translateY(0); }
+    34%, 95% { opacity: .42; transform: translateY(2px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-feature-index {
+    margin: 0;
+    color: #70A8FF;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .15em;
+  }
+
+  .login-feature-icon {
+    width: 32px;
+    height: 32px;
+    margin: 1px 0 0;
+    border-color: rgba(96,165,250,.28);
+    border-radius: 10px;
+    color: #D8E9FF;
+    background: rgba(47,111,237,.20);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  .login-feature-title {
+    margin: 0 0 4px;
+    color: #F8FAFC;
+    font-size: 12.5px;
+    line-height: 1.22;
+    font-weight: 790;
+  }
+
+  .login-feature-desc {
+    color: rgba(203,213,225,.58);
+    font-size: 10.5px;
+    line-height: 1.38;
+    font-weight: 600;
+  }
+
+  .login-operation-line {
+    width: min(660px, 100%);
+    margin-top: 22px;
+    padding-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border-top: 1px solid rgba(255,255,255,.10);
+    color: rgba(203,213,225,.52);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .login-operation-line span { display: inline-flex; align-items: center; gap: 8px; }
+  .login-operation-line i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #35D48B;
+    box-shadow: 0 0 12px rgba(53,212,139,.72);
+  }
+  .login-operation-line strong { color: rgba(219,234,254,.46); }
+
+  .login-right-panel {
+    position: relative;
+    width: auto;
+    min-width: 0;
+    padding: clamp(42px, 5vw, 72px) clamp(30px, 3.6vw, 52px) 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-left: 1px solid rgba(255,255,255,.13);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(47,111,237,.17), transparent 34%),
+      linear-gradient(155deg, rgba(6,13,27,.70), rgba(2,7,16,.90));
+  }
+
+  .login-right-panel::before {
+    content: "";
+    position: absolute;
+    top: 26px;
+    bottom: 26px;
+    left: -1px;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(96,165,250,.76), transparent);
+    box-shadow: 0 0 18px rgba(47,111,237,.42);
+  }
+
+  .login-card,
+  .login-foot {
+    width: 100%;
+    max-width: 360px;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .login-card {
+    overflow: visible;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .login-card::before { content: none; }
+  .login-title { font-size: 31px; letter-spacing: -.04em; }
+  .login-title::before,
+  .login-title::after { content: none; }
+
+  .login-sub {
+    max-width: 290px;
+    margin-bottom: 30px;
+    color: rgba(203,213,225,.64);
+  }
+
+  .login-btn {
+    min-height: 52px;
+    border: 1px solid rgba(147,197,253,.26);
+    border-radius: 13px;
+    background: linear-gradient(135deg, #1C55C4, #0877FF);
+    box-shadow: 0 18px 34px -17px rgba(8,119,255,.72), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+
+  .login-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2868DC, #2088FF);
+    box-shadow: 0 22px 38px -17px rgba(8,119,255,.82), inset 0 1px 0 rgba(255,255,255,.22);
+  }
+
+  .login-foot {
+    margin-top: 26px;
+    color: rgba(203,213,225,.48);
+    font-size: 10px;
+    letter-spacing: .025em;
+    text-shadow: none;
+  }
+}
+
+@media (min-width: 900px) and (max-height: 730px) {
+  .login-experience { min-height: calc(100dvh - 42px); }
+  .login-left-panel { padding-top: 28px; padding-bottom: 26px; }
+  .login-left-logo { width: 190px; margin-bottom: 16px; }
+  .login-left-heading { font-size: clamp(29px, 2.75vw, 40px); }
+  .login-left-tagline { margin: 11px 0 18px; }
+  .login-feature-item { min-height: 56px; padding-top: 8px; padding-bottom: 8px; }
+  .login-feature-item:first-child,
+  .login-feature-item:last-child { padding-top: 8px; padding-bottom: 8px; }
+  .login-operation-line { margin-top: 14px; }
+  .login-right-panel { padding-top: 34px; padding-bottom: 34px; }
+}
+
+@media (min-width: 900px) and (max-width: 1120px) {
+  .login-experience { grid-template-columns: minmax(0, 1.25fr) minmax(330px, .75fr); }
+  .login-left-panel { padding-right: 34px; padding-left: 34px; }
+  .login-left-heading { font-size: clamp(29px, 3.5vw, 38px); }
+  .login-feature-desc { display: none; }
+  .login-feature-item { min-height: 58px; }
+}
+
+/* Campañas: el filtro pasa a ser un control segmentado claro y táctil. */
+.campanas-filter-bar {
+  width: min(720px, calc(100% - 28px));
+  margin: 12px auto 4px;
+  padding: 5px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  flex-shrink: 0;
+  border: 1px solid #DCE5F0;
+  border-radius: 15px;
+  background: #F1F5F9;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 12px 28px -24px rgba(15,23,42,.48);
+}
+
+.campanas-filter-tab {
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 5px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #64748B;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.campanas-filter-tab.active {
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #11223B, #07111F);
+  box-shadow: 0 10px 22px -14px rgba(2,6,23,.74), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.campanas-filter-tab:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+
+.campanas-filter-tab:active { transform: scale(.98); }
+
+/* Cobertura: selección inequívoca y una ficha que entra como parte del
+   mapa, sin añadir otra sección ni otra consulta. */
+.coverage-selected-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border-color: rgba(8,119,255,.22);
+  box-shadow: 0 18px 38px -28px rgba(15,23,42,.62);
+  animation: coverage-selection-in .2s var(--v360-ease) both;
+}
+
+.coverage-selected-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg, #5B9BFF, #0877FF);
+}
+
+@keyframes coverage-selection-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.coverage-panel-row {
+  position: relative;
+  transition: background .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.coverage-panel-row.is-selected {
+  background: linear-gradient(90deg, rgba(8,119,255,.11), rgba(8,119,255,.035));
+  box-shadow: inset 3px 0 0 #0877FF;
+}
+
+.coverage-panel-row:focus-visible {
+  z-index: 1;
+  outline: 2px solid #60A5FA;
+  outline-offset: -2px;
+}
+
+.coverage-panel-row:active { transform: scale(.992); }
+
+.coverage-leaflet-marker.active::after {
+  content: "";
+  position: absolute;
+  inset: 8px 6px 13px;
+  border: 2px solid rgba(8,119,255,.52);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: coverage-pin-pulse 1.8s ease-out infinite;
+}
+
+@keyframes coverage-pin-pulse {
+  0% { opacity: .8; transform: scale(.72); }
+  72%, 100% { opacity: 0; transform: scale(1.55); }
+}
+
+/* Reportes y facturas: la respuesta táctil ocurre al instante; no se
+   añaden badges, resúmenes ni estados nuevos. */
+.report-action:active,
+.report-generate-btn:active,
+.factura-upload-btn:active {
+  transform: scale(.985);
+}
+
+.report-action svg,
+.report-generate-btn svg {
+  transition: transform .17s var(--v360-ease);
+}
+
+@media (hover: hover) {
+  .report-action:hover svg,
+  .report-generate-btn:hover svg {
+    transform: translateX(2px);
+  }
+}
+
+/* Perfil, selector y Centro de gestión: un único lenguaje de respuesta. */
+.profile-row.clickable .profile-row-icon,
+.profile-row.danger .profile-row-icon,
+.admin-picker-management-card i,
+.admin-picker-management-card .admin-picker-action-icon {
+  transition: color .16s ease, background .16s ease, transform .16s var(--v360-ease);
+}
+
+@media (hover: hover) {
+  .profile-row.clickable:hover .profile-row-icon { transform: translateX(2px); color: #0877FF; }
+  .admin-picker-management-card:hover i { transform: translateX(3px); }
+}
+
+.profile-row.clickable:active,
+.admin-picker-management-card:active,
+.admin-picker-tile:has(.admin-picker-tile-main:not(:disabled)):active {
+  transform: scale(.992);
+}
+
+.admin-picker-management-card:focus-visible,
+.admin-picker-tile-main:focus-visible {
+  outline: 2px solid #60A5FA;
+  outline-offset: 2px;
+}
+
+@media (max-width: 430px) {
+  .campanas-filter-bar { width: calc(100% - 20px); margin-top: 9px; }
+  .campanas-filter-tab { min-height: 40px; padding-inline: 3px; font-size: 10.5px; }
+}

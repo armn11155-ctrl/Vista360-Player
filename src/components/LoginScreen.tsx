@@ -106,62 +106,67 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
   return (
     <div className="login-shell">
-      {/* Logo arriba de la tarjeta, igual en celular y en escritorio
-          -- a pedido del usuario ya no van separados en 2 columnas.
-          En escritorio este bloque completo se ubica del lado
-          DERECHO de la pantalla (ver .login-shell en app.css). */}
-      {/* Columna izquierda -- SOLO escritorio (ver .login-left-panel en
-          app.css, display:none por defecto, se muestra recien en el
-          media query de escritorio). En celular no existe visualmente,
-          nada de esto cambia lo que ya habia ahi. */}
-      <div className="login-left-panel">
-        <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
-        <div className="login-left-tagline">
-          Más que visibilidad. <strong>Presencia.</strong>
-        </div>
-        <div className="login-feature-stage">
-          <div className="login-feature-list">
-            <div className="login-feature-item">
-              <span className="login-feature-icon"><IconoReportes /></span>
-              <div>
-                <div className="login-feature-title">Reportes en tiempo real</div>
-                <div className="login-feature-desc">Evidencia fotográfica y ocupación al día.</div>
+      <main className="login-experience">
+        <section className="login-left-panel" aria-label="Vista360 Player">
+          <div className="login-brand-kicker">
+            <span aria-hidden="true" />
+            Plataforma de gestión exterior
+          </div>
+          <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
+          <h1 className="login-left-heading">Cada campaña. Cada ubicación. Todo bajo control.</h1>
+          <p className="login-left-tagline">
+            Más que visibilidad. <strong>Presencia.</strong>
+          </p>
+
+          <div className="login-feature-stage" aria-label="Capacidades de la plataforma">
+            <div className="login-feature-list">
+              <div className="login-feature-item">
+                <span className="login-feature-index">01</span>
+                <span className="login-feature-icon"><IconoReportes /></span>
+                <div>
+                  <div className="login-feature-title">Reportes en tiempo real</div>
+                  <div className="login-feature-desc">Evidencia fotográfica y ocupación al día.</div>
+                </div>
               </div>
-            </div>
-            <div className="login-feature-item">
-              <span className="login-feature-icon"><IconoPaneles /></span>
-              <div>
-                <div className="login-feature-title">Gestión de paneles y mapas</div>
-                <div className="login-feature-desc">Visualiza y administra tu inventario publicitario.</div>
+              <div className="login-feature-item">
+                <span className="login-feature-index">02</span>
+                <span className="login-feature-icon"><IconoPaneles /></span>
+                <div>
+                  <div className="login-feature-title">Gestión de paneles y mapas</div>
+                  <div className="login-feature-desc">Visualiza y administra tu inventario publicitario.</div>
+                </div>
               </div>
-            </div>
-            <div className="login-feature-item">
-              <span className="login-feature-icon"><IconoAccesoSeguro /></span>
-              <div>
-                <div className="login-feature-title">Acceso seguro y controlado</div>
-                <div className="login-feature-desc">Protegemos tu información y la de tu empresa.</div>
+              <div className="login-feature-item">
+                <span className="login-feature-index">03</span>
+                <span className="login-feature-icon"><IconoAccesoSeguro /></span>
+                <div>
+                  <div className="login-feature-title">Acceso seguro y controlado</div>
+                  <div className="login-feature-desc">Protegemos tu información y la de tu empresa.</div>
+                </div>
               </div>
             </div>
           </div>
-          <figure className="login-feature-visual" aria-hidden="true">
-            <img src="/login-ny-desktop-tailored.jpg" alt="" draggable={false} />
-            <figcaption>
-              <span>Operación conectada</span>
-              <strong>Una plataforma. Toda tu gestión.</strong>
-            </figcaption>
-          </figure>
-        </div>
-      </div>
-      <div className="login-right-panel">
-        <div className="login-logo">
-          <img src={LOGO} alt="Vista360 Player" draggable={false} />
-          <div className="login-tagline">Más que visibilidad. Presencia.</div>
-        </div>
-        <div className="login-card">
-          <div className="login-title">Bienvenido</div>
-          <div className="login-sub">Ingresa tus credenciales para continuar.</div>
-          {error && <div className="login-error">{error}</div>}
-          <form onSubmit={submit}>
+
+          <div className="login-operation-line">
+            <span><i aria-hidden="true" /> Operación conectada</span>
+            <strong>Vista360 / Player</strong>
+          </div>
+        </section>
+
+        <section className="login-right-panel" aria-label="Acceso al portal">
+          <div className="login-logo">
+            <img src={LOGO} alt="Vista360 Player" draggable={false} />
+            <div className="login-tagline">Más que visibilidad. Presencia.</div>
+          </div>
+          <div className="login-card">
+            <div className="login-access-kicker">
+              <span>Acceso privado</span>
+              <strong>V360</strong>
+            </div>
+            <div className="login-title">Bienvenido</div>
+            <div className="login-sub">Ingresa tus credenciales para continuar.</div>
+            {error && <div className="login-error">{error}</div>}
+            <form onSubmit={submit}>
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Usuario</label>
               <div className="login-input-wrap">
@@ -224,10 +229,15 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             <button className="login-btn" disabled={busy} type="submit">
               {busy ? "Ingresando…" : "Ingresar"}
             </button>
-          </form>
-        </div>
-        <div className="login-foot">Vista360 Player © Portal de clientes</div>
-      </div>
+            </form>
+          </div>
+          <div className="login-foot">
+            <span>Conexión protegida</span>
+            <span aria-hidden="true">•</span>
+            <span>Portal de clientes</span>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

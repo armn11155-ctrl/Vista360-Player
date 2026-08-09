@@ -1021,8 +1021,9 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
                 <button
                   key={panel.id}
                   type="button"
-                  className="coverage-panel-row"
+                  className={`coverage-panel-row${seleccionadoId === panel.id ? " is-selected" : ""}`}
                   onClick={() => setSeleccionadoId(panel.id)}
+                  aria-pressed={seleccionadoId === panel.id}
                 >
                   <div className="coverage-panel-dot" style={{ background: color }} />
                   <div className="coverage-panel-info">

@@ -291,17 +291,18 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
       />
 
       {/* Tabs */}
-      <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
+      <div className="campanas-filter-bar" role="tablist" aria-label="Filtrar campañas por estado">
         {(["Activa","Programada","Finalizada","Todas"] as const).map((f) => (
-          <div key={f} onClick={() => setFiltro(f)} style={{
-            flex: 1, textAlign: "center",
-            padding: "12px 6px", fontSize: 13, fontWeight: filtro === f ? 600 : 400,
-            color: filtro === f ? "#0877FF" : "#64748B",
-            borderBottom: filtro === f ? "2px solid #0877FF" : "2px solid transparent", cursor: "pointer",
-            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-          }}>
+          <button
+            key={f}
+            type="button"
+            role="tab"
+            aria-selected={filtro === f}
+            className={`campanas-filter-tab${filtro === f ? " active" : ""}`}
+            onClick={() => setFiltro(f)}
+          >
             {f === "Activa" ? "Activas" : f === "Programada" ? "Programadas" : f === "Finalizada" ? "Finalizadas" : f}
-          </div>
+          </button>
         ))}
       </div>
 
