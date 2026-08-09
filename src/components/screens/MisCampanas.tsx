@@ -523,15 +523,17 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
         {/* Nueva campaña CTA -- texto y botón son una sola unidad para
             que el grid de escritorio no los mande a columnas distintas. */}
-        <div className="mis-campanas-cta">
-          <div>¿Quieres lanzar una nueva campaña?</div>
-          <button type="button" onClick={onNueva}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-            Nueva campaña
-          </button>
-        </div>
+        {filtradas.length > 0 && (
+          <div className="mis-campanas-cta">
+            <div>¿Quieres lanzar una nueva campaña?</div>
+            <button type="button" onClick={onNueva}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+              </svg>
+              Nueva campaña
+            </button>
+          </div>
+        )}
       </div>
 
       {editando && (

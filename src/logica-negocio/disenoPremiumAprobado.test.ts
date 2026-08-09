@@ -34,6 +34,7 @@ describe("refinamiento premium aprobado", () => {
     expect(campanas).toContain('role="tablist"');
     expect(campanas).toContain('role="tab"');
     expect(campanas).toContain("aria-selected={filtro === f}");
+    expect(campanas).toContain("{filtradas.length > 0 && (");
   });
 
   it("expone visualmente qué panel está seleccionado en Cobertura", () => {
@@ -60,5 +61,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosApp).toContain("grid-row: 1 / span 2");
     expect(estilos).toContain(".inicio-side-col .inicio-evidence-card");
     expect(estilosApp).not.toContain(".premium-campaign-card::after");
+    expect(estilosApp).toContain(".report-admin-panel + .reports-filter-stack");
+    expect(estilosApp).toContain("url('/login-vista360-desktop-v2.jpg')");
   });
 });

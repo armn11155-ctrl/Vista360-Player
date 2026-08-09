@@ -299,14 +299,14 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                 <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
               </linearGradient>
               <mask id="profile-top-curve-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="390" height="32">
-                <path d="M1.5 1.5 C1.5 16 10 30.5 27 30.5 H363 C380 30.5 388.5 16 388.5 1.5" fill="none" stroke="#FFFFFF" strokeWidth="3" />
+                <path d="M1.5 1.5 C1.5 14 10 27.5 27 27.5 H363 C380 27.5 388.5 14 388.5 1.5" fill="none" stroke="#FFFFFF" strokeWidth="3" />
               </mask>
             </defs>
             <path
               className="profile-top-curve-cutout"
-              d="M0 0 L1.5 1.5 C1.5 16 10 30.5 27 30.5 H363 C380 30.5 388.5 16 388.5 1.5 L390 0 V32 H0 Z"
+              d="M0 0 L1.5 1.5 C1.5 14 10 27.5 27 27.5 H363 C380 27.5 388.5 14 388.5 1.5 L390 0 V32 H0 Z"
             />
-            <path className="profile-top-curve-base" d="M1.5 1.5 C1.5 16 10 30.5 27 30.5 H363 C380 30.5 388.5 16 388.5 1.5" />
+            <path className="profile-top-curve-base" d="M1.5 1.5 C1.5 14 10 27.5 27 27.5 H363 C380 27.5 388.5 14 388.5 1.5" />
             <g mask="url(#profile-top-curve-mask)">
               <rect className="profile-top-curve-shine" x="-176" y="0" width="176" height="32" fill="url(#profile-top-curve-shine-gradient)" />
             </g>

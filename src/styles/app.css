@@ -5054,7 +5054,8 @@
     overflow: hidden;
     background-color: #050A12;
     background-image:
-      linear-gradient(180deg, rgba(2,6,15,.06) 0%, rgba(2,6,15,.14) 58%, rgba(1,4,10,.30) 100%),
+      radial-gradient(circle at 50% 24%, rgba(31,106,225,.14), transparent 38%),
+      linear-gradient(180deg, rgba(2,6,15,.14) 0%, rgba(2,6,15,.22) 58%, rgba(1,4,10,.48) 100%),
       url('/client-selection-mobile-lima.jpg');
     background-repeat: no-repeat;
     background-size: cover;
@@ -8832,6 +8833,9 @@ details.report-admin-panel {
 .report-admin-panel:not([open]) {
   box-shadow: 0 16px 34px -24px rgba(2,6,23,.65);
 }
+.report-admin-panel + .reports-filter-stack {
+  margin-top: 18px;
+}
 
 /* Selector: una jerarquía clara en vez de muchas cajas negras compitiendo. */
 .admin-picker-header {
@@ -8993,6 +8997,14 @@ details.report-admin-panel {
 }
 
 @media (min-width: 900px) {
+  .admin-picker-shell {
+    background-image:
+      radial-gradient(ellipse at 64% 50%, rgba(53,126,232,.10), transparent 34%),
+      linear-gradient(100deg, rgba(2,6,15,.44) 0%, rgba(2,6,15,.15) 48%, rgba(2,6,15,.28) 100%),
+      url('/login-vista360-desktop-v2.jpg');
+    background-position: center center;
+    background-size: cover;
+  }
   .admin-picker-header {
     width: min(760px, calc(100% - 56px));
     margin: 72px auto 20px;
