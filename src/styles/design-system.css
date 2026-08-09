@@ -1467,6 +1467,12 @@ a {
 }
 
 @media (max-width: 899px) {
+  /* iOS amplía y permite desplazar la página al enfocar inputs menores
+     de 16px. Mantener este tamaño evita el zoom automático de Safari. */
+  .login-card .form-input {
+    font-size: 16px;
+  }
+
   .login-card {
     overflow: hidden;
     padding: 32px 28px;
@@ -1555,6 +1561,8 @@ a {
   .login-shell {
     padding-left: clamp(38px, 5.4vw, 92px);
     padding-right: clamp(38px, 5.4vw, 92px);
+    max-width: 100vw;
+    overflow: hidden;
   }
 
   /* El movimiento vive en la propia fotografía y es deliberadamente
@@ -1566,6 +1574,7 @@ a {
     background-size: cover;
     transform-origin: 54% 56%;
     will-change: transform;
+    filter: brightness(1.085) saturate(1.035);
     animation: login-city-breathe 28s cubic-bezier(.45,0,.55,1) infinite alternate;
   }
 
@@ -1580,6 +1589,8 @@ a {
 
   .login-experience {
     width: min(1240px, 100%);
+    min-width: 0;
+    max-width: 1240px;
     min-height: min(650px, calc(100dvh - 78px));
     max-height: 690px;
     margin: 0 auto;
@@ -1606,13 +1617,13 @@ a {
     max-width: none;
     min-width: 0;
     padding:
-      clamp(46px, 4.4vw, 62px)
+      clamp(40px, 5.4vh, 58px)
       clamp(30px, 4vw, 56px)
       clamp(78px, 7vw, 100px)
-      clamp(20px, 3vw, 42px);
+      clamp(0px, .8vw, 12px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     animation: login-brand-reveal .85s cubic-bezier(.2,.75,.2,1) both;
   }
 
@@ -2050,6 +2061,14 @@ a {
    la tarjeta arriba y bloquea el desplazamiento: el campo sube solo, pero la
    pantalla ya no se puede arrastrar. Solo existe durante la edición móvil. */
 @media (max-width: 899px) {
+  html.login-keyboard-open,
+  body.login-keyboard-open {
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+
   .login-shell.login-field-focused {
     top: 0;
     bottom: auto;
@@ -2060,6 +2079,11 @@ a {
     padding: calc(8px + env(safe-area-inset-top)) 20px 8px;
     overflow: hidden !important;
     overscroll-behavior: none;
+    touch-action: none;
+  }
+
+  .login-field-focused :where(input, button, label) {
+    touch-action: manipulation;
   }
   .login-field-focused .login-experience,
   .login-field-focused .login-right-panel {

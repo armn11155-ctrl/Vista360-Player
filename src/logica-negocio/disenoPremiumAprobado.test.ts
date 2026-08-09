@@ -22,6 +22,8 @@ describe("refinamiento premium aprobado", () => {
 
     const estilos = leer("src/styles/design-system.css");
     expect(estilos).toContain("login-city-breathe");
+    expect(estilos).toContain("filter: brightness(1.085) saturate(1.035)");
+    expect(estilos).toContain("max-width: 100vw");
     expect(estilos).toContain("login-vista360-desktop-v2.jpg");
     expect(estilos).toContain("login-signal-sweep");
     expect(estilos).toContain("login-divider-glide");
@@ -48,7 +50,11 @@ describe("refinamiento premium aprobado", () => {
     const estilos = leer("src/styles/design-system.css");
     const viewport = leer("src/utils/viewport-height.ts");
     expect(login).toContain("login-field-focused");
+    expect(login).toContain("login-keyboard-open");
     expect(estilos).toContain(".login-shell.login-field-focused");
+    expect(estilos).toContain("body.login-keyboard-open");
+    expect(estilos).toContain("touch-action: none");
+    expect(estilos).toContain("font-size: 16px");
     expect(estilos).toContain("height: var(--visual-height, 100dvh)");
     expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
   });

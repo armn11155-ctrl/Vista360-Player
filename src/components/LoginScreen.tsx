@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
@@ -43,6 +43,28 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [campoEnFoco, setCampoEnFoco] = useState(false);
+
+  useEffect(() => {
+    const clase = "login-keyboard-open";
+    const raiz = document.documentElement;
+    const cuerpo = document.body;
+
+    if (!campoEnFoco) {
+      raiz.classList.remove(clase);
+      cuerpo.classList.remove(clase);
+      return;
+    }
+
+    raiz.classList.add(clase);
+    cuerpo.classList.add(clase);
+    const frame = window.requestAnimationFrame(() => window.scrollTo(0, 0));
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      raiz.classList.remove(clase);
+      cuerpo.classList.remove(clase);
+    };
+  }, [campoEnFoco]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
