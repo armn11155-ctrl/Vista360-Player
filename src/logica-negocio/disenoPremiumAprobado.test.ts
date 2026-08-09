@@ -13,6 +13,10 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain('className="login-feature-visual"');
     expect(login).not.toContain('className="login-feature-stage"');
     expect(login).not.toContain('className="login-operation-line"');
+
+    const estilos = leer("src/styles/design-system.css");
+    expect(estilos).toContain("login-city-breathe");
+    expect(estilos).toContain("login-divider-glide");
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {

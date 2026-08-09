@@ -1365,37 +1365,42 @@ a {
     padding-right: clamp(38px, 5.4vw, 92px);
   }
 
+  /* El movimiento vive en la propia fotografía y es deliberadamente
+     lento: se percibe vida, no una animación de interfaz. Solo usa
+     transform para que permanezca en la GPU y no repinte la pantalla. */
+  .login-shell::before {
+    transform-origin: 56% 52%;
+    will-change: transform;
+    animation: login-city-breathe 24s cubic-bezier(.45,0,.55,1) infinite alternate;
+  }
+
+  @keyframes login-city-breathe {
+    from { transform: scale(1.018) translate3d(0, 0, 0); }
+    to { transform: scale(1.055) translate3d(-.45%, -.22%, 0); }
+  }
+
   .login-shell::after {
     background:
-      radial-gradient(circle at 74% 34%, rgba(23,94,205,.10), transparent 26%),
-      linear-gradient(96deg, rgba(2,6,15,.88) 0%, rgba(2,6,15,.63) 43%, rgba(2,6,15,.28) 68%, rgba(2,6,15,.20) 100%);
+      radial-gradient(circle at 75% 32%, rgba(23,94,205,.08), transparent 25%),
+      linear-gradient(96deg, rgba(2,6,15,.80) 0%, rgba(2,6,15,.52) 42%, rgba(2,6,15,.18) 68%, rgba(2,6,15,.12) 100%);
   }
 
   .login-experience {
-    width: min(1200px, 100%);
-    min-height: min(660px, calc(100dvh - 78px));
-    max-height: 700px;
+    width: min(1240px, 100%);
+    min-height: min(650px, calc(100dvh - 78px));
+    max-height: 690px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 1.36fr) minmax(340px, .64fr);
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,.11);
-    background:
-      linear-gradient(90deg, rgba(3,8,18,.72), rgba(3,8,18,.37) 58%, rgba(3,8,18,.70) 100%);
-    box-shadow: 0 38px 100px -52px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.035);
+    grid-template-columns: minmax(0, 1.42fr) minmax(350px, .58fr);
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     isolation: isolate;
   }
 
   .login-experience::before {
-    content: "";
-    position: absolute;
-    z-index: 2;
-    top: -1px;
-    left: 0;
-    width: clamp(72px, 9%, 108px);
-    height: 1px;
-    background: linear-gradient(90deg, #438BFF, rgba(67,139,255,0));
-    box-shadow: 0 0 16px rgba(67,139,255,.42);
+    content: none;
   }
 
   .login-experience::after {
@@ -1407,10 +1412,16 @@ a {
     width: auto;
     max-width: none;
     min-width: 0;
-    padding: clamp(48px, 5.5vw, 76px) clamp(42px, 6vw, 82px);
+    padding: clamp(48px, 5.5vw, 76px) clamp(30px, 5vw, 68px);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    animation: login-brand-reveal .85s cubic-bezier(.2,.75,.2,1) both;
+  }
+
+  @keyframes login-brand-reveal {
+    from { opacity: 0; transform: translate3d(-14px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
   .login-brand-kicker {
@@ -1431,6 +1442,12 @@ a {
     border-radius: 99px;
     background: rgba(96,165,250,.92);
     box-shadow: 0 0 12px rgba(67,139,255,.45);
+    animation: login-brand-line 4.8s ease-in-out infinite;
+  }
+
+  @keyframes login-brand-line {
+    0%, 100% { width: 28px; opacity: .65; }
+    50% { width: 42px; opacity: 1; }
   }
 
   .login-left-logo {
@@ -1443,10 +1460,10 @@ a {
     max-width: 540px;
     margin: 0;
     color: #FFFFFF;
-    font-size: clamp(34px, 3.25vw, 50px);
-    line-height: 1.04;
-    font-weight: 760;
-    letter-spacing: -.047em;
+    font-size: clamp(33px, 3.05vw, 47px);
+    line-height: 1.06;
+    font-weight: 690;
+    letter-spacing: -.038em;
     text-wrap: balance;
     text-shadow: 0 10px 36px rgba(0,0,0,.38);
   }
@@ -1464,25 +1481,45 @@ a {
     position: relative;
     width: auto;
     min-width: 0;
-    padding: clamp(42px, 5vw, 72px) clamp(30px, 3.6vw, 52px) 46px;
+    margin: clamp(12px, 2vw, 26px) 0;
+    padding: clamp(42px, 5vw, 70px) clamp(30px, 3.6vw, 52px) 46px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    border-left: 1px solid rgba(255,255,255,.13);
+    overflow: hidden;
+    border-top: 1px solid rgba(255,255,255,.10);
+    border-bottom: 1px solid rgba(255,255,255,.10);
+    border-left: 1px solid rgba(255,255,255,.14);
     background:
-      radial-gradient(circle at 100% 0%, rgba(47,111,237,.10), transparent 34%),
-      linear-gradient(155deg, rgba(6,13,27,.57), rgba(2,7,16,.82));
+      radial-gradient(circle at 100% 0%, rgba(47,111,237,.11), transparent 34%),
+      linear-gradient(155deg, rgba(6,13,27,.46), rgba(2,7,16,.72));
+    box-shadow: 28px 34px 80px -48px rgba(0,0,0,.88), inset 0 1px 0 rgba(255,255,255,.025);
+    backdrop-filter: blur(7px) saturate(108%);
+    -webkit-backdrop-filter: blur(7px) saturate(108%);
+    animation: login-access-reveal .9s .08s cubic-bezier(.2,.75,.2,1) both;
+  }
+
+  @keyframes login-access-reveal {
+    from { opacity: 0; transform: translate3d(14px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
   .login-right-panel::before {
     content: "";
     position: absolute;
-    top: 26px;
-    bottom: 26px;
+    top: 0;
+    bottom: 0;
     left: -1px;
     width: 1px;
-    background: linear-gradient(180deg, transparent, rgba(148,183,234,.42), transparent);
-    box-shadow: 0 0 14px rgba(47,111,237,.25);
+    background: linear-gradient(180deg, transparent 8%, rgba(148,183,234,.16) 34%, #75A9FF 50%, rgba(148,183,234,.16) 66%, transparent 92%);
+    background-size: 100% 220%;
+    box-shadow: 0 0 13px rgba(47,111,237,.30);
+    animation: login-divider-glide 7s ease-in-out infinite;
+  }
+
+  @keyframes login-divider-glide {
+    0%, 100% { background-position: 0 115%; opacity: .48; }
+    50% { background-position: 0 -15%; opacity: 1; }
   }
 
   .login-card,
@@ -1514,6 +1551,8 @@ a {
     margin-bottom: 30px;
     color: rgba(203,213,225,.64);
   }
+
+  .login-access-kicker strong { display: none; }
 
   .login-btn {
     min-height: 52px;
