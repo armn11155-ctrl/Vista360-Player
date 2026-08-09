@@ -1496,6 +1496,15 @@ a {
     animation: login-card-divider-glide 7s ease-in-out infinite;
   }
 
+  .login-message-stack {
+    min-height: 48px;
+    margin-bottom: 8px;
+  }
+
+  .login-message-stack.has-error {
+    min-height: 76px;
+  }
+
   @keyframes login-card-divider-glide {
     0%, 100% { background-position: 0 115%; opacity: .48; }
     50% { background-position: 0 -15%; opacity: 1; }
