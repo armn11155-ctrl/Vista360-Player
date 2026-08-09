@@ -687,14 +687,13 @@
     }
     .profile-top-curve {
       position: absolute;
-      /* La curva continúa fuera del viewport. Así sus remates verticales
-         quedan recortados y en pantalla solo se percibe una línea que se
-         desvanece hacia los laterales, igual de limpia que en Inicio. */
-      left: -24px;
-      right: -24px;
+      /* Solo se prolonga lo imprescindible fuera del viewport. La curva
+         completa queda visible y sube con naturalidad hasta cada esquina. */
+      left: -2px;
+      right: -2px;
       bottom: 0;
       z-index: 2;
-      height: 34px;
+      height: 38px;
       display: block;
       pointer-events: none;
     }
@@ -707,10 +706,8 @@
     .profile-top-curve path {
       fill: none;
       vector-effect: non-scaling-stroke;
-      /* El remate cuadrado prolonga exactamente 1.5 px el trazo hacia
-         arriba. Así los dos extremos llegan al borde del header y no
-         dejan visible el píxel claro de las esquinas. */
-      stroke-linecap: square;
+      stroke-linecap: round;
+      stroke-linejoin: round;
       stroke-width: 3;
     }
     /* La curva ya tenía la forma correcta, pero el header negro seguía

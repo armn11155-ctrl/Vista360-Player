@@ -78,14 +78,15 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosApp).toContain("url('/gestion-paneles-desktop.jpg')");
   });
 
-  it("extiende la curva inversa de Perfil hasta fuera del viewport", () => {
+  it("muestra completa y suaviza la curva inversa de Perfil", () => {
     const perfil = leer("src/components/screens/Perfil.tsx");
     const estilos = leer("src/styles/app.css");
-    expect(perfil).toContain('viewBox="0 0 438 34"');
-    expect(perfil).toContain("M0 2 C48 2 42 31 106 31 H332 C396 31 390 2 438 2");
+    expect(perfil).toContain('viewBox="0 0 438 38"');
+    expect(perfil).toContain("M0 1.5 C0 20.5 15.5 36 34.5 36 H403.5 C422.5 36 438 20.5 438 1.5");
     expect(estilos).toContain(".profile-top-curve");
-    expect(estilos).toContain("left: -24px");
-    expect(estilos).toContain("right: -24px");
+    expect(estilos).toContain("left: -2px");
+    expect(estilos).toContain("right: -2px");
+    expect(estilos).toContain("stroke-linejoin: round");
   });
 
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {

@@ -286,7 +286,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
         </section>
 
         <span className="profile-top-curve" aria-hidden="true">
-          <svg viewBox="0 0 438 34" preserveAspectRatio="none">
+          <svg viewBox="0 0 438 38" preserveAspectRatio="none">
             <defs>
               <linearGradient id="profile-top-curve-gradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0" stopColor="#2f6fed" />
@@ -298,17 +298,17 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                 <stop offset="0.5" stopColor="#FFFFFF" stopOpacity="0.96" />
                 <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
               </linearGradient>
-              <mask id="profile-top-curve-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="438" height="34">
-                <path d="M0 2 C48 2 42 31 106 31 H332 C396 31 390 2 438 2" fill="none" stroke="#FFFFFF" strokeWidth="3" />
+              <mask id="profile-top-curve-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="438" height="38">
+                <path d="M0 1.5 C0 20.5 15.5 36 34.5 36 H403.5 C422.5 36 438 20.5 438 1.5" fill="none" stroke="#FFFFFF" strokeWidth="3" />
               </mask>
             </defs>
             <path
               className="profile-top-curve-cutout"
-              d="M0 2 C48 2 42 31 106 31 H332 C396 31 390 2 438 2 V34 H0 Z"
+              d="M0 1.5 C0 20.5 15.5 36 34.5 36 H403.5 C422.5 36 438 20.5 438 1.5 V38 H0 Z"
             />
-            <path className="profile-top-curve-base" d="M0 2 C48 2 42 31 106 31 H332 C396 31 390 2 438 2" />
+            <path className="profile-top-curve-base" d="M0 1.5 C0 20.5 15.5 36 34.5 36 H403.5 C422.5 36 438 20.5 438 1.5" />
             <g mask="url(#profile-top-curve-mask)">
-              <rect className="profile-top-curve-shine" x="-196" y="0" width="196" height="34" fill="url(#profile-top-curve-shine-gradient)" />
+              <rect className="profile-top-curve-shine" x="-196" y="0" width="196" height="38" fill="url(#profile-top-curve-shine-gradient)" />
             </g>
           </svg>
         </span>
