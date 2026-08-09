@@ -98,8 +98,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <strong>V360</strong>
             </div>
             <div className="login-title">Bienvenido</div>
-            <div className="login-sub">Ingresa tus credenciales para continuar.</div>
-            {error && <div className="login-error">{error}</div>}
+            <div className={`login-message-stack${error ? " has-error" : ""}`}>
+              <div className="login-sub">Ingresa tus credenciales para continuar.</div>
+              {error && <div id="login-error" className="login-error" role="alert">{error}</div>}
+            </div>
             <form onSubmit={submit}>
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Usuario</label>
@@ -107,9 +109,12 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                 <span className="login-input-icon"><IconoUsuario /></span>
                 <input
                   id="login-email"
+                  name="email"
                   className="form-input"
                   type="email"
                   autoComplete="email"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "login-error" : undefined}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="correo@empresa.com"
@@ -122,9 +127,12 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                 <span className="login-input-icon"><IconoCandado /></span>
                 <input
                   id="login-password"
+                  name="password"
                   className="form-input"
                   type={mostrarPassword ? "text" : "password"}
                   autoComplete="current-password"
+                  aria-invalid={Boolean(error)}
+                  aria-describedby={error ? "login-error" : undefined}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -134,7 +142,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   className="login-password-toggle"
                   onClick={() => setMostrarPassword((v) => !v)}
                   aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                  tabIndex={-1}
                 >
                   {mostrarPassword ? (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -150,18 +157,32 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                 </button>
               </div>
             </div>
-            <div className="login-remember" onClick={() => setRemember(r => !r)}>
-              <div className={`login-remember-box${remember ? " checked" : ""}`}>
+            <label className="login-remember">
+              <input
+                className="login-remember-native"
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+              />
+              <span className={`login-remember-box${remember ? " checked" : ""}`} aria-hidden="true">
                 {remember && (
                   <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
                     <path d="M1 4L4 7.5L10 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 )}
-              </div>
+              </span>
               <span className="login-remember-label">Mantener sesión iniciada</span>
-            </div>
-            <button className="login-btn" disabled={busy} type="submit">
-              {busy ? "Ingresando…" : "Ingresar"}
+            </label>
+            <button
+              className={`login-btn${busy ? " is-busy" : ""}`}
+              disabled={busy}
+              type="submit"
+              aria-busy={busy}
+            >
+              <span className="login-btn-content">
+                <span className="login-btn-spinner" aria-hidden="true" />
+                <span>{busy ? "Ingresando…" : "Ingresar"}</span>
+              </span>
             </button>
             </form>
           </div>

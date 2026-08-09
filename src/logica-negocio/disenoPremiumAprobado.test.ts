@@ -10,6 +10,9 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain('className="login-experience"');
     expect(login).toContain("Campañas bajo control.");
     expect(login).toContain('className="login-access-kicker"');
+    expect(login).toContain('className="login-remember-native"');
+    expect(login).toContain('className="login-btn-spinner"');
+    expect(login).not.toContain("tabIndex={-1}");
     expect(login).not.toContain('className="login-feature-visual"');
     expect(login).not.toContain('className="login-feature-stage"');
     expect(login).not.toContain('className="login-operation-line"');
@@ -17,6 +20,8 @@ describe("refinamiento premium aprobado", () => {
     const estilos = leer("src/styles/design-system.css");
     expect(estilos).toContain("login-city-breathe");
     expect(estilos).toContain("login-divider-glide");
+    expect(estilos).toContain(".login-message-stack");
+    expect(estilos).toContain("@media (max-width: 899px) and (max-height: 740px)");
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {
