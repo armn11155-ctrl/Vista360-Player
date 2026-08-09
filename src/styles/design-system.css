@@ -1753,14 +1753,16 @@ a {
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    border: 1px solid rgba(166,198,241,.17);
-    border-radius: 24px;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 1px solid rgba(255,255,255,.12);
+    border-radius: 0;
     background:
-      radial-gradient(circle at 100% 0%, rgba(45,105,205,.15), transparent 38%),
-      linear-gradient(155deg, rgba(12,25,45,.94) 0%, rgba(4,11,24,.96) 58%, rgba(3,8,18,.95) 100%);
-    box-shadow: 0 34px 82px -34px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+      radial-gradient(circle at 100% 8%, rgba(47,111,237,.075), transparent 34%),
+      linear-gradient(180deg, rgba(3,8,19,.42) 0%, rgba(3,8,19,.72) 13%, rgba(2,7,17,.82) 50%, rgba(3,8,19,.72) 87%, rgba(3,8,19,.42) 100%);
+    box-shadow: 30px 34px 84px -50px rgba(0,0,0,.92), inset 1px 0 0 rgba(255,255,255,.025);
+    backdrop-filter: blur(9px) saturate(108%);
+    -webkit-backdrop-filter: blur(9px) saturate(108%);
     animation: login-access-reveal .9s .08s cubic-bezier(.2,.75,.2,1) both;
   }
 
@@ -1774,7 +1776,7 @@ a {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
+    left: -1px;
     width: 1px;
     background: linear-gradient(180deg, transparent 8%, rgba(148,183,234,.16) 34%, #75A9FF 50%, rgba(148,183,234,.16) 66%, transparent 92%);
     background-size: 100% 220%;
