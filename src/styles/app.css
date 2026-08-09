@@ -4429,7 +4429,7 @@
       min-height: 0;
       max-height: 100dvh;
       overscroll-behavior: none;
-      background-image: url('/gestion-clientes-sf-desktop.jpg');
+      background-image: url('/gestion-paneles-desktop.jpg');
       background-position: center center;
       background-size: cover;
     }
@@ -5042,11 +5042,11 @@
     background-color: #050A12;
     background-image:
       radial-gradient(circle at 50% 24%, rgba(31,106,225,.14), transparent 38%),
-      linear-gradient(180deg, rgba(2,6,15,.14) 0%, rgba(2,6,15,.22) 58%, rgba(1,4,10,.48) 100%),
-      url('/client-selection-mobile-lima.jpg');
+      linear-gradient(180deg, rgba(2,6,15,.06) 0%, rgba(2,6,15,.12) 58%, rgba(1,4,10,.28) 100%),
+      url('/gestion-paneles-mobile.jpg');
     background-repeat: no-repeat;
     background-size: cover;
-    background-position: center bottom;
+    background-position: center, center, 58% bottom;
     animation: appFadeIn .3s ease;
   }
   .admin-picker-shell::after {
@@ -7721,7 +7721,7 @@
        tienen su propio fondo sólido (no dependen de que la foto esté
        oscurecida para leerse), así que sacarla no afecta la lectura. */
     .admin-picker-management-screen {
-      background: url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
+      background: url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
       padding: 22px 48px 40px;
     }
     .admin-picker-management-logo {
@@ -7769,7 +7769,7 @@
       height: 22px;
     }
     .admin-picker-shell {
-      background-image: url('/gestion-clientes-sf-desktop.jpg');
+      background-image: url('/gestion-paneles-desktop.jpg');
       background-position: center center;
       background-size: cover;
     }
@@ -8986,9 +8986,9 @@ details.report-admin-panel {
 @media (min-width: 900px) {
   .admin-picker-shell {
     background-image:
-      radial-gradient(ellipse at 64% 50%, rgba(53,126,232,.10), transparent 34%),
-      linear-gradient(100deg, rgba(2,6,15,.44) 0%, rgba(2,6,15,.15) 48%, rgba(2,6,15,.28) 100%),
-      url('/login-vista360-desktop-v2.jpg');
+      radial-gradient(ellipse at 72% 40%, rgba(53,126,232,.08), transparent 34%),
+      linear-gradient(100deg, rgba(2,6,15,.20) 0%, rgba(2,6,15,.05) 48%, rgba(2,6,15,.14) 100%),
+      url('/gestion-paneles-desktop.jpg');
     background-position: center center;
     background-size: cover;
   }
@@ -9001,7 +9001,7 @@ details.report-admin-panel {
     padding: 22px 48px 40px;
     background:
       linear-gradient(180deg, rgba(244,247,251,.9), rgba(239,244,250,.96)),
-      url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
+      url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
   }
   .admin-picker-management-head,
   .admin-picker-management-grid {

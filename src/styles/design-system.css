@@ -707,7 +707,7 @@ a {
     padding: 26px 48px 44px;
     background:
       linear-gradient(180deg, rgba(2,7,18,.08) 0%, rgba(2,7,18,.22) 54%, rgba(2,7,18,.48) 100%),
-      url('/gestion-clientes-sf-desktop.jpg') center / cover no-repeat;
+      url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
   }
 
   .admin-picker-management-logo {
