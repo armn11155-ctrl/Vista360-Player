@@ -1,4 +1,7 @@
-const CACHE = "v360player-shell-v10";
+// Vite reemplaza este marcador en dist/sw.js en CADA build. Si el archivo
+// permaneciera idéntico, una PWA abierta no detectaría el nuevo despliegue.
+const BUILD = "__VISTA360_BUILD__";
+const CACHE = `v360player-shell-${BUILD}`;
 const SHELL = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {

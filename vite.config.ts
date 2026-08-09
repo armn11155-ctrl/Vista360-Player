@@ -1,8 +1,32 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/**
+ * public/sw.js antes era idéntico entre despliegues. Por eso una PWA que
+ * quedaba abierta no detectaba la versión nueva y seguía ejecutando chunks
+ * antiguos (justo el código previo que demoraba fotos y reportes). Se inserta
+ * un id distinto en el artefacto final de cada build: el navegador instala el
+ * Service Worker nuevo, este avisa a las ventanas y main.tsx recarga una vez.
+ * No añade red, Functions, Firestore ni servicios de pago.
+ */
+function versionarServiceWorker() {
+  const raiz = dirname(fileURLToPath(import.meta.url));
+  const buildId = `${Date.now().toString(36)}`;
+  return {
+    name: "vista360-versionar-service-worker",
+    closeBundle() {
+      const ruta = resolve(raiz, "dist/sw.js");
+      const contenido = readFileSync(ruta, "utf8");
+      writeFileSync(ruta, contenido.replace("__VISTA360_BUILD__", buildId));
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), versionarServiceWorker()],
   server: {
     port: 5174,
   },

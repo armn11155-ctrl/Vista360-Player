@@ -148,6 +148,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 size={34}
                 radius={10}
                 iconScale={0.6}
+                priority
               />
             </span>
             <span className="sidebar-profile-avatar-mobile">
@@ -158,6 +159,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 size={62}
                 radius={18}
                 iconScale={0.58}
+                priority
               />
             </span>
             <span className="sidebar-profile-chip-copy">

@@ -88,10 +88,11 @@ describe("el Service Worker confirma cuando terminó de limpiar", () => {
     expect(sw).toContain("event.ports[0].postMessage");
   });
 
-  it("la versión de la caché subió (fuerza renovación en los clientes)", () => {
-    const v = /const CACHE = "v360player-shell-v(\d+)"/.exec(sw);
-    expect(v).not.toBeNull();
-    expect(Number(v![1])).toBeGreaterThanOrEqual(10);
+  it("la versión de la caché cambia automáticamente en cada build", () => {
+    expect(sw).toContain('const BUILD = "__VISTA360_BUILD__"');
+    expect(sw).toContain("v360player-shell-${BUILD}");
+    const vite = readFileSync(resolve(__dirname, "../../vite.config.ts"), "utf-8");
+    expect(vite).toContain('replace("__VISTA360_BUILD__", buildId)');
   });
 });
 

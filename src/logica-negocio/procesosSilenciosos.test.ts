@@ -126,7 +126,8 @@ describe("procesos revisados que NO necesitan guardián", () => {
     // limpieza al cargar una pantalla, y recarga si una transición no
     // termina. Un guardián más sería el quinto para lo mismo.
     const sw = leer("public/sw.js");
-    expect(sw).toMatch(/const CACHE = "v360player-shell-v\d+"/);
+    expect(sw).toContain('const BUILD = "__VISTA360_BUILD__"');
+    expect(sw).toContain("v360player-shell-${BUILD}");
     expect(sw).toContain('cliente.postMessage({ tipo: "version-nueva" })');
     expect(leer("src/utils/pantallaLazy.ts")).toContain("limpiarCacheDelServiceWorker");
   });

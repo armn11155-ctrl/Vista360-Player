@@ -12,6 +12,15 @@ import { runInNewContext } from "node:vm";
  * defensa está escrita no es comprobar que funciona.
  */
 const SW = readFileSync(resolve(__dirname, "../../public/sw.js"), "utf-8");
+const VITE_CONFIG = readFileSync(resolve(__dirname, "../../vite.config.ts"), "utf-8");
+
+describe("cada despliegue despierta y actualiza la PWA instalada", () => {
+  it("inyecta una versión distinta en el Service Worker durante el build", () => {
+    expect(SW).toContain("__VISTA360_BUILD__");
+    expect(VITE_CONFIG).toContain("versionarServiceWorker");
+    expect(VITE_CONFIG).toContain('replace("__VISTA360_BUILD__", buildId)');
+  });
+});
 
 /** Respuesta mínima, suficiente para lo que mira el service worker. */
 function respuesta(tipo: string, cuerpo: string, ok = true) {

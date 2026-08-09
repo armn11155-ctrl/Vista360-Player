@@ -13,13 +13,17 @@ interface Props {
   radius?: number;
   /** Tamaño del ícono de persona respecto al thumbnail (0–1). Por defecto 0.58. */
   iconScale?: number;
+  /** La foto visible del perfil/sidebar es contenido principal y no debe
+   * esperar la heurística lazy de Safari PWA. Las grillas largas conservan
+   * lazy loading por defecto. */
+  priority?: boolean;
 }
 
 /**
  * Thumbnail de marca: fondo de color único por empresa + personaje estable
  * por nombre. Así cada cliente se reconoce sin depender solo del color.
  */
-export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12, iconScale = 0.58 }: Props) {
+export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12, iconScale = 0.58, priority = false }: Props) {
   const { bg } = brandColor(name);
   const iconSize = size * iconScale;
   const esKeyR2 = Boolean(avatarUrl) && !avatarUrl!.startsWith("http");
@@ -43,7 +47,8 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
         <img
           src={src}
           alt=""
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           onError={() => setFallo(true)}

@@ -4,14 +4,12 @@ import { resolve } from "node:path";
 
 const leer = (ruta: string) => readFileSync(resolve(__dirname, "../..", ruta), "utf-8");
 
-describe("el primer contenido visible no espera arranques fríos", () => {
+describe("las funciones críticas no mantienen instancias con costo fijo", () => {
   for (const archivo of ["firmarUrlsR2.ts", "listarReportesCliente.ts"]) {
-    it(`${archivo} mantiene una instancia económica preparada`, () => {
+    it(`${archivo} escala a cero cuando no se usa`, () => {
       const codigo = leer(`functions/src/${archivo}`);
-      expect(codigo).toContain("minInstances: 1");
-      // La CPU fraccionaria deja el coste estimado cerca de US$3/mes por
-      // Function, en vez de unos US$8 con la CPU completa predeterminada.
-      expect(codigo).toContain('cpu: "gcf_gen1"');
+      expect(codigo).not.toContain("minInstances");
+      expect(codigo).not.toContain('cpu: "gcf_gen1"');
     });
   }
 });

@@ -34,13 +34,7 @@ const EXPIRACION_AVATAR_SEGUNDOS = 7 * 24 * 60 * 60;
  * por cliente, así que se firman con la validación de carpeta de
  * siempre.
  */
-// Los avatares son parte del primer contenido visible del selector de
-// clientes. Con cero instancias la Function tardaba 2–4 s en despertar y
-// durante todo ese tiempo no aparecía ninguna foto. Una instancia mínima
-// elimina ese arranque frío; no añade lecturas ni cambia la autorización.
-export const firmarUrlsR2 = onCall(
-  { secrets: R2_SECRETS, minInstances: 1, cpu: "gcf_gen1" },
-  async (request) => {
+export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
@@ -188,5 +182,4 @@ export const firmarUrlsR2 = onCall(
   // nada que mostrar", así que no rompe nada, y no se le confirma a
   // quien pregunta si esa factura existe o no.
   return { urls: firmadas };
-  },
-);
+});
