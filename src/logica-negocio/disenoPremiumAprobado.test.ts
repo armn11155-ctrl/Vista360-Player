@@ -26,6 +26,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("login-signal-sweep");
     expect(estilos).toContain("login-divider-glide");
     expect(estilos).toContain(".login-message-stack");
+    expect(estilos).toContain("-22px 0 54px -35px rgba(77,142,236,.64)");
+    expect(estilos).toContain("18px 0 46px -29px rgba(77,142,236,.42)");
     expect(estilos).toContain("@media (max-width: 899px) and (max-height: 740px)");
   });
 
