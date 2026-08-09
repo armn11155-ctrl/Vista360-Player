@@ -1468,25 +1468,37 @@ a {
 
 @media (max-width: 899px) {
   .login-card {
-    border-radius: 26px 10px 26px 26px;
+    overflow: hidden;
+    padding: 32px 28px;
+    border: 0;
+    border-left: 1px solid rgba(255,255,255,.12);
+    border-radius: 2px;
     background:
-      radial-gradient(circle at 96% 0%, rgba(47,111,237,.20), transparent 34%),
-      rgba(3,8,17,.76);
-    border-color: rgba(147,197,253,.22);
-    backdrop-filter: blur(18px) saturate(118%);
-    -webkit-backdrop-filter: blur(18px) saturate(118%);
-    box-shadow: 0 34px 90px -30px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.10);
+      radial-gradient(circle at 100% 8%, rgba(47,111,237,.075), transparent 34%),
+      linear-gradient(180deg, rgba(3,8,19,.42) 0%, rgba(3,8,19,.72) 13%, rgba(2,7,17,.82) 50%, rgba(3,8,19,.72) 87%, rgba(3,8,19,.42) 100%);
+    backdrop-filter: blur(9px) saturate(108%);
+    -webkit-backdrop-filter: blur(9px) saturate(108%);
+    box-shadow: 30px 34px 84px -50px rgba(0,0,0,.92), inset 1px 0 0 rgba(255,255,255,.025);
   }
 
   .login-card::before {
     content: "";
     position: absolute;
     top: 0;
-    right: 28px;
-    left: 28px;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #438BFF, transparent);
-    box-shadow: 0 0 18px rgba(67,139,255,.55);
+    right: auto;
+    bottom: 0;
+    left: -1px;
+    width: 1px;
+    height: auto;
+    background: linear-gradient(180deg, transparent 8%, rgba(148,183,234,.16) 34%, #75A9FF 50%, rgba(148,183,234,.16) 66%, transparent 92%);
+    background-size: 100% 220%;
+    box-shadow: 0 0 13px rgba(47,111,237,.30);
+    animation: login-card-divider-glide 7s ease-in-out infinite;
+  }
+
+  @keyframes login-card-divider-glide {
+    0%, 100% { background-position: 0 115%; opacity: .48; }
+    50% { background-position: 0 -15%; opacity: 1; }
   }
 
   .login-title { font-size: 26px; letter-spacing: -.025em; }
@@ -1641,8 +1653,9 @@ a {
     position: relative;
     width: auto;
     min-width: 0;
-    margin: clamp(12px, 2vw, 26px) 0;
-    padding: clamp(42px, 5vw, 70px) clamp(34px, 3.2vw, 42px) 46px;
+    align-self: center;
+    margin: 0;
+    padding: 30px clamp(34px, 3.2vw, 42px) 28px;
     display: flex;
     flex-direction: column;
     justify-content: center;
