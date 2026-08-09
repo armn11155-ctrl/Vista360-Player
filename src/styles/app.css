@@ -3225,7 +3225,7 @@
      exactamente como antes (columna centrada, mismo ancho máximo en
      los hijos); en escritorio este mismo bloque se corre hacia la
      izquierda de la pantalla (ver @media min-width:900px). */
-  /* Columna de beneficios -- SOLO escritorio, oculta por defecto
+  /* Columna de marca -- SOLO escritorio, oculta por defecto
      (celular no cambia nada de lo que ya habia). Se muestra en el
      media query de escritorio, mas abajo. */
   .login-left-panel { display: none; }
@@ -3451,9 +3451,8 @@
       z-index: -1;
       background: linear-gradient(100deg, rgba(3,7,17,.86) 0%, rgba(3,7,17,.5) 26%, rgba(3,7,17,.14) 45%, rgba(3,7,17,0) 58%, rgba(3,7,17,0) 100%);
     }
-    /* Se pidió volver a 2 columnas en escritorio (referencia con foto
-       de ciudad, columna de beneficios a la izquierda y la tarjeta de
-       acceso a la derecha) -- antes el logo+tagline vivian arriba de
+    /* Composición de 2 columnas en escritorio: foto y mensaje de marca
+       a la izquierda, acceso a la derecha. Antes el logo+tagline vivian arriba de
        la tarjeta (columna única corrida a la derecha); ahora ese logo
        y tagline se mudan a .login-left-panel (nueva columna), y aca
        solo queda la tarjeta. En celular nada de esto se toca. */
@@ -3549,8 +3548,8 @@
       box-shadow: 0 16px 32px -14px rgba(0,0,0,.6);
     }
 
-    /* Columna izquierda -- logo, tagline y lista de beneficios, solo
-       escritorio. Centrada verticalmente junto con la tarjeta
+    /* Columna izquierda -- marca y una sola idea, solo escritorio.
+       Centrada verticalmente junto con la tarjeta
        (mismo align-items:center del .login-shell). */
     .login-left-panel {
       display: flex;
@@ -3572,107 +3571,6 @@
       margin-bottom: 28px;
       text-shadow: 0 2px 10px rgba(0,0,0,.55);
     }
-    .login-left-tagline strong {
-      font-weight: 900;
-      color: #FFFFFF;
-    }
-    /* Módulo editorial de capacidades: la placa clara hace visible la
-       guía negra pedida y separa la información del fondo fotográfico.
-       La imagen reutiliza el mismo JPG que ya carga el fondo del login,
-       por lo que el navegador no descarga un asset adicional. */
-    .login-feature-stage {
-      display: grid;
-      grid-template-columns: minmax(300px, 1fr) 190px;
-      gap: 18px;
-      min-height: 224px;
-      padding: 16px;
-      border: 1px solid rgba(255,255,255,.42);
-      border-radius: 22px;
-      background: rgba(244,247,251,.93);
-      box-shadow: 0 26px 70px -34px rgba(0,0,0,.82), inset 0 1px 0 rgba(255,255,255,.82);
-    }
-    .login-feature-list {
-      position: relative;
-      display: grid;
-      grid-template-rows: repeat(3, 1fr);
-      padding-left: 18px;
-    }
-    .login-feature-list::before {
-      content: "";
-      position: absolute;
-      top: 9px;
-      bottom: 9px;
-      left: 2px;
-      width: 2px;
-      border-radius: 2px;
-      background: #05070A;
-      opacity: .9;
-    }
-    .login-feature-list::after {
-      content: "";
-      position: absolute;
-      top: 16.666%;
-      left: 3px;
-      width: 11px;
-      height: 11px;
-      border: 2px solid #F4F7FB;
-      border-radius: 3px;
-      background: #05070A;
-      box-shadow: 0 4px 12px rgba(5,7,10,.28);
-      transform: translate(-50%, -50%);
-      animation: login-feature-cursor 9s cubic-bezier(.4,0,.2,1) infinite;
-    }
-    @keyframes login-feature-cursor {
-      0%, 30% { top: 16.666%; }
-      33.333%, 63.333% { top: 50%; }
-      66.666%, 96.666% { top: 83.333%; }
-      100% { top: 16.666%; }
-    }
-    .login-feature-item {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-      min-width: 0;
-      padding: 10px 8px;
-      border-top: 1px solid rgba(8,13,23,.09);
-    }
-    .login-feature-item:first-child {
-      border-top: none;
-      padding-top: 0;
-    }
-    .login-feature-item:last-child {
-      padding-bottom: 0;
-    }
-    .login-feature-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
-      background: rgba(33,72,168,.08);
-      border: 1px solid rgba(33,72,168,.24);
-      color: #2148A8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-      transition: background .18s ease, border-color .18s ease;
-    }
-    .login-feature-item:hover .login-feature-icon {
-      background: rgba(33,72,168,.15);
-      border-color: rgba(33,72,168,.42);
-    }
-    .login-feature-title {
-      font-size: 14.5px;
-      font-weight: 800;
-      color: #080D17;
-      margin-bottom: 2px;
-    }
-    .login-feature-desc {
-      font-size: 12.5px;
-      color: #526071;
-      font-weight: 600;
-      line-height: 1.35;
-    }
     @media (max-width: 1180px) {
       .login-shell {
         padding-left: 48px;
@@ -3680,15 +3578,6 @@
       }
       .login-left-panel {
         max-width: 470px;
-      }
-      .login-feature-stage {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .login-feature-list::after {
-        animation: none;
       }
     }
 

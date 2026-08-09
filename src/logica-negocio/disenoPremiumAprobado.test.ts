@@ -8,9 +8,11 @@ describe("refinamiento premium aprobado", () => {
   it("integra marca y acceso en una sola arquitectura de login", () => {
     const login = leer("src/components/LoginScreen.tsx");
     expect(login).toContain('className="login-experience"');
-    expect(login).toContain("Cada campaña. Cada ubicación. Todo bajo control.");
+    expect(login).toContain("Campañas bajo control.");
     expect(login).toContain('className="login-access-kicker"');
     expect(login).not.toContain('className="login-feature-visual"');
+    expect(login).not.toContain('className="login-feature-stage"');
+    expect(login).not.toContain('className="login-operation-line"');
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {

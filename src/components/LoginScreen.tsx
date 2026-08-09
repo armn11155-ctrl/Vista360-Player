@@ -32,38 +32,6 @@ function IconoCandado() {
   );
 }
 
-/** Iconos de la columna de beneficios (solo escritorio) -- mismo
- *  trazo blanco simple que pidió la referencia, dentro de un cuadrado
- *  azul de acento (ver .login-feature-icon en app.css). */
-function IconoReportes() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 21h18" />
-      <rect x="6" y="12" width="3.2" height="9" rx="0.6" />
-      <rect x="12" y="7" width="3.2" height="14" rx="0.6" />
-      <rect x="18" y="3" width="3.2" height="18" rx="0.6" />
-    </svg>
-  );
-}
-function IconoPaneles() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="8" height="8" rx="1.8" />
-      <rect x="13" y="3" width="8" height="8" rx="1.8" />
-      <rect x="3" y="13" width="8" height="8" rx="1.8" />
-      <rect x="13" y="13" width="8" height="8" rx="1.8" />
-    </svg>
-  );
-}
-function IconoAccesoSeguro() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4.5" y="10.5" width="15" height="10.5" rx="2.4" />
-      <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
-    </svg>
-  );
-}
-
 export default function LoginScreen({ onLoggedIn }: Props) {
   const savedRemember = localStorage.getItem(REMEMBER_KEY) !== "false";
   const savedEmail = savedRemember ? (localStorage.getItem(SAVED_EMAIL_KEY) ?? "") : "";
@@ -110,47 +78,13 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         <section className="login-left-panel" aria-label="Vista360 Player">
           <div className="login-brand-kicker">
             <span aria-hidden="true" />
-            Plataforma de gestión exterior
+            Publicidad exterior inteligente
           </div>
           <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
-          <h1 className="login-left-heading">Cada campaña. Cada ubicación. Todo bajo control.</h1>
+          <h1 className="login-left-heading">Campañas bajo control.</h1>
           <p className="login-left-tagline">
-            Más que visibilidad. <strong>Presencia.</strong>
+            Gestión y evidencia, en un solo lugar.
           </p>
-
-          <div className="login-feature-stage" aria-label="Capacidades de la plataforma">
-            <div className="login-feature-list">
-              <div className="login-feature-item">
-                <span className="login-feature-index">01</span>
-                <span className="login-feature-icon"><IconoReportes /></span>
-                <div>
-                  <div className="login-feature-title">Reportes en tiempo real</div>
-                  <div className="login-feature-desc">Evidencia fotográfica y ocupación al día.</div>
-                </div>
-              </div>
-              <div className="login-feature-item">
-                <span className="login-feature-index">02</span>
-                <span className="login-feature-icon"><IconoPaneles /></span>
-                <div>
-                  <div className="login-feature-title">Gestión de paneles y mapas</div>
-                  <div className="login-feature-desc">Visualiza y administra tu inventario publicitario.</div>
-                </div>
-              </div>
-              <div className="login-feature-item">
-                <span className="login-feature-index">03</span>
-                <span className="login-feature-icon"><IconoAccesoSeguro /></span>
-                <div>
-                  <div className="login-feature-title">Acceso seguro y controlado</div>
-                  <div className="login-feature-desc">Protegemos tu información y la de tu empresa.</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="login-operation-line">
-            <span><i aria-hidden="true" /> Operación conectada</span>
-            <strong>Vista360 / Player</strong>
-          </div>
         </section>
 
         <section className="login-right-panel" aria-label="Acceso al portal">
