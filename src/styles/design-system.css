@@ -1511,7 +1511,18 @@ a {
   }
 
   .login-title { font-size: 26px; letter-spacing: -.025em; }
-  .login-btn { min-height: 52px; border-radius: 14px; }
+  .login-btn {
+    min-height: 52px;
+    border: 1px solid rgba(147,197,253,.24);
+    border-radius: 14px;
+    background: #2256B3;
+    box-shadow: none;
+  }
+
+  .login-btn:hover:not(:disabled) {
+    background: #2A62C7;
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 899px) and (max-height: 740px) {
@@ -1758,16 +1769,16 @@ a {
 
   .login-btn {
     min-height: 52px;
-    border: 1px solid rgba(147,197,253,.26);
+    border: 1px solid rgba(147,197,253,.24);
     border-radius: 13px;
-    background: linear-gradient(135deg, #173F9F, #0868DB);
-    box-shadow: 0 18px 34px -17px rgba(8,104,219,.62), inset 0 1px 0 rgba(255,255,255,.16);
+    background: #2256B3;
+    box-shadow: none;
     transition: transform .16s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease, opacity .18s ease;
   }
 
   .login-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #1D4DB8, #1075EE);
-    box-shadow: 0 22px 38px -17px rgba(8,104,219,.72), inset 0 1px 0 rgba(255,255,255,.20);
+    background: #2A62C7;
+    box-shadow: none;
   }
 
   .login-foot {

@@ -704,7 +704,10 @@
     .profile-top-curve path {
       fill: none;
       vector-effect: non-scaling-stroke;
-      stroke-linecap: butt;
+      /* El remate cuadrado prolonga exactamente 1.5 px el trazo hacia
+         arriba. Así los dos extremos llegan al borde del header y no
+         dejan visible el píxel claro de las esquinas. */
+      stroke-linecap: square;
       stroke-width: 3;
     }
     /* La curva ya tenía la forma correcta, pero el header negro seguía
@@ -9255,12 +9258,12 @@ details.report-admin-panel {
   height: 42px;
   display: grid;
   place-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 13px;
-  color: #CFE3FF;
-  background: rgba(8,119,255,.15);
-  font-size: 17px;
-  font-weight: 900;
+  background: rgba(255,255,255,.06);
+  transform: translateY(1px);
 }
 .inicio-current-client-copy { min-width: 0; display: grid; gap: 3px; }
 .inicio-current-client-copy small {
@@ -9448,8 +9451,8 @@ details.report-admin-panel {
   .report-card-copy { padding-right: 2px; }
   .report-title { font-size: 21px !important; line-height: 1.02; text-wrap: balance; }
   .report-card-menu { top: 18px; right: 14px; }
-  .inicio-current-client { grid-template-columns: 40px minmax(0, 1fr); }
-  .inicio-current-client-mark { width: 40px; height: 40px; }
+  .inicio-current-client { grid-template-columns: 42px minmax(0, 1fr); }
+  .inicio-current-client-mark { width: 42px; height: 42px; }
   .inicio-current-client-action {
     grid-column: 2;
     justify-self: start;

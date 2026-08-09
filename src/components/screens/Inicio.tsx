@@ -5,6 +5,7 @@ import { useResumenInformes } from "../../hooks/useResumenInformes";
 import { usePushEstado } from "../../hooks/usePushEstado";
 import NotifPrompt from "../NotifPrompt";
 import { PersonIcon } from "../PersonIcon";
+import { BrandThumb } from "../BrandThumb";
 
 interface Props {
   cliente: Cliente | null;
@@ -217,7 +218,15 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
               className="inicio-current-client"
             >
               <span className="inicio-current-client-mark" aria-hidden="true">
-                {(cliente?.empresa || "V").trim().charAt(0).toUpperCase()}
+                <BrandThumb
+                  name={cliente?.empresa || "Cliente"}
+                  avatarKey={cliente?.avatarKey}
+                  avatarUrl={cliente?.avatarUrl}
+                  size={40}
+                  radius={12}
+                  iconScale={0.72}
+                  priority
+                />
               </span>
               <span className="inicio-current-client-copy">
                 <small>Cuenta seleccionada · {rolInterno}</small>
