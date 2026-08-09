@@ -1471,20 +1471,14 @@ a {
     overflow: hidden;
     padding: 32px 28px;
     border: 0;
-    border-left: 1px solid rgba(184,211,250,.22);
-    border-right: 1px solid rgba(147,197,253,.14);
+    border-left: 1px solid rgba(255,255,255,.12);
     border-radius: 2px;
     background:
       radial-gradient(circle at 100% 8%, rgba(47,111,237,.075), transparent 34%),
       linear-gradient(180deg, rgba(3,8,19,.42) 0%, rgba(3,8,19,.72) 13%, rgba(2,7,17,.82) 50%, rgba(3,8,19,.72) 87%, rgba(3,8,19,.42) 100%);
     backdrop-filter: blur(9px) saturate(108%);
     -webkit-backdrop-filter: blur(9px) saturate(108%);
-    box-shadow:
-      -18px 0 46px -29px rgba(77,142,236,.58),
-      18px 0 46px -29px rgba(77,142,236,.42),
-      0 34px 84px -50px rgba(0,0,0,.94),
-      inset 1px 0 0 rgba(255,255,255,.04),
-      inset -1px 0 0 rgba(255,255,255,.025);
+    box-shadow: 30px 34px 84px -50px rgba(0,0,0,.92), inset 1px 0 0 rgba(255,255,255,.025);
   }
 
   .login-card::before {
@@ -1581,10 +1575,7 @@ a {
   }
 
   .login-shell::after {
-    background:
-      radial-gradient(ellipse at 79% 52%, rgba(122,172,242,.11) 0%, rgba(85,139,218,.035) 22%, transparent 37%),
-      radial-gradient(circle at 56% 54%, rgba(37,99,235,.045), transparent 23%),
-      linear-gradient(96deg, rgba(2,6,15,.78) 0%, rgba(2,6,15,.50) 37%, rgba(2,6,15,.06) 66%, rgba(2,6,15,.08) 100%);
+    content: none;
   }
 
   .login-experience {
@@ -1767,12 +1758,7 @@ a {
     background:
       radial-gradient(circle at 100% 8%, rgba(47,111,237,.09), transparent 34%),
       linear-gradient(180deg, rgba(2,7,17,.54) 0%, rgba(2,7,17,.78) 13%, rgba(1,5,13,.90) 50%, rgba(2,7,17,.78) 87%, rgba(2,7,17,.54) 100%);
-    box-shadow:
-      -22px 0 54px -35px rgba(77,142,236,.64),
-      22px 0 54px -35px rgba(77,142,236,.46),
-      34px 34px 88px -48px rgba(0,0,0,.96),
-      inset 1px 0 0 rgba(255,255,255,.045),
-      inset -1px 0 0 rgba(147,197,253,.035);
+    box-shadow: 34px 34px 88px -48px rgba(0,0,0,.96), -12px 0 42px -34px rgba(96,165,250,.48), inset 1px 0 0 rgba(255,255,255,.035);
     backdrop-filter: blur(7px) saturate(112%);
     -webkit-backdrop-filter: blur(7px) saturate(112%);
     animation: login-access-reveal .9s .08s cubic-bezier(.2,.75,.2,1) both;

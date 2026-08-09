@@ -3237,14 +3237,7 @@
       animation: none;
     }
     .login-shell::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 50% 42%, rgba(6,16,35,.04) 0%, rgba(3,7,17,.18) 52%, rgba(3,7,17,.52) 100%),
-        linear-gradient(180deg, rgba(3,7,17,.20) 0%, rgba(3,7,17,.04) 28%, rgba(3,7,17,.10) 62%, rgba(3,7,17,.48) 100%);
+      content: none;
     }
   }
   @media (max-width: 899px) and (min-height: 741px) {
@@ -3470,17 +3463,11 @@
       background-size: cover;
       transform: none;
     }
-    /* Velo de contraste sobre la foto -- una sola capa, plana, para
-       que el lado del texto tenga contraste sin que el fondo se vea
-       "procesado". Solo escritorio -- en celular el fondo sigue
-       exactamente igual (::after base mas arriba queda en
-       content:none). */
+    /* La fotografía se muestra con su luminosidad original. El propio
+       fondo nocturno ya da contraste suficiente y no necesita un velo
+       gris adicional encima, ni en escritorio ni en celular. */
     .login-shell::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      background: linear-gradient(100deg, rgba(3,7,17,.86) 0%, rgba(3,7,17,.5) 26%, rgba(3,7,17,.14) 45%, rgba(3,7,17,0) 58%, rgba(3,7,17,0) 100%);
+      content: none;
     }
     /* Composición de 2 columnas en escritorio: foto y mensaje de marca
        a la izquierda, acceso a la derecha. Antes el logo+tagline vivian arriba de
