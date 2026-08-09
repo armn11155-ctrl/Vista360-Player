@@ -1561,20 +1561,23 @@ a {
      lento: se percibe vida, no una animación de interfaz. Solo usa
      transform para que permanezca en la GPU y no repinte la pantalla. */
   .login-shell::before {
-    transform-origin: 56% 52%;
+    background-image: url('/login-vista360-desktop-v2.jpg');
+    background-position: center center;
+    background-size: cover;
+    transform-origin: 54% 56%;
     will-change: transform;
-    animation: login-city-breathe 24s cubic-bezier(.45,0,.55,1) infinite alternate;
+    animation: login-city-breathe 28s cubic-bezier(.45,0,.55,1) infinite alternate;
   }
 
   @keyframes login-city-breathe {
-    from { transform: scale(1.018) translate3d(0, 0, 0); }
-    to { transform: scale(1.055) translate3d(-.45%, -.22%, 0); }
+    from { transform: scale(1.008) translate3d(0, 0, 0); }
+    to { transform: scale(1.035) translate3d(-.25%, -.14%, 0); }
   }
 
   .login-shell::after {
     background:
-      radial-gradient(circle at 75% 32%, rgba(23,94,205,.08), transparent 25%),
-      linear-gradient(96deg, rgba(2,6,15,.80) 0%, rgba(2,6,15,.52) 42%, rgba(2,6,15,.18) 68%, rgba(2,6,15,.12) 100%);
+      radial-gradient(circle at 56% 54%, rgba(37,99,235,.07), transparent 23%),
+      linear-gradient(96deg, rgba(2,6,15,.76) 0%, rgba(2,6,15,.48) 38%, rgba(2,6,15,.14) 66%, rgba(2,6,15,.20) 100%);
   }
 
   .login-experience {
@@ -1620,7 +1623,7 @@ a {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 28px;
+    margin-bottom: 25px;
     color: rgba(219,234,254,.60);
     font-size: 9.5px;
     font-weight: 800;
@@ -1643,30 +1646,96 @@ a {
   }
 
   .login-left-logo {
-    width: clamp(225px, 19vw, 278px);
-    margin: 0 0 32px;
-    filter: drop-shadow(0 12px 24px rgba(0,0,0,.36));
+    width: clamp(236px, 20vw, 292px);
+    margin: 0 0 34px;
+    filter: drop-shadow(0 14px 28px rgba(0,0,0,.34));
   }
 
   .login-left-heading {
-    max-width: 540px;
+    max-width: 570px;
     margin: 0;
     color: #FFFFFF;
-    font-size: clamp(33px, 3.05vw, 47px);
-    line-height: 1.06;
-    font-weight: 690;
-    letter-spacing: -.038em;
+    font-size: clamp(35px, 3.15vw, 50px);
+    line-height: 1.04;
+    font-weight: 670;
+    letter-spacing: -.044em;
     text-wrap: balance;
     text-shadow: 0 10px 36px rgba(0,0,0,.38);
   }
 
   .login-left-tagline {
-    margin: 15px 0 0;
-    color: rgba(203,213,225,.66);
-    font-size: 14px;
-    line-height: 1.5;
-    font-weight: 590;
+    max-width: 460px;
+    margin: 16px 0 0;
+    color: rgba(214,224,238,.68);
+    font-size: 14.5px;
+    line-height: 1.55;
+    font-weight: 570;
     text-shadow: none;
+  }
+
+  /* Una sola secuencia editorial sustituye cualquier colección de
+     tarjetas o chips. La luz recorre los tres momentos de la campaña
+     cada nueve segundos y conserva una composición silenciosa. */
+  .login-brand-signal {
+    width: min(430px, 88%);
+    margin-top: 38px;
+  }
+
+  .login-brand-signal-rail {
+    position: relative;
+    display: block;
+    height: 1px;
+    overflow: hidden;
+    background: rgba(191,219,254,.20);
+  }
+
+  .login-brand-signal-rail::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 33.333%;
+    background: linear-gradient(90deg, transparent, #69A2FF 32%, #C7DDFF 54%, transparent);
+    box-shadow: 0 0 16px rgba(67,139,255,.34);
+    animation: login-signal-sweep 9s cubic-bezier(.55,0,.25,1) infinite;
+  }
+
+  .login-brand-signal-labels {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    color: rgba(203,213,225,.42);
+    font-size: 9px;
+    font-weight: 780;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+  }
+
+  .login-brand-signal-labels span:nth-child(2) { text-align: center; }
+  .login-brand-signal-labels span:nth-child(3) { text-align: right; }
+  .login-brand-signal-labels span:nth-child(1) { animation: login-signal-label-one 9s ease infinite; }
+  .login-brand-signal-labels span:nth-child(2) { animation: login-signal-label-two 9s ease infinite; }
+  .login-brand-signal-labels span:nth-child(3) { animation: login-signal-label-three 9s ease infinite; }
+
+  @keyframes login-signal-sweep {
+    0%, 25% { transform: translate3d(0,0,0); }
+    34%, 58% { transform: translate3d(100%,0,0); }
+    67%, 92% { transform: translate3d(200%,0,0); }
+    100% { transform: translate3d(0,0,0); }
+  }
+
+  @keyframes login-signal-label-one {
+    0%, 25%, 100% { color: rgba(219,234,254,.82); }
+    34%, 92% { color: rgba(203,213,225,.42); }
+  }
+
+  @keyframes login-signal-label-two {
+    0%, 25%, 67%, 100% { color: rgba(203,213,225,.42); }
+    34%, 58% { color: rgba(219,234,254,.82); }
+  }
+
+  @keyframes login-signal-label-three {
+    0%, 58%, 100% { color: rgba(203,213,225,.42); }
+    67%, 92% { color: rgba(219,234,254,.82); }
   }
 
   .login-right-panel {
@@ -1799,6 +1868,7 @@ a {
   .login-left-logo { width: 214px; margin-bottom: 24px; }
   .login-left-heading { font-size: clamp(29px, 2.75vw, 40px); }
   .login-left-tagline { margin-top: 12px; }
+  .login-brand-signal { margin-top: 25px; }
   .login-right-panel { padding-top: 34px; padding-bottom: 34px; }
 }
 
@@ -1806,6 +1876,7 @@ a {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
   .login-left-panel { padding-right: 34px; padding-left: 34px; }
   .login-left-heading { font-size: clamp(29px, 3.5vw, 38px); }
+  .login-brand-signal { width: min(380px, 92%); }
 }
 
 /* Campañas: el filtro pasa a ser un control segmentado claro y táctil. */

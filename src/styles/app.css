@@ -3462,7 +3462,7 @@
        pantalla, dejando la foto de la ciudad más visible a la
        derecha -- a pedido del usuario. */
     .login-shell::before {
-      background-image: url('/login-ny-desktop-tailored.jpg');
+      background-image: url('/login-vista360-desktop-v2.jpg');
       background-position: center center;
       background-size: cover;
       transform: none;

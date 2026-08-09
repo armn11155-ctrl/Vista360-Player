@@ -8,7 +8,8 @@ describe("refinamiento premium aprobado", () => {
   it("integra marca y acceso en una sola arquitectura de login", () => {
     const login = leer("src/components/LoginScreen.tsx");
     expect(login).toContain('className="login-experience"');
-    expect(login).toContain("Campañas bajo control.");
+    expect(login).toContain("Claridad en cada campaña.");
+    expect(login).toContain('className="login-brand-signal"');
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');
     expect(login).toContain('className="login-btn-spinner"');
@@ -19,6 +20,8 @@ describe("refinamiento premium aprobado", () => {
 
     const estilos = leer("src/styles/design-system.css");
     expect(estilos).toContain("login-city-breathe");
+    expect(estilos).toContain("login-vista360-desktop-v2.jpg");
+    expect(estilos).toContain("login-signal-sweep");
     expect(estilos).toContain("login-divider-glide");
     expect(estilos).toContain(".login-message-stack");
     expect(estilos).toContain("@media (max-width: 899px) and (max-height: 740px)");
