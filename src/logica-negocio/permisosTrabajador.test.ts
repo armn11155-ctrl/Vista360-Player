@@ -96,3 +96,50 @@ describe("la interfaz del Trabajador refleja lo que el backend le permite", () =
     expect(usuarios).toMatch(/role|esGerente|admin/);
   });
 });
+
+describe("la key de un reporte SI demuestra que es un recurso legitimo", () => {
+  /**
+   * LA PREGUNTA: para facturas se comprueba que exista una factura con ese
+   * pdfUrl. Para reportes solo se comprueba la FORMA de la ruta y que el
+   * cliente exista. żEs equivalente?
+   *
+   * SI, pero la demostracion no esta en una consulta: esta en que nadie
+   * mas puede escribir ahi. La cadena es:
+   *
+   *  1. La ruta debe tener la forma EXACTA de un reporte. Un archivo
+   *     cualquiera bajo clientes/ no pasa.
+   *  2. Bajo `clientes/.../reportes/` SOLO escribe generarReporteCliente,
+   *     del lado del servidor. El navegador NO puede subir ahi: la lista
+   *     blanca de crearSubidaR2 son vista360/campanas, vista360/avatares y
+   *     vista360/facturas. Asi que cualquier objeto en esa ruta ES un
+   *     reporte generado por la aplicacion.
+   *  3. El cliente de la ruta debe existir.
+   *  4. Quien llama es personal interno, que YA puede listar los reportes
+   *     de cualquier cliente por la via normal (listarReportesCliente).
+   *
+   * El punto 2 es el que sostiene todo. Si alguien añadiera "clientes" a
+   * las carpetas subibles, la garantia se caeria en silencio -- y esta
+   * prueba es lo unico que lo impediria.
+   */
+  it("el navegador NO puede subir nada bajo clientes/", () => {
+    const r2 = sinComentarios(leer("functions/src/r2Storage.ts"));
+    const linea = r2.split("\n").find((l) => l.includes("CARPETAS_PERMITIDAS =")) ?? "";
+    expect(linea).toContain("vista360/campanas");
+    expect(linea).toContain("vista360/avatares");
+    expect(linea).toContain("vista360/facturas");
+    // Lo que NO puede aparecer nunca.
+    expect(linea).not.toContain("clientes");
+  });
+
+  it("solo el servidor escribe los reportes, y en esa ruta exacta", () => {
+    const gen = sinComentarios(leer("functions/src/generarReporteCliente.ts"));
+    expect(gen).toContain("clientes/${clienteId}/reportes/${mes}/${diaValido}");
+  });
+
+  it("el personal interno ya puede ver los reportes de cualquier cliente", () => {
+    // Por eso pedir el de otro cliente no es escalada para este rol: es su
+    // trabajo. La comprobacion de pertenencia solo aplica a los clientes.
+    const listar = sinComentarios(leer("functions/src/listarReportesCliente.ts"));
+    expect(listar).toContain("!esInterno && propioData?.clienteId !== clienteId");
+  });
+});
