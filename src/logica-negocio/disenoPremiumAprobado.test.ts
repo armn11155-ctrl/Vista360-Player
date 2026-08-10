@@ -24,7 +24,9 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("login-city-breathe");
     expect(estilos).toContain("filter: brightness(1.085) saturate(1.035)");
     expect(estilos).toContain("max-width: 100vw");
-    expect(estilos).toContain("login-vista360-desktop-v2.jpg");
+    expect(estilos).toContain("login-vista360-desktop-v3.jpg");
+    expect(estilos).toContain("width: min(1160px, 100%)");
+    expect(estilos).toContain("transform: translateY(-20px)");
     expect(estilos).toContain("login-signal-sweep");
     expect(estilos).toContain("login-divider-glide");
     expect(estilos).toContain(".login-message-stack");
@@ -73,7 +75,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain(".inicio-side-col .inicio-evidence-card");
     expect(estilosApp).not.toContain(".premium-campaign-card::after");
     expect(estilosApp).toContain(".report-admin-panel + .reports-filter-stack");
-    expect(estilosApp).toContain("url('/login-vista360-desktop-v2.jpg')");
+    expect(estilosApp).toContain("url('/login-vista360-desktop-v3.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-mobile.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-desktop.jpg')");
   });

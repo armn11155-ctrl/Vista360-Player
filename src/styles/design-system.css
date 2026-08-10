@@ -1569,7 +1569,7 @@ a {
      lento: se percibe vida, no una animación de interfaz. Solo usa
      transform para que permanezca en la GPU y no repinte la pantalla. */
   .login-shell::before {
-    background-image: url('/login-vista360-desktop-v2.jpg');
+    background-image: url('/login-vista360-desktop-v3.jpg');
     background-position: center center;
     background-size: cover;
     transform-origin: 54% 56%;
@@ -1588,9 +1588,9 @@ a {
   }
 
   .login-experience {
-    width: min(1240px, 100%);
+    width: min(1160px, 100%);
     min-width: 0;
-    max-width: 1240px;
+    max-width: 1160px;
     min-height: min(650px, calc(100dvh - 78px));
     max-height: 690px;
     margin: 0 auto;
@@ -1601,6 +1601,7 @@ a {
     background: transparent;
     box-shadow: none;
     isolation: isolate;
+    transform: translateY(-20px);
   }
 
   .login-experience::before {
