@@ -12,7 +12,8 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Publicidad exterior premium");
     expect(login).toContain("Marca, alcance e impacto");
     expect(login).toContain('className="login-led-screen"');
-    expect(login).toContain('src="/login-panel-estructura-premium-v11.png"');
+    expect(login).toContain('src="/login-panel-estructura-premium-v13.png"');
+    expect(login).toContain('pathLength="1"');
     expect(login).toContain("login-led-scene-identity");
     expect(login).toContain("login-led-scene-coverage");
     expect(login).toContain("login-led-scene-control");
@@ -42,6 +43,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("#F8FAFD");
     expect(estilos).toContain("login-led-scene-cycle");
     expect(estilos).toContain("login-map-route-flow");
+    expect(estilos).toContain("78%, 100% { stroke-dashoffset: 0; }");
     expect(estilos).toContain("login-report-bars");
     expect(estilos).toContain("login-led-closing-note");
     expect(estilos).not.toContain("login-led-timeline");

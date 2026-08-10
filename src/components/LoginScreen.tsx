@@ -102,7 +102,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         >
           <img
             className="login-billboard-structure"
-            src="/login-panel-estructura-premium-v11.png"
+            src="/login-panel-estructura-premium-v13.png"
             alt=""
             aria-hidden="true"
             draggable={false}
@@ -129,7 +129,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                 <g className="login-map-pin login-map-pin-one"><circle cx="72" cy="105" r="12" /><circle cx="72" cy="105" r="4" /></g>
                 <g className="login-map-pin login-map-pin-two"><circle cx="178" cy="72" r="12" /><circle cx="178" cy="72" r="4" /></g>
                 <g className="login-map-pin login-map-pin-three"><circle cx="251" cy="142" r="12" /><circle cx="251" cy="142" r="4" /></g>
-                <path className="login-map-route" d="M72 105C103 83 139 79 178 72C205 68 224 93 251 142" />
+                <path className="login-map-route" pathLength="1" d="M72 105C103 83 139 79 178 72C205 68 224 93 251 142" />
               </svg>
             </div>
 

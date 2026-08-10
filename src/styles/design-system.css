@@ -1761,7 +1761,7 @@ a {
     max-width: 700px;
     min-height: 0;
     aspect-ratio: 3 / 2;
-    margin-right: clamp(42px, 3.6vw, 54px);
+    margin-right: clamp(68px, 5.2vw, 80px);
     padding: 0;
     align-self: center;
     justify-self: end;
@@ -1803,6 +1803,9 @@ a {
       radial-gradient(circle at 92% 96%, rgba(96,165,250,.07), transparent 34%),
       #F8FAFD;
     box-shadow: inset 0 0 0 1px rgba(15,23,42,.055), inset 0 0 34px rgba(15,23,42,.055);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
 
   .login-led-screen::before {
@@ -1907,16 +1910,16 @@ a {
     margin: 0;
     color: #172033;
     font-size: clamp(25px, 2.35vw, 33px);
-    font-weight: 570;
-    line-height: 1.02;
-    letter-spacing: -.045em;
+    font-weight: 650;
+    line-height: 1.06;
+    letter-spacing: -.032em;
   }
 
   .login-led-title strong,
   .login-led-copy h2 strong {
     display: block;
     color: #1D4ED8;
-    font-weight: 790;
+    font-weight: 820;
   }
 
   .login-led-copy {
@@ -1930,9 +1933,9 @@ a {
     margin: 15px 0 10px;
     color: #172033;
     font-size: clamp(23px, 2.15vw, 31px);
-    font-weight: 620;
-    line-height: 1.02;
-    letter-spacing: -.042em;
+    font-weight: 680;
+    line-height: 1.05;
+    letter-spacing: -.034em;
   }
 
   .login-led-copy p {
@@ -1940,16 +1943,17 @@ a {
     margin: 0;
     color: #64748B;
     font-size: clamp(9px, .85vw, 12px);
-    font-weight: 590;
+    font-weight: 540;
     line-height: 1.45;
+    letter-spacing: .005em;
   }
 
   .login-led-scene-coverage,
   .login-led-scene-results {
-    justify-content: space-between;
-    gap: 20px;
-    padding-left: clamp(28px, 3vw, 42px);
-    padding-right: clamp(25px, 2.8vw, 38px);
+    justify-content: center;
+    gap: clamp(24px, 3vw, 42px);
+    padding-right: clamp(32px, 3.2vw, 46px);
+    padding-left: clamp(32px, 3.2vw, 46px);
   }
 
   .login-coverage-map {
@@ -1968,8 +1972,9 @@ a {
     stroke: #2563EB;
     stroke-width: 3;
     stroke-linecap: round;
-    stroke-dasharray: 7 7;
-    animation: login-map-route-flow 2.8s linear infinite;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: login-map-route-flow 4s cubic-bezier(.2,.72,.24,1) infinite;
   }
 
   .login-map-pin circle:first-child {
@@ -1983,7 +1988,10 @@ a {
   .login-map-pin-two { animation-delay: .35s; }
   .login-map-pin-three { animation-delay: .7s; }
 
-  @keyframes login-map-route-flow { to { stroke-dashoffset: -28; } }
+  @keyframes login-map-route-flow {
+    0%, 10% { stroke-dashoffset: 1; }
+    78%, 100% { stroke-dashoffset: 0; }
+  }
   @keyframes login-map-pin-pulse { 0%, 100% { transform: scale(.92); } 50% { transform: scale(1.08); } }
 
   .login-led-scene-control {
@@ -2015,12 +2023,12 @@ a {
   .login-control-metric { margin: 18px 0 9px; color: #64748B; font-size: clamp(8px, .72vw, 10px); }
   .login-control-metric strong { color: #0F1B33; font-size: clamp(24px, 2.2vw, 31px); letter-spacing: -.04em; }
   .login-control-progress { height: 5px; overflow: hidden; border-radius: 99px; background: #E7EDF5; }
-  .login-control-progress i { display: block; width: 84%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1D4ED8, #60A5FA); animation: login-control-progress 4s ease-in-out infinite; }
+  .login-control-progress i { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1D4ED8, #60A5FA); transform: scaleX(0); transform-origin: left; animation: login-control-progress 4s cubic-bezier(.2,.72,.24,1) infinite; }
   .login-control-details { margin-top: 13px; color: #64748B; font-size: clamp(6px, .58vw, 8px); font-weight: 720; text-transform: uppercase; letter-spacing: .08em; }
 
   @keyframes login-control-progress {
-    0%, 100% { transform: scaleX(.82); transform-origin: left; }
-    50% { transform: scaleX(1); transform-origin: left; }
+    0%, 10% { transform: scaleX(0); }
+    78%, 100% { transform: scaleX(1); }
   }
 
   .login-report-visual {
@@ -2245,7 +2253,7 @@ a {
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
-  .login-left-panel { width: min(580px, calc(100% - 18px)); margin-right: 32px; padding: 0; }
+  .login-left-panel { width: min(580px, calc(100% - 18px)); margin-right: 46px; padding: 0; }
   .login-led-scene { padding: 14px 18px; }
   .login-led-scene-identity,
   .login-led-scene-coverage,
