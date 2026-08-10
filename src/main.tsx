@@ -9,9 +9,11 @@ import "./styles/app.css";
 import "./styles/design-system.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
+import { mantenerOrientacionVertical } from "./utils/orientacion-vertical";
 
 setupRealViewportHeight();
 bloquearZoomDeNavegador();
+mantenerOrientacionVertical();
 
 // Vite parte la app en pedazos (un archivo .js por pantalla, que se pide
 // recién cuando el usuario entra a esa pantalla -- "Cobertura", "Paneles",

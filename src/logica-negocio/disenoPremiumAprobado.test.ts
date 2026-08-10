@@ -84,6 +84,21 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain("window.scrollTo(0, 0)");
   });
 
+  it("mantiene el login móvil en orientación vertical", () => {
+    const manifest = JSON.parse(leer("public/manifest.json")) as { orientation?: string };
+    const main = leer("src/main.tsx");
+    const orientacion = leer("src/utils/orientacion-vertical.ts");
+    const estilos = leer("src/styles/design-system.css");
+
+    expect(manifest.orientation).toBe("portrait-primary");
+    expect(main).toContain("mantenerOrientacionVertical();");
+    expect(orientacion).toContain('lock("portrait-primary")');
+    expect(orientacion).toContain('addEventListener("orientationchange"');
+    expect(orientacion).toContain('addEventListener("pointerdown"');
+    expect(estilos).toContain("@media (max-width: 899px)");
+    expect(estilos).toContain("font-size: 10px");
+  });
+
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
     const inicio = leer("src/components/screens/Inicio.tsx");
     const estilosApp = leer("src/styles/app.css");

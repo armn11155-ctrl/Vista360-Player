@@ -1310,6 +1310,15 @@ a {
   letter-spacing: .015em;
 }
 
+@media (max-width: 899px) {
+  .login-card .form-label {
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .025em;
+  }
+}
+
 .login-card .form-input {
   min-height: 50px;
   border-color: rgba(255,255,255,.28);

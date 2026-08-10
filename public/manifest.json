@@ -4,7 +4,7 @@
   "description": "Portal para clientes de Vista360: campañas, evidencias y reportes.",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "background_color": "#050A12",
   "theme_color": "#050A12",
   "icons": [
