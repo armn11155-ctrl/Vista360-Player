@@ -51,6 +51,28 @@ export const marcarReporteVisto = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "informeId con caracteres no permitidos.");
   }
 
+  // Y EL SUFIJO TIENE QUE SER UNA FECHA.
+  //
+  // Más abajo se escribe con `set(..., { merge: true })`, que CREA el
+  // documento si no existe. Es a propósito: los reportes viejos viven en
+  // R2 y puede que no tengan ficha en Firestore, así que exigir que
+  // exista rompería "marcar como visto" para ellos.
+  //
+  // Pero con la comprobación de arriba el cliente elegía el resto del id
+  // libremente: llamando en bucle con sufijos distintos fabricaba
+  // documentos SIN TOPE en informesCliente y en su agregado. No filtra
+  // nada de nadie -- el prefijo lo ata a su propio cliente -- pero crece
+  // para siempre y lo paga Vista360.
+  //
+  // Un informeId real SIEMPRE es `<clienteId>_YYYY-MM` o
+  // `<clienteId>_YYYY-MM-DD` (ver cómo se arma idKey en
+  // listarReportesCliente.ts). Exigirlo acota lo creable a una ficha por
+  // día, que es justo el ritmo de los reportes de verdad.
+  const sufijoFecha = informeId.slice(clienteId.length + 1);
+  if (!/^\d{4}-\d{2}(-\d{2})?$/.test(sufijoFecha)) {
+    throw new HttpsError("invalid-argument", "informeId no corresponde a un reporte.");
+  }
+
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();
   const propioData = propio.data();

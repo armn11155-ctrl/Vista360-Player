@@ -4,6 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, firmarLecturaR2, listarObjetosR2 } from "./r2Storage.js";
 import { exigirId } from "./identificadores.js";
 import { rutaResumenInformes, type MetadataInformeAgregado } from "./agregadoInformes.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -85,8 +86,19 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     const db = getFirestore();
     const propio = await db.doc(`portalUsers/${uid}`).get();
     const propioData = propio.data();
-    const esAdmin = propioData?.role === "admin";
-    if (!propio.exists || (!esAdmin && propioData?.clienteId !== clienteId)) {
+    // El Trabajador es personal interno, no un cliente.
+//
+    // Antes acá se preguntaba `role === "admin"`, o sea SOLO el Gerente. Un
+    // Trabajador caía por la rama de cliente y, como no tiene clienteId (ver
+    // crearTrabajadorAcceso.ts), no cumplía ninguna comprobación de
+    // pertenencia: no podía abrir NADA.
+//
+    // Es el mismo desajuste que ya se corrigió en firestore.rules, que ahora
+    // deja al Trabajador leer clientes, contratos, facturas e informes con
+    // esPersonalDePortal(). Las reglas decían que sí y las Functions decían
+    // que no: un Trabajador generaba un reporte y después no podía verlo.
+    const esInterno = esPersonalInterno(propioData?.role);
+    if (!propio.exists || (!esInterno && propioData?.clienteId !== clienteId)) {
       throw new HttpsError("permission-denied", "No tienes acceso a los reportes de este cliente.");
     }
 

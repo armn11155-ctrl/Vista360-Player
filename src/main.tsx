@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { recargarPorVersionDesactualizada } from "./utils/pantallaLazy";
 import App from "./App";
-import VisorPdf from "./components/VisorPdf";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { DialogosProvider } from "./components/DialogosProvider";
 import "./styles/app.css";
@@ -78,7 +77,7 @@ createRoot(document.getElementById("root")!).render(
           ErrorBoundary para que, si un diálogo rompiera algo, igual caiga
           en la pantalla de error normal y no en blanco. */}
       <DialogosProvider>
-        {new URLSearchParams(window.location.search).has("visor-pdf") ? <VisorPdf /> : <App />}
+        <App />
       </DialogosProvider>
     </ErrorBoundary>
   </StrictMode>

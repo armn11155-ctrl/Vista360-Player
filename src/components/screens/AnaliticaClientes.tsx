@@ -76,7 +76,10 @@ export default function AnaliticaClientes({ onBack }: Props) {
       if (acceso.lastLogin === null) sinActividad += 1;
       else if (ahora - acceso.lastLogin < 14 * 86_400_000) recientes += 1;
     }
-    return { total: state.accesos.length, recientes, sinActividad };
+    // El total sale del conteo del servidor, NO de la longitud de lo
+    // descargado: la consulta trae como mucho una página (300), así que
+    // `accesos.length` diría "300 clientes" aunque hubiera 5.000.
+    return { total: state.total, recientes, sinActividad, cargados: state.accesos.length };
   }, [state]);
 
   return (
@@ -195,6 +198,17 @@ export default function AnaliticaClientes({ onBack }: Props) {
           >
             Ver 40 clientes más
           </button>
+        )}
+
+        {/* Si el negocio crece por encima de una página, se dice en vez de
+            dar a entender que esto son todos los clientes. Antes la
+            pantalla bajaba una ficha por cliente y con 10.000 cuentas eso
+            era la cuota diaria gratuita entera en una sola apertura. */}
+        {state.status === "ready" && state.hayMas && (
+          <p style={{ textAlign: "center", opacity: 0.7, fontSize: 13, marginTop: 10 }}>
+            Mostrando los {state.accesos.length} clientes con actividad más reciente
+            {" "}de {state.total}.
+          </p>
         )}
       </div>
     </div>

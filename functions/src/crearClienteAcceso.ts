@@ -104,6 +104,18 @@ export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request)
       nombre: contacto || empresa,
       avatarKey: avatarKey || null,
       avatarUrl: avatarUrl || null,
+      // NULL A PROPÓSITO, no es un campo de relleno.
+      //
+      // Analítica pide los clientes con orderBy("lastLogin", "desc") para
+      // no leer una ficha por cliente. Y un orderBy de Firestore DESCARTA
+      // los documentos que no tengan ese campo: una cuenta recién creada,
+      // que es justo la que nunca ha entrado, desaparecería de la
+      // analítica de accesos -- donde más se la busca.
+      //
+      // Un null SÍ se indexa. Así aparece desde el primer día, al final
+      // de la lista, hasta que registrarAcceso le ponga fecha.
+      lastLogin: null,
+      lastLoginCount: 0,
       createdAt: FieldValue.serverTimestamp(),
     });
 
