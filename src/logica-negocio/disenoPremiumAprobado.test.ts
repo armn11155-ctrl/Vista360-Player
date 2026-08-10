@@ -13,7 +13,7 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Marca, alcance e impacto");
     expect(login).toContain('className="login-brand-signal"');
     expect(login).toContain('className="login-led-screen"');
-    expect(login).toContain('src="/login-panel-estructura-premium.png"');
+    expect(login).toContain('src="/login-panel-estructura-premium-v4.png"');
     expect(login).toContain("login-led-frame-impact");
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');

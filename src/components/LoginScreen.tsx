@@ -102,7 +102,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         >
           <img
             className="login-billboard-structure"
-            src="/login-panel-estructura-premium.png"
+            src="/login-panel-estructura-premium-v4.png"
             alt=""
             aria-hidden="true"
             draggable={false}
