@@ -34,17 +34,17 @@ describe("la analitica no puede volver a leer una ficha por cliente", () => {
     expect(hook).toContain("getCountFromServer(");
   });
 
-  it("no queda ninguna consulta a portalUsers sin limit", () => {
-    // La red de seguridad de verdad: si alguien reintroduce un getDocs
-    // sin acotar sobre portalUsers, esto falla.
-    const consultas = [...hook.matchAll(/query\(\s*collection\([^)]*"portalUsers"\)[\s\S]*?\)\s*\)/g)];
-    expect(consultas.length).toBeGreaterThan(0);
-    for (const c of consultas) {
-      const texto = c[0];
-      const esConteo = texto.includes("getCountFromServer") || hook.slice(Math.max(0, c.index! - 40), c.index!).includes("getCountFromServer");
-      if (esConteo) continue;
-      expect(texto, "consulta a portalUsers sin limit").toContain("limit(");
+  it("TODO getDocs que se ejecuta lleva limit", () => {
+    // El invariante correcto no es "ninguna query sin limit": la consulta
+    // base se compone y se le añade el limit despues. Lo que importa es
+    // que nada se EJECUTE sin acotar.
+    const ejecuciones = [...hook.matchAll(/getDocs\(([\s\S]{0,300}?)\)\s*;/g)].map((m) => m[1]);
+    expect(ejecuciones.length).toBeGreaterThan(0);
+    for (const e of ejecuciones) {
+      expect(e, `getDocs sin limit: ${e.slice(0, 80)}`).toContain("limit(");
     }
+    // Y la base nunca se ejecuta tal cual.
+    expect(hook).not.toMatch(/getDocs\(consultaBase\)/);
   });
 
   it("el numero que se muestra es el REAL, no el de lo descargado", () => {
@@ -81,4 +81,26 @@ describe("la analitica no puede volver a leer una ficha por cliente", () => {
     );
     expect(tiene).toBe(true);
   });
+  it("si falta el indice, la pantalla NO se rompe", () => {
+    /**
+     * PASO DE VERDAD, y por eso existe esta prueba.
+     *
+     * El frontend con orderBy("lastLogin","desc") se publico ANTES que el
+     * indice compuesto -- Cloudflare despliega el frontend y los indices
+     * van por otro camino. Firestore contesto "The query requires an
+     * index" y la pantalla de Analitica quedo inservible en produccion.
+     *
+     * La ventana entre un despliegue y otro es inevitable; que la
+     * pantalla muera durante esa ventana, no.
+     */
+    expect(hook).toContain("failed-precondition");
+    // El respaldo mantiene el limit: el coste sigue acotado aunque se
+    // pierda el orden por actividad.
+    const respaldo = hook.slice(hook.indexOf("failed-precondition"));
+    expect(respaldo).toContain("limit(POR_PAGINA)");
+    // Y solo se cae al respaldo por falta de indice: cualquier otro error
+    // (permisos, red) debe seguir propagandose.
+    expect(hook).toContain("if (!String(codigo).includes(\"failed-precondition\")) throw error;");
+  });
+
 });

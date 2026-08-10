@@ -126,24 +126,43 @@ async function cargarAccesos(): Promise<{ accesos: AccesoCliente[]; total: numbe
   cargaEnCurso = (async () => {
     // La lista/nombres de clientes ya fue leida por el selector en la
     // misma sesion. Analitica solo necesita pedir los portalUsers cliente.
+    /**
+     * SI FALTA EL ÍNDICE, NO SE ROMPE LA PANTALLA.
+     *
+     * Pasó de verdad: el frontend con `orderBy("lastLogin","desc")` se
+     * publicó antes que el índice compuesto, y Firestore contestó "The
+     * query requires an index". La pantalla quedó inservible en
+     * producción hasta desplegar los índices.
+     *
+     * Es una ventana inevitable: Cloudflare publica el frontend y los
+     * índices van por otro despliegue. Así que la consulta ordenada se
+     * intenta primero y, si Firestore la rechaza por falta de índice, se
+     * cae a la misma consulta SIN ordenar -- que sigue llevando `limit`,
+     * o sea que el coste sigue acotado. Se pierde el "más recientes
+     * primero" hasta que el índice exista; no se pierde la pantalla.
+     */
+    const consultaBase = query(
+      collection(db!, "portalUsers"),
+      where("role", "==", "cliente")
+    );
+    const pedirPagina = async () => {
+      try {
+        return await getDocs(
+          query(consultaBase, orderBy("lastLogin", "desc"), limit(POR_PAGINA))
+        );
+      } catch (error) {
+        const codigo = (error as { code?: string })?.code ?? "";
+        if (!String(codigo).includes("failed-precondition")) throw error;
+        console.warn(
+          "Falta el índice portalUsers(role, lastLogin): se listan sin ordenar por actividad.",
+          error
+        );
+        return getDocs(query(consultaBase, limit(POR_PAGINA)));
+      }
+    };
+
     const [portalSnap, empresas, conteo] = await Promise.all([
-      getDocs(
-        query(
-          collection(db!, "portalUsers"),
-          where("role", "==", "cliente"),
-          // Los de actividad más reciente primero, y solo una página.
-          //
-          // OJO CON UN DETALLE DE FIRESTORE: un orderBy DESCARTA los
-          // documentos que no tengan ese campo. Una cuenta que nunca
-          // inició sesión no tiene `lastLogin`, así que no aparecería.
-          // Por eso crearClienteAcceso escribe `lastLogin: null` al crear
-          // la cuenta: un null SÍ se indexa, y en orden descendente cae al
-          // final -- se ve al pulsar "Cargar más", que es donde tiene
-          // sentido buscar a quien nunca entró.
-          orderBy("lastLogin", "desc"),
-          limit(POR_PAGINA)
-        )
-      ),
+      pedirPagina(),
       empresasDesdeAgregado(),
       // El total EXACTO sin leer una ficha por cliente: Firestore cobra
       // el conteo a 1 lectura por cada 1.000 documentos contados. Con
