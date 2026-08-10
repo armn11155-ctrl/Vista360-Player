@@ -2477,9 +2477,19 @@ a {
     max-height: var(--visual-height, 100dvh);
     justify-content: flex-start;
     padding: calc(8px + env(safe-area-inset-top)) 20px 8px;
-    overflow: hidden !important;
+    /* El documento sigue bloqueado por login-keyboard-open. Dejamos visible
+       únicamente el desborde de la capa fotográfica para que el área que
+       queda detrás del teclado no revele el fondo negro del canvas. */
+    overflow: visible !important;
     overscroll-behavior: none;
     touch-action: none;
+  }
+
+  .login-shell.login-field-focused::before {
+    top: 0;
+    bottom: auto;
+    height: var(--app-height, 100vh);
+    min-height: 100vh;
   }
 
   .login-field-focused :where(input, button, label) {

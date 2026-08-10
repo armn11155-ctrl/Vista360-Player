@@ -78,6 +78,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("top: var(--visual-offset-top, 0px)");
     expect(estilos).toContain("width: var(--visual-width, 100vw)");
     expect(estilos).toContain("height: var(--visual-height, 100dvh)");
+    expect(estilos).toContain(".login-shell.login-field-focused::before");
+    expect(estilos).toContain("height: var(--app-height, 100vh)");
     expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
     expect(viewport).toContain('setProperty("--visual-offset-top"');
     expect(viewport).toContain('addEventListener("scroll", set)');
