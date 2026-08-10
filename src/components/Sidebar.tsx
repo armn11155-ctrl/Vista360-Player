@@ -79,7 +79,25 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
   // abajo, y ese efecto llama a setPill con un OBJETO nuevo. Sin
   // memoizar: efecto -> setPill -> render -> filter() da otro array ->
   // efecto... Un bucle infinito sin ningun sintoma visible.
-  const items = useMemo(() => ITEMS.filter((it) => !it.adminOnly || isAdmin), [isAdmin]);
+  // adminOnly SE FILTRA POR esGerente, NO POR isAdmin.
+  //
+  // `isAdmin` en esta aplicación NO significa "es el Gerente": llega como
+  // `isAdmin={!adminVistaCliente}` desde App.tsx, o sea "no está mirando
+  // como cliente". Es verdadero para CUALQUIER cuenta interna, incluido
+  // el Trabajador.
+  //
+  // Resultado comprobado en producción: al Trabajador le aparecía
+  // "Analítica de acceso" en el menú, entraba, y las reglas de Firestore
+  // le contestaban "Missing or insufficient permissions" en inglés y en
+  // rojo. La seguridad hacía su trabajo -- el backend denegaba -- pero la
+  // interfaz le enseñaba una puerta cerrada y un error técnico crudo.
+  //
+  // La analítica de accesos y la gestión de cuentas son del Gerente, así
+  // que ni siquiera deben aparecer.
+  const items = useMemo(
+    () => ITEMS.filter((it) => !it.adminOnly || esGerente),
+    [esGerente]
+  );
   // Si algún llamador todavía no pasa esInterno, se cae al criterio
   // viejo (isAdmin) para no romper nada.
   const identidadInterna = esInterno ?? isAdmin;
