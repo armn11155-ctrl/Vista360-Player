@@ -1791,10 +1791,10 @@ a {
   .login-led-screen {
     position: absolute;
     z-index: 2;
-    top: 13.2%;
-    left: 8.45%;
-    width: 83.35%;
-    height: 70.85%;
+    top: 12.55%;
+    left: 8%;
+    width: 84%;
+    height: 72%;
     overflow: hidden;
     border: 0;
     border-radius: 2px;

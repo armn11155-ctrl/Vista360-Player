@@ -12,7 +12,7 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Publicidad exterior premium");
     expect(login).toContain("Marca, alcance e impacto");
     expect(login).toContain('className="login-led-screen"');
-    expect(login).toContain('src="/login-panel-estructura-premium-v10.png"');
+    expect(login).toContain('src="/login-panel-estructura-premium-v11.png"');
     expect(login).toContain("login-led-scene-identity");
     expect(login).toContain("login-led-scene-coverage");
     expect(login).toContain("login-led-scene-control");
