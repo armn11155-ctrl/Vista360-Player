@@ -74,7 +74,6 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosApp).not.toContain(".premium-campaign-card::after");
     expect(estilosApp).toContain(".report-admin-panel + .reports-filter-stack");
     expect(estilosApp).toContain("url('/login-vista360-desktop-v2.jpg')");
-    expect(estilosApp).toContain("url('/gestion-paneles-desktop.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-mobile.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-desktop.jpg')");
   });

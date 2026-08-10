@@ -7719,7 +7719,7 @@
        tienen su propio fondo sólido (no dependen de que la foto esté
        oscurecida para leerse), así que sacarla no afecta la lectura. */
     .admin-picker-management-screen {
-      background: url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
+      background: url('/selector-clientes-atardecer-desktop.jpg') center / cover no-repeat;
       padding: 22px 48px 40px;
     }
     .admin-picker-management-logo {
@@ -9047,7 +9047,7 @@ details.report-admin-panel {
     padding: 22px 48px 40px;
     background:
       linear-gradient(180deg, rgba(244,247,251,.9), rgba(239,244,250,.96)),
-      url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
+      url('/selector-clientes-atardecer-desktop.jpg') center / cover no-repeat;
   }
   .admin-picker-management-head,
   .admin-picker-management-grid {

@@ -628,8 +628,8 @@ a {
 }
 
 /* Centro de gestión — consola operativa premium.
-   La fotografía nocturna ya existía, pero una capa clara casi opaca la
-   convertía en un fondo gris. Estos estilos recuperan la profundidad de
+   El atardecer compartido con el selector mantiene la continuidad visual.
+   Estos estilos conservan la profundidad de
    la imagen y mantienen todas las acciones exactamente iguales. */
 .admin-picker-management-screen {
   background:
@@ -707,7 +707,7 @@ a {
     padding: 26px 48px 44px;
     background:
       linear-gradient(180deg, rgba(2,7,18,.08) 0%, rgba(2,7,18,.22) 54%, rgba(2,7,18,.48) 100%),
-      url('/gestion-paneles-desktop.jpg') center / cover no-repeat;
+      url('/selector-clientes-atardecer-desktop.jpg') center / cover no-repeat;
   }
 
   .admin-picker-management-logo {
