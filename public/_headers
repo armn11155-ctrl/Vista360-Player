@@ -18,6 +18,11 @@
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# El visor PDF es un HTML independiente con nombre fijo. Revalidarlo evita
+# que Safari conserve una version anterior despues de publicar un ajuste.
+/visor-pdf.html
+  Cache-Control: public, max-age=0, must-revalidate
+
 /manifest.json
   Cache-Control: public, max-age=3600
 

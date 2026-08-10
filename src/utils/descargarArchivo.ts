@@ -296,7 +296,11 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
   // cambia después de un await. En cambio, sí activa una ruta real abierta
   // directamente por el clic. Guardamos los datos antes de abrirla:
   // sessionStorage se copia al nuevo contexto del mismo origen, y la ruta
-  // /visor-pdf trae el archivo y lo muestra como blob bajo nuestro dominio.
+  // /visor-pdf.html trae el archivo y lo muestra como blob bajo nuestro
+  // dominio SIN cargar otra copia de React/Firebase. Abrir toda la app en la
+  // pestaña del PDF hacía que esa pestaña también participara en Firebase
+  // Auth; al cerrarla, Safari podía propagar un estado nulo y sacar de la
+  // sesión a la pestaña principal.
   if (esSafari()) {
     const token =
       typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
@@ -304,7 +308,7 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const clave = `vista360:visor-pdf:${token}`;
     sessionStorage.setItem(clave, JSON.stringify({ url, nombre: _nombre }));
-    const rutaVisor = `/?visor-pdf=${encodeURIComponent(token)}`;
+    const rutaVisor = `/visor-pdf.html?token=${encodeURIComponent(token)}`;
 
     const pwaIOS =
       (/iPhone|iPad|iPod/.test(navigator.userAgent) ||

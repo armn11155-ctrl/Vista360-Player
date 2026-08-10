@@ -222,13 +222,22 @@ describe("ver un PDF no enseña la dirección de R2", () => {
 
     await verArchivo(url, "Reporte.pdf");
 
-    expect(abrir).toHaveBeenCalledWith("/?visor-pdf=token-prueba", "_blank");
+    expect(abrir).toHaveBeenCalledWith("/visor-pdf.html?token=token-prueba", "_blank");
     expect(ventana.opener).toBeNull();
     expect(JSON.parse(sessionStorage.getItem("vista360:visor-pdf:token-prueba")!)).toEqual({
       url,
       nombre: "Reporte.pdf",
     });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("el visor de Safari no carga otra instancia de Firebase Auth", () => {
+    const visor = readFileSync(resolve(__dirname, "../../public/visor-pdf.html"), "utf-8");
+    expect(visor).toContain('get("token")');
+    expect(visor).toContain('"vista360:visor-pdf:" + token');
+    expect(visor).toContain("fetch(datos.url");
+    expect(visor).not.toContain("firebase");
+    expect(visor).not.toContain('src="/src/main.tsx"');
   });
 
   it("pide foco inmediatamente para que Safari lleve a la pestaña nueva", async () => {
