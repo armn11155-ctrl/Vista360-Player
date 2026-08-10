@@ -96,7 +96,9 @@ describe("refinamiento premium aprobado", () => {
     const sistema = leer("src/styles/design-system.css");
     expect(facturas).toContain('className="facturas-month-group"');
     expect(sidebar).toContain('label: "Perfil", desktopOnly: true');
-    expect(sidebar).toContain('it.id === "perfil" && onOpenPerfil');
+    expect(sidebar).toContain("onNavigate(it.id)");
+    expect(sidebar).not.toContain('it.id === "perfil" && onOpenPerfil');
+    expect(sidebar).not.toContain('active === "miPerfil"');
     expect(estilos).toContain(".facturas-history-screen-body > .reports-filter-bar + .facturas-month-group");
     expect(estilos).toContain(".coverage-panel-row:not(:last-child)::after");
     expect(estilos).toContain(".profile-top-curve");

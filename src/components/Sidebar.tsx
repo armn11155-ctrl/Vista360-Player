@@ -92,7 +92,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
 
   useLayoutEffect(() => {
     function medir() {
-      const activeIdx = items.findIndex((it) => it.id === active || (it.id === "perfil" && active === "miPerfil"));
+      const activeIdx = items.findIndex((it) => it.id === active);
       const list = listRef.current;
       const el = activeIdx === -1 ? null : itemRefs.current[activeIdx];
       if (!list || !el) { setPill(null); return; }
@@ -199,13 +199,12 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               ref={(el) => { itemRefs.current[idx] = el; }}
               className={[
                 "sidebar-item",
-                (it.id === active || (it.id === "perfil" && active === "miPerfil")) ? "sidebar-item-active" : "",
+                it.id === active ? "sidebar-item-active" : "",
                 it.mobileOnly ? "sidebar-item-mobile-only" : "",
                 it.desktopOnly ? "sidebar-item-desktop-only" : "",
               ].filter(Boolean).join(" ")}
               onClick={() => {
-                if (it.id === "perfil" && onOpenPerfil) onOpenPerfil();
-                else onNavigate(it.id);
+                onNavigate(it.id);
                 onClose();
               }}
             >
