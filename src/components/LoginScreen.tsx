@@ -102,7 +102,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         >
           <img
             className="login-billboard-structure"
-            src="/login-panel-estructura-premium-v9.png"
+            src="/login-panel-estructura-premium-v10.png"
             alt=""
             aria-hidden="true"
             draggable={false}
@@ -169,11 +169,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             <div className="login-led-scene login-led-scene-closing">
               <img className="login-led-logo login-led-logo-closing" src={LOGO} alt="" draggable={false} />
               <div className="login-led-keywords">
-                <span>Marca.</span><span>Alcance.</span><span>Impacto.</span>
+                <span>Marca</span><i /><span>Alcance</span><i /><span>Impacto</span>
               </div>
+              <p className="login-led-closing-note">Presencia que permanece.</p>
             </div>
-
-            <div className="login-led-timeline"><span /></div>
           </div>
         </section>
 

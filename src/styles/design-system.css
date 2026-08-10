@@ -1756,12 +1756,12 @@ a {
      sigue siendo interfaz real debajo del marco, así ninguna frase
      queda incrustada en la imagen y puede animarse con CSS. */
   .login-left-panel {
-    width: min(640px, calc(100% - 84px));
+    width: min(700px, calc(100% - 30px));
     height: auto;
-    max-width: 640px;
+    max-width: 700px;
     min-height: 0;
     aspect-ratio: 3 / 2;
-    margin-right: clamp(64px, 5.5vw, 84px);
+    margin-right: clamp(42px, 3.6vw, 54px);
     padding: 0;
     align-self: center;
     justify-self: end;
@@ -1881,9 +1881,19 @@ a {
 
   .login-led-scene-identity {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     justify-content: center;
+    padding-right: clamp(28px, 3vw, 42px);
     padding-left: clamp(28px, 3vw, 42px);
+    text-align: center;
+  }
+
+  .login-led-scene-identity .login-led-eyebrow::after {
+    content: "";
+    width: 24px;
+    height: 2px;
+    border-radius: 99px;
+    background: #2563EB;
   }
 
   .login-led-logo {
@@ -2050,51 +2060,44 @@ a {
     text-align: center;
   }
 
-  .login-led-logo-closing { width: clamp(150px, 14vw, 190px); margin: 0 0 22px; }
+  .login-led-logo-closing { width: clamp(154px, 14vw, 195px); margin: 0 0 19px; }
 
   .login-led-keywords {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(13px, 1.7vw, 24px);
+    gap: clamp(9px, 1.25vw, 17px);
     color: #1D4ED8;
-    font-size: clamp(17px, 1.65vw, 23px);
-    font-weight: 790;
-    letter-spacing: -.025em;
+    font-size: clamp(18px, 1.72vw, 24px);
+    font-weight: 820;
+    letter-spacing: -.035em;
   }
 
-  .login-led-keywords span { opacity: .32; animation: login-led-keyword-wave 2.8s ease-in-out infinite; }
-  .login-led-keywords span:nth-child(2) { animation-delay: .35s; }
-  .login-led-keywords span:nth-child(3) { animation-delay: .7s; }
+  .login-led-keywords span { opacity: .42; animation: login-led-keyword-wave 3s ease-in-out infinite; }
+  .login-led-keywords span:nth-of-type(2) { animation-delay: .38s; }
+  .login-led-keywords span:nth-of-type(3) { animation-delay: .76s; }
+
+  .login-led-keywords i {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #93C5FD;
+    box-shadow: 0 0 0 4px rgba(147,197,253,.13);
+  }
+
+  .login-led-closing-note {
+    margin: 13px 0 0;
+    color: #64748B;
+    font-size: clamp(8px, .72vw, 10px);
+    font-weight: 720;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+  }
 
   @keyframes login-led-keyword-wave {
-    0%, 100% { opacity: .32; transform: translateY(0); }
-    45%, 60% { opacity: 1; transform: translateY(-2px); }
+    0%, 100% { opacity: .42; transform: translateY(0); color: #93A4BD; }
+    42%, 62% { opacity: 1; transform: translateY(-2px); color: #1D4ED8; }
   }
-
-  .login-led-timeline {
-    position: absolute;
-    z-index: 6;
-    left: clamp(28px, 3vw, 42px);
-    right: clamp(28px, 3vw, 42px);
-    bottom: 14px;
-    height: 2px;
-    overflow: hidden;
-    border-radius: 99px;
-    background: #E2E8F0;
-  }
-
-  .login-led-timeline span {
-    display: block;
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, #1D4ED8, #60A5FA);
-    transform-origin: left;
-    animation: login-led-timeline 20s linear infinite;
-  }
-
-  @keyframes login-led-timeline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
   .login-right-panel {
     position: relative;
@@ -2242,7 +2245,7 @@ a {
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
-  .login-left-panel { width: min(560px, calc(100% - 48px)); margin-right: 48px; padding: 0; }
+  .login-left-panel { width: min(580px, calc(100% - 18px)); margin-right: 32px; padding: 0; }
   .login-led-scene { padding: 14px 18px; }
   .login-led-scene-identity,
   .login-led-scene-coverage,
@@ -2260,9 +2263,7 @@ a {
 @media (min-width: 900px) and (prefers-reduced-motion: reduce) {
   .login-led-scene { display: none; animation: none !important; }
   .login-led-scene-identity { display: flex; opacity: 1; transform: none; }
-  .login-led-screen::after,
-  .login-led-timeline span { animation: none !important; }
-  .login-led-timeline span { transform: scaleX(1); }
+  .login-led-screen::after { animation: none !important; }
 }
 
 /* Campañas: el filtro pasa a ser un control segmentado claro y táctil. */
