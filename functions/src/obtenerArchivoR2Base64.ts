@@ -2,6 +2,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, leerObjetoR2, esKeyValida } from "./r2Storage.js";
+import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -29,6 +30,13 @@ if (getApps().length === 0) {
  * usan las facturas -- ver esCarpetaValida en r2Storage.ts) para que
  * esto no se vuelva un proxy de lectura de todo el bucket.
  */
+/** Forma exacta de la key de un reporte (ver generarReporteCliente.ts). */
+const FORMATO_REPORTE =
+  /^clientes\/([A-Za-z0-9_-]{1,128})\/reportes\/\d{4}-\d{2}\/\d{2}\/[A-Za-z0-9_-]{1,60}\.pdf$/;
+
+/** Forma exacta de la key de una factura (ver nuevaKey en r2Storage.ts). */
+const FORMATO_FACTURA = /^vista360\/facturas\/[A-Za-z0-9._-]{1,80}$/;
+
 export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
     const uid = request.auth?.uid;
@@ -38,8 +46,11 @@ export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (req
 
     const db = getFirestore();
     const propio = await db.doc(`portalUsers/${uid}`).get();
-    if (!propio.exists || propio.data()?.role !== "admin") {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede pedir archivos por acá.");
+    // El Trabajador tambien envia reportes y facturas por Correo/WhatsApp,
+    // asi que necesita leer ESOS archivos. Lo que NO se le da -- ni a el ni
+    // al Gerente -- es elegir libremente una key: eso se ata abajo.
+    if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
+      throw new HttpsError("permission-denied", "Solo el equipo interno puede pedir archivos por acá.");
     }
 
     const key = String(request.data?.key ?? "").trim();
@@ -49,8 +60,38 @@ export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (req
     if (!esKeyValida(key)) {
       throw new HttpsError("invalid-argument", "La ruta del archivo no es valida.");
     }
-    const prefijoValido = key.startsWith("clientes/") || key.startsWith("vista360/facturas/");
-    if (!key || key.includes("..") || key.startsWith("/") || !prefijoValido) {
+    // ─────────────────────────────────────────────────────────────────
+    // LA KEY TIENE QUE SER UN RECURSO REAL, no solo empezar bien.
+    //
+    // Antes bastaba con que la ruta empezara por "clientes/" o
+    // "vista360/facturas/". Quien llamara podia pedir CUALQUIER archivo
+    // bajo esos prefijos con solo conocer o adivinar la ruta -- incluido
+    // el reporte de otro cliente.
+    //
+    // Mientras la funcion era solo del Gerente el riesgo era teorico (ya
+    // ve todo por la via normal). Al abrirla al Trabajador deja de serlo,
+    // asi que la key se ata a un recurso que existe de verdad:
+    //
+    //   reporte -> la ruta debe tener la forma EXACTA que genera
+    //              generarReporteCliente, y el cliente debe existir.
+    //   factura -> debe haber una factura cuyo pdfUrl sea esta key.
+    //
+    // Cuesta 1 lectura y cierra la puerta a keys inventadas. Tambien
+    // endurece al Gerente, que no tenia esta comprobacion.
+    // ─────────────────────────────────────────────────────────────────
+    const reporte = FORMATO_REPORTE.exec(key);
+    if (reporte) {
+      const clienteIdDeLaRuta = reporte[1]!;
+      const cliente = await db.doc(`clientes/${clienteIdDeLaRuta}`).get();
+      if (!cliente.exists) {
+        throw new HttpsError("permission-denied", "El archivo pedido no corresponde a un reporte.");
+      }
+    } else if (FORMATO_FACTURA.test(key)) {
+      const factura = await db.collection("facturas").where("pdfUrl", "==", key).limit(1).get();
+      if (factura.empty) {
+        throw new HttpsError("permission-denied", "El archivo pedido no corresponde a una factura.");
+      }
+    } else {
       throw new HttpsError("invalid-argument", "Key inválida.");
     }
 

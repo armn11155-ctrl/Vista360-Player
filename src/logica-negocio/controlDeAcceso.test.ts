@@ -236,11 +236,18 @@ describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () =>
     expect(c).toMatch(/test\(destinatario\)/);
   });
 
-  it("leer archivos por base64 exige Gerente y solo prefijos conocidos", () => {
-    const c = readFileSync(resolve(DIR, "obtenerArchivoR2Base64.ts"), "utf-8");
-    expect(c).toMatch(/role\s*!==\s*"admin"/);
-    expect(c).toContain('key.includes("..")');
-    expect(c).toContain("prefijoValido");
+  it("leer archivos por base64 exige personal interno Y un recurso real", () => {
+    // Antes exigia rol admin y prefijos conocidos. El requisito cambio:
+    // el Trabajador tambien envia reportes y facturas por Correo/WhatsApp.
+    //
+    // Lo que impide el abuso ya no es el rol sino la key: tiene que ser la
+    // ruta EXACTA de un reporte cuyo cliente exista, o la de una factura
+    // registrada. Un prefijo correcto ya no basta -- ni para el Gerente.
+    const codigo = readFileSync(resolve(DIR, "obtenerArchivoR2Base64.ts"), "utf-8");
+    expect(codigo).toContain("esPersonalInterno(");
+    expect(codigo).toContain("FORMATO_REPORTE");
+    expect(codigo).toContain("FORMATO_FACTURA");
+    expect(codigo).toContain("esKeyValida(key)");
   });
 });
 

@@ -321,23 +321,33 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
         </div>
 
+        {/* SOLO GERENTE: Usuarios, Analitica y Paneles. El Trabajador
+            opera con Solicitudes, Ocupacion y Cotizaciones. El backend ya
+            deniega lo demas, pero ensenar una puerta cerrada y contestar
+            con un error tecnico en ingles no es respetar el rol. */}
         <div className="admin-picker-actions">
-          <button type="button" onClick={onOpenUsuarios} className="admin-picker-action">
-            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
-            <span><strong>Usuarios</strong><small>Gestionar accesos</small></span>
-          </button>
+          {esGerente && (
+            <button type="button" onClick={onOpenUsuarios} className="admin-picker-action">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+              <span><strong>Usuarios</strong><small>Gestionar accesos</small></span>
+            </button>
+          )}
           <button type="button" onClick={onOpenSolicitudes} className="admin-picker-action">
             <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
             <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
           </button>
-          <button type="button" onClick={onOpenAnalitica} className="admin-picker-action">
-            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
-            <span><strong>Analítica</strong><small>Actividad y accesos</small></span>
-          </button>
-          <button type="button" onClick={onOpenPaneles} className="admin-picker-action">
-            <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
-            <span><strong>Paneles</strong><small>Inventario digital</small></span>
-          </button>
+          {esGerente && (
+            <button type="button" onClick={onOpenAnalitica} className="admin-picker-action">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+              <span><strong>Analítica</strong><small>Actividad y accesos</small></span>
+            </button>
+          )}
+          {esGerente && (
+            <button type="button" onClick={onOpenPaneles} className="admin-picker-action">
+              <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
+              <span><strong>Paneles</strong><small>Inventario digital</small></span>
+            </button>
+          )}
         </div>
 
         <div className="admin-picker-tabs" role="tablist" aria-label="Perfiles">
@@ -522,10 +532,17 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 <span>01</span><div><strong>Clientes</strong><small>Personas y solicitudes</small></div>
               </div>
               <div className="admin-picker-management-group-cards">
-                <button type="button" onClick={onOpenUsuarios} className="admin-picker-management-card">
-                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
-                  <span><strong>Usuarios</strong><small>Gestionar accesos</small></span><i>›</i>
-                </button>
+                {/* SOLO GERENTE. La gestion de cuentas, el inventario de
+                    paneles y la analitica de accesos son del Gerente: el
+                    Trabajador ni siquiera debe verlas. El backend ya las
+                    deniega, pero ensenar una puerta cerrada y responder
+                    con un error tecnico en ingles no es respetar el rol. */}
+                {esGerente && (
+                  <button type="button" onClick={onOpenUsuarios} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg></span>
+                    <span><strong>Usuarios</strong><small>Gestionar accesos</small></span><i>›</i>
+                  </button>
+                )}
                 <button type="button" onClick={onOpenSolicitudes} className="admin-picker-management-card">
                   <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg></span>
                   <span><strong>Solicitudes</strong><small>Revisar campañas</small></span>
@@ -545,10 +562,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                 <span>02</span><div><strong>Inventario</strong><small>Disponibilidad operativa</small></div>
               </div>
               <div className="admin-picker-management-group-cards">
-                <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
-                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
-                  <span><strong>Paneles</strong><small>Inventario digital</small></span><i>›</i>
-                </button>
+                {esGerente && (
+                  <button type="button" onClick={onOpenPaneles} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></span>
+                    <span><strong>Paneles</strong><small>Inventario digital</small></span><i>›</i>
+                  </button>
+                )}
                 <button type="button" onClick={onOpenOcupacion} className="admin-picker-management-card">
                   <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span>
                   <span><strong>Ocupación</strong><small>Qué se libera y cuándo</small></span><i>›</i>
@@ -565,10 +584,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
                   <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span><i>›</i>
                 </button>
-                <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
-                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
-                  <span><strong>Analítica</strong><small>Actividad y accesos</small></span><i>›</i>
-                </button>
+                {esGerente && (
+                  <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+                    <span><strong>Analítica</strong><small>Actividad y accesos</small></span><i>›</i>
+                  </button>
+                )}
               </div>
             </section>
           </div>

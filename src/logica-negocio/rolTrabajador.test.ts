@@ -51,12 +51,21 @@ describe("el Trabajador puede LEER lo mismo que puede escribir", () => {
     expect(roles).toContain("esGerente(role) || esTrabajador(role)");
   });
 
-  it("obtenerArchivoR2Base64 SIGUE siendo solo del Gerente, y es correcto", () => {
-    // Lee los bytes de CUALQUIER reporte de CUALQUIER cliente para
-    // adjuntarlo en WhatsApp/correo, y ese boton solo existe para el
-    // Gerente en la interfaz. Ampliarlo si seria ampliar acceso a datos.
+  it("obtenerArchivoR2Base64 acepta al Trabajador, PERO atado a un recurso real", () => {
+    // CAMBIO DE REQUISITO, decidido por el negocio: el Trabajador tambien
+    // envia reportes y facturas por Correo/WhatsApp, y esos botones usan
+    // esta funcion. Antes esta prueba exigia que fuera solo del Gerente.
+    //
+    // Abrirla NO puede significar dar acceso general a R2. Lo que la
+    // sujeta ahora no es el rol, sino que la key sea un recurso que
+    // existe: la ruta debe tener la forma exacta de un reporte (y el
+    // cliente existir) o corresponder a una factura con ese pdfUrl.
+    // Eso ademas endurece al Gerente, que antes podia pedir cualquier
+    // archivo bajo el prefijo.
     const codigo = sinComentarios(leer("obtenerArchivoR2Base64.ts"));
-    expect(codigo).toMatch(/role\s*!==\s*"admin"/);
+    expect(codigo).toContain("esPersonalInterno(");
+    expect(codigo).toContain("FORMATO_REPORTE.exec(key)");
+    expect(codigo).toContain('.where("pdfUrl", "==", key)');
   });
 
   it("red de seguridad: quien FIRME una url de lectura debe aceptar al Trabajador", () => {
