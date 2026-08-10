@@ -1752,60 +1752,52 @@ a {
     67%, 92% { color: rgba(219,234,254,.82); }
   }
 
-  /* Panel mural LED: es interfaz real y no parte de la fotografía.
-     Conserva el fondo limpio, carga sin otro asset y alterna dos
-     mensajes de marca usando únicamente opacity/transform. */
+  /* La estructura física es una capa transparente; el contenido LED
+     sigue siendo interfaz real debajo del marco, así ninguna frase
+     queda incrustada en la imagen y puede animarse con CSS. */
   .login-left-panel {
-    width: min(600px, calc(100% - 58px));
-    height: clamp(360px, 50vh, 430px);
-    max-width: 600px;
-    min-height: 360px;
-    margin-right: clamp(52px, 4.5vw, 72px);
-    padding: 12px;
+    width: min(570px, calc(100% - 104px), calc(100dvh - 86px));
+    height: auto;
+    max-width: 570px;
+    min-height: 0;
+    aspect-ratio: 1;
+    margin-right: clamp(84px, 6.5vw, 104px);
+    padding: 0;
     align-self: center;
     justify-self: end;
     justify-content: center;
-    overflow: hidden;
-    border: 1px solid rgba(176,209,255,.28);
-    border-radius: 11px;
-    background: linear-gradient(145deg, rgba(7,13,24,.97), rgba(1,5,13,.99));
-    box-shadow:
-      0 34px 80px -42px rgba(0,0,0,.98),
-      0 0 0 5px rgba(1,5,12,.86),
-      0 0 0 6px rgba(133,183,255,.12),
-      0 0 34px -12px rgba(71,139,239,.38),
-      inset 0 1px 0 rgba(255,255,255,.07);
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .login-left-panel::before,
-  .login-left-panel::after {
-    content: "";
+  .login-left-panel::after { content: none; }
+
+  .login-billboard-structure {
     position: absolute;
     z-index: 3;
-    left: 20px;
-    right: 20px;
-    height: 4px;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     pointer-events: none;
-    background: radial-gradient(circle, rgba(202,225,255,.96) 0 1.15px, rgba(85,151,255,.56) 1.35px, transparent 1.8px) 0 50% / 17px 4px repeat-x;
-    filter: drop-shadow(0 0 5px rgba(88,158,255,.72));
-    animation: login-led-perimeter 4.8s ease-in-out infinite;
-  }
-
-  .login-left-panel::before { top: 4px; }
-  .login-left-panel::after { bottom: 4px; animation-delay: -2.4s; }
-
-  @keyframes login-led-perimeter {
-    0%, 100% { opacity: .38; }
-    50% { opacity: .88; }
+    user-select: none;
+    filter: drop-shadow(0 28px 32px rgba(0,0,0,.52)) drop-shadow(0 0 16px rgba(89,151,240,.13));
   }
 
   .login-led-screen {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    z-index: 2;
+    top: 13.15%;
+    left: 8.4%;
+    width: 83.2%;
+    height: 38.55%;
     overflow: hidden;
-    border: 1px solid rgba(154,196,255,.18);
-    border-radius: 5px;
+    border: 0;
+    border-radius: 1px;
     background:
       radial-gradient(circle at 18% 16%, rgba(42,104,203,.15), transparent 32%),
       linear-gradient(180deg, rgba(3,10,22,.94), rgba(1,5,13,.99));
@@ -1847,7 +1839,7 @@ a {
     position: absolute;
     inset: 0;
     z-index: 2;
-    padding: clamp(34px, 4vw, 52px);
+    padding: clamp(18px, 2vw, 28px);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -1875,19 +1867,19 @@ a {
   }
 
   .login-led-frame .login-brand-kicker {
-    margin-bottom: 26px;
+    margin-bottom: 14px;
     color: rgba(210,226,248,.58);
   }
 
   .login-led-frame .login-left-logo {
-    width: clamp(230px, 19vw, 276px);
-    margin: 0 0 30px;
+    width: clamp(170px, 16vw, 210px);
+    margin: 0 0 16px;
     filter: brightness(1.08) drop-shadow(0 0 18px rgba(77,143,242,.18));
   }
 
   .login-led-frame .login-left-heading {
-    max-width: 480px;
-    font-size: clamp(32px, 3vw, 44px);
+    max-width: 410px;
+    font-size: clamp(26px, 2.5vw, 34px);
     line-height: 1.06;
     text-shadow: 0 0 24px rgba(88,155,255,.16);
   }
@@ -1899,12 +1891,12 @@ a {
 
   .login-led-frame .login-brand-signal-labels {
     position: relative;
-    min-height: 104px;
+    min-height: 80px;
     margin: 0;
     display: grid;
     place-items: center;
     color: transparent;
-    font-size: clamp(46px, 4.8vw, 68px);
+    font-size: clamp(42px, 4.3vw, 60px);
     font-weight: 850;
     letter-spacing: .08em;
     line-height: 1.1;
@@ -2079,7 +2071,7 @@ a {
 
 @media (min-width: 900px) and (max-height: 730px) {
   .login-experience { min-height: calc(100dvh - 42px); }
-  .login-left-panel { padding: 10px; }
+  .login-left-panel { padding: 0; }
   .login-brand-kicker { margin-bottom: 20px; }
   .login-left-logo { width: 214px; margin-bottom: 24px; }
   .login-left-heading { font-size: clamp(29px, 2.75vw, 40px); }
@@ -2090,8 +2082,13 @@ a {
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
-  .login-left-panel { width: min(560px, calc(100% - 38px)); margin-right: 38px; padding: 10px; }
+  .login-left-panel { width: min(510px, calc(100% - 48px), calc(100dvh - 78px)); margin-right: 48px; padding: 0; }
+  .login-led-frame { padding: 14px 16px; }
+  .login-led-frame .login-brand-kicker { display: none; }
+  .login-led-frame .login-left-logo { width: min(150px, 58%); margin-bottom: 10px; }
   .login-left-heading { font-size: clamp(29px, 3.5vw, 38px); }
+  .login-led-frame .login-left-heading { font-size: clamp(21px, 2.5vw, 27px); }
+  .login-led-frame .login-brand-signal-labels { min-height: 62px; font-size: clamp(34px, 4vw, 48px); }
   .login-brand-signal { width: min(380px, 92%); }
 }
 

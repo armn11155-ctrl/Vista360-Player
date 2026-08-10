@@ -100,6 +100,13 @@ export default function LoginScreen({ onLoggedIn }: Props) {
           className="login-left-panel"
           aria-label="Vista360 Player. Más que visibilidad. Presencia. Marca, alcance e impacto."
         >
+          <img
+            className="login-billboard-structure"
+            src="/login-panel-estructura-premium.png"
+            alt=""
+            aria-hidden="true"
+            draggable={false}
+          />
           <div className="login-led-screen" aria-hidden="true">
             <div className="login-led-frame login-led-frame-brand">
               <div className="login-brand-kicker">

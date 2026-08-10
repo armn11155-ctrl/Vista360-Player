@@ -13,6 +13,7 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Marca, alcance e impacto");
     expect(login).toContain('className="login-brand-signal"');
     expect(login).toContain('className="login-led-screen"');
+    expect(login).toContain('src="/login-panel-estructura-premium.png"');
     expect(login).toContain("login-led-frame-impact");
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');
@@ -31,7 +32,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("transform: translateY(-20px)");
     expect(estilos).toContain("login-signal-sweep");
     expect(estilos).toContain("login-divider-glide");
-    expect(estilos).toContain("login-led-perimeter");
+    expect(estilos).toContain(".login-billboard-structure");
     expect(estilos).toContain("login-led-brand-frame");
     expect(estilos).toContain("login-led-keyword-marca");
     expect(estilos).toContain("login-led-keyword-alcance");
