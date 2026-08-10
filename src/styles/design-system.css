@@ -1482,6 +1482,12 @@ a {
     font-size: 16px;
   }
 
+  /* El correo es visualmente más discreto; el viewport bloqueado y la
+     activación previa al foco evitan que Safari lo amplíe o lo reacomode. */
+  .login-card #login-email {
+    font-size: 15px;
+  }
+
   .login-card {
     overflow: hidden;
     padding: 32px 28px;

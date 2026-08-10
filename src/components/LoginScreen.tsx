@@ -44,6 +44,24 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   const [busy, setBusy] = useState(false);
   const [campoEnFoco, setCampoEnFoco] = useState(false);
 
+  function prepararFocoDelFormulario(e: React.PointerEvent<HTMLFormElement>) {
+    const objetivo = e.target;
+    if (objetivo instanceof HTMLInputElement && (objetivo.id === "login-email" || objetivo.id === "login-password")) {
+      // Se activa antes del foco nativo para que Safari encuentre el campo
+      // ya acomodado y no intente desplazarlo una segunda vez.
+      setCampoEnFoco(true);
+    }
+  }
+
+  function cerrarFocoAlSalirDelFormulario(e: React.FocusEvent<HTMLFormElement>) {
+    const siguiente = e.relatedTarget;
+    // Cambiar de Usuario a Contraseña no debe desmontar brevemente el modo
+    // teclado. Solo se restaura el login cuando el foco sale del formulario.
+    if (!(siguiente instanceof Node) || !e.currentTarget.contains(siguiente)) {
+      setCampoEnFoco(false);
+    }
+  }
+
   useEffect(() => {
     const clase = "login-keyboard-open";
     const raiz = document.documentElement;
@@ -191,7 +209,12 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-sub">Ingresa tus credenciales para continuar.</div>
               {error && <div id="login-error" className="login-error" role="alert">{error}</div>}
             </div>
-            <form onSubmit={submit}>
+            <form
+              onSubmit={submit}
+              onPointerDownCapture={prepararFocoDelFormulario}
+              onFocusCapture={() => setCampoEnFoco(true)}
+              onBlurCapture={cerrarFocoAlSalirDelFormulario}
+            >
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Usuario</label>
               <div className="login-input-wrap">
@@ -206,8 +229,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-describedby={error ? "login-error" : undefined}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  onFocus={() => setCampoEnFoco(true)}
-                  onBlur={() => setCampoEnFoco(false)}
                   placeholder="correo@empresa.com"
                 />
               </div>
@@ -226,8 +247,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-describedby={error ? "login-error" : undefined}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setCampoEnFoco(true)}
-                  onBlur={() => setCampoEnFoco(false)}
                   placeholder="••••••••"
                 />
                 <button

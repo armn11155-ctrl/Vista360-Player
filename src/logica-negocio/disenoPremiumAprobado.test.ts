@@ -71,10 +71,15 @@ describe("refinamiento premium aprobado", () => {
     const viewport = leer("src/utils/viewport-height.ts");
     expect(login).toContain("login-field-focused");
     expect(login).toContain("login-keyboard-open");
+    expect(login).toContain("onPointerDownCapture={prepararFocoDelFormulario}");
+    expect(login).toContain("onBlurCapture={cerrarFocoAlSalirDelFormulario}");
+    expect(login).not.toContain('onBlur={() => setCampoEnFoco(false)}');
     expect(estilos).toContain(".login-shell.login-field-focused");
     expect(estilos).toContain("body.login-keyboard-open");
     expect(estilos).toContain("touch-action: none");
     expect(estilos).toContain("font-size: 16px");
+    expect(estilos).toContain(".login-card #login-email");
+    expect(estilos).toContain("font-size: 15px");
     expect(estilos).toContain("top: var(--visual-offset-top, 0px)");
     expect(estilos).toContain("width: var(--visual-width, 100vw)");
     expect(estilos).toContain("height: var(--visual-height, 100dvh)");
