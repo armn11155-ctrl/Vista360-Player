@@ -1313,7 +1313,7 @@ a {
 @media (max-width: 899px) {
   .login-card .form-label {
     margin-bottom: 6px;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: .025em;
   }

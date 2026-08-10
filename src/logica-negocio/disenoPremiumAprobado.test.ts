@@ -96,7 +96,7 @@ describe("refinamiento premium aprobado", () => {
     expect(orientacion).toContain('addEventListener("orientationchange"');
     expect(orientacion).toContain('addEventListener("pointerdown"');
     expect(estilos).toContain("@media (max-width: 899px)");
-    expect(estilos).toContain("font-size: 10px");
+    expect(estilos).toContain("font-size: 9px");
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
