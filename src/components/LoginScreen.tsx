@@ -102,30 +102,78 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         >
           <img
             className="login-billboard-structure"
-            src="/login-panel-estructura-premium-v8.png"
+            src="/login-panel-estructura-premium-v9.png"
             alt=""
             aria-hidden="true"
             draggable={false}
           />
           <div className="login-led-screen" aria-hidden="true">
-            <div className="login-led-frame login-led-frame-brand">
-              <div className="login-brand-kicker">
-                <span />
-                Publicidad exterior premium
-              </div>
-              <img className="login-left-logo" src={LOGO} alt="" draggable={false} />
-              <h1 className="login-left-heading">Más que visibilidad. Presencia.</h1>
+            <div className="login-led-scene login-led-scene-identity">
+              <div className="login-led-eyebrow"><span />Publicidad exterior premium</div>
+              <img className="login-led-logo" src={LOGO} alt="" draggable={false} />
+              <h1 className="login-led-title">Más que visibilidad.<strong>Presencia.</strong></h1>
             </div>
 
-            <div className="login-led-frame login-led-frame-impact">
-              <div className="login-brand-signal">
-                <div className="login-brand-signal-labels">
-                  <span>Marca</span>
-                  <span>Alcance</span>
-                  <span>Impacto</span>
+            <div className="login-led-scene login-led-scene-coverage">
+              <div className="login-led-copy">
+                <div className="login-led-eyebrow"><span />Cobertura</div>
+                <h2>Tu campaña,<strong>en una sola vista.</strong></h2>
+                <p>Ubicaciones claras. Decisiones rápidas.</p>
+              </div>
+              <svg className="login-coverage-map" viewBox="0 0 320 210" fill="none">
+                <path d="M18 52C61 26 95 33 129 57C166 83 198 74 222 48C248 20 280 24 306 42" />
+                <path d="M10 126C45 101 78 107 108 135C139 165 177 167 207 143C240 116 275 117 312 143" />
+                <path d="M65 12C78 51 73 86 49 118C29 145 31 174 52 201" />
+                <path d="M178 7C163 42 167 77 189 104C215 137 221 169 207 203" />
+                <path d="M270 8C248 49 248 83 269 109C288 132 290 164 274 202" />
+                <g className="login-map-pin login-map-pin-one"><circle cx="72" cy="105" r="12" /><circle cx="72" cy="105" r="4" /></g>
+                <g className="login-map-pin login-map-pin-two"><circle cx="178" cy="72" r="12" /><circle cx="178" cy="72" r="4" /></g>
+                <g className="login-map-pin login-map-pin-three"><circle cx="251" cy="142" r="12" /><circle cx="251" cy="142" r="4" /></g>
+                <path className="login-map-route" d="M72 105C103 83 139 79 178 72C205 68 224 93 251 142" />
+              </svg>
+            </div>
+
+            <div className="login-led-scene login-led-scene-control">
+              <div className="login-control-visual">
+                <div className="login-control-card-head">
+                  <span>Campaña principal</span>
+                  <strong><i />En ejecución</strong>
                 </div>
+                <div className="login-control-metric"><span>Paneles activos</span><strong>12</strong></div>
+                <div className="login-control-progress"><i /></div>
+                <div className="login-control-details"><span>Ubicaciones</span><span>Estado</span><span>Evidencias</span></div>
+              </div>
+              <div className="login-led-copy">
+                <div className="login-led-eyebrow"><span />Control</div>
+                <h2>Control en<strong>tiempo real.</strong></h2>
+                <p>Todo lo importante, siempre a la vista.</p>
               </div>
             </div>
+
+            <div className="login-led-scene login-led-scene-results">
+              <div className="login-led-copy">
+                <div className="login-led-eyebrow"><span />Resultados</div>
+                <h2>Listos para<strong>presentar.</strong></h2>
+                <p>Evidencias y reportes en un solo lugar.</p>
+              </div>
+              <div className="login-report-visual">
+                <div className="login-report-sheet">
+                  <div className="login-report-sheet-head"><span>REPORTE</span><i>PDF</i></div>
+                  <div className="login-report-chart"><span /><span /><span /><span /></div>
+                  <div className="login-report-lines"><i /><i /><i /></div>
+                </div>
+                <div className="login-report-check">✓</div>
+              </div>
+            </div>
+
+            <div className="login-led-scene login-led-scene-closing">
+              <img className="login-led-logo login-led-logo-closing" src={LOGO} alt="" draggable={false} />
+              <div className="login-led-keywords">
+                <span>Marca.</span><span>Alcance.</span><span>Impacto.</span>
+              </div>
+            </div>
+
+            <div className="login-led-timeline"><span /></div>
           </div>
         </section>
 
