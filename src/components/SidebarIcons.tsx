@@ -58,6 +58,17 @@ export function IconAnalitica({ size = 20 }: Props) {
   );
 }
 
+/** Perfil personal — silueta simple para conservar el mismo peso visual
+ *  de los demás accesos del sidebar. */
+export function IconPerfil({ size = 20 }: Props) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.6" stroke="currentColor" strokeWidth="1.9" />
+      <path d="M5.2 20c.45-4.25 2.75-6.4 6.8-6.4s6.35 2.15 6.8 6.4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconCerrar({ size = 14 }: Props) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

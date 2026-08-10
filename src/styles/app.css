@@ -6203,7 +6203,8 @@
     .sidebar-item[data-sidebar-id="cobertura"] { order: 3; }
     .sidebar-item[data-sidebar-id="reportes"] { order: 4; }
     .sidebar-item[data-sidebar-id="facturas"] { order: 5; }
-    .sidebar-item[data-sidebar-id="analitica"] { order: 6; }
+    .sidebar-item[data-sidebar-id="perfil"] { order: 6; }
+    .sidebar-item[data-sidebar-id="analitica"] { order: 7; }
     .sidebar-bottom { order: 100; }
     .sidebar-item {
       margin: 3px 8px;
@@ -8713,6 +8714,24 @@ select.reports-filter-select,
 @media (min-width: 900px) {
   .profile-top {
     padding: 28px 48px 34px;
+    width: 100%;
+    border-radius: 0 !important;
+    overflow: hidden;
+    background: #050A12;
+  }
+  .profile-screen {
+    border-radius: 0 !important;
+  }
+  .profile-top-curve {
+    display: none !important;
+  }
+  .profile-top::before,
+  .profile-top::after {
+    display: block;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 0;
   }
   .profile-top-bar {
     margin-bottom: 18px;
@@ -8739,6 +8758,36 @@ select.reports-filter-select,
     width: min(1080px, 100%);
     margin-left: auto;
     margin-right: auto;
+  }
+  .facturas-history-screen-body > .reports-filter-bar {
+    width: min(1080px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+  }
+  .facturas-history-screen-body > .reports-filter-bar + .facturas-month-group {
+    padding-top: 22px;
+  }
+
+  .coverage-selected-card,
+  .coverage-panel-card {
+    border-radius: 18px;
+  }
+  .coverage-panel-row {
+    position: relative;
+    border-bottom: 0;
+    border-radius: 14px;
+  }
+  .coverage-panel-row:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 0;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(8,119,255,.18) 12%, rgba(8,119,255,.18) 88%, transparent);
+    pointer-events: none;
   }
 
   .mis-campanas-list {

@@ -286,7 +286,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
 
         {facturasFiltradas.length > 0 &&
           agruparFacturasPorMes(facturasFiltradas).map((grupo, indice) => (
-            <div key={`${grupo.mes}-${indice}`}>
+            <div className="facturas-month-group" key={`${grupo.mes}-${indice}`}>
               <div className="reports-month-header">{grupo.mes ? etiquetaMes(grupo.mes) : "Sin fecha"}</div>
               <div className="reports-list">
                 {grupo.items.map((f) => (

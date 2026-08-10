@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode, useMemo } from "react";
 import {
   IconInicio, IconCobertura, IconMisPantallas, IconReportes,
-  IconFacturas, IconAnalitica, IconCerrar, IconCambiarCliente, IconCerrarSesion,
+  IconFacturas, IconAnalitica, IconPerfil, IconCerrar, IconCambiarCliente, IconCerrarSesion,
 } from "./SidebarIcons";
 import { BrandThumb } from "./BrandThumb";
 
@@ -12,6 +12,7 @@ type SidebarView =
   | "mispantallas"
   | "reportes"
   | "facturas"
+  | "perfil"
   | "analitica"
   | "solicitudes"
   | "accesos"
@@ -57,6 +58,7 @@ const ITEMS: {
   label: string;
   adminOnly?: boolean;
   mobileOnly?: boolean;
+  desktopOnly?: boolean;
 }[] = [
   { id: "inicio",       icon: <IconInicio />,       label: "Inicio" },
   // Antes en movil este mismo lugar decia "Mis Publicidades" (id
@@ -66,6 +68,7 @@ const ITEMS: {
   { id: "cobertura",    icon: <IconCobertura />,    label: "Cobertura" },
   { id: "reportes",     icon: <IconReportes />,     label: "Reportes" },
   { id: "facturas",     icon: <IconFacturas />,     label: "Facturas" },
+  { id: "perfil",       icon: <IconPerfil />,       label: "Perfil", desktopOnly: true },
   { id: "analitica",    icon: <IconAnalitica />,    label: "Analítica de acceso", adminOnly: true, mobileOnly: true },
   // Paneles NO va en este menú -- solo se abre desde el selector de
   // cliente del admin (AdminClientPicker), a pedido explícito.
@@ -89,7 +92,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
 
   useLayoutEffect(() => {
     function medir() {
-      const activeIdx = items.findIndex((it) => it.id === active);
+      const activeIdx = items.findIndex((it) => it.id === active || (it.id === "perfil" && active === "miPerfil"));
       const list = listRef.current;
       const el = activeIdx === -1 ? null : itemRefs.current[activeIdx];
       if (!list || !el) { setPill(null); return; }
@@ -196,11 +199,13 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               ref={(el) => { itemRefs.current[idx] = el; }}
               className={[
                 "sidebar-item",
-                it.id === active ? "sidebar-item-active" : "",
+                (it.id === active || (it.id === "perfil" && active === "miPerfil")) ? "sidebar-item-active" : "",
                 it.mobileOnly ? "sidebar-item-mobile-only" : "",
+                it.desktopOnly ? "sidebar-item-desktop-only" : "",
               ].filter(Boolean).join(" ")}
               onClick={() => {
-                onNavigate(it.id);
+                if (it.id === "perfil" && onOpenPerfil) onOpenPerfil();
+                else onNavigate(it.id);
                 onClose();
               }}
             >

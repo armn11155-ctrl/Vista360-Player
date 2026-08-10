@@ -89,6 +89,19 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("stroke-linejoin: round");
   });
 
+  it("refina documentos, cobertura y navegación solo en escritorio", () => {
+    const facturas = leer("src/components/screens/Facturas.tsx");
+    const sidebar = leer("src/components/Sidebar.tsx");
+    const estilos = leer("src/styles/app.css");
+    expect(facturas).toContain('className="facturas-month-group"');
+    expect(sidebar).toContain('label: "Perfil", desktopOnly: true');
+    expect(sidebar).toContain('it.id === "perfil" && onOpenPerfil');
+    expect(estilos).toContain(".facturas-history-screen-body > .reports-filter-bar + .facturas-month-group");
+    expect(estilos).toContain(".coverage-panel-row:not(:last-child)::after");
+    expect(estilos).toContain(".profile-top-curve");
+    expect(estilos).toContain("display: none !important");
+  });
+
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
     const detalle = leer("src/components/screens/DetalleCampana.tsx");
     const paneles = leer("src/components/screens/Paneles.tsx");
