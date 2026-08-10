@@ -111,16 +111,13 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             </div>
 
             <div className="login-led-frame login-led-frame-impact">
-              <div className="login-led-wordmark">Vista360 Player</div>
               <div className="login-brand-signal">
-                <span className="login-brand-signal-rail" />
                 <div className="login-brand-signal-labels">
                   <span>Marca</span>
                   <span>Alcance</span>
                   <span>Impacto</span>
                 </div>
               </div>
-              <p className="login-left-tagline">Publicidad exterior premium.</p>
             </div>
           </div>
         </section>

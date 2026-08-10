@@ -1756,11 +1756,11 @@ a {
      Conserva el fondo limpio, carga sin otro asset y alterna dos
      mensajes de marca usando únicamente opacity/transform. */
   .login-left-panel {
-    width: min(620px, calc(100% - 36px));
+    width: min(600px, calc(100% - 58px));
     height: clamp(360px, 50vh, 430px);
-    max-width: 620px;
+    max-width: 600px;
     min-height: 360px;
-    margin-right: clamp(18px, 2.5vw, 38px);
+    margin-right: clamp(52px, 4.5vw, 72px);
     padding: 12px;
     align-self: center;
     justify-self: end;
@@ -1856,22 +1856,22 @@ a {
   }
 
   .login-led-frame-brand {
-    animation: login-led-brand-frame 12s ease-in-out infinite;
+    animation: login-led-brand-frame 16s ease-in-out infinite;
   }
 
   .login-led-frame-impact {
     opacity: 0;
-    animation: login-led-impact-frame 12s ease-in-out infinite;
+    animation: login-led-impact-frame 16s ease-in-out infinite;
   }
 
   @keyframes login-led-brand-frame {
-    0%, 42%, 100% { opacity: 1; transform: translate3d(0,0,0); }
-    49%, 93% { opacity: 0; transform: translate3d(-8px,0,0); }
+    0%, 34%, 100% { opacity: 1; transform: translate3d(0,0,0); }
+    41%, 94% { opacity: 0; transform: translate3d(-8px,0,0); }
   }
 
   @keyframes login-led-impact-frame {
-    0%, 43%, 94%, 100% { opacity: 0; transform: translate3d(8px,0,0); }
-    51%, 88% { opacity: 1; transform: translate3d(0,0,0); }
+    0%, 35%, 95%, 100% { opacity: 0; transform: translate3d(8px,0,0); }
+    42%, 90% { opacity: 1; transform: translate3d(0,0,0); }
   }
 
   .login-led-frame .login-brand-kicker {
@@ -1892,35 +1892,32 @@ a {
     text-shadow: 0 0 24px rgba(88,155,255,.16);
   }
 
-  .login-led-wordmark {
-    margin-bottom: 44px;
-    color: rgba(219,234,254,.62);
-    font-size: 11px;
-    font-weight: 850;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-  }
-
   .login-led-frame .login-brand-signal {
     width: 100%;
     margin: 0;
   }
 
-  .login-led-frame .login-brand-signal-rail {
-    background: rgba(154,196,255,.16);
-  }
-
   .login-led-frame .login-brand-signal-labels {
-    margin-top: 20px;
-    gap: 18px;
+    position: relative;
+    min-height: 104px;
+    margin: 0;
+    display: grid;
+    place-items: center;
     color: transparent;
-    font-size: clamp(22px, 2.25vw, 31px);
+    font-size: clamp(46px, 4.8vw, 68px);
     font-weight: 850;
-    letter-spacing: .07em;
+    letter-spacing: .08em;
     line-height: 1.1;
   }
 
   .login-led-frame .login-brand-signal-labels span {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    text-align: center;
     color: transparent;
     background: radial-gradient(circle, #DCEBFF 0 1.05px, #75A9FF 1.25px, transparent 1.7px) 0 50% / 4px 4px;
     -webkit-background-clip: text;
@@ -1928,27 +1925,23 @@ a {
     filter: drop-shadow(0 0 6px rgba(79,145,244,.44));
   }
 
-  .login-led-frame .login-brand-signal-labels span:nth-child(1),
-  .login-led-frame .login-brand-signal-labels span:nth-child(2),
-  .login-led-frame .login-brand-signal-labels span:nth-child(3) {
-    animation: login-led-keyword-pulse 6s ease-in-out infinite;
+  .login-led-frame .login-brand-signal-labels span:nth-child(1) { animation: login-led-keyword-marca 16s ease-in-out infinite; }
+  .login-led-frame .login-brand-signal-labels span:nth-child(2) { animation: login-led-keyword-alcance 16s ease-in-out infinite; }
+  .login-led-frame .login-brand-signal-labels span:nth-child(3) { animation: login-led-keyword-impacto 16s ease-in-out infinite; }
+
+  @keyframes login-led-keyword-marca {
+    0%, 41%, 58%, 100% { opacity: 0; transform: translate3d(5px,0,0); }
+    45%, 54% { opacity: 1; transform: translate3d(0,0,0); filter: drop-shadow(0 0 10px rgba(104,167,255,.78)); }
   }
 
-  .login-led-frame .login-brand-signal-labels span:nth-child(2) { animation-delay: -4s; }
-  .login-led-frame .login-brand-signal-labels span:nth-child(3) { animation-delay: -2s; }
-
-  @keyframes login-led-keyword-pulse {
-    0%, 28%, 100% { opacity: .44; filter: drop-shadow(0 0 4px rgba(79,145,244,.28)); }
-    42%, 66% { opacity: 1; filter: drop-shadow(0 0 9px rgba(104,167,255,.78)); }
+  @keyframes login-led-keyword-alcance {
+    0%, 57%, 75%, 100% { opacity: 0; transform: translate3d(5px,0,0); }
+    62%, 71% { opacity: 1; transform: translate3d(0,0,0); filter: drop-shadow(0 0 10px rgba(104,167,255,.78)); }
   }
 
-  .login-led-frame-impact .login-left-tagline {
-    margin-top: 44px;
-    color: rgba(203,220,244,.52);
-    font-size: 11px;
-    font-weight: 740;
-    letter-spacing: .16em;
-    text-transform: uppercase;
+  @keyframes login-led-keyword-impacto {
+    0%, 74%, 93%, 100% { opacity: 0; transform: translate3d(5px,0,0); }
+    79%, 89% { opacity: 1; transform: translate3d(0,0,0); filter: drop-shadow(0 0 10px rgba(104,167,255,.78)); }
   }
 
   .login-right-panel {
@@ -2097,7 +2090,7 @@ a {
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-experience { grid-template-columns: minmax(0, 1fr) minmax(350px, 370px); }
-  .login-left-panel { margin-right: 16px; padding: 10px; }
+  .login-left-panel { width: min(560px, calc(100% - 38px)); margin-right: 38px; padding: 10px; }
   .login-left-heading { font-size: clamp(29px, 3.5vw, 38px); }
   .login-brand-signal { width: min(380px, 92%); }
 }

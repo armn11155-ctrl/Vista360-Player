@@ -33,6 +33,9 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("login-divider-glide");
     expect(estilos).toContain("login-led-perimeter");
     expect(estilos).toContain("login-led-brand-frame");
+    expect(estilos).toContain("login-led-keyword-marca");
+    expect(estilos).toContain("login-led-keyword-alcance");
+    expect(estilos).toContain("login-led-keyword-impacto");
     expect(estilos).toContain(".login-message-stack");
     expect(estilos).toContain("@media (max-width: 899px) and (max-height: 740px)");
   });
