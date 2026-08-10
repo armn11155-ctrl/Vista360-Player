@@ -96,22 +96,31 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   return (
     <div className={`login-shell${campoEnFoco ? " login-field-focused" : ""}`}>
       <main className="login-experience">
-        <section className="login-left-panel" aria-label="Vista360 Player">
-          <div className="login-brand-kicker">
-            <span aria-hidden="true" />
-            Publicidad exterior premium
-          </div>
-          <img className="login-left-logo" src={LOGO} alt="Vista360 Player" draggable={false} />
-          <h1 className="login-left-heading">Claridad en cada campaña.</h1>
-          <p className="login-left-tagline">
-            Del despliegue a la evidencia, todo permanece bajo control.
-          </p>
-          <div className="login-brand-signal" aria-label="Marca, alcance e impacto">
-            <span className="login-brand-signal-rail" aria-hidden="true" />
-            <div className="login-brand-signal-labels" aria-hidden="true">
-              <span>Marca</span>
-              <span>Alcance</span>
-              <span>Impacto</span>
+        <section
+          className="login-left-panel"
+          aria-label="Vista360 Player. Más que visibilidad. Presencia. Marca, alcance e impacto."
+        >
+          <div className="login-led-screen" aria-hidden="true">
+            <div className="login-led-frame login-led-frame-brand">
+              <div className="login-brand-kicker">
+                <span />
+                Publicidad exterior premium
+              </div>
+              <img className="login-left-logo" src={LOGO} alt="" draggable={false} />
+              <h1 className="login-left-heading">Más que visibilidad. Presencia.</h1>
+            </div>
+
+            <div className="login-led-frame login-led-frame-impact">
+              <div className="login-led-wordmark">Vista360 Player</div>
+              <div className="login-brand-signal">
+                <span className="login-brand-signal-rail" />
+                <div className="login-brand-signal-labels">
+                  <span>Marca</span>
+                  <span>Alcance</span>
+                  <span>Impacto</span>
+                </div>
+              </div>
+              <p className="login-left-tagline">Publicidad exterior premium.</p>
             </div>
           </div>
         </section>
