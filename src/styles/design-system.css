@@ -1968,6 +1968,22 @@ a {
   background: linear-gradient(180deg, #5B9BFF, #0877FF);
 }
 
+@media (min-width: 900px) {
+  .coverage-selected-card {
+    padding-left: 22px;
+  }
+
+  .coverage-selected-card::before {
+    top: 14px;
+    bottom: 14px;
+    left: 6px;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #6EAAFF 0%, #0877FF 55%, #2F6FED 100%);
+    box-shadow: 0 4px 12px rgba(8,119,255,.28);
+  }
+}
+
 @keyframes coverage-selection-in {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }

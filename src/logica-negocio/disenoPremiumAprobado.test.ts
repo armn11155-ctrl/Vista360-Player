@@ -93,6 +93,7 @@ describe("refinamiento premium aprobado", () => {
     const facturas = leer("src/components/screens/Facturas.tsx");
     const sidebar = leer("src/components/Sidebar.tsx");
     const estilos = leer("src/styles/app.css");
+    const sistema = leer("src/styles/design-system.css");
     expect(facturas).toContain('className="facturas-month-group"');
     expect(sidebar).toContain('label: "Perfil", desktopOnly: true');
     expect(sidebar).toContain('it.id === "perfil" && onOpenPerfil');
@@ -100,6 +101,9 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain(".coverage-panel-row:not(:last-child)::after");
     expect(estilos).toContain(".profile-top-curve");
     expect(estilos).toContain("display: none !important");
+    expect(sistema).toContain(".coverage-selected-card::before");
+    expect(sistema).toContain("top: 14px");
+    expect(sistema).toContain("border-radius: 999px");
   });
 
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
