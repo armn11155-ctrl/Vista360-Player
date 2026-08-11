@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
@@ -42,45 +42,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   const [remember, setRemember] = useState(savedRemember);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [campoEnFoco, setCampoEnFoco] = useState(false);
-
-  function prepararFocoDelFormulario(e: React.PointerEvent<HTMLFormElement>) {
-    const objetivo = e.target;
-    if (objetivo instanceof HTMLInputElement && (objetivo.id === "login-email" || objetivo.id === "login-password")) {
-      // Se activa antes del foco nativo para que Safari encuentre el campo
-      // ya acomodado y no intente desplazarlo una segunda vez.
-      setCampoEnFoco(true);
-    }
-  }
-
-  function cerrarFocoAlSalirDelFormulario(e: React.FocusEvent<HTMLFormElement>) {
-    const siguiente = e.relatedTarget;
-    // Cambiar de Usuario a Contraseña no debe desmontar brevemente el modo
-    // teclado. Solo se restaura el login cuando el foco sale del formulario.
-    if (!(siguiente instanceof Node) || !e.currentTarget.contains(siguiente)) {
-      setCampoEnFoco(false);
-    }
-  }
-
-  useEffect(() => {
-    const clase = "login-keyboard-open";
-    const raiz = document.documentElement;
-    const cuerpo = document.body;
-
-    if (!campoEnFoco) {
-      raiz.classList.remove(clase);
-      cuerpo.classList.remove(clase);
-      return;
-    }
-
-    raiz.classList.add(clase);
-    cuerpo.classList.add(clase);
-
-    return () => {
-      raiz.classList.remove(clase);
-      cuerpo.classList.remove(clase);
-    };
-  }, [campoEnFoco]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,7 +73,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   }
 
   return (
-    <div className={`login-shell${campoEnFoco ? " login-field-focused" : ""}`}>
+    <div className="login-shell">
       <main className="login-experience">
         <section
           className="login-left-panel"
@@ -209,12 +170,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-sub">Ingresa tus credenciales para continuar.</div>
               {error && <div id="login-error" className="login-error" role="alert">{error}</div>}
             </div>
-            <form
-              onSubmit={submit}
-              onPointerDownCapture={prepararFocoDelFormulario}
-              onFocusCapture={() => setCampoEnFoco(true)}
-              onBlurCapture={cerrarFocoAlSalirDelFormulario}
-            >
+            <form onSubmit={submit}>
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Usuario</label>
               <div className="login-input-wrap">

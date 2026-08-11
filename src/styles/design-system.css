@@ -1482,8 +1482,8 @@ a {
     font-size: 16px;
   }
 
-  /* El correo es visualmente más discreto; el viewport bloqueado y la
-     activación previa al foco evitan que Safari lo amplíe o lo reacomode. */
+  /* El correo es visualmente más discreto. El viewport del documento
+     mantiene desactivado el zoom automático de Safari. */
   .login-card #login-email {
     font-size: 15px;
   }
@@ -2460,19 +2460,12 @@ a {
 }
 
 /* Safari PWA conserva el viewport de la pantalla completa mientras abre el
-   teclado. El modo de foco usa la altura visual medida en JavaScript, ancla
-   la tarjeta arriba y bloquea el desplazamiento: el campo sube solo, pero la
-   pantalla ya no se puede arrastrar. Solo existe durante la edición móvil. */
+   teclado. :has(:focus) acomoda el login sin cambiar estado en React: así el
+   input conserva exactamente el mismo nodo durante el primer toque y WebKit
+   no cancela la apertura del teclado por un rerender intermedio. El selector
+   se limita a los dos campos de texto; botones y checkbox no mueven la tarjeta. */
 @media (max-width: 899px) {
-  html.login-keyboard-open,
-  body.login-keyboard-open {
-    width: 100%;
-    height: 100%;
-    overflow: hidden !important;
-    overscroll-behavior: none;
-  }
-
-  .login-shell.login-field-focused {
+  .login-shell:has(#login-email:focus, #login-password:focus) {
     top: var(--visual-offset-top, 0px);
     left: var(--visual-offset-left, 0px);
     right: auto;
@@ -2483,7 +2476,7 @@ a {
     max-height: var(--visual-height, 100dvh);
     justify-content: flex-start;
     padding: calc(8px + env(safe-area-inset-top)) 20px 8px;
-    /* El documento sigue bloqueado por login-keyboard-open. Dejamos visible
+    /* El documento ya está bloqueado por el shell del login. Dejamos visible
        únicamente el desborde de la capa fotográfica para que el área que
        queda detrás del teclado no revele el fondo negro del canvas. */
     overflow: visible !important;
@@ -2491,50 +2484,50 @@ a {
     touch-action: none;
   }
 
-  .login-shell.login-field-focused::before {
+  .login-shell:has(#login-email:focus, #login-password:focus)::before {
     top: 0;
     bottom: auto;
     height: var(--app-height, 100vh);
     min-height: 100vh;
   }
 
-  .login-field-focused :where(input, button, label) {
+  .login-shell:has(#login-email:focus, #login-password:focus) :where(input, button, label) {
     touch-action: manipulation;
   }
-  .login-field-focused .login-experience,
-  .login-field-focused .login-right-panel {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-experience,
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
     min-height: 0;
     justify-content: flex-start;
   }
-  .login-field-focused .login-logo,
-  .login-field-focused .login-foot {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-logo,
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-foot {
     max-height: 0;
     margin: 0;
     overflow: hidden;
     opacity: 0;
     pointer-events: none;
   }
-  .login-field-focused .login-card {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-card {
     margin-top: 0;
     padding: 21px 24px 18px;
     border-radius: 18px;
   }
-  .login-field-focused .login-access-kicker {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-access-kicker {
     min-height: 19px;
     margin-bottom: 10px;
   }
-  .login-field-focused .login-title {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-title {
     font-size: 21px;
     margin-bottom: 5px;
   }
-  .login-field-focused .login-message-stack {
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-message-stack {
     min-height: 36px;
     margin-bottom: 3px;
   }
-  .login-field-focused .login-card .form-group { margin-bottom: 10px; }
-  .login-field-focused .login-card .form-input { min-height: 46px; }
-  .login-field-focused .login-remember { margin: 9px 0 10px; }
-  .login-field-focused .login-btn { margin-top: 3px; padding: 13px; }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-group { margin-bottom: 10px; }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-input { min-height: 46px; }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-remember { margin: 9px 0 10px; }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-btn { margin-top: 3px; padding: 13px; }
 
   /* Último reporte: el ícono y el texto comparten el mismo eje y el aire
      superior/inferior de la tarjeta queda matemáticamente parejo. */

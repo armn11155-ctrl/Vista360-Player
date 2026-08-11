@@ -1,0 +1,56 @@
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../config/firebase", () => ({
+  auth: null,
+  login: vi.fn(),
+}));
+
+vi.mock("firebase/auth", () => ({
+  browserLocalPersistence: {},
+  browserSessionPersistence: {},
+  setPersistence: vi.fn(),
+}));
+
+import LoginScreen from "./LoginScreen";
+
+describe("LoginScreen en Safari móvil", () => {
+  beforeEach(() => localStorage.clear());
+  afterEach(() => cleanup());
+
+  it("conserva el mismo input durante el primer toque de Contraseña", () => {
+    const { container } = render(<LoginScreen onLoggedIn={() => undefined} />);
+    const password = screen.getByLabelText("Contraseña") as HTMLInputElement;
+    const shell = container.querySelector(".login-shell");
+
+    expect(shell).toHaveClass("login-shell");
+    expect(shell).not.toHaveClass("login-field-focused");
+
+    fireEvent.pointerDown(password);
+    expect(screen.getByLabelText("Contraseña")).toBe(password);
+
+    act(() => password.focus());
+    expect(document.activeElement).toBe(password);
+    expect(screen.getByLabelText("Contraseña")).toBe(password);
+
+    fireEvent.pointerUp(password);
+    fireEvent.click(password);
+    expect(document.activeElement).toBe(password);
+    expect(screen.getByLabelText("Contraseña")).toBe(password);
+    expect(shell).toHaveClass("login-shell");
+  });
+
+  it("cambia de Usuario a Contraseña sin desmontar el formulario", () => {
+    render(<LoginScreen onLoggedIn={() => undefined} />);
+    const usuario = screen.getByLabelText("Usuario") as HTMLInputElement;
+    const password = screen.getByLabelText("Contraseña") as HTMLInputElement;
+
+    act(() => usuario.focus());
+    expect(document.activeElement).toBe(usuario);
+
+    act(() => password.focus());
+    expect(document.activeElement).toBe(password);
+    expect(screen.getByLabelText("Usuario")).toBe(usuario);
+    expect(screen.getByLabelText("Contraseña")).toBe(password);
+  });
+});

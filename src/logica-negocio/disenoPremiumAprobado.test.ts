@@ -69,13 +69,11 @@ describe("refinamiento premium aprobado", () => {
     const login = leer("src/components/LoginScreen.tsx");
     const estilos = leer("src/styles/design-system.css");
     const viewport = leer("src/utils/viewport-height.ts");
-    expect(login).toContain("login-field-focused");
-    expect(login).toContain("login-keyboard-open");
-    expect(login).toContain("onPointerDownCapture={prepararFocoDelFormulario}");
-    expect(login).toContain("onBlurCapture={cerrarFocoAlSalirDelFormulario}");
-    expect(login).not.toContain('onBlur={() => setCampoEnFoco(false)}');
-    expect(estilos).toContain(".login-shell.login-field-focused");
-    expect(estilos).toContain("body.login-keyboard-open");
+    expect(login).not.toContain("campoEnFoco");
+    expect(login).not.toContain("login-keyboard-open");
+    expect(login).not.toContain("onFocusCapture");
+    expect(login).not.toContain("onPointerDownCapture");
+    expect(estilos).toContain(".login-shell:has(#login-email:focus, #login-password:focus)");
     expect(estilos).toContain("touch-action: none");
     expect(estilos).toContain("font-size: 16px");
     expect(estilos).toContain(".login-card #login-email");
@@ -83,7 +81,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("top: var(--visual-offset-top, 0px)");
     expect(estilos).toContain("width: var(--visual-width, 100vw)");
     expect(estilos).toContain("height: var(--visual-height, 100dvh)");
-    expect(estilos).toContain(".login-shell.login-field-focused::before");
+    expect(estilos).toContain(".login-shell:has(#login-email:focus, #login-password:focus)::before");
     expect(estilos).toContain("height: var(--app-height, 100vh)");
     expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
     expect(viewport).toContain('setProperty("--visual-offset-top"');
