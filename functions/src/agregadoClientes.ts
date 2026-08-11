@@ -117,6 +117,24 @@ export async function regenerarAgregadoClientes(db: Firestore): Promise<void> {
     const partes = Math.max(1, Math.ceil(total / CLIENTES_POR_PARTE));
     const actualizadoEn = new Date().toISOString();
 
+    // Aviso barato (cero lecturas extra: `total` ya salió de la lectura
+    // de arriba) de que esta regeneración -- que corre en CADA edición
+    // de un cliente o contrato, no solo en el barrido diario -- está
+    // empezando a releer una colección grande completa por cada edición
+    // suelta. No es un problema de tamaño de documento (eso ya lo cubre
+    // CLIENTES_POR_PARTE con el reparto en partes); es un problema de
+    // cuántas lecturas paga UNA edición cualquiera. Si esto aparece
+    // seguido en los logs, conviene evaluar una regeneración incremental
+    // (tocar solo el cliente que cambió) en vez de releer todos.
+    const AVISO_REGENERACION_FRECUENTE = 3000;
+    if (total > AVISO_REGENERACION_FRECUENTE) {
+      console.warn(
+        `regenerarAgregadoClientes: ${total} clientes. Cada edición de un cliente o contrato ` +
+          `vuelve a leer la colección completa (~${total} documentos) para regenerar este agregado. ` +
+          "Con ediciones frecuentes esto puede sumar una parte relevante de la cuota diaria gratuita."
+      );
+    }
+
     const lote = db.batch();
     for (let i = 0; i < partes; i++) {
       lote.set(db.doc(rutaParte(i)), {

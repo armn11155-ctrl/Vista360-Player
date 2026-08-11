@@ -892,3 +892,56 @@ describe("Cloud Functions no cargan AWS antes de necesitar R2", () => {
     expect(consumidores).not.toContain("new DeleteObjectCommand");
   });
 });
+
+describe("avisos baratos antes de las bombas de tiempo restantes", () => {
+  // Punto 18 de la auditoría de eficiencia estructural: donde ya se
+  // identificó un crecimiento sin techo que no vale la pena resolver
+  // hoy (por escala actual, por riesgo de datos obsoletos, o por ser un
+  // cambio de diseño fuera de alcance), al menos debe quedar un aviso
+  // barato -- que no cueste una lectura extra -- para detectarlo ANTES
+  // de que sea un problema real, igual que ya existe para paneles,
+  // contratos y facturas por cliente.
+
+  it("resumenOcupacion avisa si las facturas leídas completas crecen mucho", () => {
+    const codigo = readFileSync(resolve(FUNCIONES, "resumenOcupacion.ts"), "utf-8");
+    expect(codigo).toMatch(/AVISO_FACTURAS_OCUPACION = \d+/);
+    expect(codigo).toContain("facturasSnap.docs.length > AVISO_FACTURAS_OCUPACION");
+    expect(codigo).toContain("console.warn");
+    // Sigue leyendo TODAS las facturas (sin where): el aviso es el
+    // sustituto barato de filtrar, no una promesa de que ya se filtra.
+    expect(codigo).toContain('db.collection("facturas").get()');
+  });
+
+  it("listarReportesCliente avisa si el historial de un cliente crece mucho", () => {
+    const codigo = readFileSync(resolve(FUNCIONES, "listarReportesCliente.ts"), "utf-8");
+    expect(codigo).toMatch(/AVISO_HISTORIAL_REPORTES = \d+/);
+    expect(codigo).toContain("fechasOrdenadas.length > AVISO_HISTORIAL_REPORTES");
+    expect(codigo).toContain("console.warn");
+  });
+
+  it("regenerarAgregadoClientes avisa si cada edición empieza a costar caro", () => {
+    const codigo = readFileSync(resolve(FUNCIONES, "agregadoClientes.ts"), "utf-8");
+    expect(codigo).toMatch(/AVISO_REGENERACION_FRECUENTE = \d+/);
+    expect(codigo).toContain("total > AVISO_REGENERACION_FRECUENTE");
+    expect(codigo).toContain("console.warn");
+  });
+
+  it("ninguno de los tres avisos cuesta una lectura adicional", () => {
+    // Los tres deben calcularse sobre datos que la función YA leyó
+    // (snapshots/arrays existentes), nunca con una consulta nueva.
+    const casos = [
+      { archivo: "resumenOcupacion.ts", constante: "AVISO_FACTURAS_OCUPACION" },
+      { archivo: "listarReportesCliente.ts", constante: "AVISO_HISTORIAL_REPORTES" },
+      { archivo: "agregadoClientes.ts", constante: "AVISO_REGENERACION_FRECUENTE" },
+    ];
+    for (const { archivo, constante } of casos) {
+      const codigo = readFileSync(resolve(FUNCIONES, archivo), "utf-8");
+      // Desde la DECLARACIÓN de la constante (no desde una mención en un
+      // comentario anterior) hasta el console.warn correspondiente.
+      const inicio = codigo.indexOf(`const ${constante} = `);
+      expect(inicio, `${archivo} no declara ${constante}`).toBeGreaterThan(-1);
+      const bloqueAviso = codigo.slice(inicio, codigo.indexOf("console.warn", inicio));
+      expect(bloqueAviso).not.toMatch(/\.get\(\)|getDoc\(|getDocs\(|onSnapshot\(/);
+    }
+  });
+});

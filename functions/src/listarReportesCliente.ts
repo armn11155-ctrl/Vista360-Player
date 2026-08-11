@@ -152,6 +152,24 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
       idA < idB ? 1 : idA > idB ? -1 : 0
     );
 
+    // Aviso barato (cero lecturas extra: ya se listó todo arriba) de que
+    // el historial de un cliente empieza a ser largo. El modo completo
+    // (usado por la pantalla Reportes) manda TODO el historial en una
+    // sola respuesta -- no está paginado. Con reporte diario, 700
+    // reportes son menos de dos años. No es un problema de lecturas de
+    // Firestore (los metadatos siguen viniendo de un agregado por año),
+    // pero sí de tamaño de respuesta y de una lista sin fin en pantalla.
+    // Cuando esto aparezca en los logs, toca paginar la pantalla
+    // Reportes (cambio de diseño, fuera del alcance de esta revisión).
+    const AVISO_HISTORIAL_REPORTES = 700;
+    if (fechasOrdenadas.length > AVISO_HISTORIAL_REPORTES) {
+      console.warn(
+        `listarReportesCliente: cliente ${clienteId} tiene ${fechasOrdenadas.length} reportes ` +
+          "en R2. El modo completo los manda todos en una sola respuesta sin paginar; " +
+          "evaluar paginación en la pantalla Reportes."
+      );
+    }
+
     // Inicio solo necesita dos datos: el reporte mas reciente y si ya
     // existe uno del mes actual. Antes llamaba al listado completo, lo
     // que leia un documento de Firestore y firmaba dos URLs POR REPORTE

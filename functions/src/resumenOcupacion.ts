@@ -61,9 +61,18 @@ function panelesDe(c: ContratoDatos): string[] {
  * listarAccesosClientes.
  */
 export const resumenOcupacion = onCall(
-  // Lee paneles, clientes y facturas completos. Los contratos ya van
-  // filtrados por fecha, pero las facturas no: el coste de esta funcion
-  // crece con todas las que se hayan emitido en la historia del negocio.
+  // Lee paneles y clientes completos, y contratos ya acotados a un año.
+  // LAS FACTURAS SE LEEN ENTERAS: no llevan filtro de fecha porque
+  // vienen de un sistema externo (facturación) que no siempre rellena
+  // `pagado` en cada documento -- filtrar con un where("pagado","==",...)
+  // dejaría fuera en silencio cualquier factura sin ese campo, que hoy
+  // el código trata correctamente como pendiente (ver el filtro más abajo).
+  // El coste de este bloque crece con TODAS las facturas emitidas en la
+  // historia del negocio; es aceptable porque es una función admin, a
+  // demanda, no por sesión de cliente. Ver AVISO_FACTURAS_OCUPACION más
+  // abajo para el umbral a partir del cual conviene revisarlo (por
+  // ejemplo, pidiendo que el sistema externo garantice `pagado` siempre
+  // para poder filtrar con seguridad).
   { timeoutSeconds: 300, memory: "512MiB" },
   async (request) => {
   const uid = request.auth?.uid;
@@ -98,6 +107,23 @@ export const resumenOcupacion = onCall(
     db.collection("clientes").get(),
     db.collection("facturas").get(),
   ]);
+
+  // Aviso barato (no cuesta una lectura extra: ya se leyó todo arriba)
+  // de que esta función está cerca de gastar sola una fracción grande
+  // de la cuota diaria gratuita (50.000 lecturas/día) en una sola
+  // apertura de pantalla. Cuando esto empiece a aparecer en los logs,
+  // toca resolver primero que `pagado` esté siempre presente en las
+  // facturas del sistema externo, para poder filtrar con
+  // where("pagado","==",false) sin riesgo de perder facturas pendientes
+  // que no tengan ese campo.
+  const AVISO_FACTURAS_OCUPACION = 20000;
+  if (facturasSnap.docs.length > AVISO_FACTURAS_OCUPACION) {
+    console.warn(
+      `resumenOcupacion: se leyeron ${facturasSnap.docs.length} facturas completas (sin filtro). ` +
+        "Acercándose a una fracción relevante de la cuota diaria gratuita. Revisar el plan de " +
+        "acotar esta lectura (ver comentario junto a timeoutSeconds arriba)."
+    );
+  }
 
   const nombreCliente = new Map<string, string>();
   clientesSnap.docs.forEach((d) => {
