@@ -146,7 +146,7 @@ function abrirComoAntes(url: string): void {
  * PDF en su visor pase lo que pase, ni con blob ni con
  * Content-Disposition: attachment.
  */
-function esIOS(): boolean {
+export function esIOS(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   if (/iPhone|iPad|iPod/.test(ua)) return true;

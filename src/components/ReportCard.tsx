@@ -196,6 +196,12 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           if (!compartido) irAlLink("whatsapp");
         })
         .finally(() => setEnviando(null));
+      // TOPE DE SEGURIDAD. El panel nativo devuelve una promesa que solo
+      // se resuelve cuando la persona lo cierra. Si por lo que sea no
+      // llega nunca (paso en macOS: la hoja del sistema dejaba el boton
+      // en "Enviando..." indefinidamente), el estado se limpia solo a los
+      // 60 s en vez de dejar el boton muerto hasta recargar.
+      window.setTimeout(() => setEnviando((actual) => (actual === "whatsapp" ? null : actual)), 60_000);
       return;
     }
     irAlLink("whatsapp");
