@@ -1,6 +1,8 @@
 # Observabilidad y bombas de tiempo
 
-Última revisión: **5 de agosto de 2026**
+Última revisión: **11 de agosto de 2026** (alertas de producción, auditoría de
+acciones críticas y health check añadidos; ver `OPERACION-PRODUCCION.md` para
+la vista operativa de conjunto)
 
 Complementa `RIESGOS.md`. Acá va (1) qué capacidades de operación tiene y le faltan
 al sistema, y (2) las decisiones técnicas que hoy funcionan bien pero podrían
@@ -22,24 +24,45 @@ convertirse en un problema al crecer.
 | Verificación previa al despliegue | ✅ | CI en cada push, en entorno limpio. |
 | Diagnóstico del despliegue | ✅ | Los logs quedan como artefacto de cada ejecución. |
 | Backups de datos | ✅ (de Firebase) | Firestore hace copias automáticas gestionadas por Google. |
+| Alertas de producción (Functions, sitio caído, presupuesto) | ✅ Implementado (11-ago-2026) | Cloud Monitoring, ver Parte 1.1 más abajo. |
+| Health check del frontend | ✅ Implementado (11-ago-2026) | Verificación de tiempo de actividad cada 5 min sobre `vista360player.pe`. |
+| Auditoría de acciones críticas | ✅ Ampliado (11-ago-2026) | `contrato_actualizado`, `usuario_eliminado`, `password_restablecida` y `factura_eliminada` ya quedaban declarados en `registro.ts` pero ninguna función los llamaba; ahora sí. |
 
 ### Lo que falta, por orden de valor
 
-#### 1. Alertas automáticas — 🔴 lo más importante
+#### 1. Alertas automáticas — ✅ implementado (11 de agosto de 2026)
 
-Hoy, si `crearContrato` empieza a fallar, nadie se entera hasta que alguien
-llama. El logging estructurado que se acaba de añadir es justamente lo que hacía
-falta para poder montar alertas: ahora los eventos se pueden filtrar por campo.
+Configurado directamente en Cloud Monitoring del proyecto `base-de-datos-vista360`
+(sin servicios nuevos, sin costo adicional -- dentro de la capa gratuita):
 
-**Cómo activarlo** (gratis, en el proyecto de Google Cloud que ya se paga, sin
-tocar código): Cloud Logging → *Crear métrica basada en logs* con el filtro
+| Alerta | Condición | Notifica a |
+|---|---|---|
+| `VISTA360 - Errores repetidos en Cloud Functions` | 3 o más ejecuciones con `status != ok` en 5 min, en cualquier función | Canal de correo "Alan - Alertas Vista360" |
+| `VISTA360 - Frontend/sitio caido` | La verificación de tiempo de actividad de `vista360player.pe` falla 1 minuto seguido (chequeo cada 5 min, solo 2XX cuenta como éxito) | Mismo canal |
+| Error Reporting (auto-captura de excepciones no controladas en Cloud Functions) | Cualquier grupo de error nuevo | Mismo canal, vía "Configurar notificaciones" de Error Reporting |
+| Presupuesto de facturación | Gasto real supera 50/90/100% de USD 30/mes (ver más abajo) | Administradores de facturación + mismo canal |
 
-```
-jsonPayload.resultado="error"
-```
+**Por qué el logging estructurado seguía sin servir para esto:** el filtro
+`jsonPayload.resultado="error"` de `registro.ts` solo cubre las 6 acciones
+"auditables" (borrados, cambios de contraseña, etc.). Los fallos de una Cloud
+Function que revienta por una excepción no controlada -- el caso más común -- ya
+los captura Error Reporting automáticamente sin necesitar `registro.ts`, así que
+la alerta de arriba se montó sobre la métrica nativa de ejecuciones
+(`cloudfunctions.googleapis.com/function/execution_count`, filtrada por
+`status`) en vez de sobre logs propios: cubre las 63 funciones desplegadas de
+una sola vez, no solo las que llaman a `auditar()`.
 
-y encima una alerta que avise por correo si supera N en 10 minutos. Toma unos
-minutos y no requiere ningún servicio nuevo.
+**Presupuesto de costos, antes inútil como señal:** existían dos presupuestos
+("presupuesto 0.0" a USD 0/mes con alcance a los dos proyectos de la cuenta, y
+"Pro" a USD 0.50/mes con alcance a un proyecto que **no era**
+`base-de-datos-vista360`) -- ninguno de los dos podía distinguir "gasto normal"
+de "algo se disparó", porque el gasto real (~USD 0.35-1.30/día observado)
+superaba ambos umbrales todo el tiempo. Se corrigió el segundo: ahora se llama
+`VISTA360 - Alerta gasto real`, apunta específicamente a
+`base-de-datos-vista360`, y el umbral es USD 30/mes con avisos al 50/90/100%
+(USD 15/27/30) -- una cifra realista sobre el consumo observado, no un
+placeholder. El presupuesto viejo a USD 0 se deja como está (no hace daño,
+pero tampoco aporta nada; no se tocó por no ser parte del alcance).
 
 #### 2. Reporte de errores del frontend — 🟠 alto valor, decisión pendiente
 

@@ -84,9 +84,16 @@ paneles — un puñado, sin importar los años de historial.
 
 ## 4. Las reglas de seguridad de Firestore no están en el repositorio
 
+> **✅ RESUELTO (auditoría de operación, 11 de agosto de 2026).** Las reglas
+> viven en `firestore.rules` en la raíz del repo, versionadas, con un CI
+> propio (`auditar-reglas.yml`, suite de ataques contra el emulador) y un
+> despliegue explícito (casilla `desplegar_reglas` en el workflow de
+> Functions, apagada por defecto para no republicarlas sin querer). El
+> resto de esta sección queda como registro histórico.
+
 | | |
 |---|---|
-| **Riesgo** | 🟠 Medio |
+| **Riesgo** | ~~🟠 Medio~~ Resuelto |
 | **Impacto** | Alto si se pierden o alguien las cambia por error |
 | **Probabilidad** | Baja pero permanente |
 | **Cuándo** | **Ahora** (es rápido) |
@@ -107,9 +114,19 @@ válida lea datos de otro cliente saltándose la app.
 
 ## 5. Vulnerabilidades heredadas del SDK de Firebase
 
+> **✅ RESUELTO (auditoría de operación, 11 de agosto de 2026).** `firebase`
+> está en 12.17.1 (frontend) y `firebase-admin` en 14.x / `firebase-functions`
+> en 7.x (Cloud Functions). `npm audit --omit=dev` da **0 vulnerabilidades**
+> en el frontend. En `functions/` queda una vulnerabilidad moderada de
+> `uuid` (GHSA-w5hq-g745-h8pq), pero es transitiva de las propias
+> dependencias internas de `firebase-admin`/`@google-cloud/storage`, no de
+> código propio ni de una ruta que reciba datos externos -- ver
+> "Auditoría de dependencias" en `OPERACION-PRODUCCION.md`. El resto de
+> esta sección queda como registro histórico.
+
 | | |
 |---|---|
-| **Riesgo** | 🟡 Bajo-medio |
+| **Riesgo** | ~~🟡 Bajo-medio~~ Resuelto (con una nota menor pendiente) |
 | **Impacto** | Bajo hoy — no llega al navegador del cliente |
 | **Probabilidad** | Media a futuro |
 | **Cuándo** | **Cuando duela** |

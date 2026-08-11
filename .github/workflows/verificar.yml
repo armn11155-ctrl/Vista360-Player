@@ -123,3 +123,51 @@ jobs:
             --only firestore \
             --project demo-vista360-reglas \
             "npm run test:reglas"
+
+  recordatorio-deploy:
+    # Este job NUNCA falla a propósito (todos sus pasos son informativos).
+    # Existe por un riesgo real y ya documentado en OPERACION-PRODUCCION.md:
+    # Cloudflare despliega el frontend solo con el push, pero las Cloud
+    # Functions, los índices y las reglas de Firestore se despliegan a
+    # mano (workflow_dispatch). Un push puede quedar "todo verde" en este
+    # mismo workflow y aun así dejar producción a medias si el commit
+    # tocaba el backend y nadie disparó el otro despliegue. Esto no lo
+    # arregla -- solo hace que sea imposible no darse cuenta.
+    name: 🔔 Recordatorio de despliegue manual
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Comprobar si este push toca backend/reglas/índices
+        run: |
+          ANTES="${{ github.event.before }}"
+          # En un push nuevo a una rama (o el primer push del repo) "before"
+          # puede venir en ceros o no tener historial de 2 commits todavía;
+          # en ese caso no se puede diffear con seguridad, así que se avisa
+          # igual en vez de asumir que no cambió nada.
+          if [ -z "$ANTES" ] || [ "$ANTES" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$ANTES" 2>/dev/null; then
+            CAMBIOS="(no se pudo calcular el diff exacto -- revisar a mano si corresponde)"
+          else
+            CAMBIOS=$(git diff --name-only "$ANTES" "${{ github.sha }}" -- functions/src firestore.rules firestore.indexes.json || true)
+          fi
+
+          if [ -n "$CAMBIOS" ]; then
+            {
+              echo "## 🔔 Este push toca backend, reglas o índices"
+              echo ""
+              echo "Archivos:"
+              echo '```'
+              echo "$CAMBIOS"
+              echo '```'
+              echo ""
+              echo "El frontend ya se despliega solo (Cloudflare Pages), pero **esto no**:"
+              echo "hace falta lanzar a mano el workflow *🔑 Configurar Secrets de R2 y"
+              echo "Desplegar Functions* (marcar la casilla \`desplegar_reglas\` si el"
+              echo "cambio incluye \`firestore.rules\`). Ver \`docs/OPERACION-PRODUCCION.md\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Este push no toca functions/src, firestore.rules ni firestore.indexes.json -- nada que recordar." >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -1,5 +1,8 @@
 # Vista360 Player
 
+> Operación en producción, despliegue, alertas y qué hacer si algo se
+> rompe: `docs/OPERACION-PRODUCCION.md`.
+
 Portal web para los **clientes (anunciantes)** de Vista360 — entran con su
 cuenta y ven sus propias campañas: estado, evidencias fotográficas de sus
 anuncios en los paneles, y reportes mensuales. El dueño también tiene una

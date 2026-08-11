@@ -6,6 +6,10 @@ Este documento existe para que, si algún día falta una credencial, no haya que
 reconstruir de memoria cómo se regenera. No contiene ninguna credencial: solo el
 procedimiento.
 
+> Este documento cubre perder una **credencial**. Si en cambio se borró o se
+> corrompió un **dato real** (un cliente, una factura, un archivo), ver
+> `RECUPERACION-DE-DATOS.md`.
+
 ---
 
 ## Lo primero: la app NO se cae
