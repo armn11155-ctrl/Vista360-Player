@@ -390,12 +390,15 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     // PDF, que queda el primero en "Recientes" del selector de archivos.
     // WhatsApp Web no deja adjuntar por enlace; esto es lo mas cerca que
     // se puede llegar. El texto no lleva la url firmada: el PDF va adjunto.
+    // Igual que en ReportCard: el chat se abre siempre con el texto sin la
+    // url firmada, y el PDF se baja aparte. En escritorio archivoCompartir
+    // llega vacio porque el fetch a R2 lo bloquea CORS.
+    irAlLink("whatsapp", mensajeConArchivo);
     if (archivoCompartir) {
-      irAlLink("whatsapp", mensajeConArchivo);
       guardarArchivoYaCargado(archivoCompartir);
       return;
     }
-    irAlLink("whatsapp");
+    void pedirUrlDescarga().then((u) => descargarArchivo(u, nombreArchivoFactura(f)));
   }
 
   /** Mismo motivo que ReportCard.tsx: el correo (a diferencia de

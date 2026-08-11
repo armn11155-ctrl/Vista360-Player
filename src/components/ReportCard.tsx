@@ -231,12 +231,24 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     //
     // El orden importa: primero window.open, que depende del gesto del
     // clic, y despues la descarga, que no.
+    // El chat del cliente se abre SIEMPRE con el texto sin la url firmada,
+    // y el PDF se baja aparte.
+    //
+    // Antes esto dependia de `archivoCompartir`, y en escritorio ese File
+    // llega vacio: precargarArchivoR2 hace fetch a la url firmada de R2
+    // desde el navegador y lo bloquea CORS -- que es justo el motivo de que
+    // exista obtenerArchivoR2Base64. Como venia null, se caia al camino
+    // viejo: ni se bajaba el PDF ni se limpiaba el enlace del mensaje.
+    //
+    // descargarArchivo() no tiene ese problema (ya se usa en el boton
+    // Descargar y funciona en escritorio). Primero window.open, que
+    // depende del gesto del clic; despues la descarga, que no.
+    irAlLink("whatsapp", mensajeConArchivo);
     if (archivoCompartir) {
-      irAlLink("whatsapp", mensajeConArchivo);
       guardarArchivoYaCargado(archivoCompartir);
       return;
     }
-    irAlLink("whatsapp");
+    void descargarArchivo(informe.urlDescarga || url, nombreArchivoReporte(informe.mesLabel));
   }
 
   /** A diferencia de WhatsApp (que SIEMPRE depende de que la persona
