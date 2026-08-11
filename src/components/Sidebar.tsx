@@ -74,12 +74,20 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = true, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = false, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   // useMemo OBLIGATORIO: `items` es dependencia del useLayoutEffect de
   // abajo, y ese efecto llama a setPill con un OBJETO nuevo. Sin
   // memoizar: efecto -> setPill -> render -> filter() da otro array ->
   // efecto... Un bucle infinito sin ningun sintoma visible.
   // adminOnly SE FILTRA POR esGerente, NO POR isAdmin.
+  //
+  // Y EL DEFECTO DE esGerente ES false, NO true. Comprobado en produccion
+  // con una sesion de CLIENTE: el menu le mostraba "Analitica de acceso".
+  // App.tsx pasa `esGerente={esGerente}`, pero en el llamador de clientes
+  // reales esa variable nunca se define (queda undefined), asi que
+  // entraba el valor por defecto del componente. Un permiso de
+  // administrador no puede fallar hacia "si": si no consta que eres
+  // Gerente, no lo eres.
   //
   // `isAdmin` en esta aplicación NO significa "es el Gerente": llega como
   // `isAdmin={!adminVistaCliente}` desde App.tsx, o sea "no está mirando

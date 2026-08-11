@@ -39,4 +39,25 @@ describe("el menú no ofrece al Trabajador lo que es del Gerente", () => {
     const linea = sidebar.split("\n").find((l) => l.includes('id: "analitica"')) ?? "";
     expect(linea).toContain("adminOnly: true");
   });
+  it("un permiso de administrador NO puede fallar hacia si", () => {
+    /**
+     * COMPROBADO EN PRODUCCION con una sesion de CLIENTE: el menu le
+     * mostraba "Analitica de acceso".
+     *
+     * App.tsx pasa `esGerente={esGerente}`, pero en el llamador de
+     * clientes reales esa variable nunca se define -- queda undefined --
+     * y entraba el valor por defecto del componente, que era `true`.
+     *
+     * Si no consta que eres Gerente, no lo eres.
+     */
+    expect(sidebar).toContain("esGerente = false");
+    expect(sidebar).not.toContain("esGerente = true");
+  });
+
+  it("el Gerente lo sigue viendo porque su llamador lo pasa explicito", () => {
+    // Cambiar el defecto no puede haberle quitado el menu a quien si lo es.
+    expect(app).toContain("esGerente={esGerente}");
+    expect(app).toContain('const esGerente = auth.role === "admin";');
+  });
+
 });
