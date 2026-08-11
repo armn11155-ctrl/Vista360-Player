@@ -177,17 +177,67 @@ export async function listarObjetosR2(opciones: {
 }
 
 /**
+ * Prefijo de la "papelera": R2 no ofrece versionado de objetos (a
+ * diferencia de S3) ni recuperación nativa de un archivo borrado --
+ * confirmado en el dashboard el 11 de agosto de 2026, no es una
+ * suposición. Sin esto, un borrado por bug o por error humano
+ * (`eliminarFactura`, `limpiarArchivosHuerfanos`, reemplazar un avatar
+ * por error) es DEFINITIVO al instante.
+ *
+ * Por qué una copia y no versionado real: es lo único disponible hoy
+ * en R2 sin escribir un Worker aparte. Por qué no "no borrar nunca":
+ * el pedido explícito era no duplicar todo indefinidamente. Esto solo
+ * copia lo que de verdad se borra (no todo el bucket, no en cada
+ * escritura) y una regla de ciclo de vida en el bucket
+ * (`_papelera/ -> borrar tras 30 días`, configurada en el dashboard de
+ * Cloudflare, ver docs/RECUPERACION-DE-DATOS.md) lo hace desaparecer
+ * solo pasado ese plazo. El costo es una operación de copia por cada
+ * borrado real -- no por cada subida -- irrelevante al volumen actual.
+ *
+ * `_papelera/` queda fuera de CARPETAS_PERMITIDAS a propósito: nada de
+ * lo que firma URLs o valida keys para el resto de la app puede leer
+ * ni escribir ahí. Solo se llega por Admin SDK, a mano, para recuperar.
+ */
+export const PAPELERA_PREFIJO = "_papelera/";
+
+function keyEnPapelera(key: string): string {
+  return `${PAPELERA_PREFIJO}${key}`;
+}
+
+/**
  * Borra un objeto de R2 "a mejor esfuerzo" — nunca lanza, solo avisa
  * en el log si falla o si ya no existía. Se usa para no dejar archivos
  * huérfanos cuando se reemplaza uno (cambiar avatar, foto de portada
  * de campaña, etc.) — cada subida genera una key nueva y única, así
  * que si no se borra la anterior, se queda ocupando espacio para
  * siempre.
+ *
+ * Antes de borrar, copia el objeto a `_papelera/` (best-effort: si la
+ * copia falla -- por ejemplo, la key ya no existía -- se sigue con el
+ * borrado igual, para no romper el comportamiento de "a mejor
+ * esfuerzo" que ya dependía de esta función).
  */
 export async function borrarObjetoR2(key: string) {
+  const [{ DeleteObjectCommand, CopyObjectCommand }, client] = await Promise.all([
+    cargarModuloS3(),
+    r2Client(),
+  ]);
+  const bucket = r2Bucket();
+
   try {
-    const [{ DeleteObjectCommand }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
-    await client.send(new DeleteObjectCommand({ Bucket: r2Bucket(), Key: key }));
+    await client.send(
+      new CopyObjectCommand({
+        Bucket: bucket,
+        Key: keyEnPapelera(key),
+        CopySource: `${bucket}/${encodeURIComponent(key).replace(/%2F/g, "/")}`,
+      })
+    );
+  } catch (error) {
+    console.warn(`No se pudo copiar ${key} a la papelera de R2 antes de borrar (puede que ya no exista).`, error);
+  }
+
+  try {
+    await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
   } catch (error) {
     console.warn(`No se pudo borrar ${key} de R2 (puede que ya no exista).`, error);
   }

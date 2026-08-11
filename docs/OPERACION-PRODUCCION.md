@@ -68,7 +68,8 @@ push.
 | Gasto de Google Cloud | Facturación → Informes / Presupuestos y alertas | Presupuesto `VISTA360 - Alerta gasto real`, USD 30/mes, avisa al 50/90/100%. |
 | Fallos de CI/build | Pestaña Actions del repo | Cada job deja su log; el de reglas deja el resultado de los 63 ataques. |
 | Errores del navegador del cliente (JS roto en un móvil concreto) | **No hay, hoy** | El `ErrorBoundary` los muestra al usuario pero no los reporta a ningún lado. Pendiente una decisión sobre un servicio externo (Sentry u otro) -- ver `RIESGOS.md` #1. No se activó sin consultar: implica un tercero y (aunque el plan gratuito alcanza) una cuenta más que mantener. |
-| Métricas/errores de Cloudflare Pages y R2 | Panel de Cloudflare | **No revisado en esta sesión** (sin acceso a la consola de Cloudflare desde acá). Queda como acción pendiente: confirmar si Cloudflare Pages tiene notificaciones de build fallido activadas, y si R2 tiene alguna métrica de error expuesta. |
+| Recuperación de un archivo de R2 borrado por accidente | `_papelera/` dentro del mismo bucket, 30 días | R2 no tiene versionado nativo (confirmado en vivo el 11-ago-2026); `borrarObjetoR2` copia a la papelera antes de cada borrado real. Procedimiento paso a paso en `RECUPERACION-DE-DATOS.md`. |
+| Métricas/errores de Cloudflare Pages | Panel de Cloudflare | **No revisado en esta sesión** (fuera del alcance pedido). Queda como acción pendiente: confirmar si Cloudflare Pages tiene notificaciones de build fallido activadas. |
 
 ---
 
@@ -180,7 +181,7 @@ cuánto, para no depender de acordarse.
 | **1 mes** | Presupuesto de facturación vs. gasto real (¿el umbral de USD 30 sigue siendo realista?). Alertas: ¿llegó algún correo, hizo ruido o quedó en silencio? |
 | **3 meses** | `npm audit` en raíz y en `functions/` (dependencias nuevas). Tamaño real de los documentos "resumen"/agregado si el número de clientes o campañas activas creció notablemente. |
 | **6 meses** | Releer `RIESGOS.md` y `OBSERVABILIDAD.md` completos -- ¿algo marcado "vigilar" ya cruzó su umbral? Confirmar que PITR sigue activo (no debería desactivarse solo, pero es gratis confirmarlo). Revisar si sigue habiendo un solo propietario de las cuentas de Google/GitHub/Cloudflare (`RECUPERACION.md`, sección final). |
-| **12 meses** | Evaluar si sigue teniendo sentido no tener reporte de errores del frontend (Sentry u otro) a la luz del volumen real de usuarios. Evaluar el salto de React 18 a una versión mayor si el ecosistema ya lo está empujando. Confirmar el versionado del bucket R2 (sección de `RECUPERACION-DE-DATOS.md`) si no se hizo antes. |
+| **12 meses** | Evaluar si sigue teniendo sentido no tener reporte de errores del frontend (Sentry u otro) a la luz del volumen real de usuarios. Evaluar el salto de React 18 a una versión mayor si el ecosistema ya lo está empujando. Si el volumen de negocio creció mucho, confirmar si Cloudflare ya lanzó versionado nativo de R2 (estaba en su roadmap) y si conviene migrar a eso en vez de la papelera de 30 días. |
 
 ---
 

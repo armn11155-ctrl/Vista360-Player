@@ -1,6 +1,8 @@
 # Qué hacer si se borra algo por accidente
 
-Última revisión: **11 de agosto de 2026**
+Última revisión: **11 de agosto de 2026** (sección de R2 verificada en vivo
+contra el dashboard de Cloudflare ese mismo día -- ya no es "pendiente de
+verificar")
 
 Este documento es distinto de `RECUPERACION.md` (que cubre perder una
 **credencial**). Este cubre el otro escenario: alguien borra o corrompe
@@ -20,7 +22,7 @@ sale de leer cómo está configurado el proyecto, no de una prueba en vivo.
 | Documentos de Firestore (cliente, contrato, factura, panel...) borrados o editados mal | ✅ Sí, con PITR | Restauración a un punto en el tiempo | **7 días** hacia atrás |
 | Colección de Firestore borrada por completo | ✅ Sí, con PITR | Igual que arriba | 7 días |
 | Un usuario de Firebase Auth (cliente o trabajador) eliminado | ❌ No hay recuperación automática | Hay que volver a crear el acceso desde cero (nueva cuenta, nuevo enlace de invitación) | Ninguna |
-| Un archivo en R2 (PDF de factura, foto de campaña, avatar) borrado | ⚠️ **Sin verificar en esta sesión** | Depende de si el bucket `vista360-evidencias` tiene versionado activado en Cloudflare -- no se comprobó acá | Depende del versionado, si existe |
+| Un archivo en R2 (PDF de factura, foto de campaña, avatar) borrado | ✅ Sí, desde el 11-ago-2026 | Se guarda una copia en `_papelera/` dentro del mismo bucket antes de cada borrado real | **30 días** |
 | `firestore.rules` / `firestore.indexes.json` mal desplegados | ✅ Sí | Están en git; se revierte el commit y se vuelve a desplegar | Ilimitada (es historial de git) |
 | Código de una Cloud Function con un bug | ✅ Sí | Revertir el commit en GitHub y volver a desplegar | Ilimitada |
 | Secretos (R2, Resend, etc.) borrados de Secret Manager | ✅ Sí | Ver `RECUPERACION.md` -- se regeneran y se redepliegan | Ilimitada (son regenerables, no un "backup") |
@@ -80,29 +82,86 @@ buscando una forma de "revivir" la cuenta exacta: no existe, y no hace falta.
 
 ---
 
-## R2 (archivos: PDFs, fotos, avatares) — pendiente de verificar
+## R2 (archivos: PDFs, fotos, avatares) — verificado en vivo el 11-ago-2026
 
-Esto quedó **sin comprobar en esta sesión** porque requiere entrar al panel
-de Cloudflare (fuera del alcance de lo que se revisó acá) y no se quiso
-asumir un estado sin verlo:
+Se entró al dashboard de Cloudflare y se revisó el bucket real que usa
+Vista360 Player: **`vista360-evidencias`** (13 objetos, 1.59 MB al momento
+de revisar, creado el 16-jul-2026). No se borró ni se sobrescribió ningún
+objeto real para esta comprobación -- todo lo de abajo sale de mirar la
+configuración del bucket (pestaña Settings) y la documentación pública de
+Cloudflare.
 
-- Si el bucket `vista360-evidencias` tiene **versionado de objetos**
-  activado en Cloudflare R2, un archivo borrado se puede restaurar a una
-  versión anterior.
-- Si **no** lo tiene, borrar un objeto de R2 (o que `eliminarFactura`,
-  `eliminarContrato` o `limpiarArchivosHuerfanos` borren el que no debían)
-  es **definitivo**: no hay backup automático de R2 por parte de Cloudflare
-  ni de este proyecto.
+**Lo que se comprobó, uno por uno:**
 
-**Acción recomendada, no urgente:** entrar a Cloudflare → R2 →
-`vista360-evidencias` → Settings, y comprobar si "Object versioning" está
-activado. Si no lo está, activarlo no debería tener costo relevante para el
-volumen actual (miles de archivos pequeños, no términos), pero es una
-decisión de costo que corresponde confirmar antes de cambiarla, no algo para
-activar sin avisar.
+| Pregunta | Respuesta |
+|---|---|
+| ¿Existe versionado de objetos? | **No.** No hay ninguna sección de versionado en Settings. Cloudflare confirma en su propia documentación que sigue en el roadmap, no disponible aún (ago-2026). |
+| ¿Existe recuperación nativa de archivos eliminados? | **No**, por la misma razón -- sin versionado no hay a qué volver. |
+| ¿Existe retención? | Existe **Bucket Lock Rules** (bloquear borrados/sobrescrituras durante un plazo), pero **no se activó**: bloquearía también los borrados legítimos que la propia app hace a propósito (`eliminarFactura`, `eliminarContrato`, limpieza de huérfanos) -- convertiría una función real en un error confuso durante el plazo de bloqueo. No es la herramienta correcta para este caso. |
+| ¿Existen lifecycle rules? | Sí, la funcionalidad existe y ya se usaba (`Default Multipart Abort Rule`, cancela subidas incompletas a los 7 días). Se agregó una regla nueva, ver más abajo. |
+| ¿Qué ocurre al sobrescribir un objeto? | R2 reemplaza el contenido sin dejar rastro de la versión anterior (esperable sin versionado). La app ya gestiona esto por su cuenta: cada subida genera una key única (`nuevaKey()` en `r2Storage.ts`), así que "sobrescribir" en la práctica es "subir una key nueva y borrar la vieja" -- nunca un PUT sobre la misma key. |
+| ¿Qué ocurre al eliminar un objeto? | Hasta el 11-ago-2026: desaparecía al instante, sin posibilidad de recuperación. **A partir de este cambio:** primero se copia a `_papelera/` (dentro del mismo bucket) y recién después se borra el original. |
+| ¿Cuánto tiempo hay para recuperarlo? | **30 días** -- la copia en `_papelera/` se borra sola pasado ese plazo (regla de ciclo de vida `papelera-30-dias`, ver abajo). |
+| ¿Activar protección tiene costo significativo? | No. La copia solo ocurre en el momento de un borrado real (no en cada subida, no on los 13 objetos existentes de una sola vez), y el volumen actual (1.59 MB, decenas de operaciones al mes) hace que el costo adicional sea despreciable. La regla de ciclo de vida no tiene costo propio -- solo acota cuánto dura la copia. |
 
----
+### La solución implementada: papelera con expiración de 30 días
 
+Como R2 no ofrece versionado nativo, se implementó la alternativa mínima
+razonable, en dos partes:
+
+1. **Código** (`functions/src/r2Storage.ts`, función `borrarObjetoR2` --
+   el único punto por el que pasan los 8 lugares que borran algo de R2:
+   facturas, contratos, reportes, solicitudes de campaña, avatares/fotos
+   reemplazadas, y la limpieza de huérfanos). Antes de borrar, copia el
+   objeto a `_papelera/{key original}` dentro del mismo bucket. Si la
+   copia falla (por ejemplo, la key ya no existía), el borrado se intenta
+   igual -- mismo comportamiento "a mejor esfuerzo" que ya tenía la
+   función.
+2. **Regla de ciclo de vida en Cloudflare** (`papelera-30-dias`, activada
+   en el bucket `vista360-evidencias`): borra automáticamente todo lo que
+   haya bajo el prefijo `_papelera/` pasados 30 días.
+
+**Por qué esto y no duplicar todo:** solo se copia lo que de verdad se
+borra -- no los 13 objetos existentes, no cada subida nueva -- y la copia
+tiene fecha de caducidad. No es "backup completo del bucket", es una red
+de seguridad acotada para el caso real que importa: alguien borra algo por
+error y lo necesita de vuelta.
+
+**`_papelera/` queda fuera del alcance normal de la app a propósito:**
+ninguna de las carpetas permitidas (`CARPETAS_PERMITIDAS` en
+`r2Storage.ts`) incluye `_papelera/`, así que `firmarUrlsR2` y
+`obtenerArchivoR2Base64` no pueden leer ni firmar URLs hacia ahí -- un
+cliente o un Trabajador nunca ve ni puede llegar a esa carpeta. Solo es
+alcanzable a mano, con el Admin SDK (o desde el propio dashboard de
+Cloudflare), que es justo lo que hace falta para una recuperación real.
+
+### Cómo recuperar un archivo de la papelera, paso a paso
+
+1. Entrar al dashboard de Cloudflare → R2 → `vista360-evidencias` →
+   pestaña Objects.
+2. Buscar por prefijo `_papelera/` + la ruta original (por ejemplo,
+   `_papelera/vista360/facturas/...` para una factura, o
+   `_papelera/clientes/{clienteId}/reportes/...` para un reporte).
+3. Descargar el objeto, o copiarlo de vuelta a su key original (quitando
+   el prefijo `_papelera/`) usando el propio dashboard ("Copy" sobre el
+   objeto) o un script con el Admin SDK.
+4. Si el borrado también quitó la referencia en Firestore (por ejemplo
+   `eliminarFactura` borra el documento además del PDF), hace falta
+   además recuperar ese documento vía PITR (ver la sección de Firestore
+   más arriba) para que la app vuelva a "ver" el archivo.
+5. Si pasaron más de 30 días: la copia ya no existe. No hay forma de
+   recuperarlo -- esta es la ventana real, no una aproximación.
+
+### Revisado de paso: archivos huérfanos y eliminaciones automáticas
+
+Se revisó (sin hacer una auditoría general nueva) si algo borra archivos
+de R2 **solo, sin que nadie lo dispare**: no existe. `limpiarArchivosHuerfanos`
+y `contarEvidenciasHuerfanas` son funciones `onCall` (las dispara una
+persona desde la interfaz, no un cron), `limpiarArchivosHuerfanos` no
+borra nada por defecto (hay que pasarle `confirmar: true` explícitamente)
+y respeta un margen de 24 horas de gracia para no borrar una subida que
+todavía está en curso. Ningún `onSchedule` del proyecto toca R2. No se
+encontró ningún camino de borrado automático sin intervención humana.
 ## Qué hacer en el momento (orden de pasos)
 
 1. **No entrar en pánico ni intentar arreglarlo con prisa.** La mayoría de lo
