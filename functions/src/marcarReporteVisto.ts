@@ -69,7 +69,20 @@ export const marcarReporteVisto = onCall(async (request) => {
   // listarReportesCliente.ts). Exigirlo acota lo creable a una ficha por
   // día, que es justo el ritmo de los reportes de verdad.
   const sufijoFecha = informeId.slice(clienteId.length + 1);
-  if (!/^\d{4}-\d{2}(-\d{2})?$/.test(sufijoFecha)) {
+  const coincidenciaFecha = /^\d{4}-(\d{2})(?:-(\d{2}))?$/.exec(sufijoFecha);
+  // El formato por si solo no alcanza: "2026-13-99" cumple \d{2}-\d{2}
+  // pero no es una fecha real. Sin este paso, cualquier mes/dia de dos
+  // cifras fabricaba una ficha valida (mismo hueco que el formato ya
+  // cerraba para sufijos no numericos), solo que acotado a 100x100
+  // combinaciones por año en vez de ilimitado.
+  const mesValido = coincidenciaFecha ? Number(coincidenciaFecha[1]) : 0;
+  const diaValido = coincidenciaFecha?.[2] ? Number(coincidenciaFecha[2]) : null;
+  const fechaValida =
+    !!coincidenciaFecha &&
+    mesValido >= 1 &&
+    mesValido <= 12 &&
+    (diaValido === null || (diaValido >= 1 && diaValido <= 31));
+  if (!fechaValida) {
     throw new HttpsError("invalid-argument", "informeId no corresponde a un reporte.");
   }
 
