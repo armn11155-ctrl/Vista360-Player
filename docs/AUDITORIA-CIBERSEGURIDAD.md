@@ -32,7 +32,7 @@ Los actores relevantes: **no autenticado**, **Cliente** (dueño de un `clienteId
 | `listarReportesCliente`, `firmarUrlsR2`, `resumenOcupacion`, `restablecerPasswordCliente`, `enviarCorreoConPdf` | Simular llamadas en bucle (sin ejecutar tráfico real) | Sin `exigirRitmo`: nada impedía amplificar lecturas de Firestore, firmas de R2, envíos de correo o resets de contraseña | `exigirRitmo(uid, "<operación>", N)` agregado a las cinco | `limiteDeRitmoNuevasFunciones.test.ts` (5 tests, uno mutado como muestra) | ✅ Desplegado y verificado |
 | Login (`src/utils/errores.ts`) | Comparar el mensaje de `wrong-password` vs `user-not-found` | Mensajes distintos → enumeración de qué correos tienen cuenta | Los tres códigos (`wrong-password`, `user-not-found`, `invalid-credential`) dan el mismo mensaje | `errores.test.ts` (actualizado, mutado) | ✅ Desplegado |
 | `esKeyValida` (R2) | Key de 10.000+ caracteres / con bytes de control o nulos | Se aceptaba (sin tope de largo ni filtro de caracteres) | Tope de 512 caracteres + rechazo de bytes `\x00`-`\x1f`/`\x7f` | `seguridadEntradas.test.ts` (extendido) | ✅ Desplegado |
-| GitHub Actions (6 workflows) | Revisar si una Action de terceros podía cambiar de código sin aviso (clase tj-actions/changed-files) | Las 4 Actions usadas (`checkout`, `setup-node`, `upload-artifact`, `setup-java`) referenciadas por etiqueta móvil `@v5`; 4 de 6 workflows sin bloque `permissions:`; uno con `contents: write` sin usarlo (dejaba un `git push --force` roto sin efecto real) | Las 4 Actions fijadas a su commit exacto (`@<sha> # v5`); los 6 workflows con `permissions: contents: read` explícito; el push roto reemplazado por subida de artefacto | `segurudadGithubActions.test.ts` (5 tests, uno mutado como muestra) | ✅ Committeado (efectivo desde el próximo run) |
+| GitHub Actions (6 workflows) | Revisar si una Action de terceros podía cambiar de código sin aviso (clase tj-actions/changed-files) | Las 4 Actions usadas (`checkout`, `setup-node`, `upload-artifact`, `setup-java`) referenciadas por etiqueta móvil `@v5`; 4 de 6 workflows sin bloque `permissions:`; uno con `contents: write` sin usarlo (dejaba un `git push --force` roto sin efecto real) | Las 4 Actions fijadas a su commit exacto (`@<sha> # v5`); los 6 workflows con `permissions: contents: read` explícito; el push roto reemplazado por subida de artefacto | `segurudadGithubActions.test.ts` (5 tests, uno mutado como muestra) | ✅ Desplegado y verificado — el propio run de despliegue de esta auditoría (run 31543080737) ya corrió con las Actions fijadas por SHA y `permissions: contents: read` |
 | `firmarDescargaFactura`, `firmarUrlsR2`, `obtenerArchivoR2Base64` | Cliente A pidiendo la key de la factura/foto de Cliente B | **Ya bloqueado antes de esta auditoría** — cada uno resuelve el dueño real desde Firestore, no confía en la key | Sin cambios — VERIFICADO, NO TOCAR | Cobertura ya existente | N/A |
 | `firestore.rules` completo | Matriz Rol × Colección × operación, incl. escalar a admin escribiendo `portalUsers` propio | **Ya bloqueado antes de esta auditoría** — escritura del navegador cerrada por completo (`allow write: if false` en todo el archivo) | Sin cambios — VERIFICADO, NO TOCAR | 75 tests ya existentes contra el emulador | N/A |
 | Papelera de R2 (`listarPapelera`, `restaurarDePapelera`) | Trabajador/Cliente listando o restaurando; Gerente con traversal o destino manipulado | **Ya bloqueado antes de esta auditoría** — `exigirGerente` (no `esPersonalInterno`), destino derivado 100% server-side, protección anti-sobrescritura | Sin cambios — VERIFICADO, NO TOCAR | Cobertura ya existente | N/A |
@@ -134,6 +134,21 @@ Ver el playbook de incidentes completo (`docs/INCIDENT-RESPONSE-PLAYBOOK.md`). R
 Ventana angosta de sesión válida en Cloud Functions individuales tras archivar una cuenta (documentada, no cerrada del todo). App Check no activado (documentado, migración diseñada pero no ejecutada). CSP/HSTS no configurados (deliberadamente diferido, requiere su propio proyecto de verificación). Configuración de cuenta de Cloudflare R2 (público/privado, CORS) no verificable desde el código. Ninguno de estos cuatro puntos es, hoy, una vulnerabilidad crítica o alta explotable de forma directa — son hardening pendiente, no compromiso conocido.
 
 ---
+
+## Evidencia de despliegue
+
+Commit `42bb8ad` (main), GitHub Actions run `31543080737` (`setup-r2-secrets-and-deploy.yml`, `desplegar_reglas: true`), conclusión `success`. Confirmado directamente en el log del job:
+
+- `Reglas publicadas y verificadas.` (paso "Verificar que las reglas publicadas son las del repositorio") — la corrección de `esCuentaDePortal()` está en producción, no solo en el repositorio.
+- `functions[generarReporteCliente(us-central1)] Successful update operation.`
+- `functions[administrarUsuarioPortal(us-central1)] Successful update operation.`
+- `functions[listarReportesCliente(us-central1)] Successful update operation.`
+- `functions[firmarUrlsR2(us-central1)] Successful update operation.`
+- `functions[resumenOcupacion(us-central1)] Successful update operation.`
+- `functions[restablecerPasswordCliente(us-central1)] Successful update operation.`
+- `functions[enviarCorreoConPdf(us-central1)] Successful update operation.`
+
+Antes del despliegue: suite completa 1084/1084 tests, suite de reglas contra el emulador real 82/82, `tsc --noEmit` limpio en raíz y en `functions/`, `npm run build` limpio.
 
 ## Veredicto
 
