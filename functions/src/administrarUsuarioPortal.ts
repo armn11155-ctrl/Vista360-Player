@@ -5,6 +5,7 @@ import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firesto
 import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { idOpcional } from "./identificadores.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -83,7 +84,7 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
     if (!uid && !invitacionId && !email) {
       throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
     }
-    await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion });
+    await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion, ejecutadoPor: request.auth?.uid });
     return { ok: true, pendiente: false };
   }
 
@@ -116,13 +117,14 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
     return { ok: true, pendiente: true, solicitudId };
   }
 
-  await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion: "eliminar" });
+  await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion: "eliminar", ejecutadoPor: request.auth?.uid });
   return { ok: true, pendiente: false };
 });
 
 export async function ejecutarAdministrarUsuarioPortal(
   db: Firestore,
-  { invitacionId, uid, accion }: { invitacionId: string; uid: string | null; accion: AccionUsuarioPortal }
+  { invitacionId, uid, accion, ejecutadoPor }:
+    { invitacionId: string; uid: string | null; accion: AccionUsuarioPortal; ejecutadoPor?: string }
 ): Promise<void> {
   const now = FieldValue.serverTimestamp();
   const batch = db.batch();
@@ -165,5 +167,14 @@ export async function ejecutarAdministrarUsuarioPortal(
     } else {
       await getAuth().deleteUser(uid).catch(() => undefined);
     }
+  }
+
+  // Queda el rastro de QUIEN eliminó el acceso de quién y cuándo -- se
+  // registra tanto si lo ejecuta el Gerente directo como si viene de
+  // una solicitud de un Trabajador ya aprobada (resolverSolicitudAccion.ts
+  // llama a esta misma función), porque en ambos casos el efecto es el
+  // mismo borrado definitivo.
+  if (accion === "eliminar") {
+    auditar("usuario_eliminado", { uid: ejecutadoPor, objetivoId: uid ?? invitacionId ?? undefined });
   }
 }

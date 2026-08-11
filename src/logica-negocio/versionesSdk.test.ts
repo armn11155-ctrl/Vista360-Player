@@ -64,11 +64,22 @@ describe("nada de lo retirado vuelve a entrar", () => {
     expect(codigo).toContain('from "firebase-functions/v2/https"');
   });
 
-  it("el único import de la raíz sigue siendo el logger", () => {
+  it("lo único que se importa de la raíz, en cualquier archivo, es el logger", () => {
     // `firebase-functions` a secas trae la API v1 entera. Se usa solo
-    // para el logger, que sigue existiendo en la v7.
-    const raiz = codigo.match(/import \{([^}]*)\} from "firebase-functions";/g) ?? [];
-    expect(raiz.length).toBeLessThanOrEqual(1);
-    if (raiz.length === 1) expect(raiz[0]).toContain("logger");
+    // para el logger, que sigue existiendo en la v7. Antes este test
+    // exigia que hubiera COMO MAXIMO un import de este tipo en todo el
+    // proyecto -- una casualidad de que solo registro.ts lo hacia, no
+    // la regla real. Ahora firmarUrlsR2.ts tambien importa el logger
+    // (para poder registrar intentos de acceso a keys ajenas), asi que
+    // lo que de verdad importa -- y lo que se comprueba aca -- es que
+    // CADA import de la raiz trae unicamente el logger, sin importar
+    // cuantos archivos lo hagan.
+    const raiz = [...codigo.matchAll(/import \{([^}]*)\} from "firebase-functions";/g)];
+    expect(raiz.length).toBeGreaterThan(0);
+    for (const [, contenido] of raiz) {
+      // Exacto, no "contiene": "{ logger, region }" tambien "contiene"
+      // logger y coleria a un import v1 sin que este test se diera cuenta.
+      expect(contenido.trim()).toBe("logger");
+    }
   });
 });

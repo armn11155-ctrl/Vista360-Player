@@ -5,6 +5,7 @@ import { esGerente } from "./rolesInternos.js";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
+import { auditar, auditarFallo } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -61,9 +62,13 @@ export const eliminarFactura = onCall({ secrets: R2_SECRETS }, async (request) =
     const clienteDeLaFactura = String(facturaSnap.data()?.cliente_id ?? "");
     await facturaRef.delete();
     await regenerarResumenFacturas(db, clienteDeLaFactura);
+    // Queda el rastro de QUIEN borró qué factura y cuándo -- antes esto
+    // se perdía: la factura desaparecía sin dejar registro.
+    auditar("factura_eliminada", { uid, objetivoId: facturaId, clienteId: clienteDeLaFactura });
     return { ok: true };
   } catch (error) {
     if (error instanceof HttpsError) throw error;
+    auditarFallo("factura_eliminada", error, { uid: request.auth?.uid, objetivoId: request.data?.facturaId });
     console.error("Error inesperado al eliminar la factura.", error);
     const detail = error instanceof Error ? error.message : "Error desconocido";
     throw new HttpsError("internal", `No se pudo eliminar la factura: ${detail}`);

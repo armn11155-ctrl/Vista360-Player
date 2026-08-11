@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -71,6 +72,11 @@ export const restablecerPasswordCliente = onCall<RestablecerPasswordData>(async 
 
   const password = generarPassword();
   await getAuth().updateUser(usuario.uid, { password });
+
+  // Queda el rastro de QUIEN restableció la contraseña de quién y
+  // cuándo. A propósito NO se registra la contraseña nueva: los logs
+  // se tratan como menos protegidos que la base de datos.
+  auditar("password_restablecida", { uid: request.auth?.uid, objetivoId: usuario.uid });
 
   return { email: usuario.email ?? "", password };
 });

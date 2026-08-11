@@ -8,6 +8,7 @@ import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) initializeApp();
 
@@ -143,5 +144,7 @@ export const actualizarContrato = onCall<ActualizarContratoData>(async (request)
   await regenerarAgregadoClientes(db);
   // Resumen del cliente al dia: sus campanas en un solo documento.
   await regenerarResumenCliente(db, clienteAfectado);
+  // Queda el rastro de QUIEN cambió el nombre/fechas de qué campaña.
+  auditar("contrato_actualizado", { uid, objetivoId: contratoId, clienteId: clienteAfectado });
   return { ok: true };
 });

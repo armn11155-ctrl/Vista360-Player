@@ -86,6 +86,10 @@ export const resolverSolicitudAccion = onCall<ResolverSolicitudAccionData>({ sec
         invitacionId: String(payload.invitacionId ?? ""),
         uid: payload.uid ? String(payload.uid) : null,
         accion: "eliminar",
+        // Quien aprueba (el Gerente) queda como quien ejecutó el
+        // borrado en el rastro de auditoría -- el Trabajador que lo
+        // pidió ya queda en el propio documento de la solicitud.
+        ejecutadoPor: uid,
       });
       break;
     case "crearPanel":

@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, esKeyValida, firmarLecturaR2 } from "./r2Storage.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { logger } from "firebase-functions";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -175,6 +176,21 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   }
 
   const permitidas = await keysPermitidas();
+
+  // No es un evento "auditable" (no es una accion destructiva), pero sí
+  // vale dejar rastro: si un cliente ve menos fotos/facturas de las que
+  // espera, o si alguien está probando keys ajenas, esto es lo único que
+  // lo hace visible. No se registran las keys ni las URLs firmadas --
+  // solo cuántas se pidieron y cuántas se negaron.
+  if (permitidas.length < keys.length) {
+    logger.warn("firmarUrlsR2: keys negadas", {
+      uid,
+      esInterno,
+      solicitadas: keys.length,
+      permitidas: permitidas.length,
+      negadas: keys.length - permitidas.length,
+    });
+  }
 
   const firmadas = await Promise.all(
     permitidas.map(async (key) => {
