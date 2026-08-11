@@ -44,7 +44,8 @@ export type EventoAuditable =
   | "cliente_eliminado_definitivo"
   | "usuario_eliminado"
   | "password_restablecida"
-  | "factura_eliminada";
+  | "factura_eliminada"
+  | "archivo_restaurado_papelera";
 
 interface DatosEvento {
   /** Quién lo hizo (uid de Firebase Auth). */

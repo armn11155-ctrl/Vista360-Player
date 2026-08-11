@@ -137,20 +137,41 @@ Cloudflare), que es justo lo que hace falta para una recuperación real.
 
 ### Cómo recuperar un archivo de la papelera, paso a paso
 
-1. Entrar al dashboard de Cloudflare → R2 → `vista360-evidencias` →
-   pestaña Objects.
-2. Buscar por prefijo `_papelera/` + la ruta original (por ejemplo,
-   `_papelera/vista360/facturas/...` para una factura, o
-   `_papelera/clientes/{clienteId}/reportes/...` para un reporte).
-3. Descargar el objeto, o copiarlo de vuelta a su key original (quitando
-   el prefijo `_papelera/`) usando el propio dashboard ("Copy" sobre el
-   objeto) o un script con el Admin SDK.
-4. Si el borrado también quitó la referencia en Firestore (por ejemplo
-   `eliminarFactura` borra el documento además del PDF), hace falta
-   además recuperar ese documento vía PITR (ver la sección de Firestore
-   más arriba) para que la app vuelva a "ver" el archivo.
-5. Si pasaron más de 30 días: la copia ya no existe. No hay forma de
-   recuperarlo -- esta es la ventana real, no una aproximación.
+**Desde el 11 de agosto de 2026, esto ya NO requiere entrar a Cloudflare.**
+Vista360 Player → menú del Gerente ("Centro de gestión") → **Papelera** →
+buscar el archivo en la lista → **Restaurar**. La pantalla (Gerente/Admin
+únicamente; ver `functions/src/papeleraR2.ts`) muestra tipo de archivo,
+cliente relacionado si se puede determinar, ruta original, fecha de
+borrado, tamaño y días restantes antes de que expire, y hace exactamente
+los mismos pasos descritos abajo del lado del servidor -- con la ruta de
+destino derivada siempre de la propia key de la papelera (nunca aceptada
+tal cual del navegador), validada contra las carpetas permitidas antes de
+escribir, y sin sobrescribir un archivo que ya exista en el destino.
+
+1. En **Papelera**, ubicar el archivo (por tipo, ruta o cliente) y tocar
+   **Restaurar**.
+2. Si la pantalla muestra el aviso **"Este elemento requiere recuperación
+   adicional de datos."**, el archivo vuelve a R2 pero el documento de
+   Firestore relacionado (factura, contrato, reporte...) ya no existe --
+   hace falta además recuperarlo vía PITR (ver la sección de Firestore
+   más arriba) para que la app vuelva a "verlo" como antes.
+3. Si pasaron más de 30 días: la copia ya no existe y la pantalla no la
+   va a listar. No hay forma de recuperarlo -- esta es la ventana real,
+   no una aproximación.
+4. Toda restauración queda auditada (evento `archivo_restaurado_papelera`
+   en Cloud Logging: quién, qué archivo, cuándo, cliente relacionado).
+
+**Alternativa manual (si Vista360 Player no está disponible):** entrar al
+dashboard de Cloudflare → R2 → `vista360-evidencias` → Objects → buscar por
+prefijo `_papelera/` + la ruta original, y copiar el objeto de vuelta a su
+key original (quitando el prefijo `_papelera/`) con el propio dashboard o
+un script con el Admin SDK. No hace falta en el uso normal -- queda como
+respaldo si las Cloud Functions estuvieran caídas.
+
+No existe un botón de "eliminar definitivamente" desde la papelera --
+la decisión fue no añadir una segunda forma de borrar algo por accidente:
+se confía en la regla de ciclo de vida de 30 días de Cloudflare para que
+desaparezca sola.
 
 ### Revisado de paso: archivos huérfanos y eliminaciones automáticas
 

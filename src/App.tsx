@@ -56,6 +56,7 @@ const Cobertura = pantallaLazy(() => import("./components/screens/Cobertura"));
 const MisPantallas = pantallaLazy(() => import("./components/screens/MisPantallas"));
 const AnaliticaClientes = pantallaLazy(() => import("./components/screens/AnaliticaClientes"));
 const AprobacionesGerente = pantallaLazy(() => import("./components/screens/AprobacionesGerente"));
+const Papelera = pantallaLazy(() => import("./components/screens/Papelera"));
 const SolicitudesCampana = pantallaLazy(() => import("./components/screens/SolicitudesCampana"));
 const Accesos = pantallaLazy(() => import("./components/screens/Accesos"));
 const Facturas = pantallaLazy(() => import("./components/screens/Facturas"));
@@ -170,7 +171,8 @@ type View =
   | "paneles"
   | "ocupacion"
   | "cotizaciones"
-  | "aprobaciones";
+  | "aprobaciones"
+  | "papelera";
 
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
@@ -195,6 +197,7 @@ const VIEW_COLORS: Record<View, string> = {
   ocupacion: "#0B1220",
   cotizaciones: "#01040B",
   aprobaciones: "#0B1220",
+  papelera: "#0B1220",
 };
 
 // Vistas que se abren desde el menú lateral (☰) y no desde la barra
@@ -212,6 +215,7 @@ const SIDEBAR_VIEWS = new Set<View>([
   "ocupacion",
   "cotizaciones",
   "aprobaciones",
+  "papelera",
 ]);
 
 export default function App() {
@@ -400,7 +404,7 @@ export default function App() {
     // paneles) lo puede hacer también un Trabajador.
     const esGerente = auth.role === "admin";
     if (!adminClienteId) {
-      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones" || (view === "aprobaciones" && esGerente)) {
+      if (view === "solicitudes" || view === "accesos" || view === "analitica" || view === "miPerfil" || view === "paneles" || view === "ocupacion" || view === "cotizaciones" || (view === "aprobaciones" && esGerente) || (view === "papelera" && esGerente)) {
         return (
           // no-bottom-nav: sin esta clase el .app-shell se queda sin la
           // regla que absorbe los 160px de "sangrado" extra (ver el
@@ -438,7 +442,9 @@ export default function App() {
                         ? <Ocupacion onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
                       : view === "aprobaciones"
                         ? <AprobacionesGerente onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
-                        : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
+                        : view === "papelera"
+                          ? <Papelera onBack={() => { setVolverAGestion(true); setView("inicio"); }} />
+                          : <AnaliticaClientes onBack={() => { setVolverAGestion(true); setView("inicio"); }} />}
             </Suspense>
           </div>
         );
@@ -460,6 +466,7 @@ export default function App() {
             onOpenOcupacion={() => setView("ocupacion")}
             onOpenCotizaciones={() => setView("cotizaciones")}
             onOpenAprobaciones={esGerente ? () => setView("aprobaciones") : undefined}
+            onOpenPapelera={esGerente ? () => setView("papelera") : undefined}
             esGerente={esGerente}
             adminIniciales={(auth.nombre ?? "A").trim().split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]!.toUpperCase()).join("")}
             uid={uid}

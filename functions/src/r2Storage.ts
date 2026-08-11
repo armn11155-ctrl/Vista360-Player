@@ -200,8 +200,63 @@ export async function listarObjetosR2(opciones: {
  */
 export const PAPELERA_PREFIJO = "_papelera/";
 
-function keyEnPapelera(key: string): string {
+export function keyEnPapelera(key: string): string {
   return `${PAPELERA_PREFIJO}${key}`;
+}
+
+/** ¿Es esto una key DENTRO de la papelera? No basta con "empieza con el
+ *  prefijo": una key igual al prefijo a secas ("_papelera/") no envuelve
+ *  ningún archivo real. */
+export function esClavePapelera(key: unknown): key is string {
+  return typeof key === "string" && key.startsWith(PAPELERA_PREFIJO) && key.length > PAPELERA_PREFIJO.length;
+}
+
+/** Deshace keyEnPapelera(): de "_papelera/vista360/facturas/x.pdf" a
+ *  "vista360/facturas/x.pdf". Es una simple resta del prefijo -- nunca
+ *  se construye pegando algo que mande el navegador. */
+export function rutaOriginalDesdeClavePapelera(clavePapelera: string): string {
+  return clavePapelera.slice(PAPELERA_PREFIJO.length);
+}
+
+/** Forma exacta de la key de un reporte de cliente (ver
+ *  generarReporteCliente.ts / obtenerArchivoR2Base64.ts). Vive acá
+ *  también (no solo en obtenerArchivoR2Base64.ts) porque la papelera
+ *  necesita la misma validación para decidir a dónde puede restaurar un
+ *  archivo, y para sacarle el clienteId ya validado sin volver a
+ *  parsear la ruta a mano. */
+const FORMATO_REPORTE_CLIENTE =
+  /^clientes\/([A-Za-z0-9_-]{1,128})\/reportes\/(\d{4}-\d{2})\/(\d{2})\/[A-Za-z0-9_-]{1,60}\.pdf$/;
+
+/** Si la ruta es la de un reporte de cliente, devuelve sus partes ya
+ *  validadas por la propia forma del regex (nada de ".." ni "/" sueltos
+ *  puede colarse: el patrón exige caracteres concretos en cada tramo). */
+export function datosRutaReporte(
+  rutaOriginal: string
+): { clienteId: string; mes: string; dia: string } | null {
+  const m = FORMATO_REPORTE_CLIENTE.exec(rutaOriginal);
+  if (!m) return null;
+  return { clienteId: m[1], mes: m[2], dia: m[3] };
+}
+
+/**
+ * Valida que una ruta ORIGINAL (la que tenía un archivo antes de que lo
+ * mandaran a la papelera) sea una ruta conocida de la app -- una de las
+ * carpetas normales de subida (esKeyValida) o la carpeta de reportes de
+ * cliente, que usa su propio prefijo ("clientes/...") fuera de
+ * CARPETAS_PERMITIDAS.
+ *
+ * Por qué existe además de esKeyValida: esto es lo único que decide a
+ * dónde puede ir a parar una restauración. El navegador NUNCA manda la
+ * ruta de destino -- la manda la propia key de la papelera (ver
+ * restaurarDePapelera.ts) -- pero igual hace falta esta comprobación:
+ * sin ella, alguien podría fabricar una key de papelera con OTRA ruta
+ * "de fábrica" (por ejemplo, moviendo a mano un objeto dentro del
+ * bucket con el CLI de R2, fuera de esta app) y la función la
+ * restauraría igual. Esta es la última barrera antes de escribir.
+ */
+export function esRutaOriginalPermitida(rutaOriginal: string): boolean {
+  if (esKeyValida(rutaOriginal)) return true;
+  return datosRutaReporte(rutaOriginal) !== null;
 }
 
 /**
@@ -241,6 +296,62 @@ export async function borrarObjetoR2(key: string) {
   } catch (error) {
     console.warn(`No se pudo borrar ${key} de R2 (puede que ya no exista).`, error);
   }
+}
+
+/**
+ * Restaura un objeto de la papelera a su ruta original: copia
+ * `_papelera/{ruta}` de vuelta a `{ruta}` y comprueba con HeadObject
+ * que la copia realmente quedó ahí antes de devolver éxito -- no basta
+ * con que CopyObjectCommand no haya lanzado.
+ *
+ * Dos comprobaciones más, antes de escribir nada:
+ *  - Si la ruta original YA tiene un objeto (por ejemplo, un reporte
+ *    del mismo día que se volvió a generar después del borrado),
+ *    restaurar por encima lo destruiría sin avisar -- se rechaza en vez
+ *    de sobrescribir a ciegas.
+ *  - Si la copia en la papelera ya no existe (restaurada antes, o
+ *    expiró por la regla de ciclo de vida de 30 días), se avisa con
+ *    claridad en vez de dejar que CopyObjectCommand falle con un error
+ *    genérico de S3.
+ *
+ * Devuelve el tamaño del archivo restaurado (bytes), solo para el
+ * registro de auditoría.
+ */
+export async function restaurarObjetoR2(rutaOriginal: string): Promise<number> {
+  const [{ CopyObjectCommand, HeadObjectCommand }, client] = await Promise.all([cargarModuloS3(), r2Client()]);
+  const bucket = r2Bucket();
+  const clavePapelera = keyEnPapelera(rutaOriginal);
+
+  const yaExiste = await client
+    .send(new HeadObjectCommand({ Bucket: bucket, Key: rutaOriginal }))
+    .then(() => true)
+    .catch(() => false);
+  if (yaExiste) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Ya existe un archivo en esa ruta -- restaurar lo sobrescribiría. No se hizo ningún cambio."
+    );
+  }
+
+  try {
+    await client.send(new HeadObjectCommand({ Bucket: bucket, Key: clavePapelera }));
+  } catch {
+    throw new HttpsError(
+      "not-found",
+      "Ese archivo ya no está en la papelera (puede que ya se haya restaurado o que haya expirado)."
+    );
+  }
+
+  await client.send(
+    new CopyObjectCommand({
+      Bucket: bucket,
+      Key: rutaOriginal,
+      CopySource: `${bucket}/${encodeURIComponent(clavePapelera).replace(/%2F/g, "/")}`,
+    })
+  );
+
+  const verificacion = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: rutaOriginal }));
+  return verificacion.ContentLength ?? 0;
 }
 
 /** Genera una key segura y única dentro de una carpeta permitida. */

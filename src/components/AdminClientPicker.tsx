@@ -22,6 +22,7 @@ interface Props {
   /** Solo se muestra si esGerente es true -- un Trabajador no ve la
    *  tarjeta ni puede llegar a esta pantalla. */
   onOpenAprobaciones?: () => void;
+  onOpenPapelera?: () => void;
   /** true para la cuenta Gerente (antes "admin" a secas), false para
    *  un Trabajador. Ver el comentario grande sobre roles en App.tsx. */
   esGerente?: boolean;
@@ -49,7 +50,7 @@ interface Props {
  * fotográfico. Grid responsivo: pocas columnas en móvil, más en
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   const { confirmar, avisar } = useDialogos();
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
@@ -552,6 +553,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   <button type="button" onClick={onOpenAprobaciones} className="admin-picker-management-card">
                     <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 6 9 17l-5-5"/></svg></span>
                     <span><strong>Aprobaciones</strong><small>Pedidos de tu equipo</small></span><i>›</i>
+                  </button>
+                )}
+                {/* SOLO GERENTE, igual que Usuarios/Aprobaciones -- la
+                    papelera puede tener facturas y comprobantes de pago
+                    de cualquier cliente, sin el filtrado por cliente que
+                    sí tiene el resto de la app. */}
+                {esGerente && onOpenPapelera && (
+                  <button type="button" onClick={onOpenPapelera} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></span>
+                    <span><strong>Papelera</strong><small>Recuperar archivos borrados</small></span><i>›</i>
                   </button>
                 )}
               </div>
