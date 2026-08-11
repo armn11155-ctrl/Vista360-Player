@@ -1776,7 +1776,10 @@ a {
     max-width: 700px;
     min-height: 0;
     aspect-ratio: 3 / 2;
-    margin-right: clamp(68px, 5.2vw, 80px);
+    /* El centro vertical ya coincide con el panel de acceso. Solo se
+       aumenta el aire horizontal para equilibrar ambos márgenes del
+       viewport y evitar que las dos piezas compitan entre sí. */
+    margin-right: clamp(88px, 6.8vw, 100px);
     padding: 0;
     align-self: center;
     justify-self: end;
@@ -2133,14 +2136,17 @@ a {
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 1px solid rgba(184,211,250,.20);
-    border-radius: 0;
+    border: 1px solid rgba(164,195,237,.16);
+    border-left-color: rgba(184,211,250,.28);
+    border-radius: 16px;
     background:
-      radial-gradient(circle at 100% 8%, rgba(47,111,237,.09), transparent 34%),
-      linear-gradient(180deg, rgba(2,7,17,.54) 0%, rgba(2,7,17,.78) 13%, rgba(1,5,13,.90) 50%, rgba(2,7,17,.78) 87%, rgba(2,7,17,.54) 100%);
-    box-shadow: 34px 34px 88px -48px rgba(0,0,0,.96), -12px 0 42px -34px rgba(96,165,250,.48), inset 1px 0 0 rgba(255,255,255,.035);
+      radial-gradient(circle at 100% 8%, rgba(47,111,237,.10), transparent 35%),
+      linear-gradient(180deg, rgba(7,15,29,.94) 0%, rgba(4,11,23,.97) 52%, rgba(6,14,27,.94) 100%);
+    box-shadow:
+      0 34px 90px -32px rgba(0,0,0,.92),
+      0 0 0 1px rgba(7,13,24,.44),
+      -16px 0 48px -40px rgba(96,165,250,.42),
+      inset 0 1px 0 rgba(255,255,255,.045);
     backdrop-filter: blur(7px) saturate(112%);
     -webkit-backdrop-filter: blur(7px) saturate(112%);
     animation: login-access-reveal .9s .08s cubic-bezier(.2,.75,.2,1) both;
