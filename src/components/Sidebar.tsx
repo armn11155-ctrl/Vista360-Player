@@ -109,6 +109,11 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
   // Si algún llamador todavía no pasa esInterno, se cae al criterio
   // viejo (isAdmin) para no romper nada.
   const identidadInterna = esInterno ?? isAdmin;
+  // La salida de la vista cliente pertenece únicamente al personal
+  // interno. Aunque un llamador futuro pasara por error el callback a
+  // una sesión Cliente, esta segunda condición evita exponer el control.
+  const puedeCambiarCliente = Boolean(onCambiarCliente && identidadInterna);
+  const estaViendoComoCliente = Boolean(puedeCambiarCliente && !isAdmin);
 
   // ── Pill de vidrio deslizante (solo escritorio — ver .sidebar-pill en app.css) ──
   const listRef = useRef<HTMLDivElement>(null);
@@ -248,11 +253,11 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             </div>
           ))}
           <div className="sidebar-bottom">
-            {onCambiarCliente && (
-              <div className="sidebar-bottom-section sidebar-bottom-section-switch">
+            {puedeCambiarCliente && (
+              <div className={`sidebar-bottom-section sidebar-bottom-section-switch${estaViendoComoCliente ? " sidebar-bottom-section-switch-client-view" : ""}`}>
                 <div
                   className="sidebar-item sidebar-item-switch"
-                  onClick={() => { onCambiarCliente(); onClose(); }}
+                  onClick={() => { onCambiarCliente?.(); onClose(); }}
                 >
                   <span className="sidebar-item-icon"><IconCambiarCliente /></span>
                   <span className="sidebar-item-label">Cambiar cliente</span>

@@ -113,6 +113,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain(".inicio-side-col .inicio-evidence-card");
     expect(estilosApp).not.toContain(".premium-campaign-card::after");
     expect(estilosApp).toContain(".report-admin-panel + .reports-filter-stack");
+    expect(estilosApp).toContain(".reports-filter-stack + .report-empty-state");
+    expect(estilosApp).toContain(".report-empty-state + .reports-filter-stack");
     expect(estilosApp).toContain("url('/login-vista360-desktop-v3.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-mobile.jpg')");
     expect(estilosApp).toContain("url('/selector-clientes-atardecer-desktop.jpg')");

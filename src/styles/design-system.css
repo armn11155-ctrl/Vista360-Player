@@ -881,6 +881,13 @@ a {
   .sidebar-bottom-section-switch {
     display: none !important;
   }
+
+  /* En la gestión normal ya existe el selector de cuentas y esta acción
+     sería duplicada. Al activar "Vista cliente", en cambio, es la salida
+     necesaria para que el personal interno vuelva a cambiar de cuenta. */
+  .sidebar-bottom-section-switch.sidebar-bottom-section-switch-client-view {
+    display: block !important;
+  }
 }
 
 .profile-row,

@@ -2198,6 +2198,16 @@
     text-align: center;
     box-shadow: 0 14px 30px rgba(15,23,42,0.05);
   }
+  /* Si los filtros no producen resultados, la tarjeta vacía necesita
+     una separación editorial mayor que el estado vacío normal. */
+  .reports-filter-stack + .report-empty-state {
+    margin-top: 24px;
+  }
+  /* Cuando el estado sin campanas aparece antes de reportes historicos,
+     conserva aire visual antes de los filtros. */
+  .report-empty-state + .reports-filter-stack {
+    margin-top: 24px;
+  }
   .report-empty-icon {
     width: 48px;
     height: 48px;

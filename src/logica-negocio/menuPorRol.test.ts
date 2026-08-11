@@ -60,4 +60,13 @@ describe("el menú no ofrece al Trabajador lo que es del Gerente", () => {
     expect(app).toContain('const esGerente = auth.role === "admin";');
   });
 
+  it("Cambiar cliente solo existe para personal interno y reaparece en Vista cliente", () => {
+    const estilos = readFileSync(resolve(RAIZ, "src/styles/design-system.css"), "utf-8");
+    expect(sidebar).toContain("onCambiarCliente && identidadInterna");
+    expect(sidebar).toContain("puedeCambiarCliente && !isAdmin");
+    expect(sidebar).toContain("sidebar-bottom-section-switch-client-view");
+    expect(estilos).toContain(".sidebar-bottom-section-switch.sidebar-bottom-section-switch-client-view");
+    expect(estilos).toContain("display: block !important");
+  });
+
 });
