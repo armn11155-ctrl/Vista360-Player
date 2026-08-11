@@ -89,8 +89,12 @@ export default function LoginScreen({ onLoggedIn }: Props) {
           <div className="login-led-screen" aria-hidden="true">
             <div className="login-led-scene login-led-scene-identity">
               <div className="login-led-eyebrow"><span />Publicidad exterior premium</div>
-              <img className="login-led-logo" src={LOGO} alt="" draggable={false} />
-              <h1 className="login-led-title">Más que visibilidad.<strong>Presencia.</strong></h1>
+              <div className="login-identity-lockup">
+                <img className="login-led-logo" src={LOGO} alt="" draggable={false} />
+                <span className="login-identity-rule" />
+                <h1 className="login-led-title">Más que visibilidad.<strong>Presencia.</strong></h1>
+                <p className="login-identity-note">Gestión, evidencia y resultados en una sola experiencia.</p>
+              </div>
             </div>
 
             <div className="login-led-scene login-led-scene-coverage">
@@ -118,9 +122,13 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   <span>Campaña principal</span>
                   <strong><i />En ejecución</strong>
                 </div>
-                <div className="login-control-metric"><span>Paneles activos</span><strong>12</strong></div>
+                <div className="login-control-metrics">
+                  <div className="login-control-metric login-control-metric-main"><span>Paneles activos</span><strong>12</strong></div>
+                  <div className="login-control-metric"><span>Operatividad</span><strong>100<small>%</small></strong></div>
+                </div>
+                <div className="login-control-progress-head"><span>Cobertura operativa</span><strong>Completa</strong></div>
                 <div className="login-control-progress"><i /></div>
-                <div className="login-control-details"><span>Ubicaciones</span><span>Estado</span><span>Evidencias</span></div>
+                <div className="login-control-details"><span><i />Ubicaciones</span><span><i />Estado</span><span><i />Evidencias</span></div>
               </div>
               <div className="login-led-copy">
                 <div className="login-led-eyebrow"><span />Control</div>
@@ -138,6 +146,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-report-visual">
                 <div className="login-report-sheet">
                   <div className="login-report-sheet-head"><span>REPORTE</span><i>PDF</i></div>
+                  <div className="login-report-sheet-period"><strong>Resultados de campaña</strong><span>AGOSTO · 2026</span></div>
                   <div className="login-report-chart"><span /><span /><span /><span /></div>
                   <div className="login-report-lines"><i /><i /><i /></div>
                 </div>
@@ -146,6 +155,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             </div>
 
             <div className="login-led-scene login-led-scene-closing">
+              <div className="login-led-eyebrow login-led-eyebrow-closing"><span />Vista360 Player<span /></div>
               <img className="login-led-logo login-led-logo-closing" src={LOGO} alt="" draggable={false} />
               <div className="login-led-keywords">
                 <span>Marca</span><i /><span>Alcance</span><i /><span>Impacto</span>

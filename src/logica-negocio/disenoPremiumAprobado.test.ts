@@ -42,9 +42,12 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain(".login-billboard-structure");
     expect(estilos).toContain("#F8FAFD");
     expect(estilos).toContain("login-led-scene-cycle");
+    expect(estilos).toContain("login-identity-rule-fill");
     expect(estilos).toContain("login-map-route-flow");
     expect(estilos).toContain("78%, 100% { stroke-dashoffset: 0; }");
     expect(estilos).toContain("login-report-bars");
+    expect(estilos).toContain("login-control-progress-head");
+    expect(estilos).toContain("login-report-sheet-period");
     expect(estilos).toContain("login-led-closing-note");
     expect(estilos).not.toContain("login-led-timeline");
     expect(estilos).toContain(".login-message-stack");
