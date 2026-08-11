@@ -88,7 +88,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-network-live"><i /><span>Red de campaña activa</span></div>
             </div>
 
-            <div className="login-network-visual login-network-visual-globe">
+            <div className="login-network-visual-globe">
               <svg className="login-network-globe" viewBox="0 0 720 720" fill="none">
                 <defs>
                   <pattern id="v360-globe-dots" width="16" height="16" patternUnits="userSpaceOnUse">
@@ -149,39 +149,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-network-label login-network-label-results"><i />Resultados</div>
             </div>
 
-            <div className="login-network-visual login-network-visual-brand">
-              <svg className="login-dot-brand" viewBox="0 0 720 430" role="presentation">
-                <defs>
-                  <pattern id="v360-word-dots" width="11" height="11" patternUnits="userSpaceOnUse">
-                    <circle cx="3" cy="3" r="2.35" fill="#F3F8FF" />
-                  </pattern>
-                </defs>
-                <ellipse className="login-dot-brand-orbit" cx="370" cy="215" rx="294" ry="128" />
-                <path className="login-dot-brand-signal" pathLength="1" d="M105 263C208 128 454 114 622 235" />
-                <text className="login-dot-brand-word" x="365" y="238" textAnchor="middle" fill="url(#v360-word-dots)">VISTA360</text>
-                <text className="login-dot-brand-player" x="365" y="282" textAnchor="middle">PLAYER</text>
-                <g className="login-dot-brand-points">
-                  <circle cx="116" cy="262" r="5" /><circle cx="625" cy="235" r="5" /><circle cx="530" cy="123" r="4" />
-                </g>
-              </svg>
-              <div className="login-dot-brand-caption"><span />Identidad que conecta</div>
-            </div>
-
-            <div className="login-network-visual login-network-visual-billboard">
-              <div className="login-billboard-code">
-                <div className="login-billboard-code-frame">
-                  <div className="login-billboard-code-screen">
-                    <span>Campaña en ejecución</span>
-                    <strong>Marca que<br />permanece.</strong>
-                    <div><i />Presencia activa</div>
-                  </div>
-                  <div className="login-billboard-code-plate">VISTA360</div>
-                </div>
-              </div>
-              <div className="login-billboard-code-caption"><span />Publicidad exterior premium</div>
-            </div>
-
-            <div className="login-network-index"><span>V360</span><i /><i /><i /></div>
           </div>
         </section>
 
