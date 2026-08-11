@@ -1,4 +1,4 @@
-import { esIOS, obtenerBlobArchivo } from "./descargarArchivo";
+import { esMovil, obtenerBlobArchivo } from "./descargarArchivo";
 
 /**
  * Comparte un archivo de verdad (adjunto, no un link) usando el panel
@@ -80,7 +80,7 @@ export async function precargarArchivoR2(
  * navegador? Chequeo síncrono, sin red -- seguro de llamar en el clic. */
 export function puedeCompartirEsteArchivo(archivo: File | null): archivo is File {
   if (!archivo) return false;
-  // SOLO EN iOS, igual que descargarArchivo.ts.
+  // SOLO EN MOVIL (iOS y Android).
   //
   // Comprobado en produccion, en un Mac: `navigator.share` existe en
   // Chrome de escritorio y `canShare({files})` devuelve true, asi que se
@@ -93,7 +93,7 @@ export function puedeCompartirEsteArchivo(archivo: File | null): archivo is File
   // no llevaria a donde la persona quiere ir. En escritorio el camino
   // correcto es el enlace de WhatsApp (irAlLink), que abre WhatsApp Web
   // con el mensaje puesto y sin enviar nada solo.
-  if (!esIOS()) return false;
+  if (!esMovil()) return false;
   if (typeof navigator === "undefined" || typeof navigator.canShare !== "function") return false;
   try {
     return navigator.canShare({ files: [archivo] });
@@ -107,7 +107,7 @@ export function puedeCompartirEsteArchivo(archivo: File | null): archivo is File
  *  pantalla y diagnosticar sin acceso a la consola. */
 export function motivoSinCompartirArchivo(archivo: File | null): string {
   if (!archivo) return "no se pudo preparar el archivo";
-  if (!esIOS()) return "en escritorio se usa el enlace de WhatsApp, no el panel del sistema";
+  if (!esMovil()) return "en escritorio se usa el enlace de WhatsApp, no el panel del sistema";
   if (typeof navigator === "undefined" || typeof navigator.canShare !== "function") {
     return "este navegador no tiene panel nativo de compartir con archivos";
   }

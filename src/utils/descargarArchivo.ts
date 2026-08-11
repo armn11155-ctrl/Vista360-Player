@@ -146,6 +146,28 @@ function abrirComoAntes(url: string): void {
  * PDF en su visor pase lo que pase, ni con blob ni con
  * Content-Disposition: attachment.
  */
+/**
+ * żEs un movil (iOS o Android)?
+ *
+ * OJO: NO es lo mismo que esIOS, y la diferencia importa.
+ *
+ *  - DESCARGAR: solo iOS necesita la hoja del sistema, porque Safari
+ *    abre los PDF en su visor pase lo que pase. En Android la descarga
+ *    normal funciona, asi que ahi NO se usa la hoja.
+ *
+ *  - COMPARTIR: los DOS moviles se benefician. La hoja del sistema es lo
+ *    unico que manda el PDF como ARCHIVO ADJUNTO por WhatsApp; el enlace
+ *    de WhatsApp Web solo acepta texto. En escritorio no sirve: se cuelga
+ *    esperando a que se cierre una hoja que ademas no ofrece WhatsApp.
+ *
+ * Usar esIOS para compartir dejaba a Android mandando un link cuando
+ * podia mandar el archivo.
+ */
+export function esMovil(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return esIOS() || /Android/i.test(navigator.userAgent || "");
+}
+
 export function esIOS(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";

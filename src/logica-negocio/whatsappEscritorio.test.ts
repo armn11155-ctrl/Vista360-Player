@@ -24,15 +24,29 @@ const compartir = leer("src/utils/compartirArchivo.ts");
 const descargar = leer("src/utils/descargarArchivo.ts");
 
 describe("WhatsApp en escritorio no puede quedarse en Enviando…", () => {
-  it("el panel nativo SOLO se usa en iOS", () => {
+  it("el panel nativo se usa en MOVIL (iOS y Android), no en escritorio", () => {
+    // La distincion importa: para DESCARGAR solo iOS necesita la hoja
+    // (en Android la descarga normal funciona). Para COMPARTIR la
+    // necesitan los dos, porque es lo unico que manda el PDF como
+    // ARCHIVO ADJUNTO por WhatsApp -- el enlace de WhatsApp Web solo
+    // acepta texto. Usar esIOS aqui dejaba a Android mandando un link
+    // cuando podia mandar el archivo.
     const fn = compartir.slice(compartir.indexOf("puedeCompartirEsteArchivo"));
-    expect(fn.slice(0, 900)).toContain("if (!esIOS()) return false;");
+    expect(fn.slice(0, 1200)).toContain("if (!esMovil()) return false;");
+  });
+
+  it("esMovil cubre Android, esIOS no", () => {
+    expect(descargar).toContain("export function esMovil(): boolean {");
+    const fn = descargar.slice(descargar.indexOf("export function esMovil"));
+    expect(fn.slice(0, 300)).toContain("/Android/i.test");
+    // Y descargar SIGUE usando esIOS: ahi Android no necesita la hoja.
+    expect(descargar).toContain("if (!esIOS()) return false;");
   });
 
   it("reutiliza el esIOS ya probado, no una copia nueva", () => {
     // Una segunda deteccion se desincroniza con la primera en cuanto
     // alguien arregle un caso raro en una sola de las dos.
-    expect(compartir).toContain('import { esIOS, obtenerBlobArchivo } from "./descargarArchivo"');
+    expect(compartir).toContain('import { esMovil, obtenerBlobArchivo } from "./descargarArchivo"');
     expect(descargar).toContain("export function esIOS(): boolean {");
     // Y no se duplica la deteccion dentro de compartirArchivo.
     expect(compartir).not.toContain("/iPhone|iPad|iPod/");
