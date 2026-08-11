@@ -91,9 +91,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-led-eyebrow"><span />Publicidad exterior premium</div>
               <div className="login-identity-lockup">
                 <img className="login-led-logo" src={LOGO} alt="" draggable={false} />
-                <span className="login-identity-rule" />
                 <h1 className="login-led-title">Más que visibilidad.<strong>Presencia.</strong></h1>
-                <p className="login-identity-note">Gestión, evidencia y resultados en una sola experiencia.</p>
               </div>
             </div>
 
@@ -155,7 +153,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             </div>
 
             <div className="login-led-scene login-led-scene-closing">
-              <div className="login-led-eyebrow login-led-eyebrow-closing"><span />Vista360 Player<span /></div>
               <img className="login-led-logo login-led-logo-closing" src={LOGO} alt="" draggable={false} />
               <div className="login-led-keywords">
                 <span>Marca</span><i /><span>Alcance</span><i /><span>Impacto</span>
