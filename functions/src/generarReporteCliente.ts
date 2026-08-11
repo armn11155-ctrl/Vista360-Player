@@ -1094,10 +1094,31 @@ async function cargarElementosSubidosPorPanel(
 export const generarReporteCliente = onCall(
   { timeoutSeconds: 540, memory: "1GiB", secrets: R2_SECRETS },
   async (request) => {
-    // Se recogen ANTES de hacer nada: si la generación falla a mitad,
-    // igual hay que borrarlas. Lo único que debe quedar en R2 es el
-    // reporte terminado -- las fotos sueltas no sirven para nada una vez
-    // que están dentro del PDF, y sueltas solo ocupan espacio.
+    // SEGURIDAD: la autenticación y el rol se comprueban ANTES de tocar
+    // request.data de cualquier forma -- incluida la recolección de
+    // claves para limpieza. Antes esa recolección corría primero, fuera
+    // del try/catch de auth, así que el finally de abajo terminaba
+    // borrando de R2 cualquier clave que llegara en panelesFotos[].fotos[].url
+    // aunque la función rechazara la petición por falta de sesión o de
+    // rol -- un atacante SIN INICIAR SESIÓN podía borrar cualquier
+    // factura, avatar o foto de campaña de cualquier cliente con solo
+    // conocer o adivinar su clave. Ver
+    // src/logica-negocio/generarReporteClienteSeguridad.test.ts.
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+
+    const db = getFirestore();
+    const userSnap = await db.doc(`portalUsers/${uid}`).get();
+    const user = userSnap.data();
+    if (!userSnap.exists || !esPersonalInterno(user?.role)) {
+      throw new HttpsError("permission-denied", "Solo el equipo interno puede generar reportes.");
+    }
+
+    // Se recogen DESPUÉS de validar sesión y rol, pero ANTES del resto
+    // del trabajo: si la generación falla a mitad, igual hay que
+    // borrarlas. Lo único que debe quedar en R2 es el reporte terminado
+    // -- las fotos sueltas no sirven para nada una vez que están dentro
+    // del PDF, y sueltas solo ocupan espacio.
     const clavesTemporales: string[] = [];
     const listaPanelesEntrada = request.data?.panelesFotos;
     if (Array.isArray(listaPanelesEntrada)) {
@@ -1112,16 +1133,6 @@ export const generarReporteCliente = onCall(
     }
 
     try {
-      const uid = request.auth?.uid;
-      if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-
-      const db = getFirestore();
-      const userSnap = await db.doc(`portalUsers/${uid}`).get();
-      const user = userSnap.data();
-      if (!userSnap.exists || !esPersonalInterno(user?.role)) {
-        throw new HttpsError("permission-denied", "Solo el equipo interno puede generar reportes.");
-      }
-
       const clienteId = exigirId(request.data?.clienteId, "clienteId");
       const mes = String(request.data?.mes ?? new Date().toISOString().slice(0, 7));
       if (!clienteId || !/^\d{4}-\d{2}$/.test(mes)) {

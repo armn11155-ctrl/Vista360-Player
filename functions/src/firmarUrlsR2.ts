@@ -3,6 +3,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, esKeyValida, firmarLecturaR2 } from "./r2Storage.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirRitmo } from "./limitador.js";
 import { logger } from "firebase-functions";
 
 if (getApps().length === 0) {
@@ -41,6 +42,10 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+  // Hasta 60 firmas de R2 + hasta 2 consultas a Firestore por llamada
+  // (ver MAX_KEYS_POR_LLAMADA arriba) -- sin límite de ritmo, un bucle
+  // amplifica ambas cosas sin que la UI lo necesite nunca.
+  exigirRitmo(uid, "firmarUrlsR2", 30);
 
   const db = getFirestore();
   const snap = await db.doc(`portalUsers/${uid}`).get();

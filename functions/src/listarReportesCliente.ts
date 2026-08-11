@@ -5,6 +5,7 @@ import { R2_SECRETS, firmarLecturaR2, listarObjetosR2 } from "./r2Storage.js";
 import { exigirId } from "./identificadores.js";
 import { rutaResumenInformes, type MetadataInformeAgregado } from "./agregadoInformes.js";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -77,6 +78,12 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     if (!uid) {
       throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
     }
+    // Firma hasta un URL de R2 por reporte del historial completo del
+    // cliente (modo no-resumen) -- sin tope, un llamado en bucle
+    // amplifica lecturas de Firestore y trabajo de firma. Ver el propio
+    // aviso de AVISO_HISTORIAL_REPORTES más abajo para el tamaño de la
+    // respuesta; esto acota la FRECUENCIA de llamadas.
+    exigirRitmo(uid, "listarReportesCliente", 30);
 
     const clienteId = exigirId(request.data?.clienteId, "clienteId");
     if (!clienteId) {

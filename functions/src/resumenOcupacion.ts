@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { modalidadDePanel } from "./modalidadPanel.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -79,6 +80,11 @@ export const resumenOcupacion = onCall(
   if (!uid) {
     throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
   }
+  // Lee TODAS las facturas de la historia del negocio en cada llamada
+  // (ver el comentario junto a AVISO_FACTURAS_OCUPACION más abajo) --
+  // sin límite de ritmo, un bucle sobre esta función es la forma más
+  // rápida de agotar la cuota diaria de lecturas del proyecto.
+  exigirRitmo(uid, "resumenOcupacion", 10);
 
   const db = getFirestore();
   const propio = await db.doc(`portalUsers/${uid}`).get();

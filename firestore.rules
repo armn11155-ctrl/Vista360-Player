@@ -35,10 +35,23 @@ service cloud.firestore {
 
     // ── Quién es quién ──────────────────────────────────────────────
 
-    /** Tiene sesión Y ficha en portalUsers (cliente o personal). */
+    /** Tiene sesión Y ficha en portalUsers (cliente o personal), y esa
+     *  ficha NO está archivada. "archivar" es cómo el Gerente apaga el
+     *  acceso de alguien de inmediato (cuenta comprometida, empleado
+     *  que se va, etc.) sin borrar el historial -- si no se comprobara
+     *  acá, un token ya emitido seguiría abriendo puertas de Firestore
+     *  hasta que expirara solo (hasta 1 hora), aunque Auth ya tenga la
+     *  cuenta deshabilitada. Ver administrarUsuarioPortal.ts. */
     function esCuentaDePortal() {
+      // .get('archived', false) en vez de .archived: la mayoría de las
+      // fichas no tienen el campo `archived` puesto (nunca se archivó a
+      // esa persona), y comparar un campo que no existe con `!= true`
+      // lanza un error de evaluación en vez de dar false -- rompía TODA
+      // lectura de cualquier cuenta sin ese campo. Con .get(clave,
+      // valor_por_defecto) no hace falta que el campo exista.
       return request.auth != null &&
-        exists(/databases/$(database)/documents/portalUsers/$(request.auth.uid));
+        exists(/databases/$(database)/documents/portalUsers/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/portalUsers/$(request.auth.uid)).data.get('archived', false) != true;
     }
 
     /** A qué cliente pertenece quien pide. */

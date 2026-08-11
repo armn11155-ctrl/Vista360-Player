@@ -161,10 +161,24 @@ export async function ejecutarAdministrarUsuarioPortal(
 
   if (uid) {
     if (accion === "archivar") {
+      // disabled:true por sí solo NO corta una sesión ya iniciada: solo
+      // bloquea inicios de sesión y renovaciones de token NUEVAS. Un
+      // token ya emitido seguiría siendo válido para Cloud Functions
+      // hasta su expiración natural (hasta 1 hora) si no se revoca el
+      // refresh token acá mismo. Esto es lo que permite decir de verdad
+      // "corté el acceso ahora" en un incidente (cuenta comprometida,
+      // baja de personal) en vez de "corté el acceso en la próxima hora".
+      // El lado de Firestore Rules queda cerrado de inmediato aparte,
+      // vía esCuentaDePortal() comprobando `archived` en cada lectura.
       await getAuth().updateUser(uid, { disabled: true }).catch(() => undefined);
+      await getAuth().revokeRefreshTokens(uid).catch(() => undefined);
     } else if (accion === "restaurar") {
       await getAuth().updateUser(uid, { disabled: false }).catch(() => undefined);
     } else {
+      // Misma razón que en "archivar": revocar antes de borrar corta
+      // cualquier token que ya estuviera circulando, no solo el acceso
+      // futuro que deleteUser bloquea.
+      await getAuth().revokeRefreshTokens(uid).catch(() => undefined);
       await getAuth().deleteUser(uid).catch(() => undefined);
     }
   }

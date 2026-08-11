@@ -4,6 +4,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
 import { auditar } from "./registro.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -64,6 +65,11 @@ async function resolverUsuario(data: RestablecerPasswordData) {
  */
 export const restablecerPasswordCliente = onCall<RestablecerPasswordData>(async (request) => {
   await requireAdmin(request.auth?.uid);
+  // Reemplaza la contraseña de OTRA cuenta -- sin límite de ritmo, una
+  // sesión admin comprometida (o un llamado en bucle) podría usarse
+  // para bloquear repetidamente el acceso de cualquier cliente
+  // cambiándole la contraseña una y otra vez.
+  exigirRitmo(request.auth!.uid, "restablecerPasswordCliente", 20);
 
   const usuario = await resolverUsuario(request.data);
   if (!usuario) {

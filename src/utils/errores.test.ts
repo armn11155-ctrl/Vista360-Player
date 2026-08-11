@@ -43,10 +43,10 @@ describe("mensajeDeError — prioridad código vs navigator.onLine", () => {
 });
 
 describe("mensajeDeError — códigos de Firebase Auth", () => {
-  it("distingue contraseña incorrecta de un problema de red real", () => {
+  it("distingue un problema de login de un problema de red real", () => {
     const password = mensajeDeError({ code: "auth/wrong-password" }, "Respaldo.");
     const red = mensajeDeError({ code: "auth/network-request-failed" }, "Respaldo.");
-    expect(password).toBe("Contraseña incorrecta.");
+    expect(password).toMatch(/incorrectos/i);
     expect(red).toMatch(/conexión/i);
     expect(password).not.toBe(red);
   });
@@ -57,8 +57,18 @@ describe("mensajeDeError — códigos de Firebase Auth", () => {
     expect(r).not.toMatch(/conexión/i);
   });
 
-  it("user-not-found e invalid-credential tienen mensajes propios", () => {
-    expect(mensajeDeError({ code: "auth/user-not-found" }, "Respaldo.")).toMatch(/no existe/i);
-    expect(mensajeDeError({ code: "auth/invalid-credential" }, "Respaldo.")).toMatch(/incorrectos/i);
+  it("SEGURIDAD: wrong-password, user-not-found e invalid-credential dan EXACTAMENTE el mismo mensaje", () => {
+    // Antes "user-not-found" decía "no existe una cuenta con ese
+    // correo" y "wrong-password" decía "contraseña incorrecta" -- dos
+    // mensajes distintos que le dicen a quien prueba una lista de
+    // correos cuáles SÍ tienen cuenta en Vista360, sin necesitar
+    // adivinar ninguna contraseña (enumeración de usuarios, OWASP).
+    // Los tres códigos deben ser indistinguibles para quien los lee.
+    const wrongPassword = mensajeDeError({ code: "auth/wrong-password" }, "Respaldo.");
+    const userNotFound = mensajeDeError({ code: "auth/user-not-found" }, "Respaldo.");
+    const invalidCredential = mensajeDeError({ code: "auth/invalid-credential" }, "Respaldo.");
+    expect(wrongPassword).toBe(userNotFound);
+    expect(userNotFound).toBe(invalidCredential);
+    expect(wrongPassword).toMatch(/incorrectos/i);
   });
 });

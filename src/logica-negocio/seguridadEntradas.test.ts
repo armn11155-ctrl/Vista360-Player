@@ -87,6 +87,16 @@ describe("las keys de R2 que llegan del navegador se validan", () => {
     expect(codigo).toContain('key.startsWith("/")');
     expect(codigo).toContain("CARPETAS_PERMITIDAS.some");
   });
+
+  it("esKeyValida rechaza keys absurdamente largas y con bytes de control/nulos", () => {
+    // Ninguna key real (las arma nuevaKey()) se acerca a esto -- el
+    // único motivo para mandar una así es probar el límite del sistema
+    // o esconder algo en bytes no imprimibles.
+    const codigo = leer("r2Storage.ts");
+    expect(codigo).toMatch(/LARGO_MAXIMO_KEY = \d+/);
+    expect(codigo).toContain("key.length > LARGO_MAXIMO_KEY");
+    expect(codigo).toMatch(/\\x00-\\x1f/);
+  });
 });
 
 describe("el gasto tiene un techo aunque alguien abuse", () => {

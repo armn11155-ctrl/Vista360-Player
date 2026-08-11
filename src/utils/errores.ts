@@ -24,8 +24,18 @@ const MENSAJES: Record<string, string> = {
   // Sin esto, un problema real de conexión al iniciar sesión se veía
   // igual que una contraseña mal escrita -- el login lo usaba como
   // respaldo genérico para TODO, sin distinguir.
-  "wrong-password": "Contraseña incorrecta.",
-  "user-not-found": "No existe una cuenta con ese correo.",
+  // wrong-password y user-not-found comparten el MISMO mensaje que
+  // invalid-credential a propósito (antes no era así): un mensaje que
+  // dice "esta contraseña está mal" revela que el correo SÍ tiene
+  // cuenta, y uno que dice "no existe esa cuenta" revela que NO la
+  // tiene -- eso es enumeración de usuarios (alguien puede probar una
+  // lista de correos y armar quién es cliente de Vista360 sin adivinar
+  // ninguna contraseña). El proyecto de Firebase puede ya devolver
+  // invalid-credential para ambos casos (protección de enumeración
+  // activada en el backend), pero estos dos códigos siguen existiendo
+  // en el SDK y hay que tratarlos igual de todos modos.
+  "wrong-password": "Usuario o contraseña incorrectos.",
+  "user-not-found": "Usuario o contraseña incorrectos.",
   "invalid-credential": "Usuario o contraseña incorrectos.",
   "invalid-email": "Ese correo no es válido.",
   "user-disabled": "Esta cuenta fue deshabilitada. Contacta a tu ejecutivo en Vista360.",

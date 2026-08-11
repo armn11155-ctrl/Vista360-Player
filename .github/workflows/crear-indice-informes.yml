@@ -4,7 +4,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   crear-indice:
@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
         with:
           node-version: 22
 
@@ -34,13 +34,21 @@ jobs:
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
           cat /tmp/index-out.txt
 
-      - name: Guardar resultado (diagnóstico)
+      # Como artefacto de la ejecución, no empujando una rama al
+      # repositorio -- mismo motivo que en setup-r2-secrets-and-deploy.yml:
+      # un push directo se rechaza en cuanto el commit desplegado toca
+      # .github/workflows/ (el token de Actions no puede modificar
+      # workflows, sin excepción), y como este paso corría con
+      # `if: always()`, ese fallo pintaba de rojo toda la ejecución
+      # aunque el índice se hubiera creado bien. Un artefacto no necesita
+      # permiso de escritura sobre el repositorio y no puede ser
+      # rechazado por eso -- por lo mismo, `permissions: contents: read`
+      # de arriba ya alcanza para todo este workflow.
+      - name: Guardar resultado como artefacto
         if: always()
-        run: |
-          mkdir -p .debug
-          cp /tmp/index-out.txt .debug/crear-indice-out.txt 2>/dev/null || true
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add .debug/crear-indice-out.txt 2>/dev/null || true
-          git commit -m "debug: resultado de crear índice de informes" || echo "sin cambios"
-          git push origin HEAD:debug-deploy-functions --force
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
+        with:
+          name: crear-indice-informes-resultado
+          path: /tmp/index-out.txt
+          retention-days: 14
+          if-no-files-found: warn

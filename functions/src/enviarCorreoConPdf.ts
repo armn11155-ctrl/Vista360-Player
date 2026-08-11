@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -253,6 +254,10 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
     if (!propioSnap.exists || !esPersonalInterno(rol)) {
       throw new HttpsError("permission-denied", "Solo el equipo interno puede enviar correos.");
     }
+    // Envía correo a CUALQUIER destinatario que se le pida -- sin
+    // límite de ritmo, esto es un vector de spam/abuso del remitente
+    // (reputación de envío) y de la cuota de la cuenta de Resend.
+    exigirRitmo(uid, "enviarCorreoConPdf", 20);
 
     const destinatario = String(request.data?.destinatario ?? "").trim();
     const asunto = String(request.data?.asunto ?? "").trim();

@@ -368,8 +368,21 @@ export function nuevaKey(folder: CarpetaR2, extension: string) {
   return `${folder}/${id}.${safeExt}`;
 }
 
-/** Valida que una key pertenezca a una de las carpetas conocidas y no intente escapar con "..". */
+/** Tope generoso: las keys reales las arma nuevaKey() y son cortas
+ *  (carpeta + timestamp + id al azar + extensión). Nada legítimo se
+ *  acerca a esto -- es solo para no aceptar una key de miles de
+ *  caracteres que nadie generó por este camino. */
+const LARGO_MAXIMO_KEY = 512;
+
+/** Valida que una key pertenezca a una de las carpetas conocidas, no
+ *  intente escapar con "..", no traiga bytes de control/nulos, y no
+ *  sea absurdamente larga. No es una defensa de traversal por sí sola
+ *  (R2 no tiene un filesystem real que recorrer) -- es para no aceptar
+ *  entradas basura/binarias donde solo se espera una ruta de texto. */
 export function esKeyValida(key: string) {
   if (!key || key.includes("..") || key.startsWith("/")) return false;
+  if (key.length > LARGO_MAXIMO_KEY) return false;
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(key)) return false;
   return CARPETAS_PERMITIDAS.some((folder) => key.startsWith(`${folder}/`));
 }
