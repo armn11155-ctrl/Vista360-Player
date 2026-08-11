@@ -4,6 +4,7 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { guardarArchivoYaCargado } from "../utils/descargarArchivo";
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, InformeCliente } from "../types";
 import { useDialogos } from "./DialogosProvider";
@@ -53,6 +54,19 @@ function formatoBytes(bytes?: number) {
  *  falta un link al PDF, el archivo ya viene con el mensaje. Se pidió
  *  que igual quede el link al portal, abajo, como respaldo/consulta
  *  general (no es el link del PDF puntual, es la puerta de entrada). */
+/**
+ * Numero del cliente en el formato que pide wa.me: solo digitos, con
+ * codigo de pais y sin el "+".
+ *
+ * Si el celular guardado tiene 9 digitos se asume Peru (51), que es como
+ * se guardan hoy. Si ya trae codigo de pais se respeta tal cual.
+ */
+function numeroWhatsApp(cliente: Cliente | null): string {
+  const soloDigitos = (cliente?.celular ?? "").replace(/\D/g, "");
+  if (!soloDigitos) return "";
+  return soloDigitos.length === 9 ? `51${soloDigitos}` : soloDigitos;
+}
+
 function mensajeReporteConArchivo(mesLabel: string, cliente: Cliente | null) {
   const nombre = nombreCliente(cliente);
   return [
@@ -204,6 +218,24 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
       window.setTimeout(() => setEnviando((actual) => (actual === "whatsapp" ? null : actual)), 60_000);
       return;
     }
+    // ESCRITORIO. WhatsApp Web no deja adjuntar por enlace -- solo acepta
+    // texto -- asi que se hacen las dos cosas que si se pueden:
+    //
+    //   1. se abre el chat DEL CLIENTE con el mensaje ya escrito;
+    //   2. se baja el PDF, que queda el primero en "Recientes" del
+    //      selector de archivos.
+    //
+    // La persona pulsa el clip, elige el archivo que acaba de bajar y lo
+    // manda. El texto usado es el de "con archivo": NO lleva la url
+    // firmada de R2, porque el PDF va adjunto de verdad.
+    //
+    // El orden importa: primero window.open, que depende del gesto del
+    // clic, y despues la descarga, que no.
+    if (archivoCompartir) {
+      irAlLink("whatsapp", mensajeConArchivo);
+      guardarArchivoYaCargado(archivoCompartir);
+      return;
+    }
     irAlLink("whatsapp");
   }
 
@@ -265,11 +297,15 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
     irAlLink("correo");
   }
 
-  function irAlLink(canal: "whatsapp" | "correo") {
+  function irAlLink(canal: "whatsapp" | "correo", texto = mensajeConLink) {
     if (canal === "correo") {
       window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
+      // Al chat DEL CLIENTE si tenemos su celular: asi no hay que
+      // buscarlo en la lista de contactos.
+      const numero = numeroWhatsApp(cliente);
+      const destino = numero ? `https://wa.me/${numero}` : "https://wa.me/";
+      window.open(`${destino}?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
     }
   }
 

@@ -74,3 +74,61 @@ describe("WhatsApp en escritorio no puede quedarse en Enviando…", () => {
     expect(tarjeta).toContain("if (puedeCompartirEsteArchivo(archivoCompartir))");
   });
 });
+
+describe("en escritorio: se baja el PDF y se abre el chat del cliente", () => {
+  /**
+   * PEDIDO DEL NEGOCIO: WhatsApp Web no deja adjuntar por enlace (solo
+   * acepta texto). Asi que en escritorio se hacen las dos cosas que si se
+   * pueden: abrir el chat DEL CLIENTE con el mensaje escrito, y bajar el
+   * PDF para que quede el primero en "Recientes" del selector. La persona
+   * pulsa el clip, elige el archivo y lo manda.
+   */
+  for (const archivo of ["src/components/ReportCard.tsx", "src/components/FacturaCard.tsx"]) {
+    const codigo = leer(archivo);
+
+    it(`${archivo.split("/").pop()}: abre el chat del cliente, no la lista de contactos`, () => {
+      expect(codigo).toContain("function numeroWhatsApp(");
+      expect(codigo).toContain("`https://wa.me/${numero}`");
+      // Sin celular se cae al selector de contactos en vez de romperse.
+      expect(codigo).toContain('numero ? `https://wa.me/${numero}` : "https://wa.me/"');
+    });
+
+    it(`${archivo.split("/").pop()}: baja el PDF para que quede en Recientes`, () => {
+      expect(codigo).toContain("guardarArchivoYaCargado(archivoCompartir)");
+      // El orden importa: window.open depende del gesto del clic.
+      const i = codigo.indexOf("guardarArchivoYaCargado(archivoCompartir)");
+      const antes = codigo.slice(Math.max(0, i - 200), i);
+      expect(antes).toContain('irAlLink("whatsapp", mensajeConArchivo)');
+    });
+
+    it(`${archivo.split("/").pop()}: el texto NO lleva la url firmada de R2`, () => {
+      // Va el PDF adjunto, asi que meter ademas la url firmada solo
+      // expondria donde esta alojado y seria reenviable 6 horas.
+      const i = codigo.indexOf("guardarArchivoYaCargado(archivoCompartir)");
+      const bloque = codigo.slice(Math.max(0, i - 300), i + 100);
+      expect(bloque).toContain("mensajeConArchivo");
+      expect(bloque).not.toContain("mensajeConLink");
+    });
+  }
+
+  it("un numero peruano de 9 digitos se envia con codigo de pais", () => {
+    // wa.me exige codigo de pais y sin "+". Sin esto el enlace no abre chat.
+    const numeroWhatsApp = (celular: string) => {
+      const d = celular.replace(/\D/g, "");
+      if (!d) return "";
+      return d.length === 9 ? `51${d}` : d;
+    };
+    expect(numeroWhatsApp("947957971")).toBe("51947957971");
+    expect(numeroWhatsApp("947 957 971")).toBe("51947957971");
+    expect(numeroWhatsApp("+51 947 957 971")).toBe("51947957971");
+    expect(numeroWhatsApp("")).toBe("");
+  });
+
+  it("guardarArchivoYaCargado no vuelve a pedir nada a la red", () => {
+    // Reutiliza el File ya precargado para compartir.
+    const util = leer("src/utils/descargarArchivo.ts");
+    const fn = util.slice(util.indexOf("export function guardarArchivoYaCargado"));
+    expect(fn.slice(0, 500)).toContain("URL.createObjectURL(archivo)");
+    expect(fn.slice(0, 500)).not.toContain("fetch(");
+  });
+});

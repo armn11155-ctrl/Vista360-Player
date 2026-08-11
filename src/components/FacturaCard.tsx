@@ -4,6 +4,7 @@ import { cloudFunctions } from "../config/firebase";
 import { useSignedUrls } from "../hooks/useSignedUrls";
 import { saludoPorHora } from "../utils/fechas";
 import { archivoABase64, compartirArchivoPrecargado, motivoSinCompartirArchivo, precargarArchivoR2, puedeCompartirEsteArchivo } from "../utils/compartirArchivo";
+import { guardarArchivoYaCargado } from "../utils/descargarArchivo";
 import { mensajeDeError } from "../utils/errores";
 import type { Cliente, Factura, FacturaEstado } from "../types";
 import { useDialogos } from "./DialogosProvider";
@@ -98,6 +99,16 @@ function fechaDeFactura(fecha?: string): Date | null {
  *  con el PDF adjunto de verdad (Web Share, no hace falta el link
  *  puntual) o con el link como respaldo. Las dos cierran con el link
  *  al portal. */
+/**
+ * Numero del cliente en el formato de wa.me: solo digitos, con codigo de
+ * pais y sin "+". Si tiene 9 digitos se asume Peru (51).
+ */
+function numeroWhatsApp(cliente: Cliente | null): string {
+  const soloDigitos = (cliente?.celular ?? "").replace(/\D/g, "");
+  if (!soloDigitos) return "";
+  return soloDigitos.length === 9 ? `51${soloDigitos}` : soloDigitos;
+}
+
 function mensajeFacturaConArchivo(f: Factura, cliente: Cliente | null) {
   const nombre = nombreCliente(cliente);
   const numero = f.numero_fmt || f.serie || "tu factura";
@@ -375,6 +386,15 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       window.setTimeout(() => setEnviando((actual) => (actual === "whatsapp" ? null : actual)), 60_000);
       return;
     }
+    // ESCRITORIO: se abre el chat del cliente con el mensaje y se baja el
+    // PDF, que queda el primero en "Recientes" del selector de archivos.
+    // WhatsApp Web no deja adjuntar por enlace; esto es lo mas cerca que
+    // se puede llegar. El texto no lleva la url firmada: el PDF va adjunto.
+    if (archivoCompartir) {
+      irAlLink("whatsapp", mensajeConArchivo);
+      guardarArchivoYaCargado(archivoCompartir);
+      return;
+    }
     irAlLink("whatsapp");
   }
 
@@ -428,11 +448,14 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
     irAlLink("correo");
   }
 
-  function irAlLink(canal: "whatsapp" | "correo") {
+  function irAlLink(canal: "whatsapp" | "correo", texto = mensajeConLink) {
     if (canal === "correo") {
       window.location.href = `mailto:${emailTo}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(mensajeConLink)}`;
     } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(mensajeConLink)}`, "_blank", "noopener,noreferrer");
+      // Al chat DEL CLIENTE si tenemos su celular.
+      const numero = numeroWhatsApp(cliente);
+      const destino = numero ? `https://wa.me/${numero}` : "https://wa.me/";
+      window.open(`${destino}?text=${encodeURIComponent(texto)}`, "_blank", "noopener,noreferrer");
     }
   }
 

@@ -472,3 +472,29 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     else abrirComoAntes(url);
   }
 }
+
+
+/**
+ * Guarda en el disco un archivo que YA está en memoria.
+ *
+ * Para el flujo de WhatsApp en escritorio: la plataforma no deja adjuntar
+ * por enlace (api.whatsapp.com solo acepta texto), así que el PDF se baja
+ * primero y queda en "Recientes" del selector de archivos. La persona
+ * abre el chat que se le acaba de abrir, pulsa el clip y el archivo ya
+ * está el primero de la lista.
+ *
+ * No vuelve a pedir nada a la red: reutiliza el File que la tarjeta ya
+ * tenía precargado para compartir.
+ */
+export function guardarArchivoYaCargado(archivo: File): void {
+  const url = URL.createObjectURL(archivo);
+  const enlace = document.createElement("a");
+  enlace.href = url;
+  enlace.download = archivo.name;
+  enlace.rel = "noreferrer";
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  // Revocar en el acto corta la descarga en algunos navegadores.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
