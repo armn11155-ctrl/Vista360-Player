@@ -14,6 +14,11 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain('className="login-network-stage"');
     expect(login).toContain('className="login-network-globe"');
     expect(login).toContain('id="v360-globe-dots"');
+    expect(login).toContain('className="login-network-visual login-network-visual-brand"');
+    expect(login).toContain('id="v360-word-dots"');
+    expect(login).toContain(">VISTA360</text>");
+    expect(login).toContain('className="login-network-visual login-network-visual-billboard"');
+    expect(login).toContain('className="login-billboard-code-frame"');
     expect(login).toContain('pathLength="1"');
     expect(login).toContain("login-network-routes");
     expect(login).toContain("login-network-node-primary");
@@ -32,6 +37,10 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("login-network-route-flow");
     expect(estilos).toContain("login-network-node-pulse");
     expect(estilos).toContain("login-network-live-pulse");
+    expect(estilos).toContain("login-network-scene-cycle");
+    expect(estilos).toContain("login-dot-brand-word");
+    expect(estilos).toContain("login-billboard-code-arrive");
+    expect(estilos).toContain("login-network-index-three");
     expect(estilos).toContain("prefers-reduced-motion: reduce");
     expect(estilos).not.toContain(".jpg");
     expect(estilos).not.toContain(".png");

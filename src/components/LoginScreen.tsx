@@ -88,65 +88,99 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-network-live"><i /><span>Red de campaña activa</span></div>
             </div>
 
-            <svg className="login-network-globe" viewBox="0 0 720 720" fill="none">
-              <defs>
-                <pattern id="v360-globe-dots" width="16" height="16" patternUnits="userSpaceOnUse">
-                  <circle cx="3" cy="3" r="2.25" fill="currentColor" />
-                </pattern>
-                <radialGradient id="v360-globe-core" cx="0" cy="0" r="1" gradientTransform="translate(360 330) rotate(90) scale(290)">
-                  <stop stopColor="#4B8FFF" stopOpacity=".24" />
-                  <stop offset=".58" stopColor="#1759C7" stopOpacity=".10" />
-                  <stop offset="1" stopColor="#061B42" stopOpacity="0" />
-                </radialGradient>
-                <filter id="v360-node-glow" x="-180%" y="-180%" width="460%" height="460%">
-                  <feGaussianBlur stdDeviation="7" result="blur" />
-                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                </filter>
-                <clipPath id="v360-globe-clip"><circle cx="360" cy="350" r="246" /></clipPath>
-              </defs>
+            <div className="login-network-visual login-network-visual-globe">
+              <svg className="login-network-globe" viewBox="0 0 720 720" fill="none">
+                <defs>
+                  <pattern id="v360-globe-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+                    <circle cx="3" cy="3" r="2.25" fill="currentColor" />
+                  </pattern>
+                  <radialGradient id="v360-globe-core" cx="0" cy="0" r="1" gradientTransform="translate(360 330) rotate(90) scale(290)">
+                    <stop stopColor="#4B8FFF" stopOpacity=".24" />
+                    <stop offset=".58" stopColor="#1759C7" stopOpacity=".10" />
+                    <stop offset="1" stopColor="#061B42" stopOpacity="0" />
+                  </radialGradient>
+                  <filter id="v360-node-glow" x="-180%" y="-180%" width="460%" height="460%">
+                    <feGaussianBlur stdDeviation="7" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                  <clipPath id="v360-globe-clip"><circle cx="360" cy="350" r="246" /></clipPath>
+                </defs>
 
-              <g className="login-network-orbit login-network-orbit-outer">
-                <ellipse cx="360" cy="350" rx="306" ry="212" transform="rotate(-18 360 350)" />
-                <circle cx="90" cy="250" r="4" />
-                <circle cx="628" cy="465" r="4" />
-              </g>
-              <circle className="login-network-halo" cx="360" cy="350" r="270" />
-              <circle className="login-network-core" cx="360" cy="350" r="246" fill="url(#v360-globe-core)" />
-
-              <g className="login-network-sphere" clipPath="url(#v360-globe-clip)">
-                <circle className="login-network-dot-field" cx="360" cy="350" r="244" fill="url(#v360-globe-dots)" />
-                <g className="login-network-grid">
-                  <ellipse cx="360" cy="350" rx="245" ry="88" />
-                  <ellipse cx="360" cy="350" rx="245" ry="166" />
-                  <ellipse cx="360" cy="350" rx="84" ry="245" />
-                  <ellipse cx="360" cy="350" rx="168" ry="245" />
-                  <path d="M115 350H605" />
+                <g className="login-network-orbit login-network-orbit-outer">
+                  <ellipse cx="360" cy="350" rx="306" ry="212" transform="rotate(-18 360 350)" />
+                  <circle cx="90" cy="250" r="4" />
+                  <circle cx="628" cy="465" r="4" />
                 </g>
-                <g className="login-network-land">
-                  <path d="M181 219L213 184L265 168L303 187L296 219L263 229L248 262L216 276L192 259Z" />
-                  <path d="M249 291L292 302L311 339L296 382L274 423L259 466L234 445L226 396L208 353L218 314Z" />
-                  <path d="M348 185L390 167L447 178L486 203L515 230L505 263L469 272L450 306L416 299L399 329L371 314L365 274L337 248Z" />
-                  <path d="M372 322L416 314L451 343L446 391L422 444L389 466L367 430L353 382Z" />
-                  <path d="M480 397L520 385L548 407L532 441L493 448L470 424Z" />
-                </g>
-                <g className="login-network-routes">
-                  <path pathLength="1" d="M255 362C312 293 389 278 470 244" />
-                  <path pathLength="1" d="M255 362C323 394 394 403 487 417" />
-                  <path pathLength="1" d="M255 362C216 307 212 253 243 214" />
-                  <path pathLength="1" d="M470 244C447 301 445 360 487 417" />
-                </g>
-              </g>
+                <circle className="login-network-halo" cx="360" cy="350" r="270" />
+                <circle className="login-network-core" cx="360" cy="350" r="246" fill="url(#v360-globe-core)" />
 
-              <g className="login-network-nodes" filter="url(#v360-node-glow)">
-                <g className="login-network-node login-network-node-primary" transform="translate(255 362)"><circle r="15" /><circle r="5" /></g>
-                <g className="login-network-node" transform="translate(470 244)"><circle r="11" /><circle r="4" /></g>
-                <g className="login-network-node" transform="translate(487 417)"><circle r="11" /><circle r="4" /></g>
-                <g className="login-network-node" transform="translate(243 214)"><circle r="9" /><circle r="3.5" /></g>
-              </g>
-            </svg>
+                <g className="login-network-sphere" clipPath="url(#v360-globe-clip)">
+                  <circle className="login-network-dot-field" cx="360" cy="350" r="244" fill="url(#v360-globe-dots)" />
+                  <g className="login-network-grid">
+                    <ellipse cx="360" cy="350" rx="245" ry="88" />
+                    <ellipse cx="360" cy="350" rx="245" ry="166" />
+                    <ellipse cx="360" cy="350" rx="84" ry="245" />
+                    <ellipse cx="360" cy="350" rx="168" ry="245" />
+                    <path d="M115 350H605" />
+                  </g>
+                  <g className="login-network-land">
+                    <path d="M181 219L213 184L265 168L303 187L296 219L263 229L248 262L216 276L192 259Z" />
+                    <path d="M249 291L292 302L311 339L296 382L274 423L259 466L234 445L226 396L208 353L218 314Z" />
+                    <path d="M348 185L390 167L447 178L486 203L515 230L505 263L469 272L450 306L416 299L399 329L371 314L365 274L337 248Z" />
+                    <path d="M372 322L416 314L451 343L446 391L422 444L389 466L367 430L353 382Z" />
+                    <path d="M480 397L520 385L548 407L532 441L493 448L470 424Z" />
+                  </g>
+                  <g className="login-network-routes">
+                    <path pathLength="1" d="M255 362C312 293 389 278 470 244" />
+                    <path pathLength="1" d="M255 362C323 394 394 403 487 417" />
+                    <path pathLength="1" d="M255 362C216 307 212 253 243 214" />
+                    <path pathLength="1" d="M470 244C447 301 445 360 487 417" />
+                  </g>
+                </g>
 
-            <div className="login-network-label login-network-label-coverage"><i />Cobertura</div>
-            <div className="login-network-label login-network-label-results"><i />Resultados</div>
+                <g className="login-network-nodes" filter="url(#v360-node-glow)">
+                  <g className="login-network-node login-network-node-primary" transform="translate(255 362)"><circle r="15" /><circle r="5" /></g>
+                  <g className="login-network-node" transform="translate(470 244)"><circle r="11" /><circle r="4" /></g>
+                  <g className="login-network-node" transform="translate(487 417)"><circle r="11" /><circle r="4" /></g>
+                  <g className="login-network-node" transform="translate(243 214)"><circle r="9" /><circle r="3.5" /></g>
+                </g>
+              </svg>
+              <div className="login-network-label login-network-label-coverage"><i />Cobertura</div>
+              <div className="login-network-label login-network-label-results"><i />Resultados</div>
+            </div>
+
+            <div className="login-network-visual login-network-visual-brand">
+              <svg className="login-dot-brand" viewBox="0 0 720 430" role="presentation">
+                <defs>
+                  <pattern id="v360-word-dots" width="11" height="11" patternUnits="userSpaceOnUse">
+                    <circle cx="3" cy="3" r="2.35" fill="#F3F8FF" />
+                  </pattern>
+                </defs>
+                <ellipse className="login-dot-brand-orbit" cx="370" cy="215" rx="294" ry="128" />
+                <path className="login-dot-brand-signal" pathLength="1" d="M105 263C208 128 454 114 622 235" />
+                <text className="login-dot-brand-word" x="365" y="238" textAnchor="middle" fill="url(#v360-word-dots)">VISTA360</text>
+                <text className="login-dot-brand-player" x="365" y="282" textAnchor="middle">PLAYER</text>
+                <g className="login-dot-brand-points">
+                  <circle cx="116" cy="262" r="5" /><circle cx="625" cy="235" r="5" /><circle cx="530" cy="123" r="4" />
+                </g>
+              </svg>
+              <div className="login-dot-brand-caption"><span />Identidad que conecta</div>
+            </div>
+
+            <div className="login-network-visual login-network-visual-billboard">
+              <div className="login-billboard-code">
+                <div className="login-billboard-code-frame">
+                  <div className="login-billboard-code-screen">
+                    <span>Campaña en ejecución</span>
+                    <strong>Marca que<br />permanece.</strong>
+                    <div><i />Presencia activa</div>
+                  </div>
+                  <div className="login-billboard-code-plate">VISTA360</div>
+                </div>
+              </div>
+              <div className="login-billboard-code-caption"><span />Publicidad exterior premium</div>
+            </div>
+
             <div className="login-network-index"><span>V360</span><i /><i /><i /></div>
           </div>
         </section>
