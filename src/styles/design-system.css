@@ -3664,8 +3664,13 @@ a {
    ===================================================================== */
 
 /* “Acceso privado” ya funciona como kicker por tipografía y espaciado;
-   el guion azul duplicaba el énfasis tanto en móvil como en laptop. */
+   el guion y el filo superior azules duplicaban el énfasis. */
 .login-access-kicker::before {
+  content: none !important;
+  display: none !important;
+}
+
+.login-card::before {
   content: none !important;
   display: none !important;
 }

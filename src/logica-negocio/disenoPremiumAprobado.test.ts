@@ -269,6 +269,7 @@ describe("refinamiento premium aprobado", () => {
     const sistema = leer("src/styles/design-system.css");
     expect(sistema).toContain("CONSOLA CORPORATIVA — NAVEGACIÓN, LOGIN Y GESTIÓN");
     expect(sistema).toMatch(/\.login-access-kicker::before \{[\s\S]*?content: none !important;/);
+    expect(sistema).toMatch(/\.login-card::before \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?border-radius: 14px !important;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill::after \{[\s\S]*?border-radius: 9px !important;/);
     expect(sistema).toMatch(/\.admin-picker-management-grid \{[\s\S]*?gap: 0;[\s\S]*?border-radius: 20px;/);
