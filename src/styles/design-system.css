@@ -2773,6 +2773,10 @@ a {
     box-shadow: var(--desktop-shadow) !important;
   }
   .inicio-current-client::before { content: none !important; }
+  .inicio-current-client-mark {
+    border-color: #dfe6ef;
+    background: #f8fafc;
+  }
   .inicio-current-client-copy small { color: var(--desktop-muted) !important; }
   .inicio-current-client-copy strong { color: var(--desktop-ink) !important; }
   .inicio-current-client-action {
@@ -2813,7 +2817,7 @@ a {
     border: 1px solid var(--desktop-line);
     border-radius: 18px;
     color: var(--desktop-ink);
-    background: #edf3fa;
+    background: #f8fafc;
     box-shadow: var(--desktop-shadow);
   }
   .inicio-account-status-head { margin-bottom: 14px; }
