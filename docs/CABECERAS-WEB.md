@@ -229,3 +229,59 @@ Cloudflare Pages la envía por defecto en el HTML y los assets estáticos. **No 
 | CORS R2 | `*` | Lista blanca de 5 orígenes **en el código**; falta aplicarla en el bucket (token sin permiso Admin, ver §3.1) |
 | CORS Cloud Functions | Por defecto | VERIFICADO — no hace falta tocar |
 | X-Frame-Options, nosniff, Referrer, Permissions | Ya estaban bien | VERIFICADO — no se tocaron |
+
+---
+
+## 5. Verificación en producción con navegador real
+
+Todo lo de abajo se comprobó contra `https://vista360player.pe` **con la CSP ya en enforcement**, usando Chromium (no leyendo el código, no suponiendo).
+
+### 5.1 Lo que funciona
+
+| Comprobación | Resultado |
+|---|---|
+| La app renderiza (login visible, `#root` con contenido) | ✅ |
+| Violaciones CSP de código propio | ✅ **cero** |
+| Firebase Auth (login con credenciales inválidas a propósito) | ✅ responde "Usuario o contraseña incorrectos" → el origen está permitido |
+| Firestore sin sesión | ✅ HTTP 403 → contestan sus Rules, no la CSP |
+| Cloud Function sin token | ✅ HTTP 401 → contesta nuestra autorización, no la CSP |
+| Service worker registrado + `manifest.json` | ✅ |
+| `*.r2.cloudflarestorage.com` (subdominio, el patrón real) | ✅ sin violación CSP |
+| `www.google.com` en iframe (mapa de Detalle de campaña) | ✅ permitido |
+| Pestaña del PDF (hereda la CSP) con estilos por CSSOM | ✅ fondo y `<embed>` a tamaño completo |
+| Popup del mapa con estilos por CSSOM | ✅ foto y color aplicados |
+
+Detalle sobre los tiles del mapa: `tile.openstreetmap.org` está en **`img-src`**, no en `connect-src`, porque Leaflet los carga como `<img>`. Un `fetch()` a ese host sí da violación de `connect-src` — y es correcto: la app nunca hace `fetch` de tiles. La carga como `<img>` no genera ninguna violación.
+
+### 5.2 Pruebas de ataque (todas con la CSP aplicada)
+
+| Ataque | Esperado | Resultado |
+|---|---|---|
+| Cargar script desde dominio no autorizado (`cdn.jsdelivr.net`) | bloqueado | ✅ **BLOQUEADO** por `script-src` |
+| Inyectar `<script>` en línea (lo que haría un XSS) | bloqueado | ✅ **BLOQUEADO** por `script-src` |
+| Inyectar `<base href>` externo (secuestro de rutas relativas) | bloqueado | ✅ **BLOQUEADO** por `base-uri` |
+| Embeber la app en un iframe externo | bloqueado | ✅ `frame-ancestors 'none'` + `X-Frame-Options: DENY` |
+| Llamar una Cloud Function sin token | rechazado | ✅ HTTP 401 |
+| Leer Firestore sin sesión | rechazado | ✅ HTTP 403 |
+
+Sobre `eval()`: la política **no incluye** `'unsafe-eval'`, y el bundle compilado no usa `eval()` global ni `new Function()`. La comprobación automatizada de esto es *inconclusa por construcción*: el arnés de pruebas ejecuta código vía el protocolo de depuración del navegador, que se salta la CSP a propósito. Lo que sí está verificado es que la política no lo permite y que la aplicación no lo necesita.
+
+### 5.3 Lo que NO se pudo verificar desde aquí
+
+Requieren una **sesión iniciada** (no tengo credenciales, y no debo introducir contraseñas):
+
+- Abrir/descargar un PDF real de R2, abrir una factura real.
+- Subir una foto o cambiar un avatar (PUT firmado a R2).
+- Ver imágenes reales de R2 y los tiles del mapa dentro de la app.
+
+Las directivas que esas acciones necesitan (`img-src`/`connect-src` con `*.r2.cloudflarestorage.com`, `img-src` con los tiles, `object-src blob:`, `frame-src` con Google) **sí** están verificadas una por una arriba. Lo que falta es el recorrido con datos reales.
+
+**Recorrido de 3 minutos para cerrarlo** (con F12 → Console abierta, buscando `Refused to`):
+
+1. Entrar como Gerente → Reportes → abrir un PDF → descargarlo.
+2. Facturas → abrir una factura.
+3. Subir una foto en un reporte y cambiar el avatar.
+4. Cobertura → ver que salgan los tiles y abrir el popup de un pin (foto + color del estado).
+5. Detalle de campaña → que cargue el mapa de Google.
+
+Si aparece algo, está en §1.8 cómo diagnosticarlo, y la vuelta atrás es renombrar la cabecera a `Content-Security-Policy-Report-Only` y desplegar.
