@@ -239,7 +239,17 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 it.desktopOnly ? "sidebar-item-desktop-only" : "",
               ].filter(Boolean).join(" ")}
               aria-current={it.id === active ? "page" : undefined}
+              aria-label={it.label}
+              data-tooltip={it.label}
+              role="button"
+              tabIndex={0}
               onClick={() => {
+                onNavigate(it.id);
+                onClose();
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
                 onNavigate(it.id);
                 onClose();
               }}
@@ -262,7 +272,17 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               <div className={`sidebar-bottom-section sidebar-bottom-section-switch${estaViendoComoCliente ? " sidebar-bottom-section-switch-client-view" : ""}`}>
                 <div
                   className="sidebar-item sidebar-item-switch"
+                  aria-label="Cambiar cliente"
+                  data-tooltip="Cambiar cliente"
+                  role="button"
+                  tabIndex={0}
                   onClick={() => { onCambiarCliente?.(); onClose(); }}
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" && event.key !== " ") return;
+                    event.preventDefault();
+                    onCambiarCliente?.();
+                    onClose();
+                  }}
                 >
                   <span className="sidebar-item-icon"><IconCambiarCliente /></span>
                   <span className="sidebar-item-label">Cambiar cliente</span>
@@ -273,7 +293,17 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             <div className="sidebar-bottom-section sidebar-bottom-section-logout">
               <div
                 className="sidebar-item sidebar-item-danger"
+                aria-label="Cerrar sesión"
+                data-tooltip="Cerrar sesión"
+                role="button"
+                tabIndex={0}
                 onClick={() => { onLogout(); onClose(); }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter" && event.key !== " ") return;
+                  event.preventDefault();
+                  onLogout();
+                  onClose();
+                }}
               >
                 <span className="sidebar-item-icon"><IconCerrarSesion /></span>
                 <span className="sidebar-item-label">Cerrar Sesión</span>

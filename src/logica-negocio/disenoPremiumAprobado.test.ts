@@ -188,18 +188,22 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain("border-radius: 999px");
   });
 
-  it("convierte el sidebar de laptop en navegación de escritorio de dos niveles", () => {
+  it("convierte el sidebar de laptop en un carril interactivo compacto", () => {
     const sidebar = leer("src/components/Sidebar.tsx");
     const sistema = leer("src/styles/design-system.css");
     expect(sidebar).toContain('data-active={active || ""}');
     expect(sidebar).toContain('className="sidebar-desktop-context"');
     expect(sidebar).toContain('aria-current={it.id === active ? "page" : undefined}');
-    expect(sistema).toContain("NAVEGACIÓN DE ESCRITORIO EN DOS NIVELES — SOLO LAPTOP");
-    expect(sistema).toContain("--sidebar-rail: 60px");
-    expect(sistema).toContain("#050a12 0 var(--sidebar-rail), #fff var(--sidebar-rail) 100%");
+    expect(sidebar).toContain('data-tooltip={it.label}');
+    expect(sidebar).toContain('role="button"');
+    expect(sidebar).toContain('tabIndex={0}');
+    expect(sistema).toContain("NAVEGACIÓN COMPACTA INTERACTIVA — SOLO LAPTOP");
+    expect(sistema).toContain("--sidebar-rail: 76px");
+    expect(sistema).toContain("content: attr(data-tooltip)");
+    expect(sistema).toContain(".sidebar-panel .sidebar-item:hover::after");
+    expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible::after");
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
-    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?background: #1677f2;/);
-    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?background: #eef2f6;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?linear-gradient\(145deg, #2785f5, #1165d9\)/);
     expect(sistema).not.toContain('.sidebar-list[data-active="campanas"]');
   });
 
