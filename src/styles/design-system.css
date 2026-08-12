@@ -4144,3 +4144,213 @@ a {
     box-shadow: none;
   }
 }
+
+/* =====================================================================
+   COHERENCIA FINAL DE LAPTOP — ACCESO, NAVEGACIÓN Y CUENTA
+   ---------------------------------------------------------------------
+   Correcciones de geometría observadas a tamaño real en Safari. Mantiene
+   intactos los datos, la navegación y la composición móvil.
+   ===================================================================== */
+@media (min-width: 900px) {
+  /* El filo que recorría todo el borde superior era el adorno incorrecto.
+     El guion corto vuelve a acompañar “Acceso privado”, sin duplicarse. */
+  .login-right-panel::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .login-access-kicker {
+    gap: 11px;
+  }
+
+  .login-access-kicker::before {
+    content: "" !important;
+    display: block !important;
+    width: 27px;
+    height: 2px;
+    flex: 0 0 27px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    box-shadow: 0 0 12px rgba(96,165,250,.34);
+  }
+
+  /* El rectángulo luminoso mide 44px dentro de una fila de 50px. Los 3px
+     compensan exactamente esa diferencia para que icono y luz compartan
+     el mismo centro visual. */
+  .sidebar-panel .sidebar-pill {
+    margin-top: 3px;
+  }
+
+  .sidebar-panel .sidebar-bottom {
+    margin-top: auto;
+    padding-bottom: 4px;
+  }
+
+  .sidebar-panel .sidebar-bottom-section-logout {
+    border-top: 0 !important;
+    padding-top: 3px;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover {
+    color: #fff !important;
+    background: transparent !important;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover .sidebar-item-icon {
+    border: 1px solid rgba(255,255,255,.13);
+    color: #fff !important;
+    background: #050505 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 8px 18px -14px rgba(0,0,0,.9);
+    opacity: 1;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon svg,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover .sidebar-item-icon svg {
+    color: #fff !important;
+    opacity: .86;
+  }
+
+  /* Toda la experiencia de escritorio comparte la misma familia, peso y
+     suavizado; se evita que el selector parezca un producto distinto. */
+  .main-area,
+  .sidebar-panel,
+  .admin-picker-shell,
+  .admin-picker-management-screen {
+    font-family: var(--v360-font);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: geometricPrecision;
+  }
+
+  /* Perfil: la cuarta sección ahora permanece en la columna derecha. Antes
+     quedaba en una fila automática bajo toda la tarjeta de empresa. */
+  .profile-content {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 410px);
+    column-gap: 22px;
+    row-gap: 16px;
+    padding: 26px 48px 40px;
+  }
+
+  .profile-section:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+  }
+
+  .profile-section:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .profile-section:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .profile-section:nth-child(4) {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
+  .profile-section h2 {
+    margin-bottom: 9px;
+    color: #55657a;
+    font-size: 12px;
+    font-weight: 760;
+    letter-spacing: .025em;
+  }
+
+  .profile-card-list,
+  .profile-metric-card,
+  .profile-logout-card {
+    overflow: hidden;
+    border-color: #dfe5ed;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 18px 40px -36px rgba(15,23,42,.52);
+  }
+
+  .profile-row {
+    min-height: 64px;
+  }
+
+  /* Último reporte funciona como pieza de énfasis y equilibra el exceso de
+     superficies blancas de Inicio sin añadir otra tarjeta decorativa. */
+  .inicio-side-col .inicio-evidence-card {
+    border-color: rgba(96,165,250,.22) !important;
+    color: #fff !important;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.24), transparent 40%),
+      linear-gradient(145deg, #101e35 0%, #07101e 74%) !important;
+    box-shadow: 0 22px 46px -34px rgba(2,6,23,.94), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  }
+
+  .inicio-side-col .inicio-report-title,
+  .inicio-side-col .inicio-report-month {
+    color: #fff !important;
+  }
+
+  .inicio-side-col .inicio-report-meta {
+    color: #afbed2 !important;
+  }
+
+  .inicio-side-col .inicio-report-meta svg {
+    stroke: #9cb4d2 !important;
+  }
+
+  .inicio-side-col .inicio-report-icon {
+    border: 1px solid rgba(147,197,253,.16);
+    background: rgba(37,99,235,.13) !important;
+    box-shadow: none !important;
+  }
+
+  .inicio-side-col .inicio-report-icon svg,
+  .inicio-side-col .inicio-report-link svg {
+    stroke: #79b6ff !important;
+  }
+
+  .inicio-side-col .inicio-report-link {
+    color: #79b6ff !important;
+  }
+
+  /* Selector y Centro de gestión comparten la misma superficie negro/navy,
+     radios y bordes del login y del contenido principal. */
+  .admin-picker-header,
+  .admin-picker-management-head,
+  .admin-picker-management-grid {
+    border-color: rgba(191,219,254,.15);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.12), transparent 34%),
+      linear-gradient(155deg, rgba(7,17,31,.96), rgba(3,8,17,.94) 62%, rgba(5,12,24,.94));
+    box-shadow: 0 28px 64px -42px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  .admin-picker-header {
+    border-radius: 20px;
+  }
+
+  .admin-picker-tabs,
+  .admin-picker-search,
+  .admin-picker-management-head > button,
+  .admin-picker-top-left-actions button {
+    border-radius: 11px;
+  }
+
+  .admin-picker-tile:not(.archived) {
+    border-color: rgba(191,219,254,.13);
+    background: linear-gradient(155deg, rgba(7,17,31,.94), rgba(3,8,17,.92));
+  }
+
+  .admin-picker-management-head {
+    border-radius: 18px;
+  }
+
+  .admin-picker-management-grid {
+    border-radius: 20px;
+  }
+
+  .admin-picker-management-group-head strong,
+  .admin-picker-management-card strong {
+    font-weight: 720;
+  }
+}

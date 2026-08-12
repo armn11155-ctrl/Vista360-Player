@@ -292,6 +292,20 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.admin-picker-management-card \{[\s\S]*?border-radius: 0;[\s\S]*?background: transparent;/);
   });
 
+  it("corrige la coherencia final de laptop sin alterar la composición móvil", () => {
+    const sidebar = leer("src/components/Sidebar.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("COHERENCIA FINAL DE LAPTOP — ACCESO, NAVEGACIÓN Y CUENTA");
+    expect(sistema).toMatch(/\.login-right-panel::after \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
+    expect(sistema).toMatch(/\.login-access-kicker::before \{[\s\S]*?content: "" !important;[\s\S]*?width: 27px;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?margin-top: 3px;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-bottom \.sidebar-item-danger \.sidebar-item-icon,[\s\S]*?background: #050505 !important;[\s\S]*?opacity: 1;/);
+    expect(sidebar).toContain('<span className="sidebar-item-label">Cerrar sesión</span>');
+    expect(sistema).toMatch(/\.profile-section:nth-child\(4\) \{[\s\S]*?grid-column: 2;[\s\S]*?grid-row: 3;/);
+    expect(sistema).toMatch(/\.inicio-side-col \.inicio-evidence-card \{[\s\S]*?linear-gradient\(145deg, #101e35 0%, #07101e 74%\)/);
+    expect(sistema).toMatch(/\.admin-picker-header,[\s\S]*?\.admin-picker-management-grid \{[\s\S]*?linear-gradient\(155deg, rgba\(7,17,31,\.96\)/);
+  });
+
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
     const detalle = leer("src/components/screens/DetalleCampana.tsx");
     const paneles = leer("src/components/screens/Paneles.tsx");

@@ -306,7 +306,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 }}
               >
                 <span className="sidebar-item-icon"><IconCerrarSesion /></span>
-                <span className="sidebar-item-label">Cerrar Sesión</span>
+                <span className="sidebar-item-label">Cerrar sesión</span>
                 <span className="sidebar-item-chevron">›</span>
               </div>
             </div>
