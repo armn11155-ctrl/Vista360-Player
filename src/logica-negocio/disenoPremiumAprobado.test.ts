@@ -74,9 +74,13 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"]');
     expect(globo).not.toContain("DURACION_ETIQUETA");
     expect(globo).toContain("seleccionados.length === ETIQUETAS.length");
+    expect(globo).toContain("etiquetaDisponible");
     expect(globo).toContain("const distanciaBorde");
     expect(globo).toContain("candidato.punto.x + 16");
     expect(globo).toContain("candidato.punto.x");
+    expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
+    expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
+    expect(globo).not.toContain("function rotar");
     expect(globo).toContain("ancho * 0.84");
     expect(globo).not.toContain("fetch(");
   });

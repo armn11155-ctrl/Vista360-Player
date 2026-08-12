@@ -78,16 +78,6 @@ function rectanguloRedondeado(
   contexto.closePath();
 }
 
-function rotar(vector: Vector3, angulo: number): Vector3 {
-  const coseno = Math.cos(angulo);
-  const seno = Math.sin(angulo);
-  return {
-    x: vector.x * coseno + vector.z * seno,
-    y: vector.y,
-    z: -vector.x * seno + vector.z * coseno,
-  };
-}
-
 function interpolarEsfera(origen: Vector3, destino: Vector3, progreso: number): Vector3 {
   const producto = Math.max(-1, Math.min(1, origen.x * destino.x + origen.y * destino.y + origen.z * destino.z));
   const angulo = Math.acos(producto);
@@ -117,13 +107,21 @@ export default function PixelGlobe() {
     let activo = false;
     let ultimoCuadro = 0;
 
-    const proyectar = (vector: Vector3, angulo: number, centroX: number, centroY: number, radio: number) => {
-      const punto = rotar(vector, angulo);
-      const profundidad = (punto.z + 1) / 2;
+    const proyectar = (
+      vector: Vector3,
+      cosenoAngulo: number,
+      senoAngulo: number,
+      centroX: number,
+      centroY: number,
+      radio: number,
+    ) => {
+      const x = vector.x * cosenoAngulo + vector.z * senoAngulo;
+      const z = -vector.x * senoAngulo + vector.z * cosenoAngulo;
+      const profundidad = (z + 1) / 2;
       return {
-        x: centroX + punto.x * radio,
-        y: centroY + punto.y * radio,
-        z: punto.z,
+        x: centroX + x * radio,
+        y: centroY + vector.y * radio,
+        z,
         escala: 0.72 + profundidad * 0.38,
       };
     };
@@ -136,6 +134,8 @@ export default function PixelGlobe() {
       const centroY = alto * 0.52;
       const radio = Math.min(ancho * 0.37, alto * 0.405);
       const angulo = movimientoReducido.matches ? -0.55 : -0.55 + tiempo * 0.000105;
+      const cosenoAngulo = Math.cos(angulo);
+      const senoAngulo = Math.sin(angulo);
 
       const resplandor = contexto.createRadialGradient(centroX, centroY, radio * 0.12, centroX, centroY, radio * 1.3);
       resplandor.addColorStop(0, "rgba(102, 169, 255, .19)");
@@ -171,7 +171,7 @@ export default function PixelGlobe() {
       contexto.stroke();
 
       for (const punto of PUNTOS) {
-        const proyectado = proyectar(punto.vector, angulo, centroX, centroY, radio);
+        const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
         const tamano = (punto.tierra ? 1.38 : 0.62) * proyectado.escala;
@@ -192,7 +192,14 @@ export default function PixelGlobe() {
         contexto.beginPath();
         let trazoIniciado = false;
         for (let paso = 0; paso <= 42; paso++) {
-          const punto = proyectar(interpolarEsfera(vectoresNodos[indiceOrigen], vectoresNodos[indiceDestino], paso / 42), angulo, centroX, centroY, radio);
+          const punto = proyectar(
+            interpolarEsfera(vectoresNodos[indiceOrigen], vectoresNodos[indiceDestino], paso / 42),
+            cosenoAngulo,
+            senoAngulo,
+            centroX,
+            centroY,
+            radio,
+          );
           if (punto.z < 0.02) { trazoIniciado = false; continue; }
           if (!trazoIniciado) { contexto.moveTo(punto.x, punto.y); trazoIniciado = true; }
           else contexto.lineTo(punto.x, punto.y);
@@ -202,7 +209,7 @@ export default function PixelGlobe() {
       contexto.restore();
 
       for (let indice = 0; indice < vectoresNodos.length; indice++) {
-        const punto = proyectar(vectoresNodos[indice], angulo, centroX, centroY, radio);
+        const punto = proyectar(vectoresNodos[indice], cosenoAngulo, senoAngulo, centroX, centroY, radio);
         if (punto.z < 0.02) continue;
         const pulso = movimientoReducido.matches ? 0.5 : (Math.sin(tiempo * 0.003 + indice * 1.4) + 1) / 2;
         contexto.fillStyle = `rgba(147, 197, 253, ${0.08 + pulso * 0.12})`;
@@ -221,19 +228,24 @@ export default function PixelGlobe() {
       }
 
       const candidatos = vectoresNodos
-        .map((vector) => ({ punto: proyectar(vector, angulo, centroX, centroY, radio) }))
+        .map((vector, indice) => ({
+          etiqueta: ETIQUETAS[indice % ETIQUETAS.length],
+          punto: proyectar(vector, cosenoAngulo, senoAngulo, centroX, centroY, radio),
+        }))
         .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.48 && punto.x < ancho - 26)
         .sort((a, b) => b.punto.z - a.punto.z);
       const seleccionados: typeof candidatos = [];
       for (const candidato of candidatos) {
-        if (seleccionados.every(({ punto }) => Math.abs(punto.y - candidato.punto.y) >= 58)) {
+        const etiquetaDisponible = seleccionados.every(({ etiqueta }) => etiqueta !== candidato.etiqueta);
+        const espacioDisponible = seleccionados.every(({ punto }) => Math.abs(punto.y - candidato.punto.y) >= 58);
+        if (etiquetaDisponible && espacioDisponible) {
           seleccionados.push(candidato);
         }
         if (seleccionados.length === ETIQUETAS.length) break;
       }
 
-      seleccionados.forEach((candidato, indiceEtiqueta) => {
-        const texto = ETIQUETAS[indiceEtiqueta];
+      seleccionados.forEach((candidato) => {
+        const texto = candidato.etiqueta;
         const profundidad = Math.min(1, Math.max(0, (candidato.punto.z - 0.08) / 0.24));
         const distanciaBorde = Math.min(1, Math.max(0, (ancho - 26 - candidato.punto.x) / 54));
         const opacidad = Math.min(profundidad, distanciaBorde);
