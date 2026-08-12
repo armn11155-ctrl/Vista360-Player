@@ -303,3 +303,30 @@ describe("CSP: nada del codigo genera estilos o scripts en linea", () => {
     expect(codigo).toContain("aplicarEstilosPopup(evento?.popup?.getElement?.())");
   });
 });
+
+describe("Service Worker: no se mete en las peticiones de otros origenes", () => {
+  const sw = readFileSync(join(RAIZ, "public", "sw.js"), "utf8");
+  const ejecutable = sw
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+
+  it("la rama de otro origen NO llama a respondWith", () => {
+    // Bug real encontrado en produccion: la rama hacia
+    // respondWith(fetch(event.request)), que parece un reenvio inocuo y
+    // no lo es -- rehace la peticion y los tiles del mapa
+    // (tile.openstreetmap.org) fallaban en silencio: mapa en gris, sin
+    // errores en consola, naturalWidth 0 y sin entrada en la red.
+    // Medido: con Service Worker el tile FALLA, sin el CARGA, y en
+    // ambos casos CERO violaciones de CSP (no era la CSP).
+    const rama = /if \(!mismoOrigen\) \{([\s\S]*?)\n  \}/.exec(ejecutable)?.[1] ?? "";
+    expect(rama).not.toContain("respondWith");
+    expect(rama.trim()).toBe("return;");
+  });
+
+  it("sigue sin cachear nada de otro origen", () => {
+    // La razon original de esa rama sigue en pie: de otro origen no se
+    // guarda NUNCA nada (hay URLs firmadas de R2 en juego).
+    expect(sw).toContain("REGLA DE ORO");
+    expect(ejecutable).toContain("const mismoOrigen = url.origin === self.location.origin");
+  });
+});

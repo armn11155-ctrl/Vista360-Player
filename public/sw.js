@@ -78,7 +78,24 @@ self.addEventListener("fetch", (event) => {
   // Ahora nada de otro origen se cachea nunca, y del propio origen solo
   // se guardan los archivos estaticos de la app.
   if (!mismoOrigen) {
-    event.respondWith(fetch(event.request));
+    // NO se llama a respondWith: se deja que el navegador haga la
+    // peticion el mismo, sin que el Service Worker se meta en medio.
+    //
+    // Antes esto hacia respondWith(fetch(event.request)), que parece
+    // inofensivo ("la reenvio igual") y no lo es: al reenviarla desde el
+    // Service Worker, la peticion se rehace y pierde parte del contexto
+    // original. Los tiles del mapa de Cobertura
+    // (tile.openstreetmap.org) fallaban justo por eso -- se veia el mapa
+    // en gris, con los pines encima y sin calles, y sin ningun error en
+    // consola: las imagenes quedaban con naturalWidth 0 y la peticion ni
+    // siquiera figuraba en la red. Comprobado midiendo las dos ramas: con
+    // el Service Worker controlando la pagina el tile FALLA, con el
+    // Service Worker bloqueado CARGA, y en los dos casos hay CERO
+    // violaciones de CSP.
+    //
+    // Interceptar no aportaba nada ademas: la regla de arriba dice que
+    // de otro origen no se cachea NUNCA, asi que reenviar a mano solo
+    // podia salir mal.
     return;
   }
 
