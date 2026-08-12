@@ -254,6 +254,16 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/details\.report-admin-panel > \.report-admin-content \{[\s\S]*?background: #fbfcfe;/);
   });
 
+  it("reduce la saturación de Inicio agrupando piezas afines en laptop", () => {
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("ESCRITORIO MINIMAL — MENOS TARJETAS, MÁS PRODUCTO");
+    expect(sistema).toMatch(/\.inicio-summary-grid \{[\s\S]*?gap: 0 !important;[\s\S]*?border-radius: 15px;/);
+    expect(sistema).toMatch(/\.inicio-summary-grid > \.inicio-kpi-card \{[\s\S]*?border-radius: 0 !important;[\s\S]*?box-shadow: none !important;/);
+    expect(sistema).toMatch(/\.inicio-quick-grid \{[\s\S]*?gap: 0 !important;[\s\S]*?background: #fff;/);
+    expect(sistema).toMatch(/\.inicio-side-col \.inicio-evidence-card \{[\s\S]*?background: #fff !important;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?width: 44px !important;[\s\S]*?filter: blur\(4px\) saturate\(1\.08\);/);
+  });
+
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
     const detalle = leer("src/components/screens/DetalleCampana.tsx");
     const paneles = leer("src/components/screens/Paneles.tsx");
