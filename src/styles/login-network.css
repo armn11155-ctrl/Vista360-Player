@@ -32,7 +32,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     max-height: none;
-    grid-template-columns: minmax(0, 1.55fr) minmax(400px, .82fr);
+    grid-template-columns: minmax(400px, .82fr) minmax(0, 1.55fr);
     overflow: hidden;
     border: 0;
     border-radius: 0;
@@ -43,6 +43,8 @@
 
   .login-left-panel {
     position: relative;
+    grid-column: 2;
+    grid-row: 1;
     width: auto;
     max-width: none;
     height: 100%;
@@ -251,6 +253,8 @@
 
   .login-right-panel {
     position: relative;
+    grid-column: 1;
+    grid-row: 1;
     width: auto;
     min-width: 0;
     margin: 0;
@@ -259,7 +263,7 @@
     justify-content: center;
     overflow: hidden;
     border: 0;
-    border-left: 1px solid #DDE6F0;
+    border-right: 1px solid #DDE6F0;
     border-radius: 0;
     background: #F8FAFD;
     box-shadow: none;
@@ -353,12 +357,12 @@
   }
 
   @keyframes login-network-panel-in {
-    from { opacity: 0; transform: translate3d(-10px,0,0); }
+    from { opacity: 0; transform: translate3d(10px,0,0); }
     to { opacity: 1; transform: translate3d(0,0,0); }
   }
 
   @keyframes login-network-access-in {
-    from { opacity: 0; transform: translate3d(10px,0,0); }
+    from { opacity: 0; transform: translate3d(-10px,0,0); }
     to { opacity: 1; transform: translate3d(0,0,0); }
   }
 
@@ -381,7 +385,7 @@
 }
 
 @media (min-width: 900px) and (max-width: 1120px) {
-  .login-experience { grid-template-columns: minmax(0, 1.38fr) minmax(350px, .92fr); }
+  .login-experience { grid-template-columns: minmax(350px, .92fr) minmax(0, 1.38fr); }
   .login-network-copy { left: 38px; width: 52%; }
   .login-network-logo { width: 180px; margin: 25px 0 24px; }
   .login-network-copy h1 { font-size: clamp(31px, 3.8vw, 40px); }
