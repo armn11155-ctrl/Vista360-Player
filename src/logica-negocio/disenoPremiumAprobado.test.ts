@@ -35,7 +35,11 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("grid-template-columns: minmax(0, 1.55fr) minmax(400px, .82fr)");
     expect(estilos).toMatch(/\.login-left-panel \{[\s\S]*?grid-column: 1;[\s\S]*?grid-row: 1;/);
     expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?grid-column: 2;[\s\S]*?grid-row: 1;/);
-    expect(estilos).toContain("border-left: 1px solid #DDE6F0");
+    expect(estilos).toContain("border-left: 1px solid #D8DDE5");
+    expect(estilos).toMatch(/\.login-left-panel \{[\s\S]*?linear-gradient\(145deg, #08192D 0%, #0A2850 48%, #050E1D 100%\);/);
+    expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?background: #F6F6F5;/);
+    expect(estilos).toMatch(/\.login-network-globe-canvas \{[\s\S]*?filter: saturate\(\.72\) brightness\(\.88\)/);
+    expect(estilos).toMatch(/\.login-btn \{[\s\S]*?background: #173A63;/);
     expect(estilos).toContain("min-height: 100dvh");
     expect(estilos).toContain("max-width: none");
     expect(estilos).toContain("border-radius: 0");
