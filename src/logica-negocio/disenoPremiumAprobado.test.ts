@@ -20,6 +20,7 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain("login-billboard-code-frame");
     expect(login).not.toContain("login-network-index");
     expect(login).toContain("Red de campaña activa");
+    expect(login).toContain('className="login-network-message"');
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');
     expect(login).toContain('className="login-btn-spinner"');
@@ -37,6 +38,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("max-width: none");
     expect(estilos).toContain("border-radius: 0");
     expect(estilos).toContain("login-network-globe-canvas");
+    expect(estilos).toContain(".login-network-message::before");
     expect(estilos).toContain("login-network-live-pulse");
     expect(estilos).not.toContain("login-network-scene-cycle");
     expect(estilos).not.toContain("login-dot-brand-word");
@@ -65,6 +67,9 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('removeEventListener("visibilitychange"');
     expect(globo).toContain("document.hidden");
     expect(globo).toContain("lineDashOffset");
+    expect(globo).toContain("lat += 3");
+    expect(globo).toContain("lon += 3");
+    expect(globo).toContain("ancho * 0.84");
     expect(globo).not.toContain("fetch(");
   });
 

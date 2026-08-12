@@ -84,9 +84,11 @@ export default function LoginScreen({ onLoggedIn }: Props) {
             <div className="login-network-copy">
               <div className="login-network-kicker"><span />Publicidad exterior premium</div>
               <img className="login-network-logo" src={LOGO} alt="" draggable={false} />
-              <h1>Más que visibilidad.<strong>Presencia.</strong></h1>
-              <p>Campañas, cobertura y resultados conectados en una sola plataforma.</p>
-              <div className="login-network-live"><i /><span>Red de campaña activa</span></div>
+              <div className="login-network-message">
+                <h1>Más que visibilidad.<strong>Presencia.</strong></h1>
+                <p>Campañas, cobertura y resultados conectados en una sola plataforma.</p>
+                <div className="login-network-live"><i /><span>Red de campaña activa</span></div>
+              </div>
             </div>
 
             <div className="login-network-visual-globe">

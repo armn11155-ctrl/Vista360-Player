@@ -48,9 +48,9 @@ function aVector({ lat, lon }: PuntoGeografico): Vector3 {
 }
 
 const PUNTOS: PuntoEsfera[] = [];
-for (let lat = -82; lat <= 82; lat += 4.1) {
-  const desfase = Math.round((lat + 82) / 4.1) % 2 === 0 ? 0 : 2.05;
-  for (let lon = -180 + desfase; lon < 180; lon += 4.1) {
+for (let lat = -82; lat <= 82; lat += 3) {
+  const desfase = Math.round((lat + 82) / 3) % 2 === 0 ? 0 : 1.5;
+  for (let lon = -180 + desfase; lon < 180; lon += 3) {
     PUNTOS.push({ tierra: esTierra(lon, lat), vector: aVector({ lat, lon }) });
   }
 }
@@ -109,7 +109,7 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      const centroX = ancho * 0.72;
+      const centroX = ancho * 0.84;
       const centroY = alto * 0.52;
       const radio = Math.min(ancho * 0.37, alto * 0.405);
       const angulo = movimientoReducido.matches ? -0.55 : -0.55 + tiempo * 0.000105;
@@ -151,8 +151,8 @@ export default function PixelGlobe() {
         const proyectado = proyectar(punto.vector, angulo, centroX, centroY, radio);
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
-        const tamano = (punto.tierra ? 2.35 : 1.15) * proyectado.escala;
-        const opacidad = punto.tierra ? 0.24 + frente * 0.66 : 0.035 + frente * 0.12;
+        const tamano = (punto.tierra ? 1.85 : 0.86) * proyectado.escala;
+        const opacidad = punto.tierra ? 0.22 + frente * 0.68 : 0.025 + frente * 0.105;
         contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
         contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
       }
