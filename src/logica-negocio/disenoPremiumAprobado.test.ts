@@ -30,10 +30,10 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain('className="login-operation-line"');
 
     const estilos = leer("src/styles/login-network.css");
-    expect(estilos).toContain("grid-template-columns: minmax(400px, .82fr) minmax(0, 1.55fr)");
-    expect(estilos).toMatch(/\.login-left-panel \{[\s\S]*?grid-column: 2;[\s\S]*?grid-row: 1;/);
-    expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?grid-column: 1;[\s\S]*?grid-row: 1;/);
-    expect(estilos).toContain("border-right: 1px solid #DDE6F0");
+    expect(estilos).toContain("grid-template-columns: minmax(0, 1.55fr) minmax(400px, .82fr)");
+    expect(estilos).toMatch(/\.login-left-panel \{[\s\S]*?grid-column: 1;[\s\S]*?grid-row: 1;/);
+    expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?grid-column: 2;[\s\S]*?grid-row: 1;/);
+    expect(estilos).toContain("border-left: 1px solid #DDE6F0");
     expect(estilos).toContain("min-height: 100dvh");
     expect(estilos).toContain("max-width: none");
     expect(estilos).toContain("border-radius: 0");
