@@ -25,6 +25,10 @@ const RAIZ = join(__dirname, "..", "..");
 const headers = readFileSync(join(RAIZ, "public", "_headers"), "utf8");
 
 function bloquesEnLinea(html: string, tag: string): string[] {
+  // Se quitan los comentarios HTML antes de buscar: un comentario que
+  // mencione una etiqueta de estilo/script desplazaba el inicio del
+  // bloque y el hash salia mal. Lo cazo una prueba con navegador real.
+  html = html.replace(/<!--[\s\S]*?-->/g, "");
   const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`, "g");
   const encontrados: string[] = [];
   let m: RegExpExecArray | null;
@@ -45,6 +49,12 @@ function cabecera(nombre: string): string {
 }
 
 const csp = cabecera("Content-Security-Policy");
+
+/** Ya no debe existir una segunda política en Report-Only: tener las dos
+ *  a la vez solo consigue que nadie sepa cuál manda. La fase Report-Only
+ *  ya se completó (se recorrió producción con un navegador real, se
+ *  corrigieron las violaciones encontradas) y la política estricta pasó
+ *  a enforcement. */
 const cspReportOnly = cabecera("Content-Security-Policy-Report-Only");
 
 /** Extrae el valor de una directiva de una política. */
@@ -66,7 +76,7 @@ describe("CSP: los hashes coinciden con el HTML real", () => {
   it.each(HTMLS)("los <style> en línea de $archivo están permitidos por hash", ({ ruta }) => {
     for (const bloque of bloquesEnLinea(readFileSync(ruta, "utf8"), "style")) {
       expect(
-        cspReportOnly,
+        csp,
         "Cambió un bloque <style> en línea. Ejecuta `node scripts/hashes-csp.mjs` y actualiza public/_headers."
       ).toContain(hashCsp(bloque));
     }
@@ -75,9 +85,26 @@ describe("CSP: los hashes coinciden con el HTML real", () => {
   it.each(HTMLS)("los <script> en línea de $archivo están permitidos por hash", ({ ruta }) => {
     for (const bloque of bloquesEnLinea(readFileSync(ruta, "utf8"), "script")) {
       expect(
-        cspReportOnly,
+        csp,
         "Cambió un bloque <script> en línea. Ejecuta `node scripts/hashes-csp.mjs` y actualiza public/_headers."
       ).toContain(hashCsp(bloque));
+    }
+  });
+
+
+  it("ningún HTML estático usa atributos style= (los hashes no los cubren)", () => {
+    // Esta es la regresión que la fase Report-Only cazó en produccion:
+    // index.html tenía style="..." en <html> y <body>, y un hash de CSP
+    // NO permite atributos style (solo bloques <style>). Con la política
+    // aplicada eso deja la pantalla sin fondo. La única forma de
+    // permitirlo sería 'unsafe-hashes'/'unsafe-inline', que es peor que
+    // mover el estilo a un bloque <style>.
+    for (const { archivo, ruta } of HTMLS) {
+      const html = readFileSync(ruta, "utf8");
+      // Se ignoran los comentarios: el propio index.html explica en uno
+      // por qué no debe haber atributos style.
+      const sinComentarios = html.replace(/<!--[\s\S]*?-->/g, "");
+      expect(sinComentarios, `${archivo} tiene un atributo style=`).not.toMatch(/<[a-zA-Z][^>]*\sstyle\s*=/);
     }
   });
 
@@ -92,17 +119,20 @@ describe("CSP: los hashes coinciden con el HTML real", () => {
 });
 
 describe("CSP: la política es de lista blanca, no de comodines", () => {
-  it("existe una política aplicada y otra en Report-Only", () => {
+  it("la política estricta está APLICADA, no en Report-Only", () => {
     expect(csp).not.toBe("");
-    expect(cspReportOnly).not.toBe("");
+    // Si alguien vuelve a mandarla a Report-Only "un rato", esto avisa.
+    expect(cspReportOnly).toBe("");
   });
 
-  it("la política APLICADA solo trae directivas que no pueden romper la app", () => {
-    // Si alguien mueve aquí script-src o connect-src sin haber
-    // comprobado Report-Only antes, esto lo frena.
-    const permitidas = ["frame-ancestors", "base-uri", "form-action"];
+  it("la política aplicada trae TODAS las directivas, no solo las inocuas", () => {
+    const obligatorias = [
+      "default-src", "script-src", "style-src", "img-src", "font-src",
+      "connect-src", "frame-src", "worker-src", "manifest-src", "media-src",
+      "object-src", "base-uri", "form-action", "frame-ancestors",
+    ];
     const presentes = csp.split(";").map((d) => d.trim().split(" ")[0]).filter(Boolean);
-    expect(presentes.sort()).toEqual(permitidas.sort());
+    for (const d of obligatorias) expect(presentes).toContain(d);
   });
 
   it("no se puede embeber la app en otro sitio (clickjacking)", () => {
@@ -115,18 +145,21 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
     expect(directiva(csp, "form-action")).toBe("'self'");
   });
 
-  it("NO hay unsafe-eval en ninguna política", () => {
+  it("NO hay unsafe-eval", () => {
     expect(csp).not.toContain("unsafe-eval");
-    expect(cspReportOnly).not.toContain("unsafe-eval");
   });
 
-  it("NO hay unsafe-inline en ninguna política (se usan hashes)", () => {
+  it("NO hay unsafe-inline ni unsafe-hashes (se usan hashes de bloque)", () => {
     expect(csp).not.toContain("unsafe-inline");
-    expect(cspReportOnly).not.toContain("unsafe-inline");
+    // 'unsafe-hashes' fue la tentación al encontrar los atributos
+    // style= de index.html. Se arregló moviendo el estilo a un bloque
+    // <style>, no abriendo la política. Que no vuelva por la puerta de
+    // atrás.
+    expect(csp).not.toContain("unsafe-hashes");
   });
 
   it("script-src no admite comodines: solo 'self' y hashes", () => {
-    const valores = directiva(cspReportOnly, "script-src").split(/\s+/).filter(Boolean);
+    const valores = directiva(csp, "script-src").split(/\s+/).filter(Boolean);
     expect(valores).toContain("'self'");
     for (const v of valores) {
       expect(v === "'self'" || v.startsWith("'sha256-")).toBe(true);
@@ -134,7 +167,7 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
   });
 
   it("connect-src lista dominios concretos, nunca * ni https: suelto", () => {
-    const valores = directiva(cspReportOnly, "connect-src").split(/\s+/).filter(Boolean);
+    const valores = directiva(csp, "connect-src").split(/\s+/).filter(Boolean);
     expect(valores.length).toBeGreaterThan(1);
     expect(valores).not.toContain("*");
     expect(valores).not.toContain("https:");
@@ -146,7 +179,7 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
   });
 
   it("default-src es 'self' (todo lo no declarado queda cerrado)", () => {
-    expect(directiva(cspReportOnly, "default-src")).toBe("'self'");
+    expect(directiva(csp, "default-src")).toBe("'self'");
   });
 
   it("los orígenes de connect-src son exactamente los que la app usa", () => {
@@ -161,18 +194,18 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
       "https://*.cloudfunctions.net",
       "https://*.r2.cloudflarestorage.com",
     ];
-    const valores = directiva(cspReportOnly, "connect-src").split(/\s+/).filter(Boolean);
+    const valores = directiva(csp, "connect-src").split(/\s+/).filter(Boolean);
     expect(valores.filter((v) => v.startsWith("https://")).sort()).toEqual(esperados.sort());
   });
 
   it("el iframe del mapa está acotado a Google Maps, y el mapa sigue usándolo", () => {
-    expect(directiva(cspReportOnly, "frame-src")).toBe("https://www.google.com");
+    expect(directiva(csp, "frame-src")).toBe("https://www.google.com");
     const detalle = readFileSync(join(RAIZ, "src", "components", "screens", "DetalleCampana.tsx"), "utf8");
     expect(detalle).toContain("https://www.google.com/maps?q=");
   });
 
   it("img-src permite las fuentes reales de imágenes y nada más", () => {
-    const valores = directiva(cspReportOnly, "img-src").split(/\s+/).filter(Boolean);
+    const valores = directiva(csp, "img-src").split(/\s+/).filter(Boolean);
     expect(valores.sort()).toEqual(
       [
         "'self'",
@@ -185,7 +218,7 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
   });
 
   it("object-src permite blob: SOLO por el visor de PDF, y está documentado", () => {
-    expect(directiva(cspReportOnly, "object-src")).toBe("blob:");
+    expect(directiva(csp, "object-src")).toBe("blob:");
     expect(headers).toContain("RELAJACION DOCUMENTADA");
     // La razón tiene que seguir siendo cierta: si el visor deja de usar
     // <embed>, hay que volver a object-src 'none'.
@@ -234,5 +267,39 @@ describe("CORS", () => {
     const fn = readFileSync(join(RAIZ, "functions", "src", "sincronizarEstadoPaneles.ts"), "utf8");
     expect(fn).not.toContain("Access-Control-Allow-Origin");
     expect(fn).toContain('req.get("x-cron-secret") !== process.env.CRON_SYNC_SECRET');
+  });
+});
+
+describe("CSP: nada del codigo genera estilos o scripts en linea", () => {
+  // Estas dos regresiones las cazo una prueba con navegador real, no la
+  // lectura del codigo, y son las que de verdad rompen produccion:
+  //
+  //  - descargarArchivo.ts abria la pestaña del PDF con document.write y
+  //    un bloque <style> dentro. Esa pestaña se abre desde nuestro origen
+  //    con window.open(""), asi que HEREDA nuestra CSP: el <style> queda
+  //    bloqueado (no se puede hashear algo que se arma en ejecucion) y el
+  //    PDF sale sin fondo ni tamaño.
+  //  - Cobertura.tsx armaba los popups de Leaflet con style="..." para la
+  //    foto y el color del estado. Los hashes de CSP no cubren atributos.
+  //
+  // Las dos se arreglaron aplicando los estilos por CSSOM. Estas pruebas
+  // impiden que vuelvan.
+  it("descargarArchivo.ts no escribe bloques <style> en la pestaña del PDF", () => {
+    const codigo = readFileSync(join(RAIZ, "src", "utils", "descargarArchivo.ts"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+    expect(codigo).not.toContain("<style>");
+    // Y sigue aplicandolos, para que el arreglo no se convierta en
+    // "quitamos los estilos y ya".
+    expect(codigo).toContain('el.style.background = "#050a12"');
+  });
+
+  it("los popups del mapa no usan atributos style=", () => {
+    const codigo = readFileSync(join(RAIZ, "src", "components", "screens", "Cobertura.tsx"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
+    expect(codigo).not.toMatch(/<[a-z][^>]*\sstyle="/);
+    expect(codigo).toContain("export function aplicarEstilosPopup(");
+    expect(codigo).toContain("aplicarEstilosPopup(evento?.popup?.getElement?.())");
   });
 });

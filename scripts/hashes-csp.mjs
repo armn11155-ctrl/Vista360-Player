@@ -24,8 +24,15 @@ import { fileURLToPath } from "node:url";
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..");
 
-/** Extrae el contenido de cada bloque <tag>...</tag> de un HTML. */
+/** Extrae el contenido de cada bloque <tag>...</tag> de un HTML.
+ *
+ *  Quita primero los comentarios HTML. Sin eso, un comentario que
+ *  MENCIONE una etiqueta de estilo o de script hace que el buscador
+ *  empiece a contar desde dentro del comentario y el hash salga mal --
+ *  y un hash mal calculado no se nota hasta que el navegador bloquea el
+ *  bloque en produccion. Paso de verdad al documentar esto. */
 function bloquesEnLinea(html, tag) {
+  html = html.replace(/<!--[\s\S]*?-->/g, "");
   const re = new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)</${tag}>`, "g");
   const encontrados = [];
   let m;

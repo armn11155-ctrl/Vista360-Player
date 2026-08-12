@@ -18,21 +18,25 @@ Todo esto está fijado por pruebas permanentes en `src/logica-negocio/cabecerasW
 
 **No había CSP.** El archivo `_headers` ya traía `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy` y `Permissions-Policy` — todo eso correcto — con un comentario que dejaba la CSP explícitamente pendiente "para una pasada aparte". Esta es esa pasada.
 
-### 1.2 Estrategia en dos capas
+### 1.2 Estrategia: Report-Only primero, ahora en enforcement
 
-Una CSP mal armada rompe la aplicación en silencio y sin forma de probarlo antes de publicar. Por eso va en dos partes:
+Se hizo en dos fases a propósito, porque una CSP mal armada rompe la aplicación en silencio:
 
-**Capa 1 — APLICADA (`Content-Security-Policy`).** Solo tres directivas, elegidas porque no pueden romper nada, comprobado una por una:
+1. **Fase Report-Only** (fase anterior): la política estricta se publicó como `Content-Security-Policy-Report-Only`. El navegador no bloqueaba nada, solo anotaba en consola lo que habría bloqueado.
+2. **Fase de verificación** (esta): se recorrió producción con un navegador real (Chromium headless), se recogieron las violaciones, se corrigieron **en el código** —nunca relajando la política— y se validó el resultado con la política ya en enforcement antes de publicarla.
+3. **Ahora**: una sola cabecera `Content-Security-Policy`, aplicada. No queda ninguna política en Report-Only: tener las dos a la vez solo consigue que nadie sepa cuál manda.
 
-```
-frame-ancestors 'none'; base-uri 'self'; form-action 'self'
-```
+#### Lo que la fase Report-Only encontró (y que leer el código NO había detectado)
 
-- `frame-ancestors 'none'` — equivalente moderno del `X-Frame-Options: DENY` que ya estaba. Se dejan los dos: hay navegadores que ya solo miran CSP.
-- `base-uri 'self'` — la app no tiene ninguna etiqueta `<base>` (verificado). Sin esta directiva, un XSS podría inyectar `<base href="//sitio-malo">` y desviar **todas** las rutas relativas de la página.
-- `form-action 'self'` — ningún `<form>` de la app declara `action=` hacia fuera (verificado). Impide que un formulario inyectado mande datos a otro sitio.
+| Hallazgo | Por qué rompía | Cómo se arregló |
+|---|---|---|
+| `index.html` tenía `style="..."` en `<html>` y `<body>` | Los hashes de CSP **no cubren atributos** `style`, solo bloques `<style>`. Habrían quedado bloqueados y la pantalla saldría sin fondo | Se movieron al bloque `<style>` de `<head>`, que sí va permitido por hash. Mismo resultado visual |
+| `descargarArchivo.ts` abría la pestaña del PDF con `document.write` y un `<style>` dentro | Esa pestaña se abre con `window.open("")` desde nuestro origen, así que **hereda nuestra CSP**. El `<style>` no se puede hashear (se arma en ejecución) → PDF sin fondo ni tamaño | Los estilos se aplican por **CSSOM** (`el.style.x = ...`), que la CSP no bloquea |
+| `Cobertura.tsx` armaba los popups de Leaflet con `style="..."` para la foto y el color del estado | Mismo motivo: atributos `style` | Los valores viajan en `data-*` y se aplican por CSSOM en `popupopen` (`aplicarEstilosPopup`) |
+| El hash de `index.html` estaba **mal calculado** | Un comentario HTML que mencionaba la etiqueta de estilo desplazaba el inicio del bloque en el extractor. Un hash mal calculado no se nota hasta que el navegador bloquea en producción | El extractor (script y prueba) ahora quita los comentarios HTML antes de buscar |
+| Cloudflare inyecta el beacon de Web Analytics | No es código nuestro: lo añade Cloudflare en el borde | **NO se autoriza** (ver §1.5) |
 
-**Capa 2 — REPORT-ONLY (`Content-Security-Policy-Report-Only`).** La política estricta completa. El navegador **no bloquea nada**: solo anota en la consola lo que habría bloqueado. Sirve para descubrir orígenes que no se ven leyendo el código (redirecciones internas de Firebase, por ejemplo) sin dejar a nadie sin poder trabajar.
+Ninguno se arregló abriendo la política. No se añadió `unsafe-inline`, ni `unsafe-hashes`, ni ningún dominio de terceros.
 
 ### 1.3 La política completa y de dónde sale cada origen
 
@@ -68,7 +72,16 @@ Los dos comodines son **subdominio de un dominio concreto**, no comodines suelto
   Los estilos en línea de React (`style={{...}}`) **no** necesitan `'unsafe-inline'`: React los aplica por CSSOM (`node.style.x = ...`), y la CSP solo bloquea el atributo `style` del HTML y las etiquetas `<style>`.
 - **Comodines en `script-src`/`connect-src` — no hay ninguno.**
 
-### 1.5 Única relajación: `object-src blob:`
+### 1.5 Cloudflare Web Analytics: bloqueado a propósito
+
+Cloudflare Pages inyecta en el borde `static.cloudflareinsights.com/beacon.min.js` más un script en línea que lo carga. No está en nuestro código y **no lo necesita ninguna función de Vista360**.
+
+Decisión: **no se autoriza**. Meter un dominio de terceros en `script-src` es exactamente lo que esta política existe para evitar.
+
+- **Efecto real**: Cloudflare Web Analytics deja de registrar visitas, y el navegador anota la violación en la consola de cada visita.
+- **Si molesta el ruido** (o si se quiere recuperar la métrica): la decisión correcta es **apagar Web Analytics en el panel de Cloudflare**, no abrir la CSP. Cloudflare Dashboard → el sitio → Web Analytics → desactivar.
+
+### 1.6 Única relajación: `object-src blob:`
 
 - **Qué dependencia**: `public/visor-pdf.html`, el visor de PDF.
 - **Qué necesita**: muestra el documento con `<embed type="application/pdf">` apuntando a un `blob:` local.
@@ -77,7 +90,7 @@ Los dos comodines son **subdominio de un dominio concreto**, no comodines suelto
 
 Hay una prueba que comprueba que el visor **sigue** usando `<embed>`: si algún día deja de hacerlo, avisa para volver a `object-src 'none'`.
 
-### 1.6 Los hashes se pueden desincronizar (y por eso hay una prueba)
+### 1.7 Los hashes se pueden desincronizar (y por eso hay una prueba)
 
 Si alguien edita un bloque `<style>` o `<script>` en línea y no actualiza el hash, el navegador deja de aplicarlo: la pantalla se ve mal o el visor de PDF deja de abrir, **en producción y en silencio**.
 
@@ -89,17 +102,14 @@ node scripts/hashes-csp.mjs
 
 y copiar la salida a `public/_headers`. La prueba `cabecerasWeb.test.ts` los recalcula desde los HTML reales y falla si no coinciden, así que esto no puede pasar desapercibido en CI. Hay además una prueba que falla si aparece un HTML estático nuevo que nadie metió en la lista.
 
-### 1.7 Cómo pasar de Report-Only a aplicada
+### 1.8 Si algo se rompe: cómo diagnosticar (y cómo NO)
 
-1. Abre https://vista360player.pe con la consola del navegador abierta (F12 → Console).
-2. Recorre la app tocando lo que usa orígenes externos: **entrar**, **ver un reporte PDF**, **descargar una factura**, **subir una foto o un avatar**, **abrir Cobertura** (mapa), **abrir Detalle de campaña** (iframe de Google Maps), **activar notificaciones**.
-3. Busca mensajes que empiecen por `[Report Only] Refused to...`. Cada uno indica un origen que falta.
-4. Si no aparece ninguno, mueve el contenido de `Content-Security-Policy-Report-Only` a `Content-Security-Policy` (conservando las tres directivas que ya estaban) y vuelve a desplegar.
-5. Si aparece alguno, agrégalo a la directiva correspondiente **con el dominio concreto**, no con un comodín, y repite.
+1. Abre la consola del navegador (F12 → Console) y busca `Refused to...`.
+2. Identifica **qué** recurso, **de qué** dominio y **qué función legítima** lo necesita.
+3. Agrega **solo ese dominio** a la directiva que corresponda. Nunca `*`, nunca `https:`, nunca `unsafe-*`.
+4. Si el recurso no lo necesita ninguna función de Vista360, **no lo autorices**: averigua por qué se carga.
 
-No lo hagas a ciegas: el objetivo del Report-Only es exactamente evitar ese salto de fe.
-
----
+**Vuelta atrás de urgencia**: renombra la cabecera a `Content-Security-Policy-Report-Only` en `public/_headers` y despliega. Deja de bloquear al instante sin perder la política. (Hay una prueba que falla si se queda así, para que no se olvide.)
 
 ## 2. HSTS
 
@@ -212,8 +222,7 @@ Cloudflare Pages la envía por defecto en el HTML y los assets estáticos. **No 
 
 | Capa | Antes | Ahora |
 |---|---|---|
-| CSP aplicada | No existía | `frame-ancestors`, `base-uri`, `form-action` |
-| CSP completa | No existía | En Report-Only, lista para activar tras verificar |
+| CSP | No existía | **Política estricta completa en enforcement** (una sola, sin Report-Only) |
 | `unsafe-eval` / `unsafe-inline` | — | Ninguno de los dos hace falta |
 | HSTS | **Ausente** | `max-age=31536000` (sin `includeSubDomains`/`preload`, a propósito) |
 | HTTP → HTTPS | Ya funcionaba | VERIFICADO — no se tocó |

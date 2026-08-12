@@ -358,7 +358,7 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
 
   return `
     <div class="coverage-popup-card">
-      <div class="coverage-popup-media" style="background-image:url('${fotoUrl}')">
+      <div class="coverage-popup-media" data-fondo="${fotoUrl}">
         <span class="coverage-popup-panel-icon" aria-hidden="true">
           <svg viewBox="0 0 512 512" fill="#FFFFFF" aria-hidden="true">
             <rect x="76.043" y="122.165" width="359.916" height="115.585"/>
@@ -368,7 +368,7 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
               299.715,512 408.086,512 408.086,481.583"/>
           </svg>
         </span>
-        <span class="coverage-popup-badge" style="color:${color}"><i style="background:${color}"></i>${escapeHtml(label)}</span>
+        <span class="coverage-popup-badge" data-color="${escapeHtml(color)}"><i data-fondo-color="${escapeHtml(color)}"></i>${escapeHtml(label)}</span>
       </div>
       <div class="coverage-popup-body">
         <div class="coverage-popup-name">${nombre}</div>
@@ -383,6 +383,36 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
       </div>
     </div>
   `;
+}
+
+/**
+ * Aplica al popup los estilos que dependen de datos (la foto del panel y
+ * el color del estado).
+ *
+ * Por qué no van como style="..." dentro del HTML del popup, que es lo
+ * obvio: la CSP de la app no permite ATRIBUTOS style. Los hashes de CSP
+ * solo cubren bloques <style>, no atributos, y permitir atributos exige
+ * 'unsafe-hashes' o 'unsafe-inline' -- justo lo que no queremos abrir.
+ * Aplicarlos por CSSOM (element.style.x = ...) no lo bloquea la CSP y da
+ * exactamente el mismo resultado visual.
+ *
+ * Los valores viajan en atributos data-* (ya escapados en popupHtml) y se
+ * leen acá cuando Leaflet ya metió el contenido en el DOM real.
+ */
+export function aplicarEstilosPopup(el: HTMLElement | undefined | null): void {
+  if (!el) return;
+  const media = el.querySelector<HTMLElement>(".coverage-popup-media[data-fondo]");
+  if (media?.dataset.fondo) {
+    media.style.backgroundImage = `url('${media.dataset.fondo}')`;
+  }
+  const badge = el.querySelector<HTMLElement>(".coverage-popup-badge[data-color]");
+  if (badge?.dataset.color) {
+    badge.style.color = badge.dataset.color;
+  }
+  const punto = el.querySelector<HTMLElement>("[data-fondo-color]");
+  if (punto?.dataset.fondoColor) {
+    punto.style.background = punto.dataset.fondoColor;
+  }
 }
 
 /** Vacio compartido: un `[]` en el render es un objeto nuevo cada vez. */
@@ -681,6 +711,14 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           // tiene forma de disparar React directo -- se engancha a
           // mano apenas Leaflet abre el popup y mete su contenido en
           // el DOM real.
+          // Los estilos que dependen de datos (foto y color de estado) se
+          // aplican por CSSOM en cuanto Leaflet mete el popup en el DOM:
+          // la CSP no permite atributos style=. Va FUERA del if de abajo
+          // porque el popup se pinta igual para un cliente que no puede
+          // solicitar nada.
+          marker.on("popupopen", (evento: any) => {
+            aplicarEstilosPopup(evento?.popup?.getElement?.());
+          });
           if (onSolicitarPanel) {
             marker.on("popupopen", (evento: any) => {
               const el: HTMLElement | undefined = evento?.popup?.getElement?.();

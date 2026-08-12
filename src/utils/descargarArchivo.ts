@@ -295,15 +295,35 @@ function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string):
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
   );
   try {
+    // SIN bloque <style> y SIN atributos style=, a proposito.
+    //
+    // Esta pestaña se abre con window.open("") desde nuestro origen, asi
+    // que HEREDA nuestra Content-Security-Policy. Un <style> escrito aqui
+    // no esta en la lista de hashes de la CSP (no puede estarlo: se
+    // construye en tiempo de ejecucion), asi que el navegador lo
+    // bloquearia y el PDF saldria sin fondo y sin tamaño -- roto en la
+    // practica. Los estilos se aplican por CSSOM justo debajo, que la CSP
+    // no bloquea. Lo detecto una prueba con navegador real antes de
+    // publicar el enforcement.
     ventana.document.open();
     ventana.document.write(
       '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
-        `<title>${seguro}</title>` +
-        '<style>html,body{margin:0;height:100%;background:#050a12}' +
-        "embed{width:100%;height:100%;border:0}</style></head><body>" +
+        `<title>${seguro}</title></head><body>` +
         `<embed src="${urlLocal}" type="application/pdf"></body></html>`
     );
     ventana.document.close();
+    const doc = ventana.document;
+    for (const el of [doc.documentElement, doc.body]) {
+      el.style.margin = "0";
+      el.style.height = "100%";
+      el.style.background = "#050a12";
+    }
+    const visor = doc.querySelector("embed");
+    if (visor) {
+      visor.style.width = "100%";
+      visor.style.height = "100%";
+      visor.style.border = "0";
+    }
   } catch {
     // Si por lo que sea no se puede escribir en la pestaña, se navega a
     // la URL del blob como antes: se pierde el título, no el documento.
@@ -433,13 +453,21 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     }
     // Algo mientras carga: una pestaña en blanco parece que se colgó.
     try {
+      // Igual que arriba: nada de <style> en linea, la CSP heredada lo
+      // bloquearia. Los estilos van por CSSOM.
       ventana.document.write(
-        '<!doctype html><html><head><meta charset="utf-8"><title>Vista360</title>' +
-          '<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;' +
-          'justify-content:center;height:100vh;margin:0;color:#555}</style></head>' +
+        '<!doctype html><html><head><meta charset="utf-8"><title>Vista360</title></head>' +
           "<body>Abriendo el documento…</body></html>",
       );
       ventana.document.close();
+      const cuerpo = ventana.document.body;
+      cuerpo.style.fontFamily = "system-ui, sans-serif";
+      cuerpo.style.display = "flex";
+      cuerpo.style.alignItems = "center";
+      cuerpo.style.justifyContent = "center";
+      cuerpo.style.height = "100vh";
+      cuerpo.style.margin = "0";
+      cuerpo.style.color = "#555";
     } catch {
       // Idem: si no se puede escribir, se sigue igual.
     }
