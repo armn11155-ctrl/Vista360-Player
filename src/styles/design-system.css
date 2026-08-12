@@ -2234,23 +2234,18 @@ a {
 /* =====================================================================
    SISTEMA VISUAL VISTA360 — INTERIOR DEL PRODUCTO
    ---------------------------------------------------------------------
-   El login ya establece una identidad clara: azul noche, blanco limpio
-   y un único azul luminoso. Esta capa lleva ese mismo lenguaje a las
-   pantallas operativas sin oscurecer el contenido ni cambiar su layout.
+   El login ya establece una identidad clara: negro profundo, blanco limpio
+   y un único azul para acciones. Esta capa lleva ese mismo lenguaje a las
+   pantallas operativas sin teñir de azul la navegación ni cambiar su layout.
    Se limita a navegación, jerarquía, superficies y respuesta visual;
    no agrega DOM, consultas, listeners ni lógica de negocio.
    ===================================================================== */
 
 :root {
-  --v360-nav-gradient:
-    radial-gradient(circle at 86% -18%, rgba(22,119,255,.20), transparent 38%),
-    linear-gradient(155deg, #081426 0%, #030711 78%);
-  --v360-header-gradient:
-    radial-gradient(circle at 78% -80%, rgba(22,119,255,.26), transparent 54%),
-    linear-gradient(110deg, #07101d 0%, #0a1a31 56%, #07101d 100%);
+  --v360-nav-gradient: #050a12;
+  --v360-header-gradient: #050a12;
   --v360-canvas-gradient:
-    radial-gradient(circle at 82% 0%, rgba(22,119,255,.045), transparent 34%),
-    linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%);
+    linear-gradient(180deg, #f5f7fa 0%, #eef2f7 100%);
   --v360-card-border: rgba(203,214,227,.82);
   --v360-card-shadow: 0 1px 2px rgba(15,23,42,.025), 0 18px 42px -32px rgba(15,23,42,.46);
 }
@@ -2292,63 +2287,6 @@ a {
   to { opacity: 1; transform: none; }
 }
 
-/* Navegación lateral: profundidad sobria, sin vidrio brillante ni ruido. */
-.sidebar-panel {
-  border-right: 1px solid rgba(148,163,184,.10);
-  background: var(--v360-nav-gradient);
-  box-shadow: 18px 0 48px -38px rgba(2,6,23,.92);
-}
-
-.sidebar-panel::before {
-  background:
-    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
-    radial-gradient(circle at 34% 8%, rgba(91,156,255,.12), transparent 26%);
-  background-size: 28px 28px, 28px 28px, auto;
-  opacity: .62;
-}
-
-.sidebar-panel .sidebar-head {
-  border-bottom: 1px solid rgba(148,163,184,.085);
-}
-
-.sidebar-panel .sidebar-logo {
-  filter: drop-shadow(0 8px 18px rgba(0,0,0,.34));
-}
-
-.sidebar-item {
-  transition:
-    color var(--v360-motion-base) ease,
-    background-color var(--v360-motion-base) ease,
-    border-color var(--v360-motion-base) ease,
-    transform var(--v360-motion-base) var(--v360-ease);
-}
-
-.sidebar-item-icon {
-  transition: color var(--v360-motion-base) ease, transform var(--v360-motion-base) var(--v360-ease);
-}
-
-.sidebar-pill {
-  border-color: rgba(96,165,250,.32) !important;
-  background:
-    linear-gradient(105deg, rgba(22,119,255,.24), rgba(255,255,255,.075)) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.22),
-    0 12px 28px -18px rgba(22,119,255,.82) !important;
-}
-
-@media (hover: hover) {
-  .sidebar-item:hover:not(.sidebar-item-active):not(.sidebar-item-danger) {
-    border-color: rgba(148,163,184,.11) !important;
-    background: rgba(255,255,255,.045) !important;
-    transform: translateX(2px);
-  }
-
-  .sidebar-item:hover .sidebar-item-icon {
-    transform: scale(1.045);
-  }
-}
-
 /* Encabezados: una única barra corporativa para cliente y gestión. */
 .client-screen-header,
 .detail-header,
@@ -2356,7 +2294,7 @@ a {
 .coverage-header-compact,
 .campanas-header,
 .quotes-header {
-  border-bottom: 1px solid rgba(96,165,250,.18);
+  border-bottom: 1px solid rgba(255,255,255,.07);
   background: var(--v360-header-gradient);
   box-shadow: 0 14px 32px -28px rgba(2,6,23,.82), inset 0 -1px 0 rgba(255,255,255,.025);
 }
@@ -2372,14 +2310,14 @@ a {
 .client-screen-notification-btn,
 .mobile-sidebar-header-btn,
 .inicio-header-icon-btn {
-  border-color: rgba(148,197,255,.18) !important;
+  border-color: rgba(255,255,255,.14) !important;
   background: rgba(255,255,255,.07) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 24px -18px rgba(0,0,0,.82) !important;
 }
 
 @media (hover: hover) {
   :where(.client-screen-notification-btn, .mobile-sidebar-header-btn, .inicio-header-icon-btn):hover {
-    border-color: rgba(148,197,255,.32) !important;
+    border-color: rgba(255,255,255,.24) !important;
     background: rgba(255,255,255,.115) !important;
   }
 }
@@ -2537,31 +2475,6 @@ a {
 }
 
 @media (min-width: 900px) {
-  .sidebar-panel {
-    width: 196px;
-    min-width: 196px;
-  }
-
-  .sidebar-panel .sidebar-head {
-    padding-top: 42px;
-    padding-bottom: 25px;
-  }
-
-  .sidebar-panel .sidebar-logo {
-    height: 24px;
-  }
-
-  .sidebar-panel .sidebar-list {
-    padding-top: 18px;
-  }
-
-  .sidebar-item {
-    min-height: 46px;
-    margin: 3px 10px;
-    width: calc(100% - 20px);
-    padding: 11px 13px;
-  }
-
   .client-screen-header {
     min-height: 72px;
     padding-left: clamp(32px, 4vw, 64px);
@@ -2579,21 +2492,6 @@ a {
 }
 
 @media (max-width: 899px) {
-  .sidebar-panel {
-    background: var(--v360-nav-gradient) !important;
-  }
-
-  .sidebar-panel .sidebar-head {
-    background: transparent !important;
-  }
-
-  .sidebar-profile-chip-expanded {
-    border-color: rgba(96,165,250,.18) !important;
-    background:
-      radial-gradient(circle at 0 0, rgba(22,119,255,.19), transparent 44%),
-      rgba(255,255,255,.052) !important;
-  }
-
   .client-screen-header {
     min-height: 66px;
   }
