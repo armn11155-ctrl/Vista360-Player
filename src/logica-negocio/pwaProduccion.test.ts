@@ -53,8 +53,28 @@ describe("la cache del service worker no puede filtrar datos entre usuarios", ()
     // usuario podria recuperar archivos privados del anterior.
     expect(sw).toContain("if (!mismoOrigen)");
     const rama = sw.slice(sw.indexOf("if (!mismoOrigen)"), sw.indexOf("const esAssetConHash"));
-    expect(rama).toContain("event.respondWith(fetch(event.request))");
+    // Lo que importa es que NO se guarde nada de otro origen.
     expect(rama).not.toContain("cache.put");
+    expect(rama).not.toContain("caches.open");
+    // Antes esta prueba exigia respondWith(fetch(event.request)), es
+    // decir, reenviar la peticion a mano. Se cambio porque ESO era el
+    // bug: reenviarla desde el service worker rompia los tiles del mapa
+    // (mapa en gris, sin error en consola). Ahora la rama solo hace
+    // "return", que cumple lo mismo -- no se cachea nada de otro origen
+    // -- y ademas deja que el navegador haga la peticion sin
+    // intermediarios. La prueba fija la INTENCION, no la implementacion
+    // concreta que resulto estar mal.
+    // Se quitan los comentarios antes de comprobarlo: el propio sw.js
+    // EXPLICA en un comentario por que no debe llamar a respondWith, y
+    // sin esto ese comentario haria fallar la prueba (el mismo tropiezo
+    // que ya paso con los hashes de la CSP).
+    const ramaEjecutable = rama
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .split("\n")
+      .filter((l) => !l.trim().startsWith("//"))
+      .join("\n");
+    expect(ramaEjecutable).not.toContain("respondWith");
+    expect(ramaEjecutable).toContain("return;");
   });
 
   it("solo se guarda el shell estatico", () => {
