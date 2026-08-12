@@ -20,11 +20,14 @@ const NODOS: PuntoGeografico[] = [
   { lat: 40.42, lon: -3.7 },
   { lat: 25.2, lon: 55.27 },
   { lat: 35.68, lon: 139.69 },
+  { lat: -23.55, lon: -46.63 },
+  { lat: -26.2, lon: 28.04 },
+  { lat: 1.35, lon: 103.82 },
+  { lat: -33.87, lon: 151.21 },
 ];
 
 const RUTAS: Array<[number, number]> = [[0, 1], [0, 2], [2, 3], [3, 4]];
 const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"] as const;
-const DURACION_ETIQUETA = 3000;
 const INTERVALO_CUADRO = 1000 / 30;
 
 function estaDentro(lon: number, lat: number, poligono: Array<[number, number]>) {
@@ -217,38 +220,43 @@ export default function PixelGlobe() {
         contexto.fill();
       }
 
-      const tiempoEtiqueta = movimientoReducido.matches ? 0 : tiempo;
-      const cicloEtiqueta = Math.floor(tiempoEtiqueta / DURACION_ETIQUETA);
-      const posicionCiclo = tiempoEtiqueta % DURACION_ETIQUETA;
-      const indiceEtiqueta = cicloEtiqueta % ETIQUETAS.length;
       const candidatos = vectoresNodos
-        .map((vector, indice) => ({ indice, punto: proyectar(vector, angulo, centroX, centroY, radio) }))
-        .filter(({ punto }) => punto.z > 0.16)
+        .map((vector) => ({ punto: proyectar(vector, angulo, centroX, centroY, radio) }))
+        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.48 && punto.x < ancho - 26)
         .sort((a, b) => b.punto.z - a.punto.z);
-      const candidato = candidatos[indiceEtiqueta % Math.max(1, candidatos.length)] ?? candidatos[0];
+      const seleccionados: typeof candidatos = [];
+      for (const candidato of candidatos) {
+        if (seleccionados.every(({ punto }) => Math.abs(punto.y - candidato.punto.y) >= 58)) {
+          seleccionados.push(candidato);
+        }
+        if (seleccionados.length === ETIQUETAS.length) break;
+      }
 
-      if (candidato) {
-        const entrada = Math.min(1, posicionCiclo / 360);
-        const salida = Math.min(1, (DURACION_ETIQUETA - posicionCiclo) / 360);
-        const opacidad = movimientoReducido.matches ? 1 : Math.max(0, Math.min(entrada, salida));
+      seleccionados.forEach((candidato, indiceEtiqueta) => {
         const texto = ETIQUETAS[indiceEtiqueta];
+        const profundidad = Math.min(1, Math.max(0, (candidato.punto.z - 0.08) / 0.24));
+        const distanciaBorde = Math.min(1, Math.max(0, (ancho - 26 - candidato.punto.x) / 54));
+        const opacidad = Math.min(profundidad, distanciaBorde);
         contexto.save();
         contexto.globalAlpha = opacidad;
         contexto.font = "800 9px Inter, system-ui, sans-serif";
         contexto.textBaseline = "middle";
         const anchoEtiqueta = Math.ceil(contexto.measureText(texto.toUpperCase()).width) + 34;
         const altoEtiqueta = 30;
-        const minimoX = Math.min(ancho - anchoEtiqueta - 18, Math.max(18, ancho * 0.55));
-        const xEtiqueta = Math.max(minimoX, Math.min(ancho - anchoEtiqueta - 18, candidato.punto.x - anchoEtiqueta / 2));
-        const yEtiqueta = Math.max(24, candidato.punto.y - 58);
-        const anclaX = Math.max(xEtiqueta + 14, Math.min(xEtiqueta + anchoEtiqueta - 14, candidato.punto.x));
+        const espacioDerecho = ancho - 22 - candidato.punto.x;
+        const aLaDerecha = espacioDerecho >= anchoEtiqueta + 16;
+        const xEtiqueta = aLaDerecha
+          ? candidato.punto.x + 16
+          : candidato.punto.x - anchoEtiqueta - 16;
+        const yEtiqueta = Math.max(20, Math.min(alto - altoEtiqueta - 20, candidato.punto.y - altoEtiqueta / 2));
+        const anclaX = aLaDerecha ? xEtiqueta : xEtiqueta + anchoEtiqueta;
 
         contexto.strokeStyle = "rgba(204, 226, 255, .56)";
         contexto.lineWidth = 1;
         contexto.setLineDash([]);
         contexto.beginPath();
-        contexto.moveTo(candidato.punto.x, candidato.punto.y - 7);
-        contexto.lineTo(anclaX, yEtiqueta + altoEtiqueta);
+        contexto.moveTo(candidato.punto.x + (aLaDerecha ? 6 : -6), candidato.punto.y);
+        contexto.lineTo(anclaX, yEtiqueta + altoEtiqueta / 2);
         contexto.stroke();
 
         contexto.shadowColor = "rgba(2, 12, 34, .42)";
@@ -271,7 +279,7 @@ export default function PixelGlobe() {
         contexto.fillStyle = "rgba(239, 246, 255, .88)";
         contexto.fillText(texto.toUpperCase(), xEtiqueta + 23, yEtiqueta + altoEtiqueta / 2 + 0.5);
         contexto.restore();
-      }
+      });
     };
 
     const cuadro = (tiempo: number) => {
