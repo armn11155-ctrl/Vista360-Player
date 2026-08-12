@@ -3653,3 +3653,229 @@ a {
     border-bottom: 1px solid #e7ebf0 !important;
   }
 }
+
+/* =====================================================================
+   CONSOLA CORPORATIVA — NAVEGACIÓN, LOGIN Y GESTIÓN
+   ---------------------------------------------------------------------
+   La selección activa deja de parecer un halo circular y adopta la
+   geometría de los controles del producto. El login pierde el adorno
+   azul del kicker. Gestión agrupa sus tres áreas en una sola consola,
+   con divisores internos en vez de tarjetas dentro de tarjetas.
+   ===================================================================== */
+
+/* “Acceso privado” ya funciona como kicker por tipografía y espaciado;
+   el guion azul duplicaba el énfasis tanto en móvil como en laptop. */
+.login-access-kicker::before {
+  content: none !important;
+  display: none !important;
+}
+
+.login-access-kicker {
+  gap: 0;
+}
+
+@media (min-width: 900px) {
+  /* Luz activa con forma de control: cuadrado suave, nunca una caja dura. */
+  .sidebar-panel .sidebar-pill {
+    left: 14px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+    background:
+      radial-gradient(ellipse at 50% 48%, rgba(247,250,255,.74) 0 7%, rgba(75,151,255,.62) 18%, transparent 40%),
+      conic-gradient(from 28deg, #218cff 0deg, #6557ff 110deg, #dc4bbc 201deg, #f26058 270deg, #218cff 360deg) !important;
+    filter: blur(4px) saturate(1.06);
+    opacity: .79;
+    box-shadow:
+      0 0 9px rgba(58,139,255,.48),
+      0 0 18px rgba(126,69,255,.28),
+      0 0 25px rgba(229,62,174,.12);
+  }
+
+  .sidebar-panel .sidebar-pill::after {
+    inset: 8px;
+    border-radius: 9px !important;
+    background: radial-gradient(ellipse, rgba(255,255,255,.57) 0 7%, rgba(65,142,255,.36) 25%, rgba(99,67,255,.18) 50%, transparent 76%);
+  }
+
+  /* Selector: un encabezado sobrio y perfiles sin líneas decorativas. */
+  .admin-picker-header {
+    width: min(700px, calc(100% - 56px));
+    margin-top: 68px;
+    margin-bottom: 18px;
+    padding: 22px 30px 20px;
+    border-color: rgba(203,220,244,.16);
+    border-radius: 20px;
+    background: linear-gradient(150deg, rgba(5,12,25,.94), rgba(5,12,25,.84));
+    box-shadow: 0 28px 64px -38px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  .admin-picker-title {
+    font-size: 28px;
+    font-weight: 740;
+    letter-spacing: -.04em;
+  }
+
+  .admin-picker-sub {
+    margin-bottom: 16px;
+  }
+
+  .admin-picker-tabs {
+    margin-bottom: 11px;
+    border-radius: 11px;
+  }
+
+  .admin-picker-search {
+    min-height: 44px;
+    border-radius: 11px;
+  }
+
+  .admin-picker-grid {
+    gap: 22px;
+  }
+
+  .admin-picker-tile:not(.archived) {
+    padding: 9px 9px 12px;
+    border-color: rgba(203,220,244,.13);
+    border-radius: 18px;
+    background: rgba(4,10,21,.88);
+    box-shadow: 0 22px 48px -34px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  .admin-picker-tile:not(.archived)::before {
+    content: none;
+    display: none;
+  }
+
+  .admin-picker-tile-avatar {
+    width: 100%;
+    border-radius: 14px;
+  }
+
+  .admin-picker-tile-name {
+    font-size: 13px;
+    font-weight: 730;
+  }
+
+  /* Centro de gestión: una sola superficie, tres áreas y divisores. */
+  .admin-picker-management-screen {
+    padding: 28px 48px 44px;
+    background:
+      linear-gradient(180deg, rgba(2,7,18,.10) 0%, rgba(2,7,18,.24) 58%, rgba(2,7,18,.46) 100%),
+      url('/selector-clientes-atardecer-desktop.jpg') center / cover no-repeat;
+  }
+
+  .admin-picker-management-logo {
+    top: 48px;
+    width: 112px;
+    opacity: .86;
+  }
+
+  .admin-picker-management-head {
+    min-height: 70px;
+    margin-bottom: 14px;
+    padding: 14px 170px 14px 17px;
+    border-color: rgba(203,220,244,.15);
+    border-radius: 18px;
+    background: rgba(5,12,25,.91);
+    box-shadow: 0 24px 56px -38px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: blur(14px) saturate(1.08);
+    -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  }
+
+  .admin-picker-management-head strong {
+    font-size: 22px;
+    font-weight: 740;
+  }
+
+  .admin-picker-management-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgba(203,220,244,.15);
+    border-radius: 20px;
+    background: rgba(5,12,25,.88);
+    box-shadow: 0 30px 72px -42px rgba(0,0,0,.96), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: blur(16px) saturate(1.08);
+    -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  }
+
+  .admin-picker-management-group {
+    min-height: 350px;
+    padding: 20px 18px;
+    overflow: visible;
+    border: 0;
+    border-right: 1px solid rgba(203,220,244,.11);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .admin-picker-management-group:last-child {
+    border-right: 0;
+  }
+
+  .admin-picker-management-group::before {
+    content: none;
+    display: none;
+  }
+
+  .admin-picker-management-group-head {
+    margin: 0 0 10px;
+    padding: 0 2px 15px;
+    border-bottom-color: rgba(203,220,244,.10);
+  }
+
+  .admin-picker-management-group-head > span {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  .admin-picker-management-group-cards {
+    grid-auto-rows: auto;
+    align-content: start;
+    gap: 0;
+  }
+
+  .admin-picker-management-card {
+    min-height: 66px;
+    padding: 10px 8px;
+    border: 0;
+    border-bottom: 1px solid rgba(203,220,244,.085);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .admin-picker-management-card:last-child {
+    border-bottom: 0;
+  }
+
+  .admin-picker-management-card .admin-picker-action-icon {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  .admin-picker-management-card i {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    background: transparent;
+  }
+
+  .admin-picker-management-card:hover {
+    transform: none;
+    border-color: rgba(203,220,244,.085);
+    border-radius: 11px;
+    background: rgba(255,255,255,.055);
+    box-shadow: none;
+  }
+}

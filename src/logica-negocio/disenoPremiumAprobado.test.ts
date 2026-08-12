@@ -265,6 +265,17 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?width: 44px !important;[\s\S]*?filter: blur\(4px\) saturate\(1\.08\);/);
   });
 
+  it("unifica navegación, login y gestión con geometría corporativa", () => {
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("CONSOLA CORPORATIVA — NAVEGACIÓN, LOGIN Y GESTIÓN");
+    expect(sistema).toMatch(/\.login-access-kicker::before \{[\s\S]*?content: none !important;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?border-radius: 14px !important;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill::after \{[\s\S]*?border-radius: 9px !important;/);
+    expect(sistema).toMatch(/\.admin-picker-management-grid \{[\s\S]*?gap: 0;[\s\S]*?border-radius: 20px;/);
+    expect(sistema).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-right: 1px solid/);
+    expect(sistema).toMatch(/\.admin-picker-management-card \{[\s\S]*?border-radius: 0;[\s\S]*?background: transparent;/);
+  });
+
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
     const detalle = leer("src/components/screens/DetalleCampana.tsx");
     const paneles = leer("src/components/screens/Paneles.tsx");
