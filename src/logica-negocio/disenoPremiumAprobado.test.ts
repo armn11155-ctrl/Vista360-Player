@@ -12,17 +12,15 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Publicidad exterior premium");
     expect(login).toContain("Campañas, cobertura y resultados conectados");
     expect(login).toContain('className="login-network-stage"');
-    expect(login).toContain('className="login-network-globe"');
-    expect(login).toContain('id="v360-globe-dots"');
+    expect(login).toContain("import PixelGlobe");
+    expect(login).toContain("<PixelGlobe />");
     expect(login).not.toContain("login-network-visual-brand");
     expect(login).not.toContain("v360-word-dots");
     expect(login).not.toContain("login-network-visual-billboard");
     expect(login).not.toContain("login-billboard-code-frame");
     expect(login).not.toContain("login-network-index");
-    expect(login).toContain('pathLength="1"');
-    expect(login).toContain("login-network-routes");
-    expect(login).toContain("login-network-node-primary");
     expect(login).toContain("Red de campaña activa");
+    expect(login.indexOf('className="login-left-panel"')).toBeLessThan(login.indexOf('className="login-right-panel"'));
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');
     expect(login).toContain('className="login-btn-spinner"');
@@ -36,9 +34,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("min-height: 100dvh");
     expect(estilos).toContain("max-width: none");
     expect(estilos).toContain("border-radius: 0");
-    expect(estilos).toContain("login-network-orbit-spin");
-    expect(estilos).toContain("login-network-route-flow");
-    expect(estilos).toContain("login-network-node-pulse");
+    expect(estilos).toContain("login-network-globe-canvas");
     expect(estilos).toContain("login-network-live-pulse");
     expect(estilos).not.toContain("login-network-scene-cycle");
     expect(estilos).not.toContain("login-dot-brand-word");
@@ -53,6 +49,21 @@ describe("refinamiento premium aprobado", () => {
     const sistema = leer("src/styles/design-system.css");
     expect(sistema).toContain(".login-message-stack");
     expect(sistema).toContain("@media (max-width: 899px) and (max-height: 740px)");
+  });
+
+  it("anima un planeta pixelado eficiente y libera todos sus recursos", () => {
+    const globo = leer("src/components/PixelGlobe.tsx");
+    expect(globo).toContain('className="login-network-globe-canvas"');
+    expect(globo).toContain('matchMedia("(min-width: 900px)")');
+    expect(globo).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(globo).toContain("window.requestAnimationFrame");
+    expect(globo).toContain("window.cancelAnimationFrame");
+    expect(globo).toContain("new ResizeObserver");
+    expect(globo).toContain("observador.disconnect()");
+    expect(globo).toContain('removeEventListener("visibilitychange"');
+    expect(globo).toContain("document.hidden");
+    expect(globo).toContain("lineDashOffset");
+    expect(globo).not.toContain("fetch(");
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {

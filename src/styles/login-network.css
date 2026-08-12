@@ -207,92 +207,15 @@
     pointer-events: none;
   }
 
-  .login-network-globe {
+  .login-network-globe-canvas {
     position: absolute;
     z-index: 2;
-    top: 50%;
-    right: clamp(-230px, -15vw, -128px);
-    width: min(760px, 94%);
-    height: auto;
-    color: rgba(196,220,255,.38);
-    overflow: visible;
-    transform: translate3d(0,-48%,0);
-    filter: drop-shadow(0 28px 58px rgba(1,8,24,.26));
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 28px 58px rgba(1,8,24,.22));
   }
-
-  .login-network-orbit {
-    stroke: rgba(191,219,254,.28);
-    stroke-width: 1.25;
-    stroke-dasharray: 7 13;
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: login-network-orbit-spin 36s linear infinite;
-  }
-
-  .login-network-orbit circle {
-    fill: #D8E9FF;
-    stroke: none;
-    filter: drop-shadow(0 0 9px rgba(191,219,254,.72));
-  }
-
-  .login-network-halo {
-    fill: none;
-    stroke: rgba(191,219,254,.14);
-    stroke-width: 1;
-    stroke-dasharray: 2 9;
-  }
-
-  .login-network-core { stroke: rgba(191,219,254,.20); stroke-width: 1; }
-
-  .login-network-dot-field {
-    color: rgba(180,211,255,.14);
-    animation: login-network-dot-breathe 6s ease-in-out infinite;
-  }
-
-  .login-network-grid {
-    fill: none;
-    stroke: rgba(191,219,254,.17);
-    stroke-width: 1;
-  }
-
-  .login-network-land {
-    color: rgba(218,234,255,.68);
-    fill: url(#v360-globe-dots);
-    animation: login-network-land-drift 18s ease-in-out infinite alternate;
-  }
-
-  .login-network-routes {
-    fill: none;
-    stroke: #A9CEFF;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-dasharray: .06 .04;
-    filter: drop-shadow(0 0 5px rgba(147,197,253,.60));
-  }
-
-  .login-network-routes path {
-    stroke-dashoffset: 1;
-    animation: login-network-route-flow 7s cubic-bezier(.3,.66,.22,1) infinite;
-  }
-
-  .login-network-routes path:nth-child(2) { animation-delay: .8s; }
-  .login-network-routes path:nth-child(3) { animation-delay: 1.6s; }
-  .login-network-routes path:nth-child(4) { animation-delay: 2.4s; }
-
-  .login-network-node circle:first-child {
-    fill: rgba(147,197,253,.12);
-    stroke: rgba(191,219,254,.62);
-    stroke-width: 1;
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: login-network-node-pulse 3.2s ease-in-out infinite;
-  }
-
-  .login-network-node circle:last-child { fill: #DDEBFF; stroke: none; }
-  .login-network-node-primary circle:first-child { fill: rgba(96,165,250,.23); stroke: #DDEBFF; }
-  .login-network-node:nth-child(2) circle:first-child { animation-delay: .65s; }
-  .login-network-node:nth-child(3) circle:first-child { animation-delay: 1.3s; }
-  .login-network-node:nth-child(4) circle:first-child { animation-delay: 1.95s; }
 
   .login-network-label {
     position: absolute;
@@ -445,31 +368,6 @@
     75%, 100% { opacity: 0; transform: translate3d(390%,0,0); }
   }
 
-  @keyframes login-network-orbit-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes login-network-dot-breathe {
-    0%, 100% { opacity: .68; }
-    50% { opacity: 1; }
-  }
-
-  @keyframes login-network-land-drift {
-    from { transform: translate3d(-3px,0,0); opacity: .80; }
-    to { transform: translate3d(4px,-2px,0); opacity: 1; }
-  }
-
-  @keyframes login-network-route-flow {
-    0%, 12% { stroke-dashoffset: 1; opacity: .18; }
-    62%, 82% { stroke-dashoffset: 0; opacity: .92; }
-    100% { stroke-dashoffset: -1; opacity: .18; }
-  }
-
-  @keyframes login-network-node-pulse {
-    0%, 100% { transform: scale(.82); opacity: .55; }
-    50% { transform: scale(1.28); opacity: 1; }
-  }
-
   @keyframes login-network-label-float {
     0%, 100% { transform: translate3d(0,0,0); }
     50% { transform: translate3d(0,-5px,0); }
@@ -488,7 +386,6 @@
   .login-network-logo { width: 180px; margin: 25px 0 24px; }
   .login-network-copy h1 { font-size: clamp(31px, 3.8vw, 40px); }
   .login-network-copy > p { max-width: 285px; font-size: 11.5px; }
-  .login-network-globe { right: -205px; width: 760px; }
   .login-network-label-coverage { right: 5%; }
   .login-right-panel { padding: 42px 34px; }
 }
@@ -506,8 +403,5 @@
 @media (min-width: 900px) and (prefers-reduced-motion: reduce) {
   .login-left-panel,
   .login-right-panel { opacity: 1; transform: none; }
-  .login-network-orbit { transform: rotate(18deg); }
-  .login-network-routes path { stroke-dashoffset: 0; opacity: .82; }
-  .login-network-node circle:first-child { transform: scale(1); opacity: .78; }
   .login-network-visual-globe { display: block; opacity: 1; }
 }
