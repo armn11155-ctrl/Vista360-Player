@@ -205,7 +205,8 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
     expect(sistema).toMatch(/\.sidebar-panel \{[\s\S]*?border-radius: 0 21px 21px 0;[\s\S]*?background: #050505;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?radial-gradient\(circle at 50% 50%/);
-    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?background: #f8fafc;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?color: #fff !important;[\s\S]*?background: transparent;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-bottom \.sidebar-item-danger,[\s\S]*?color: rgba\(255,255,255,\.62\) !important;/);
     expect(sistema).not.toContain('.sidebar-list[data-active="campanas"]');
   });
 
@@ -229,7 +230,9 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?--desktop-canvas: #f4f6f9;/);
     expect(sistema).toMatch(/\.inicio-account-status \{[\s\S]*?background: #f8fafc;/);
     expect(sistema).toMatch(/\.mis-campanas-month-status \{[\s\S]*?background: var\(--desktop-surface\) !important;/);
-    expect(sistema).toMatch(/\.report-action-muted \{[\s\S]*?background: transparent !important;/);
+    expect(sistema).toMatch(/\.mis-campanas-screen \{[\s\S]*?background: var\(--desktop-canvas\) !important;/);
+    expect(sistema).toMatch(/\.report-action-muted \{[\s\S]*?background: #f4f8fe !important;/);
+    expect(sistema).toMatch(/\.report-action-whatsapp \{[\s\S]*?background: #f1faf4 !important;/);
     expect(sistema).toContain("Cobertura conserva el mapa protagonista");
   });
 });

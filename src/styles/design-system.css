@@ -2622,18 +2622,20 @@ a {
   .sidebar-panel .sidebar-item-active .sidebar-item-icon {
     position: relative;
     z-index: 2;
-    width: 34px;
-    height: 34px;
+    width: 42px;
+    height: 42px;
     margin: 0;
-    flex-basis: 34px;
-    border-color: rgba(255,255,255,.92);
-    border-radius: 10px;
-    color: #174b96 !important;
-    background: #f8fafc;
-    box-shadow:
-      inset 0 1px 0 #fff,
-      0 5px 13px rgba(0,0,0,.42);
+    flex-basis: 42px;
+    border-color: transparent;
+    border-radius: 13px;
+    color: #fff !important;
+    background: transparent;
+    box-shadow: none;
     opacity: 1;
+  }
+
+  .sidebar-panel .sidebar-item-active .sidebar-item-icon svg {
+    filter: drop-shadow(0 1px 4px rgba(2,6,23,.72));
   }
 
   .sidebar-panel .sidebar-pill {
@@ -2720,10 +2722,25 @@ a {
     background: transparent !important;
   }
 
-  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon {
-    color: #fff !important;
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-label,
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon svg {
+    color: rgba(255,255,255,.62) !important;
     background: transparent;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon {
     opacity: .56;
+  }
+
+  @media (hover: hover) {
+    .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover,
+    .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover .sidebar-item-icon,
+    .sidebar-panel .sidebar-bottom .sidebar-item-danger:hover .sidebar-item-icon svg {
+      color: #fff !important;
+      background: transparent !important;
+    }
   }
 }
 
@@ -2860,9 +2877,12 @@ a {
   .inicio-account-status-arrow { color: #8a98aa; }
 
   /* Campañas: filtros contenidos y estado mensual informativo. */
+  .mis-campanas-screen {
+    background: var(--desktop-canvas) !important;
+  }
   .campanas-filter-bar {
     width: min(520px,calc(100% - 56px));
-    margin: 18px auto 2px;
+    margin: 18px auto 10px;
     padding: 4px;
     border: 1px solid var(--desktop-line);
     border-radius: 14px;
@@ -2998,9 +3018,20 @@ a {
     background: #f7f9fc !important;
   }
   .report-action-muted {
-    border: 1px solid transparent !important;
-    color: #52657a !important;
-    background: transparent !important;
+    border: 1px solid #d5e2f1 !important;
+    color: #245a9b !important;
+    background: #f4f8fe !important;
+  }
+  .report-action-muted svg {
+    color: #176fd5 !important;
+  }
+  .report-action-whatsapp {
+    border-color: #cde8d6 !important;
+    color: #177a42 !important;
+    background: #f1faf4 !important;
+  }
+  .report-action-whatsapp .report-whatsapp-icon {
+    opacity: 1;
   }
 
   /* Cobertura conserva el mapa protagonista; se suaviza solo lo auxiliar. */
@@ -3028,10 +3059,17 @@ a {
       border-color: #cbd7e5 !important;
       box-shadow: 0 20px 42px -32px rgba(15,23,42,.5) !important;
     }
-    .report-action-download:hover,
-    .report-action-muted:hover {
+    .report-action-download:hover {
       border-color: #c8d5e4 !important;
       background: #f1f5f9 !important;
+    }
+    .report-action-muted:hover {
+      border-color: #b9cfe8 !important;
+      background: #eaf3ff !important;
+    }
+    .report-action-whatsapp:hover {
+      border-color: #a9d9b9 !important;
+      background: #e7f7ec !important;
     }
   }
 }

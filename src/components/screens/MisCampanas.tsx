@@ -281,7 +281,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
     : "#";
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
+    <div className="mis-campanas-screen" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#fff" }}>
       <ClientScreenHeader
         title="Campañas"
         className="campanas-header"
