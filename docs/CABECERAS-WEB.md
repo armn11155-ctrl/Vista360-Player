@@ -144,11 +144,53 @@ Resultado buscado: **HTTP → HTTPS obligatorio → HSTS → el navegador ya ni 
 
 ## 3. CORS
 
-### 3.1 Bucket R2 — CORREGIDO
+### 3.1 Bucket R2 — CORREGIDO EN CÓDIGO, PENDIENTE DE APLICAR EN EL BUCKET
 
 **Estaba así**: `AllowedOrigins: ["*"]` con métodos `GET`, `HEAD`, `PUT`.
 
-**Ahora**: lista blanca en `scripts/set-r2-cors.mjs` — producción (raíz y `www`), el dominio `pages.dev` de Cloudflare (lo usan los despliegues de vista previa) y `localhost:5173` para desarrollo.
+**Ahora en el código**: lista blanca en `scripts/set-r2-cors.mjs` — producción (raíz y `www`), el dominio `pages.dev` de Cloudflare (lo usan los despliegues de vista previa) y `localhost:5173` para desarrollo.
+
+> ⚠️ **El bucket real todavía NO tiene esta configuración.** El paso
+> "Configurar CORS del bucket R2" del workflow de despliegue falla con
+> `AccessDenied` (403) y está marcado `continue-on-error: true` a
+> propósito: el token de R2 guardado en los secrets se creó con permiso
+> **Object Read & Write**, y cambiar la *configuración* de un bucket
+> (como CORS) exige **Admin Read & Write**. Es una limitación
+> preexistente, ya documentada en el propio workflow, no algo que haya
+> cambiado en esta pasada.
+>
+> Para aplicarlo, cualquiera de las dos vías:
+>
+> **A) A mano, una sola vez** (lo más rápido): Cloudflare Dashboard →
+> R2 → el bucket → *Settings* → *CORS Policy* → *Edit* y pegar:
+>
+> ```json
+> [
+>   {
+>     "AllowedOrigins": [
+>       "https://vista360player.pe",
+>       "https://www.vista360player.pe",
+>       "https://vista360-player.pages.dev",
+>       "http://localhost:5173",
+>       "http://127.0.0.1:5173"
+>     ],
+>     "AllowedMethods": ["GET", "HEAD", "PUT"],
+>     "AllowedHeaders": ["*"],
+>     "ExposeHeaders": ["Content-Type", "Content-Length", "Content-Disposition"],
+>     "MaxAgeSeconds": 3600
+>   }
+> ]
+> ```
+>
+> **B) Rotar el token de R2** a uno con *Admin Read & Write*, guardarlo
+> en los secrets `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` y volver a
+> lanzar el workflow. Entonces el script lo aplica solo, y seguirá
+> aplicándose en cada despliegue.
+>
+> **Después de aplicarlo, comprueba que las subidas siguen funcionando**
+> (subir un avatar o una foto de reporte). Si la lista de orígenes
+> quedara mal, la subida falla con un falso *"sin conexión"*, no con un
+> error de CORS visible.
 
 **Cuánto protege esto, honestamente**: el acceso real a R2 lo da la **firma** de la URL, no el CORS. Sin una URL firmada válida no se lee ni se escribe nada, venga el pedido de donde venga. Restringir orígenes no sustituye a la firma; lo que hace es que, si una URL firmada se filtra (historial, captura, chat), no se pueda explotar desde una página cualquiera abierta en el navegador de la víctima. Es defensa en profundidad y cuesta cero.
 
@@ -175,6 +217,6 @@ Cloudflare Pages la envía por defecto en el HTML y los assets estáticos. **No 
 | `unsafe-eval` / `unsafe-inline` | — | Ninguno de los dos hace falta |
 | HSTS | **Ausente** | `max-age=31536000` (sin `includeSubDomains`/`preload`, a propósito) |
 | HTTP → HTTPS | Ya funcionaba | VERIFICADO — no se tocó |
-| CORS R2 | `*` | Lista blanca de 5 orígenes |
+| CORS R2 | `*` | Lista blanca de 5 orígenes **en el código**; falta aplicarla en el bucket (token sin permiso Admin, ver §3.1) |
 | CORS Cloud Functions | Por defecto | VERIFICADO — no hace falta tocar |
 | X-Frame-Options, nosniff, Referrer, Permissions | Ya estaban bien | VERIFICADO — no se tocaron |
