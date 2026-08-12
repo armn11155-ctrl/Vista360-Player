@@ -261,6 +261,7 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-summary-grid > \.inicio-kpi-card \{[\s\S]*?border-radius: 0 !important;[\s\S]*?box-shadow: none !important;/);
     expect(sistema).toMatch(/\.inicio-quick-grid \{[\s\S]*?gap: 0 !important;[\s\S]*?background: #fff;/);
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-evidence-card \{[\s\S]*?background: #fff !important;/);
+    expect(sistema).toMatch(/\.inicio-account-status \{[\s\S]*?color: #0b1220 !important;[\s\S]*?background: #fff !important;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?width: 44px !important;[\s\S]*?filter: blur\(4px\) saturate\(1\.08\);/);
   });
 

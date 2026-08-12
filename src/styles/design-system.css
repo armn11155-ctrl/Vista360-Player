@@ -3547,10 +3547,11 @@ a {
 
   .inicio-account-status {
     padding: 18px;
-    border-color: #dfe5ed;
+    border-color: #dfe5ed !important;
     border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 16px 36px -34px rgba(15,23,42,.5);
+    color: #0b1220 !important;
+    background: #fff !important;
+    box-shadow: 0 16px 36px -34px rgba(15,23,42,.5) !important;
   }
 
   .inicio-account-status-head {
@@ -3558,7 +3559,18 @@ a {
   }
 
   .inicio-account-status-head h2 {
+    color: #0b1220 !important;
     font-size: 17px;
+  }
+
+  .inicio-account-status-head span {
+    color: #246fd5 !important;
+  }
+
+  .inicio-account-status-badge {
+    border-color: #dce4ed !important;
+    color: #68778a !important;
+    background: #f8fafc !important;
   }
 
   .inicio-account-status-grid {
@@ -3573,7 +3585,17 @@ a {
     border: 0;
     border-right: 1px solid #e7ebf0;
     border-radius: 0;
-    background: #fbfcfe;
+    color: #0b1220 !important;
+    background: #fbfcfe !important;
+  }
+
+  .inicio-account-status-grid button span,
+  .inicio-account-status-grid button small {
+    color: #68778a !important;
+  }
+
+  .inicio-account-status-grid button strong {
+    color: #0b1220 !important;
   }
 
   .inicio-account-status-grid button:last-child {
