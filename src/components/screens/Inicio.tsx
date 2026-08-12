@@ -122,6 +122,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
               <line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </button>
+          <div className="inicio-desktop-page-title" aria-hidden="true">
+            <span />
+            <strong>Inicio</strong>
+          </div>
           <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="inicio-logo" style={{ height:28, maxWidth:"64%", objectFit:"contain" }} />
           <div style={{ position:"absolute", right:0, display:"flex", alignItems:"center", gap:10 }}>
             <button

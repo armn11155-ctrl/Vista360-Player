@@ -627,6 +627,119 @@ a {
   }
 }
 
+/* =====================================================================
+   CABECERA DE CONTEXTO — LAPTOP
+   En móvil el título continúa centrado entre menú y campana. En laptop
+   el sidebar ya resuelve la navegación, así que el encabezado se vuelve
+   una barra editorial: sección a la izquierda y acciones a la derecha.
+   ===================================================================== */
+.inicio-desktop-page-title { display: none; }
+
+@media (min-width: 900px) {
+  .client-screen-header {
+    min-height: 64px !important;
+    padding: 0 clamp(28px, 4vw, 56px) !important;
+    display: flex !important;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid rgba(255,255,255,.075) !important;
+    background: #070C14 !important;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,.018) !important;
+  }
+
+  .client-screen-header-side {
+    width: auto !important;
+    min-width: 0 !important;
+  }
+
+  .client-screen-header .mobile-sidebar-header-btn {
+    display: none !important;
+  }
+
+  .client-screen-header-left:has(.client-screen-back) {
+    margin-right: 2px;
+  }
+
+  .client-screen-header-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 !important;
+    color: #FFFFFF;
+    font-size: 18px !important;
+    font-weight: 780 !important;
+    line-height: 1;
+    letter-spacing: -.018em !important;
+    text-align: left !important;
+  }
+
+  .client-screen-header-title::before,
+  .inicio-desktop-page-title > span {
+    content: "";
+    width: 26px;
+    height: 2px;
+    flex: 0 0 26px;
+    border-radius: 99px;
+    background: #438BFF;
+    box-shadow: 0 0 13px rgba(67,139,255,.46);
+  }
+
+  .client-screen-header-right {
+    margin-left: auto;
+  }
+
+  .client-screen-notification-btn {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 12px !important;
+    background: rgba(255,255,255,.065) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07) !important;
+  }
+
+  .inicio-header {
+    min-height: 64px !important;
+    padding: 0 clamp(28px, 4vw, 56px) !important;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.075);
+    background: #070C14 !important;
+    box-shadow: inset 0 -1px 0 rgba(255,255,255,.018) !important;
+  }
+
+  .inicio-header > div:first-child {
+    width: min(1320px, 100%) !important;
+    min-height: 64px !important;
+    margin: 0 auto !important;
+    justify-content: flex-start !important;
+  }
+
+  .inicio-desktop-page-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+  }
+
+  .inicio-desktop-page-title > strong {
+    font-size: 18px;
+    font-weight: 780;
+    line-height: 1;
+    letter-spacing: -.018em;
+  }
+
+  .inicio-header > .inicio-greeting-title,
+  .inicio-header > .inicio-greeting-sub,
+  .inicio-header > .inicio-status-pill {
+    display: none !important;
+  }
+
+  .inicio-content {
+    margin-top: 0 !important;
+    border-radius: 0 !important;
+  }
+}
+
 /* Centro de gestión — consola operativa premium.
    El atardecer compartido con el selector mantiene la continuidad visual.
    Estos estilos conservan la profundidad de
@@ -3086,5 +3199,14 @@ a {
       border-color: #a9d9b9 !important;
       background: #e7f7ec !important;
     }
+  }
+}
+
+/* Resolución final de la cabecera de Inicio en laptop. El bloque editorial
+   anterior conserva su tablero, pero ya no restaura el padding del hero. */
+@media (min-width: 900px) {
+  .inicio-header {
+    min-height: 64px !important;
+    padding: 0 clamp(28px, 4vw, 56px) !important;
   }
 }

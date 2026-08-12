@@ -136,9 +136,13 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      const centroX = ancho * 0.84;
+      // La esfera debe caber completa en el panel. Antes su centro estaba
+      // al 84% del canvas y casi media circunferencia quedaba fuera del
+      // viewport, por eso se percibía como una forma recortada. El nuevo
+      // centro y radio conservan su protagonismo sin tocar los textos.
+      const centroX = ancho * 0.66;
       const centroY = alto * 0.52;
-      const radio = Math.min(ancho * 0.37, alto * 0.405);
+      const radio = Math.min(ancho * 0.29, alto * 0.39);
       const angulo = movimientoReducido.matches ? -0.55 : -0.55 + tiempo * 0.000105;
       const cosenoAngulo = Math.cos(angulo);
       const senoAngulo = Math.sin(angulo);
@@ -169,12 +173,9 @@ export default function PixelGlobe() {
       esfera.addColorStop(0.55, "rgba(28, 92, 193, .10)");
       esfera.addColorStop(1, "rgba(5, 26, 67, .04)");
       contexto.fillStyle = esfera;
-      contexto.strokeStyle = "rgba(198, 221, 255, .20)";
-      contexto.lineWidth = 1;
       contexto.beginPath();
       contexto.arc(centroX, centroY, radio, 0, Math.PI * 2);
       contexto.fill();
-      contexto.stroke();
 
       for (const punto of PUNTOS) {
         const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
@@ -298,6 +299,29 @@ export default function PixelGlobe() {
         contexto.fillText(texto.toUpperCase(), xEtiqueta + 23, yEtiqueta + altoEtiqueta / 2 + 0.5);
         contexto.restore();
       });
+
+      // Acabado sin borde: la máscara conserva el interior nítido y
+      // desvanece únicamente el último tramo de la esfera. Así no aparece
+      // un aro artificial ni un corte recto contra el límite del panel.
+      contexto.save();
+      contexto.globalCompositeOperation = "destination-in";
+      const mascaraCircular = contexto.createRadialGradient(
+        centroX,
+        centroY,
+        radio * 0.78,
+        centroX,
+        centroY,
+        radio * 1.08,
+      );
+      mascaraCircular.addColorStop(0, "rgba(0, 0, 0, 1)");
+      mascaraCircular.addColorStop(0.76, "rgba(0, 0, 0, 1)");
+      mascaraCircular.addColorStop(0.94, "rgba(0, 0, 0, .72)");
+      mascaraCircular.addColorStop(1, "rgba(0, 0, 0, 0)");
+      contexto.fillStyle = mascaraCircular;
+      contexto.beginPath();
+      contexto.arc(centroX, centroY, radio * 1.08, 0, Math.PI * 2);
+      contexto.fill();
+      contexto.restore();
     };
 
     const cuadro = (tiempo: number) => {

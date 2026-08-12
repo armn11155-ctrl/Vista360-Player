@@ -90,8 +90,23 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
-    expect(globo).toContain("ancho * 0.84");
+    expect(globo).toContain("ancho * 0.66");
+    expect(globo).toContain("ancho * 0.29");
+    expect(globo).toContain('globalCompositeOperation = "destination-in"');
+    expect(globo).toContain("const mascaraCircular");
+    expect(globo).not.toContain('strokeStyle = "rgba(198, 221, 255, .20)"');
     expect(globo).not.toContain("fetch(");
+  });
+
+  it("separa la cabecera editorial de laptop sin alterar la móvil", () => {
+    const inicio = leer("src/components/screens/Inicio.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    expect(inicio).toContain('className="inicio-desktop-page-title"');
+    expect(sistema).toContain("CABECERA DE CONTEXTO — LAPTOP");
+    expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.client-screen-header-title \{[\s\S]*?text-align: left !important;/);
+    expect(sistema).toMatch(/\.client-screen-header \.mobile-sidebar-header-btn \{[\s\S]*?display: none !important;/);
+    expect(sistema).toContain(".inicio-desktop-page-title { display: none; }");
+    expect(sistema).toMatch(/\.inicio-header > \.inicio-greeting-title,[\s\S]*?display: none !important;/);
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {
