@@ -175,6 +175,21 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("font-size: 9px");
   });
 
+  it("lleva la consola premium del login de escritorio a móvil sin tocar su formulario", () => {
+    const login = leer("src/components/LoginScreen.tsx");
+    const estilos = leer("src/styles/design-system.css");
+
+    expect(login).toContain('className="login-right-panel"');
+    expect(estilos).toContain("LOGIN MÓVIL — CONSOLA DE ACCESO VISTA360");
+    expect(estilos).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.login-right-panel \{[\s\S]*?border-radius: 26px;[\s\S]*?linear-gradient\(155deg, rgba\(7,17,31,\.97\)/);
+    expect(estilos).toMatch(/\.login-logo \.login-tagline \{[\s\S]*?color: rgba\(191,219,254,\.60\);/);
+    expect(estilos).toMatch(/\.login-card \{[\s\S]*?background: transparent;[\s\S]*?backdrop-filter: none;/);
+    expect(estilos).toMatch(/\.login-card \.form-input \{[\s\S]*?min-height: 52px;[\s\S]*?background: #f8fafd;/);
+    expect(estilos).toMatch(/\.login-btn \{[\s\S]*?background: #2563eb;[\s\S]*?text-transform: uppercase;/);
+    expect(estilos).toContain(".login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel");
+    expect(login).not.toContain("login-mobile-only-form");
+  });
+
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
     const inicio = leer("src/components/screens/Inicio.tsx");
     const estilosApp = leer("src/styles/app.css");
