@@ -93,8 +93,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
             <div className="login-network-visual-globe">
               <PixelGlobe />
-              <div className="login-network-label login-network-label-coverage"><i />Cobertura</div>
-              <div className="login-network-label login-network-label-results"><i />Resultados</div>
             </div>
 
           </div>

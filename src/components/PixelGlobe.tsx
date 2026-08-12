@@ -23,6 +23,8 @@ const NODOS: PuntoGeografico[] = [
 ];
 
 const RUTAS: Array<[number, number]> = [[0, 1], [0, 2], [2, 3], [3, 4]];
+const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"] as const;
+const DURACION_ETIQUETA = 3000;
 const INTERVALO_CUADRO = 1000 / 30;
 
 function estaDentro(lon: number, lat: number, poligono: Array<[number, number]>) {
@@ -48,11 +50,29 @@ function aVector({ lat, lon }: PuntoGeografico): Vector3 {
 }
 
 const PUNTOS: PuntoEsfera[] = [];
-for (let lat = -82; lat <= 82; lat += 3) {
-  const desfase = Math.round((lat + 82) / 3) % 2 === 0 ? 0 : 1.5;
-  for (let lon = -180 + desfase; lon < 180; lon += 3) {
+for (let lat = -82; lat <= 82; lat += 1.8) {
+  const desfase = Math.round((lat + 82) / 1.8) % 2 === 0 ? 0 : 0.9;
+  for (let lon = -180 + desfase; lon < 180; lon += 1.8) {
     PUNTOS.push({ tierra: esTierra(lon, lat), vector: aVector({ lat, lon }) });
   }
+}
+
+function rectanguloRedondeado(
+  contexto: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  ancho: number,
+  alto: number,
+  radio: number,
+) {
+  const r = Math.min(radio, ancho / 2, alto / 2);
+  contexto.beginPath();
+  contexto.moveTo(x + r, y);
+  contexto.arcTo(x + ancho, y, x + ancho, y + alto, r);
+  contexto.arcTo(x + ancho, y + alto, x, y + alto, r);
+  contexto.arcTo(x, y + alto, x, y, r);
+  contexto.arcTo(x, y, x + ancho, y, r);
+  contexto.closePath();
 }
 
 function rotar(vector: Vector3, angulo: number): Vector3 {
@@ -151,8 +171,8 @@ export default function PixelGlobe() {
         const proyectado = proyectar(punto.vector, angulo, centroX, centroY, radio);
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
-        const tamano = (punto.tierra ? 1.85 : 0.86) * proyectado.escala;
-        const opacidad = punto.tierra ? 0.22 + frente * 0.68 : 0.025 + frente * 0.105;
+        const tamano = (punto.tierra ? 1.38 : 0.62) * proyectado.escala;
+        const opacidad = punto.tierra ? 0.18 + frente * 0.72 : 0.018 + frente * 0.082;
         contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
         contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
       }
@@ -195,6 +215,62 @@ export default function PixelGlobe() {
         contexto.beginPath();
         contexto.arc(punto.x, punto.y, 2.1, 0, Math.PI * 2);
         contexto.fill();
+      }
+
+      const tiempoEtiqueta = movimientoReducido.matches ? 0 : tiempo;
+      const cicloEtiqueta = Math.floor(tiempoEtiqueta / DURACION_ETIQUETA);
+      const posicionCiclo = tiempoEtiqueta % DURACION_ETIQUETA;
+      const indiceEtiqueta = cicloEtiqueta % ETIQUETAS.length;
+      const candidatos = vectoresNodos
+        .map((vector, indice) => ({ indice, punto: proyectar(vector, angulo, centroX, centroY, radio) }))
+        .filter(({ punto }) => punto.z > 0.16)
+        .sort((a, b) => b.punto.z - a.punto.z);
+      const candidato = candidatos[indiceEtiqueta % Math.max(1, candidatos.length)] ?? candidatos[0];
+
+      if (candidato) {
+        const entrada = Math.min(1, posicionCiclo / 360);
+        const salida = Math.min(1, (DURACION_ETIQUETA - posicionCiclo) / 360);
+        const opacidad = movimientoReducido.matches ? 1 : Math.max(0, Math.min(entrada, salida));
+        const texto = ETIQUETAS[indiceEtiqueta];
+        contexto.save();
+        contexto.globalAlpha = opacidad;
+        contexto.font = "800 9px Inter, system-ui, sans-serif";
+        contexto.textBaseline = "middle";
+        const anchoEtiqueta = Math.ceil(contexto.measureText(texto.toUpperCase()).width) + 34;
+        const altoEtiqueta = 30;
+        const minimoX = Math.min(ancho - anchoEtiqueta - 18, Math.max(18, ancho * 0.55));
+        const xEtiqueta = Math.max(minimoX, Math.min(ancho - anchoEtiqueta - 18, candidato.punto.x - anchoEtiqueta / 2));
+        const yEtiqueta = Math.max(24, candidato.punto.y - 58);
+        const anclaX = Math.max(xEtiqueta + 14, Math.min(xEtiqueta + anchoEtiqueta - 14, candidato.punto.x));
+
+        contexto.strokeStyle = "rgba(204, 226, 255, .56)";
+        contexto.lineWidth = 1;
+        contexto.setLineDash([]);
+        contexto.beginPath();
+        contexto.moveTo(candidato.punto.x, candidato.punto.y - 7);
+        contexto.lineTo(anclaX, yEtiqueta + altoEtiqueta);
+        contexto.stroke();
+
+        contexto.shadowColor = "rgba(2, 12, 34, .42)";
+        contexto.shadowBlur = 18;
+        contexto.fillStyle = "rgba(4, 25, 62, .82)";
+        rectanguloRedondeado(contexto, xEtiqueta, yEtiqueta, anchoEtiqueta, altoEtiqueta, 15);
+        contexto.fill();
+        contexto.shadowBlur = 0;
+        contexto.strokeStyle = "rgba(191, 219, 254, .25)";
+        rectanguloRedondeado(contexto, xEtiqueta, yEtiqueta, anchoEtiqueta, altoEtiqueta, 15);
+        contexto.stroke();
+
+        contexto.fillStyle = "#93C5FD";
+        contexto.shadowColor = "rgba(147, 197, 253, .82)";
+        contexto.shadowBlur = 8;
+        contexto.beginPath();
+        contexto.arc(xEtiqueta + 14, yEtiqueta + altoEtiqueta / 2, 2.7, 0, Math.PI * 2);
+        contexto.fill();
+        contexto.shadowBlur = 0;
+        contexto.fillStyle = "rgba(239, 246, 255, .88)";
+        contexto.fillText(texto.toUpperCase(), xEtiqueta + 23, yEtiqueta + altoEtiqueta / 2 + 0.5);
+        contexto.restore();
       }
     };
 

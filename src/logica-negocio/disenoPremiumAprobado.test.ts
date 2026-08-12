@@ -14,6 +14,8 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain('className="login-network-stage"');
     expect(login).toContain("import PixelGlobe");
     expect(login).toContain("<PixelGlobe />");
+    expect(login).not.toContain("login-network-label-coverage");
+    expect(login).not.toContain("login-network-label-results");
     expect(login).not.toContain("login-network-visual-brand");
     expect(login).not.toContain("v360-word-dots");
     expect(login).not.toContain("login-network-visual-billboard");
@@ -67,8 +69,11 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('removeEventListener("visibilitychange"');
     expect(globo).toContain("document.hidden");
     expect(globo).toContain("lineDashOffset");
-    expect(globo).toContain("lat += 3");
-    expect(globo).toContain("lon += 3");
+    expect(globo).toContain("lat += 1.8");
+    expect(globo).toContain("lon += 1.8");
+    expect(globo).toContain('const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"]');
+    expect(globo).toContain("DURACION_ETIQUETA");
+    expect(globo).toContain("candidato.punto.x");
     expect(globo).toContain("ancho * 0.84");
     expect(globo).not.toContain("fetch(");
   });
