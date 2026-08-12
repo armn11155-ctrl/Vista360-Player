@@ -52,9 +52,40 @@ const client = new S3Client({
   credentials: { accessKeyId, secretAccessKey },
 });
 
+/**
+ * Origenes permitidos. Antes esto era ["*"], que es lo comodo pero deja
+ * que CUALQUIER pagina de internet use el navegador de un cliente para
+ * hablar con el bucket.
+ *
+ * Matiz honesto sobre cuanto protege esto: el acceso real a R2 lo da la
+ * FIRMA de la URL, no el CORS. Sin una URL firmada valida no se puede
+ * leer ni escribir nada, venga el pedido de donde venga. Restringir los
+ * origenes no sustituye a la firma; lo que hace es que, si una URL
+ * firmada se filtra (queda en un historial, en una captura, en un chat),
+ * no se pueda explotar desde una pagina cualquiera abierta en el
+ * navegador de la victima. Es defensa en profundidad, y cuesta cero.
+ *
+ * OJO al mantenerla: si algun dia cambia el dominio del portal, hay que
+ * agregarlo ACA o las subidas de fotos empezaran a fallar con un falso
+ * "sin conexion" (fetch no distingue un bloqueo de CORS de una caida de
+ * red -- esta explicado arriba).
+ */
+const origenesPermitidos = [
+  // Produccion.
+  "https://vista360player.pe",
+  "https://www.vista360player.pe",
+  // Dominio por defecto de Cloudflare Pages: lo usan los despliegues de
+  // vista previa antes de publicar. Sin esto, probar una subida en una
+  // preview falla y parece un bug de la app.
+  "https://vista360-player.pages.dev",
+  // Desarrollo local (puerto por defecto de Vite).
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
 const corsRules = [
   {
-    AllowedOrigins: ["*"],
+    AllowedOrigins: origenesPermitidos,
     AllowedMethods: ["GET", "HEAD", "PUT"],
     AllowedHeaders: ["*"],
     ExposeHeaders: ["Content-Type", "Content-Length", "Content-Disposition"],
@@ -64,7 +95,7 @@ const corsRules = [
 
 try {
   await client.send(new PutBucketCorsCommand({ Bucket: bucket, CORSConfiguration: { CORSRules: corsRules } }));
-  console.log(`✅ CORS configurado en el bucket ${bucket} (GET/HEAD/PUT desde cualquier origen).`);
+  console.log(`✅ CORS configurado en el bucket ${bucket} (GET/HEAD/PUT desde ${origenesPermitidos.length} origenes permitidos).`);
   const check = await client.send(new GetBucketCorsCommand({ Bucket: bucket }));
   console.log(JSON.stringify(check.CORSRules, null, 2));
 } catch (error) {

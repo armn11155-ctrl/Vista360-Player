@@ -64,12 +64,86 @@
 # (camara, microfono, ubicacion, pagos, sensores) -- si algun dia se
 # necesitan de verdad, se habilitan puntualmente aca.
 #
-# No incluye Content-Security-Policy todavia: una CSP mal armada puede
-# romper la carga de Firebase/R2 en silencio y no hay forma de probarla
-# visualmente antes de publicar, asi que se deja para una pasada aparte
-# con mas cuidado.
+# Strict-Transport-Security (HSTS): una vez que el navegador ve este
+# header, durante un año ni siquiera INTENTA hablar por http:// con este
+# dominio -- reescribe la peticion a https:// antes de salir a la red.
+# Eso cierra la ventana del primer salto: hoy http://vista360player.pe
+# responde 301 a https, pero ESE primer pedido viaja en claro y es donde
+# se ataca una red wifi publica.
+#
+# A proposito SIN includeSubDomains y SIN preload:
+#   - includeSubDomains obligaria a https a TODO subdominio de
+#     vista360player.pe, incluidos los que no existen todavia. Hoy solo
+#     resuelven el dominio raiz y www (ambos ya sirven https), asi que
+#     activarlo no romperia nada AHORA, pero dejaria una trampa puesta
+#     para el dia que alguien levante un subdominio interno sin
+#     certificado.
+#   - preload es practicamente irreversible: hay que pedirle a Google
+#     que saque el dominio de la lista y esperar a que la gente
+#     actualice el navegador.
+# Ver docs/CABECERAS-WEB.md para el plan de subida por fases.
+#
+# ── CSP: politica APLICADA, solo la parte sin riesgo ─────────────────
+#
+# Estas tres directivas no pueden romper la aplicacion y se comprobo una
+# por una antes de activarlas:
+#   frame-ancestors 'none' -- equivalente moderno del X-Frame-Options
+#     DENY que ya estaba puesto (hay navegadores que ya solo miran CSP).
+#   base-uri 'self' -- la app no tiene ninguna etiqueta <base>. Sin esta
+#     directiva, un XSS podria inyectar <base href="//sitio-malo"> y
+#     desviar TODAS las rutas relativas de la pagina.
+#   form-action 'self' -- ningun <form> de la app declara action= hacia
+#     fuera. Impide que un formulario inyectado mande datos afuera.
+#
+# La politica COMPLETA (script-src, connect-src, img-src...) va en
+# Report-Only justo debajo: esa si puede romper cosas y hay que
+# comprobarla con la app en la mano antes de aplicarla.
+#
+# ── CSP: politica COMPLETA en Report-Only ────────────────────────────
+#
+# Report-Only NO bloquea nada: el navegador solo anota en la consola lo
+# que HABRIA bloqueado. Sirve para descubrir dominios que no aparecen
+# leyendo el codigo (redirecciones internas de Firebase, por ejemplo)
+# sin dejar a nadie sin poder trabajar. Instrucciones para pasarla a
+# aplicada en docs/CABECERAS-WEB.md seccion 1.7.
+#
+# De donde sale cada origen (todos verificados en el codigo, no
+# copiados de una plantilla):
+#   firestore.googleapis.com       -- base de datos
+#   identitytoolkit.googleapis.com -- login
+#   securetoken.googleapis.com     -- renovacion del token de sesion
+#   firebaseinstallations / fcmregistrations -- notificaciones push
+#   *.cloudfunctions.net           -- las Cloud Functions del proyecto
+#   *.r2.cloudflarestorage.com     -- PDFs, avatares y fotos (URL firmada)
+#   tile.openstreetmap.org         -- mapa de cobertura (Leaflet)
+#   www.google.com                 -- iframe del mapa en Detalle de campana
+#
+# Y lo que se decidio NO poner:
+#   'unsafe-eval'   -- NO hace falta. Se reviso el bundle compilado: los
+#                      unicos ".eval(" que aparecen son metodos de un
+#                      objeto interno de Firestore, no el eval() global.
+#                      No hay new Function() en ningun sitio.
+#   'unsafe-inline' -- NO hace falta. Los bloques <style>/<script> en
+#                      linea que quedan van permitidos por HASH (uno por
+#                      bloque). Los estilos inline de React
+#                      (style={{...}}) no los bloquea la CSP, porque
+#                      React los aplica por CSSOM (node.style.x = ...),
+#                      no como atributo HTML.
+#   comodines       -- script-src es 'self' mas un hash; connect-src son
+#                      dominios concretos. Los dos unicos * son
+#                      subdominio de un dominio fijo, no * suelto.
+#
+# object-src blob: -- RELAJACION DOCUMENTADA. visor-pdf.html muestra el
+#   PDF con <embed type="application/pdf"> apuntando a un blob: local.
+#   Con object-src 'none' el visor de PDF deja de funcionar. Riesgo
+#   residual: permite incrustar objetos desde blob:, pero para crear un
+#   blob y meter un <embed> hace falta ejecutar script primero, y eso ya
+#   lo corta script-src 'self'.
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'sha256-cd4bj1NLWrSQIdDS9TfA4sGMgDuIrHYRF13hDtERbxI='; style-src 'self' 'sha256-zhxfIwn/DtnMOlc1gSoBCuOliUAmf5fbTn0cyzgAHtQ=' 'sha256-ZG08JbnyYPNr0zDRlWT4Q067+YbqmrJGxKKupGhZV3U=' 'sha256-Np23DIo7jzQvvn18U2m4TjC4QTFQ964BmAZrXPexmEQ='; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://*.cloudfunctions.net https://*.r2.cloudflarestorage.com; frame-src https://www.google.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
