@@ -90,11 +90,11 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
-    expect(globo).toContain("ancho * 0.66");
-    expect(globo).toContain("ancho * 0.29");
-    expect(globo).toContain('globalCompositeOperation = "destination-in"');
-    expect(globo).toContain("const mascaraCircular");
-    expect(globo).not.toContain('strokeStyle = "rgba(198, 221, 255, .20)"');
+    expect(globo).toContain("ancho * 0.84");
+    expect(globo).toContain("ancho * 0.37");
+    expect(globo).not.toContain('globalCompositeOperation = "destination-in"');
+    expect(globo).not.toContain("const mascaraCircular");
+    expect(globo).toContain('strokeStyle = "rgba(198, 221, 255, .20)"');
     expect(globo).not.toContain("fetch(");
   });
 
