@@ -78,7 +78,11 @@ describe("límite de peticiones por usuario", () => {
       const codigo = leer(archivo);
       if (!codigo.includes("onCall")) continue;
       const soloInterno =
-        /role\b[^;]*(!==|===)\s*"admin"|esPersonalInterno|esAdminPortal|esGerente/.test(codigo);
+        /role\b[^;]*(!==|===)\s*"admin"|esPersonalInterno|esAdminPortal|esGerente/.test(codigo) ||
+        // Desde la auditoría de agosto 2026: el helper centralizado
+        // (cuentaPortal.ts) es quien exige Gerente/personal interno
+        // ahora -- ver exigirGerente()/exigirPersonalInterno() ahí.
+        /exigirGerente\(|exigirPersonalInterno\(/.test(codigo);
       if (soloInterno) continue;
       if (!codigo.includes("exigirRitmo")) sinTope.push(archivo);
     }

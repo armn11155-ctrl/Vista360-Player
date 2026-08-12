@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
-import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 
@@ -88,17 +89,10 @@ function validarPanelEditado(data: ActualizarPanelData): PanelEditadoValidado {
  * aprobación del Gerente en vez de aplicarse directo.
  */
 export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propio.data()?.role;
-  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar paneles.");
-  }
+  const cuenta = await exigirPersonalInterno(request, "Solo el equipo interno puede editar paneles.");
+  const rol = cuenta.role;
+  const { uid } = cuenta;
 
   const panel = validarPanelEditado(request.data);
 
@@ -112,7 +106,7 @@ export const actualizarPanel = onCall<ActualizarPanelData>(async (request) => {
       db,
       tipo: "actualizarPanel",
       solicitanteUid: uid,
-      solicitanteNombre: String(propio.data()?.nombre ?? "Un trabajador"),
+      solicitanteNombre: String(cuenta.nombre || "Un trabajador"),
       resumen: `Editar el panel "${panel.nombre}" (${panel.ciudad}).`,
       payload: { ...panel },
     });

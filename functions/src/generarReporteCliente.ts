@@ -6,7 +6,7 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { R2_SECRETS, borrarObjetoR2, firmarLecturaR2, leerObjetoR2, subirBufferR2 } from "./r2Storage.js";
-import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { exigirId, idOpcional } from "./identificadores.js";
 
 if (getApps().length === 0) {
@@ -1104,15 +1104,8 @@ export const generarReporteCliente = onCall(
     // factura, avatar o foto de campaña de cualquier cliente con solo
     // conocer o adivinar su clave. Ver
     // src/logica-negocio/generarReporteClienteSeguridad.test.ts.
-    const uid = request.auth?.uid;
-    if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-
+    await exigirPersonalInterno(request, "Solo el equipo interno puede generar reportes.");
     const db = getFirestore();
-    const userSnap = await db.doc(`portalUsers/${uid}`).get();
-    const user = userSnap.data();
-    if (!userSnap.exists || !esPersonalInterno(user?.role)) {
-      throw new HttpsError("permission-denied", "Solo el equipo interno puede generar reportes.");
-    }
 
     // Se recogen DESPUÉS de validar sesión y rol, pero ANTES del resto
     // del trabajo: si la generación falla a mitad, igual hay que

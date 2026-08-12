@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
@@ -54,27 +55,20 @@ function limpiar(value?: string) {
  * usa esta misma pantalla cuando está "viendo como" un cliente.
  */
 export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const cuenta = await exigirCuentaActiva(request);
+  const { uid } = cuenta;
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "crearSolicitudCampana", 20);
 
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists) {
-    throw new HttpsError("permission-denied", "Tu cuenta no está vinculada a ningún cliente.");
-  }
-  const datosPropio = propio.data() ?? {};
-  const rol = datosPropio.role === "admin" ? "admin" : "cliente";
+  const rol = cuenta.role === "admin" ? "admin" : "cliente";
 
   const clienteId = exigirId(request.data?.clienteId, "clienteId");
   if (!clienteId) {
     throw new HttpsError("invalid-argument", "Falta el cliente.");
   }
-  if (rol === "cliente" && clienteId !== datosPropio.clienteId) {
+  if (rol === "cliente" && clienteId !== cuenta.clienteId) {
     throw new HttpsError("permission-denied", "No puedes pedir una campaña para otra cuenta.");
   }
 

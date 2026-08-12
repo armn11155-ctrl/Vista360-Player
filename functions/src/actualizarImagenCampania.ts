@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, esKeyValida } from "./r2Storage.js";
@@ -18,16 +19,8 @@ function limpiar(value?: string) {
 }
 
 export const actualizarImagenCampania = onCall<ActualizarImagenCampaniaData>({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const portalUserSnap = await db.doc(`portalUsers/${uid}`).get();
-  if (!portalUserSnap.exists || portalUserSnap.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede cambiar la foto de campaña.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede cambiar la foto de campaña.");
 
   const contratoId = exigirId(request.data?.contratoId, "contratoId");
   const imagenUrl = limpiar(request.data.imagenUrl);

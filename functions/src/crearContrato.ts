@@ -1,10 +1,10 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
-import { esPersonalInterno } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
@@ -50,16 +50,11 @@ function siguienteDia(fechaStr: string): string {
  */
 export const crearContrato = onCall<CrearContratoData>(async (request) => {
   try {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
-
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
-    if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
-      throw new HttpsError("permission-denied", "Solo el equipo interno puede crear campañas.");
-    }
+    const { uid } = await exigirPersonalInterno(
+      request,
+      "Solo el equipo interno puede crear campañas."
+    );
 
     const clienteId = exigirId(request.data?.clienteId, "clienteId");
     const panelIds = Array.from(

@@ -1,7 +1,7 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esGerente } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -21,16 +21,8 @@ if (getApps().length === 0) {
  * pantalla vuelve a pedir la lista después de aprobar/rechazar algo.
  */
 export const listarSolicitudesAccion = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esGerente(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el Gerente puede ver las solicitudes.");
-  }
+  await exigirGerente(request, "Solo el Gerente puede ver las solicitudes.");
 
   const snap = await db.collection("solicitudesAccion").orderBy("createdAt", "desc").limit(200).get();
   const solicitudes = snap.docs.map((d) => {

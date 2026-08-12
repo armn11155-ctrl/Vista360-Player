@@ -87,7 +87,7 @@ describe("marcarReporteVisto solo acepta ids de reporte reales", () => {
     // La defensa de siempre: el prefijo y la comparacion contra el
     // clienteId que consta en portalUsers, no contra lo que manda nadie.
     expect(aceptado("empresaA", "empresaB_2026-08-05")).toBe(false);
-    expect(codigo).toContain('propioData?.clienteId !== clienteId');
+    expect(codigo).toContain('cuenta.clienteId !== clienteId');
     expect(codigo).toContain("permission-denied");
   });
 

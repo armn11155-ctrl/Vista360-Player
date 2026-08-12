@@ -44,3 +44,47 @@ describe("funciones caras con tope de ritmo agregado en la auditoría de segurid
     });
   }
 });
+
+/**
+ * SEGUNDA TANDA -- misma auditoría, sección "cuenta Gerente
+ * comprometida": administrarClienteAdmin (archivar/eliminar clientes),
+ * administrarUsuarioPortal (archivar/eliminar personal),
+ * limpiarArchivosHuerfanos y contarEvidenciasHuerfanas (barren R2 y
+ * Firestore enteros) y restaurarDePapelera/listarPapelera NO tenían
+ * NINGÚN límite de ritmo -- a diferencia de restablecerPasswordCliente,
+ * que sí lo tenía desde la primera tanda. Una sesión de Gerente
+ * comprometida podía, sin este límite, archivar o eliminar todos los
+ * clientes del negocio en un bucle en segundos.
+ */
+describe("operaciones de Gerente destructivas/masivas -- segunda tanda de límites de ritmo", () => {
+  const casos: Array<{ archivo: string; operacion: string }> = [
+    { archivo: "administrarClienteAdmin.ts", operacion: "administrarClienteAdmin" },
+    { archivo: "administrarUsuarioPortal.ts", operacion: "administrarUsuarioPortal" },
+    { archivo: "limpiarArchivosHuerfanos.ts", operacion: "limpiarArchivosHuerfanos" },
+    { archivo: "contarEvidenciasHuerfanas.ts", operacion: "contarEvidenciasHuerfanas" },
+    { archivo: "papeleraR2.ts", operacion: "listarPapelera" },
+    { archivo: "papeleraR2.ts", operacion: "restaurarDePapelera" },
+  ];
+
+  for (const { archivo, operacion } of casos) {
+    it(`${archivo} (${operacion}) llama a exigirRitmo con su propio nombre de operación`, () => {
+      const codigo = leer(archivo);
+      expect(codigo).toContain('import { exigirRitmo } from "./limitador.js"');
+      expect(codigo).toContain(`"${operacion}"`);
+    });
+  }
+
+  it("limpiarArchivosHuerfanos deja auditoría del borrado real (no solo de la simulación)", () => {
+    // Antes de esta revisión, un borrado masivo confirmado (confirmar:
+    // true) no dejaba ningún rastro de quién lo ejecutó ni cuántos
+    // archivos se fueron.
+    const codigo = leer("limpiarArchivosHuerfanos.ts");
+    expect(codigo).toContain('import { auditar } from "./registro.js"');
+    expect(codigo).toContain('auditar("archivos_huerfanos_borrados"');
+  });
+
+  it("archivos_huerfanos_borrados está declarado en el tipo cerrado EventoAuditable", () => {
+    const registro = leer("registro.ts");
+    expect(registro).toMatch(/EventoAuditable\s*=[\s\S]*"archivos_huerfanos_borrados"/);
+  });
+});

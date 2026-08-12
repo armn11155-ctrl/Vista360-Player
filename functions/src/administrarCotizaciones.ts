@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { exigirId, idOpcional } from "./identificadores.js";
@@ -34,14 +35,8 @@ const fechaValida = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value);
 const limpiar = (value: unknown, max = 240) => String(value ?? "").trim().slice(0, max);
 
 export const administrarCotizaciones = onCall<Data>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-
   const db = getFirestore();
-  const usuario = await db.doc(`portalUsers/${uid}`).get();
-  if (!usuario.exists || usuario.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede administrar cotizaciones.");
-  }
+  const { uid } = await exigirGerente(request, "Solo la cuenta admin puede administrar cotizaciones.");
 
   const accion = request.data.accion;
   if (accion === "listar") {

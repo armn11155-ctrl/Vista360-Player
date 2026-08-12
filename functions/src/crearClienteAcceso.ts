@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
@@ -41,16 +42,8 @@ function validarPassword(password: string) {
 }
 
 export const crearClienteAcceso = onCall<CrearClienteAccesoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede crear usuarios.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede crear usuarios.");
 
   const clienteId = exigirId(request.data?.clienteId, "clienteId");
   const email = limpiar(request.data.email).toLowerCase();

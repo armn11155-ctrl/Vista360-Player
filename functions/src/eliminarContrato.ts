@@ -1,8 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
-import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { auditar, auditarFallo } from "./registro.js";
@@ -34,17 +35,10 @@ interface EliminarContratoData {
  * de un Trabajador) hagan exactamente lo mismo, sin duplicar código.
  */
 export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propio.data()?.role;
-  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede eliminar campañas.");
-  }
+  const cuenta = await exigirPersonalInterno(request, "Solo el equipo interno puede eliminar campañas.");
+  const rol = cuenta.role;
+  const { uid } = cuenta;
 
   const contratoId = exigirId(request.data?.contratoId, "contratoId");
   if (!contratoId) {
@@ -61,7 +55,7 @@ export const eliminarContrato = onCall<EliminarContratoData>({ secrets: R2_SECRE
       db,
       tipo: "eliminarContrato",
       solicitanteUid: uid,
-      solicitanteNombre: String(propio.data()?.nombre ?? "Un trabajador"),
+      solicitanteNombre: String(cuenta.nombre || "Un trabajador"),
       resumen: `Eliminar la campaña "${nombreCampana}".`,
       payload: { contratoId },
     });

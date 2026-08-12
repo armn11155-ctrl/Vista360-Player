@@ -1,8 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
 import { MAX_SUBIDA_BYTES, R2_SECRETS, esCarpetaValida, firmarSubidaR2, nuevaKey } from "./r2Storage.js";
-import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
@@ -30,19 +29,14 @@ const TIPOS_PERMITIDOS = new Set([
  * admin en actualizarImagenCampania.
  */
 export const crearSubidaR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirPersonalInterno(
+    request,
+    "Solo el equipo interno puede subir archivos."
+  );
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "crearSubidaR2", 60);
 
-  const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists) {
-    throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
-  }
   // SOLO PERSONAL INTERNO. Antes bastaba con tener ficha de portal, o
   // sea que cualquier cliente podía pedir una URL de subida llamando a
   // esta función desde la consola del navegador -- aunque la aplicación
@@ -58,9 +52,6 @@ export const crearSubidaR2 = onCall({ secrets: R2_SECRETS }, async (request) => 
   // Facturas (PDF), las dos pantallas de administración. El avatar del
   // cliente NO pasa por acá: va por subirAvatarServidor, que sí debe
   // seguir abierto a cualquier cuenta para su propia foto.
-  if (!esPersonalInterno(snap.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede subir archivos.");
-  }
 
   const folder = String(request.data?.folder ?? "");
   const extension = String(request.data?.extension ?? "");

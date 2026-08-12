@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
 import { auditar } from "./registro.js";
 import { exigirRitmo } from "./limitador.js";
@@ -30,17 +30,6 @@ function generarPassword() {
   return `Vista360${digitos}`;
 }
 
-async function requireAdmin(uid?: string) {
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-  const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede restablecer contraseñas.");
-  }
-}
-
 async function resolverUsuario(data: RestablecerPasswordData) {
   const uid = limpiar(data.uid);
   const email = limpiar(data.email).toLowerCase();
@@ -64,12 +53,12 @@ async function resolverUsuario(data: RestablecerPasswordData) {
  * anterior -- solo se puede reemplazar por una nueva.
  */
 export const restablecerPasswordCliente = onCall<RestablecerPasswordData>(async (request) => {
-  await requireAdmin(request.auth?.uid);
+  const { uid } = await exigirGerente(request, "Solo la cuenta admin puede restablecer contraseñas.");
   // Reemplaza la contraseña de OTRA cuenta -- sin límite de ritmo, una
   // sesión admin comprometida (o un llamado en bucle) podría usarse
   // para bloquear repetidamente el acceso de cualquier cliente
   // cambiándole la contraseña una y otra vez.
-  exigirRitmo(request.auth!.uid, "restablecerPasswordCliente", 20);
+  exigirRitmo(uid, "restablecerPasswordCliente", 20);
 
   const usuario = await resolverUsuario(request.data);
   if (!usuario) {
@@ -82,7 +71,7 @@ export const restablecerPasswordCliente = onCall<RestablecerPasswordData>(async 
   // Queda el rastro de QUIEN restableció la contraseña de quién y
   // cuándo. A propósito NO se registra la contraseña nueva: los logs
   // se tratan como menos protegidos que la base de datos.
-  auditar("password_restablecida", { uid: request.auth?.uid, objetivoId: usuario.uid });
+  auditar("password_restablecida", { uid, objetivoId: usuario.uid });
 
   return { email: usuario.email ?? "", password };
 });

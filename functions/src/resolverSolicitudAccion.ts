@@ -1,8 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS } from "./r2Storage.js";
-import { esGerente } from "./rolesInternos.js";
 import { ejecutarEliminarContrato } from "./eliminarContrato.js";
 import { ejecutarEliminarClienteDefinitivo } from "./administrarClienteAdmin.js";
 import { ejecutarAdministrarUsuarioPortal } from "./administrarUsuarioPortal.js";
@@ -33,16 +33,8 @@ interface ResolverSolicitudAccionData {
  * dos formas de llegar a ella.
  */
 export const resolverSolicitudAccion = onCall<ResolverSolicitudAccionData>({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esGerente(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el Gerente puede aprobar o rechazar solicitudes.");
-  }
+  const { uid } = await exigirGerente(request, "Solo el Gerente puede aprobar o rechazar solicitudes.");
 
   const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   const accion = request.data?.accion;

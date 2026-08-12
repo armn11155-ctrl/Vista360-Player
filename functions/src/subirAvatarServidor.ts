@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, nuevaKey, subirBufferR2 } from "./r2Storage.js";
 import { exigirRitmo } from "./limitador.js";
 
@@ -35,19 +35,10 @@ const MAX_BYTES = 3 * 1024 * 1024; // de sobra para un avatar ya comprimido (~32
  * directo a R2 (pueden pesar varios MB, no conviene pasarlos por acá).
  */
 export const subirAvatarServidor = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirCuentaActiva(request);
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "subirAvatarServidor", 10);
-
-  const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists) {
-    throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
-  }
 
   const contentType = String((request.data as SubirAvatarServidorData)?.contentType ?? "");
   const extension = TIPOS_PERMITIDOS[contentType];

@@ -1,7 +1,7 @@
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getMessaging } from "firebase-admin/messaging";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
 import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
@@ -33,8 +33,8 @@ interface ConfirmarActivacionPushData {
  * también al celular.)
  */
 export const confirmarActivacionPush = onCall<ConfirmarActivacionPushData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
+  const cuenta = await exigirCuentaActiva(request);
+  const { uid } = cuenta;
 
   // Lee el documento del usuario en cada llamada: sin tope, un bucle
   // desde la consola quema la cuota de LECTURAS igual que las otras la de
@@ -43,12 +43,8 @@ export const confirmarActivacionPush = onCall<ConfirmarActivacionPushData>(async
 
   const tokenNuevo = String(request.data?.token ?? "").trim();
 
-  const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists) throw new HttpsError("not-found", "Cuenta no encontrada.");
-
-  const tokensGuardados: string[] = Array.isArray(snap.data()?.fcmTokens)
-    ? snap.data()!.fcmTokens.filter((t: unknown) => typeof t === "string" && t)
+  const tokensGuardados: string[] = Array.isArray(cuenta.data.fcmTokens)
+    ? (cuenta.data.fcmTokens as unknown[]).filter((t): t is string => typeof t === "string" && !!t)
     : [];
 
   // Si el frontend mandó el token nuevo Y de verdad está guardado en la

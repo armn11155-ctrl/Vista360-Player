@@ -1,4 +1,5 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { exigirRitmo } from "./limitador.js";
@@ -22,10 +23,7 @@ if (getApps().length === 0) {
  * pueda falsear el acceso de otra cuenta.
  */
 export const registrarAcceso = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirCuentaActiva(request);
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "registrarAcceso", 10);

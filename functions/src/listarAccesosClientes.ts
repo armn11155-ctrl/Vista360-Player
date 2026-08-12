@@ -1,4 +1,5 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
 
@@ -28,16 +29,8 @@ interface AccesoCliente {
  * no abrir una vía de acceso a datos de otros clientes desde el cliente).
  */
 export const listarAccesosClientes = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede ver esta información.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede ver esta información.");
 
   const [portalUsersSnap, clientesSnap] = await Promise.all([
     db.collection("portalUsers").where("role", "==", "cliente").get(),

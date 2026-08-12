@@ -1,4 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, firmarLecturaR2, listarObjetosR2 } from "./r2Storage.js";
@@ -74,10 +75,8 @@ function nombreFechaCorta(mes: string, dia?: string) {
  */
 export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
+    const cuenta = await exigirCuentaActiva(request);
+    const { uid } = cuenta;
     // Firma hasta un URL de R2 por reporte del historial completo del
     // cliente (modo no-resumen) -- sin tope, un llamado en bucle
     // amplifica lecturas de Firestore y trabajo de firma. Ver el propio
@@ -91,21 +90,19 @@ export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (requ
     }
 
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
-    const propioData = propio.data();
     // El Trabajador es personal interno, no un cliente.
-//
+    //
     // Antes acá se preguntaba `role === "admin"`, o sea SOLO el Gerente. Un
     // Trabajador caía por la rama de cliente y, como no tiene clienteId (ver
     // crearTrabajadorAcceso.ts), no cumplía ninguna comprobación de
     // pertenencia: no podía abrir NADA.
-//
+    //
     // Es el mismo desajuste que ya se corrigió en firestore.rules, que ahora
     // deja al Trabajador leer clientes, contratos, facturas e informes con
     // esPersonalDePortal(). Las reglas decían que sí y las Functions decían
     // que no: un Trabajador generaba un reporte y después no podía verlo.
-    const esInterno = esPersonalInterno(propioData?.role);
-    if (!propio.exists || (!esInterno && propioData?.clienteId !== clienteId)) {
+    const esInterno = esPersonalInterno(cuenta.role);
+    if (!esInterno && cuenta.clienteId !== clienteId) {
       throw new HttpsError("permission-denied", "No tienes acceso a los reportes de este cliente.");
     }
 

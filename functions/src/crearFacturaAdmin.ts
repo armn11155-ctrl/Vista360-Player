@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
@@ -40,16 +41,8 @@ function limpiar(value?: string) {
  * patron ya usado en administrarClienteAdmin.ts y crearClienteNuevo.ts.
  */
 export const crearFacturaAdmin = onCall<CrearFacturaAdminData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede subir facturas.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede subir facturas.");
 
   const ruc = limpiar(request.data.ruc);
   const clienteId = exigirId(request.data?.clienteId, "clienteId");

@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
@@ -27,16 +28,8 @@ function limpiar(value?: string) {
  * mismo problema de permisos al editar en vez de crear.
  */
 export const actualizarNombreFactura = onCall<ActualizarNombreFacturaData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede editar facturas.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede editar facturas.");
 
   const facturaId = exigirId(request.data?.facturaId, "facturaId");
   const numeroFmt = limpiar(request.data.numeroFmt);

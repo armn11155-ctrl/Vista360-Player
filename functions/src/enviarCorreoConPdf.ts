@@ -1,7 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { exigirRitmo } from "./limitador.js";
 
 if (getApps().length === 0) {
@@ -243,17 +242,11 @@ function construirHtmlCorreo(mensaje: string): string {
 export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
   { secrets: ["RESEND_API_KEY"] },
   async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
+    const { uid } = await exigirPersonalInterno(
+      request,
+      "Solo el equipo interno puede enviar correos."
+    );
 
-    const db = getFirestore();
-    const propioSnap = await db.doc(`portalUsers/${uid}`).get();
-    const rol = propioSnap.data()?.role;
-    if (!propioSnap.exists || !esPersonalInterno(rol)) {
-      throw new HttpsError("permission-denied", "Solo el equipo interno puede enviar correos.");
-    }
     // Envía correo a CUALQUIER destinatario que se le pida -- sin
     // límite de ritmo, esto es un vector de spam/abuso del remitente
     // (reputación de envío) y de la cuota de la cuenta de Resend.

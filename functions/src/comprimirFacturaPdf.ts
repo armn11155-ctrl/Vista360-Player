@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { exigirGerente } from "./cuentaPortal.js";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 
 if (getApps().length === 0) {
@@ -55,15 +55,7 @@ export const comprimirFacturaPdf = onCall<ComprimirFacturaPdfData>({
   memory: "512MiB",
   timeoutSeconds: 90,
 }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
-  const userSnap = await getFirestore().doc(`portalUsers/${uid}`).get();
-  if (!userSnap.exists || String(userSnap.data()?.role ?? "cliente") !== "admin") {
-    throw new HttpsError("permission-denied", "Solo el administrador puede subir facturas.");
-  }
+  await exigirGerente(request, "Solo el administrador puede subir facturas.");
 
   const pdfBase64 = limpiar(request.data.pdfBase64);
   const nombre = limpiar(request.data.nombre) || "factura.pdf";

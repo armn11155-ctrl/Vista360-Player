@@ -497,7 +497,7 @@ describe("el resumen por cliente se regenera desde TODOS los sitios que lo inval
     const lista = /const ESTADOS_PERMITIDOS = \[([^\]]+)\]/.exec(fn)![1];
     expect(lista).not.toContain("Convertida");
     expect(fn).toContain("regenerarResumenCliente(db,");
-    expect(fn).toContain("esPersonalInterno");
+    expect(fn).toContain("exigirPersonalInterno");
   });
 
   it("la funcion nueva esta en la lista de despliegue", () => {

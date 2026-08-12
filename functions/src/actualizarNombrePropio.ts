@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -24,10 +24,10 @@ interface ActualizarNombrePropioData {
  * ellos vía actualizarClienteInfo.
  */
 export const actualizarNombrePropio = onCall<ActualizarNombrePropioData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirPersonalInterno(
+    request,
+    "Solo el equipo interno puede editar su nombre acá."
+  );
 
   const nombre = String(request.data?.nombre ?? "").trim();
   if (!nombre) {
@@ -39,10 +39,6 @@ export const actualizarNombrePropio = onCall<ActualizarNombrePropioData>(async (
 
   const db = getFirestore();
   const propioRef = db.doc(`portalUsers/${uid}`);
-  const propioSnap = await propioRef.get();
-  if (!propioSnap.exists || !esPersonalInterno(propioSnap.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar su nombre acá.");
-  }
 
   await propioRef.set({ nombre }, { merge: true });
 

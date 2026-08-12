@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
-import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { exigirId } from "./identificadores.js";
 
@@ -41,16 +41,11 @@ function limpiar(value?: string) {
  * cambio se vea reflejado ahi mismo sin tener que recargar nada mas.
  */
 export const actualizarClienteInfo = onCall<ActualizarClienteInfoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar clientes.");
-  }
+  await exigirPersonalInterno(
+    request,
+    "Solo el equipo interno puede editar clientes."
+  );
 
   const clienteId = exigirId(request.data?.clienteId, "clienteId");
   if (!clienteId) {

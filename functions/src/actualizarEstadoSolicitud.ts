@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
 
@@ -40,18 +40,13 @@ interface Datos {
 const ESTADOS_PERMITIDOS = ["Pendiente", "Revisada", "Rechazada"] as const;
 
 export const actualizarEstadoSolicitud = onCall<Datos>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
   // Personal interno: la pantalla de Solicitudes la usan Gerente y
   // Trabajador. Un cliente no puede resolver sus propias solicitudes.
-  if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el personal de Vista360 puede resolver solicitudes.");
-  }
+  await exigirPersonalInterno(
+    request,
+    "Solo el personal de Vista360 puede resolver solicitudes."
+  );
 
   const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   if (!solicitudId) {

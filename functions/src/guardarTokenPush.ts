@@ -1,4 +1,5 @@
 import { getApps, initializeApp } from "firebase-admin/app";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getFirestore } from "firebase-admin/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { exigirRitmo } from "./limitador.js";
@@ -30,10 +31,7 @@ interface GuardarTokenPushData {
 const MAX_TOKENS_POR_USUARIO = 10;
 
 export const guardarTokenPush = onCall<GuardarTokenPushData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirCuentaActiva(request);
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "guardarTokenPush", 10);

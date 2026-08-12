@@ -1,4 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { exigirId } from "./identificadores.js";
@@ -28,10 +29,8 @@ if (getApps().length === 0) {
  * cliente).
  */
 export const marcarReporteVisto = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const cuenta = await exigirCuentaActiva(request);
+  const { uid } = cuenta;
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "marcarReporteVisto", 120);
@@ -87,9 +86,7 @@ export const marcarReporteVisto = onCall(async (request) => {
   }
 
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const propioData = propio.data();
-  if (!propio.exists || propioData?.clienteId !== clienteId) {
+  if (cuenta.clienteId !== clienteId) {
     throw new HttpsError("permission-denied", "Solo el cliente dueño del reporte puede marcarlo como visto.");
   }
 

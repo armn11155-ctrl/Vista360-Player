@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, esKeyValida, firmarLecturaR2 } from "./r2Storage.js";
@@ -32,17 +33,8 @@ const EXPIRACION_SEGUNDOS = 6 * 60 * 60;
  * salvo que sea admin, que puede descargar cualquiera.
  */
 export const firmarDescargaFactura = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
+  const cuenta = await exigirCuentaActiva(request);
   const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists) {
-    throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
-  }
-  const propio = snap.data() ?? {};
 // El Trabajador es personal interno, no un cliente.
 //
 // Antes acá se preguntaba `role === "admin"`, o sea SOLO el Gerente. Un
@@ -54,8 +46,8 @@ export const firmarDescargaFactura = onCall({ secrets: R2_SECRETS }, async (requ
 // deja al Trabajador leer clientes, contratos, facturas e informes con
 // esPersonalDePortal(). Las reglas decían que sí y las Functions decían
 // que no: un Trabajador generaba un reporte y después no podía verlo.
-  const esInterno = esPersonalInterno(propio.role);
-  const clienteIdPropio = String(propio.clienteId ?? "");
+  const esInterno = esPersonalInterno(cuenta.role);
+  const clienteIdPropio = cuenta.clienteId;
 
   const key = String(request.data?.key ?? "");
   const nombre = String(request.data?.nombre ?? "factura");

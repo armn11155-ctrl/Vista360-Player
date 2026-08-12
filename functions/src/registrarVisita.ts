@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { exigirRitmo } from "./limitador.js";
@@ -42,10 +43,7 @@ const PANTALLAS_VALIDAS = new Set([
  * usa Admin SDK y solo puede tocar el documento del propio uid.
  */
 export const registrarVisita = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirCuentaActiva(request);
 
   // Techo de peticiones por minuto: ver limitador.ts.
   exigirRitmo(uid, "registrarVisita", 60);

@@ -1,7 +1,8 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esGerente, esPersonalInterno } from "./rolesInternos.js";
+import { esPersonalInterno } from "./rolesInternos.js";
+import { exigirGerente } from "./cuentaPortal.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -27,17 +28,10 @@ interface PersonaInterna {
  * verificar quién tiene qué permiso en este momento.
  */
 export const listarPersonalInterno = onCall(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
+  const cuenta = await exigirGerente(request, "Solo el Gerente puede ver esta lista.");
+  const { uid } = cuenta;
   const propioRef = db.doc(`portalUsers/${uid}`);
-  const propio = await propioRef.get();
-  if (!propio.exists || !esGerente(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el Gerente puede ver esta lista.");
-  }
 
   // Cuentas de Gerente creadas a mano antes de que existiera este
   // sistema de roles nunca tuvieron "email" en portalUsers (solo
@@ -49,7 +43,7 @@ export const listarPersonalInterno = onCall(async (request) => {
   // así que se autocompleta la propia fila con eso y se guarda de
   // una vez en Firestore para no depender de este parche after.
   const correoPropioToken = String(request.auth?.token.email ?? "").trim();
-  if (correoPropioToken && !String(propio.data()?.email ?? "").trim()) {
+  if (correoPropioToken && !String(cuenta.data.email ?? "").trim()) {
     await propioRef.set({ email: correoPropioToken }, { merge: true });
   }
 

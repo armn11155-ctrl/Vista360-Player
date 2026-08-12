@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirRitmo } from "./limitador.js";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
-import { esGerente } from "./rolesInternos.js";
 import {
   R2_SECRETS,
   PAPELERA_PREFIJO,
@@ -46,23 +47,6 @@ const DIAS_DE_VIDA_EN_PAPELERA = 30;
  *  alcanza para dejar el recurso como estaba (por ejemplo, la factura ya
  *  no existe en Firestore aunque el PDF vuelva a R2). */
 const MENSAJE_RECUPERACION_ADICIONAL = "Este elemento requiere recuperación adicional de datos.";
-
-async function exigirGerente(uid: string | undefined, db: Firestore): Promise<string> {
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propio.data()?.role;
-  // esGerente(), no esPersonalInterno(): esto ya se confundió una vez en
-  // producción (ver src/logica-negocio/menuPorRol.test.ts) y dejó a un
-  // Trabajador viendo una pantalla que era solo para el admin. Acá el
-  // costo de repetir ese error es mayor -- la papelera tiene facturas y
-  // comprobantes de pago de TODOS los clientes, no solo los propios.
-  if (!propio.exists || !esGerente(rol)) {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede usar la papelera.");
-  }
-  return String(rol ?? "");
-}
 
 type TipoRecurso = "Factura" | "Foto de campaña" | "Avatar de cliente" | "Reporte de cliente" | "Archivo";
 
@@ -164,10 +148,14 @@ async function evaluarEstadoDelRecurso(
  * como control; lo que se ve es tipo/ruta/fecha/tamaño.
  */
 export const listarPapelera = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
   const db = getFirestore();
   try {
-    await exigirGerente(uid, db);
+    const { uid } = await exigirGerente(request, "Solo la cuenta admin puede usar la papelera.");
+    // Cada llamada pagina hasta 20.000 objetos del bucket -- sin límite
+    // de ritmo, un bucle la convierte en la forma más barata de agotar
+    // la cuota de listados de R2. Techo de peticiones por minuto: ver
+    // limitador.ts.
+    exigirRitmo(uid, "listarPapelera", 15);
 
     const objetos: { Key?: string; Size?: number; LastModified?: Date }[] = [];
     let continuationToken: string | undefined;
@@ -246,13 +234,19 @@ export const listarPapelera = onCall({ secrets: R2_SECRETS }, async (request) =>
  * antes de que restaurarObjetoR2 toque R2.
  */
 export const restaurarDePapelera = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
   const db = getFirestore();
   const clavePapelera = String(request.data?.clave ?? "");
+  const uid = request.auth?.uid;
   let rol = "";
   try {
     // 1-2: sesión válida y Gerente/Admin.
-    rol = await exigirGerente(uid, db);
+    const cuenta = await exigirGerente(request, "Solo la cuenta admin puede usar la papelera.");
+    rol = cuenta.role;
+    // Restaurar mueve/copia objetos reales en R2 -- sin límite de
+    // ritmo, un bucle podría usarse para restaurar en masa archivos que
+    // se habían borrado a propósito. Techo de peticiones por minuto:
+    // ver limitador.ts.
+    exigirRitmo(cuenta.uid, "restaurarDePapelera", 20);
 
     // 3: la key tiene que estar de verdad dentro de "_papelera/".
     if (!esClavePapelera(clavePapelera)) {

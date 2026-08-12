@@ -1,7 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirRitmo } from "./limitador.js";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore, type Query } from "firebase-admin/firestore";
-import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
@@ -34,17 +36,15 @@ interface AdministrarClienteData {
  * aprobación del Gerente, igual que eliminar una campaña o un usuario.
  */
 export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propioSnap = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propioSnap.data()?.role;
-  if (!propioSnap.exists || !(esGerente(rol) || esTrabajador(rol))) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede administrar clientes.");
-  }
+  const cuenta = await exigirPersonalInterno(request, "Solo el equipo interno puede administrar clientes.");
+  // Archivar/restaurar/eliminar un cliente entero es una operación
+  // destructiva -- sin límite de ritmo, una sesión de personal interno
+  // comprometida podría recorrer en bucle todos los clientes del
+  // negocio en segundos. Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(cuenta.uid, "administrarClienteAdmin", 30);
+  const rol = cuenta.role;
+  const { uid } = cuenta;
 
   const clienteId = exigirId(request.data?.clienteId, "clienteId");
   const accion = request.data?.accion;
@@ -87,7 +87,7 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
       db,
       tipo: "eliminarClienteDefinitivo",
       solicitanteUid: uid,
-      solicitanteNombre: String(propioSnap.data()?.nombre ?? "Un trabajador"),
+      solicitanteNombre: String(cuenta.nombre || "Un trabajador"),
       resumen: `Eliminar definitivamente al cliente "${nombreCliente}" (y todo lo asociado: campañas, informes, accesos, facturas).`,
       payload: { clienteId },
     });

@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esGerente } from "./rolesInternos.js";
 import { auditar } from "./registro.js";
 import { regenerarAgregadoPaneles } from "./agregadoPaneles.js";
 import { exigirId } from "./identificadores.js";
@@ -28,16 +28,8 @@ interface EliminarPanelData {
  * y el detalle del contrato mostrarían datos rotos).
  */
 export const eliminarPanel = onCall<EliminarPanelData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esGerente(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el Gerente puede eliminar paneles.");
-  }
+  const { uid } = await exigirGerente(request, "Solo el Gerente puede eliminar paneles.");
 
   const panelId = exigirId(request.data?.panelId, "panelId");
   if (!panelId) {

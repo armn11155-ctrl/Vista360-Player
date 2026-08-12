@@ -1,9 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { modalidadDePanel, cuposPanel } from "./modalidadPanel.js";
 import { estadoDesdeActivos, hoyEnLima } from "./estadoPaneles.js";
-import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { exigirId } from "./identificadores.js";
 
 if (getApps().length === 0) {
@@ -27,16 +27,8 @@ interface DiagnosticoPanelData {
  * algún motivo (fechas, campo distinto, etc.).
  */
 export const diagnosticoPanel = onCall<DiagnosticoPanelData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propio.data()?.role;
-  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede ver esto.");
-  }
+  await exigirPersonalInterno(request, "Solo el equipo interno puede ver esto.");
 
   const panelId = exigirId(request.data?.panelId, "panelId");
   if (!panelId) {

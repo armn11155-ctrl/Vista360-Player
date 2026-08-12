@@ -1,9 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
-import { esGerente } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -42,16 +42,8 @@ function validarPassword(password: string) {
  * app, no está atado a uno solo).
  */
 export const crearTrabajadorAcceso = onCall<CrearTrabajadorAccesoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esGerente(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el Gerente puede crear cuentas de trabajador.");
-  }
+  await exigirGerente(request, "Solo el Gerente puede crear cuentas de trabajador.");
 
   const nombre = limpiar(request.data.nombre);
   const email = limpiar(request.data.email).toLowerCase();

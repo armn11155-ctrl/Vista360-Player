@@ -1,6 +1,6 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, listarObjetosR2, r2Bucket } from "./r2Storage.js";
 
 if (getApps().length === 0) {
@@ -20,16 +20,7 @@ export const obtenerEspacioR2 = onCall(
   // Lista el bucket entero de a 1000 objetos para sumar tamanos.
   { secrets: R2_SECRETS, timeoutSeconds: 300 },
   async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
-  const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists || snap.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede ver esto.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede ver esto.");
 
   const bucket = r2Bucket();
   let totalBytes = 0;

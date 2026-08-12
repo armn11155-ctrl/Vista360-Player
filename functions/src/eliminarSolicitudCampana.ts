@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
@@ -28,16 +29,8 @@ interface EliminarSolicitudCampanaData {
  * la fila en la base.
  */
 export const eliminarSolicitudCampana = onCall<EliminarSolicitudCampanaData>({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar solicitudes.");
-  }
+  await exigirGerente(request, "Solo la cuenta admin puede eliminar solicitudes.");
 
   const solicitudId = exigirId(request.data?.solicitudId, "solicitudId");
   if (!solicitudId) {

@@ -17,7 +17,7 @@ describe("el Trabajador puede enviar por Correo y WhatsApp", () => {
   const fn = sinComentarios(leer("functions/src/obtenerArchivoR2Base64.ts"));
 
   it("obtenerArchivoR2Base64 acepta al personal interno, no solo al Gerente", () => {
-    expect(fn).toContain("esPersonalInterno(propio.data()?.role)");
+    expect(fn).toContain("exigirPersonalInterno(");
     expect(fn).not.toMatch(/role\s*!==\s*"admin"/);
   });
 
@@ -91,7 +91,7 @@ describe("la interfaz del Trabajador refleja lo que el backend le permite", () =
   it("ocultar en la interfaz NO sustituye a la autorizacion del servidor", () => {
     // Aunque entre por URL directa, el backend sigue denegando.
     const analitica = sinComentarios(leer("functions/src/listarAccesosClientes.ts"));
-    expect(analitica).toMatch(/role\s*!==\s*"admin"/);
+    expect(analitica).toMatch(/role\s*!==\s*"admin"|exigirGerente\(/);
     const usuarios = sinComentarios(leer("functions/src/administrarUsuarioPortal.ts"));
     expect(usuarios).toMatch(/role|esGerente|admin/);
   });
@@ -140,6 +140,6 @@ describe("la key de un reporte SI demuestra que es un recurso legitimo", () => {
     // Por eso pedir el de otro cliente no es escalada para este rol: es su
     // trabajo. La comprobacion de pertenencia solo aplica a los clientes.
     const listar = sinComentarios(leer("functions/src/listarReportesCliente.ts"));
-    expect(listar).toContain("!esInterno && propioData?.clienteId !== clienteId");
+    expect(listar).toContain("!esInterno && cuenta.clienteId !== clienteId");
   });
 });

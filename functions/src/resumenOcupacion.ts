@@ -1,4 +1,5 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { modalidadDePanel } from "./modalidadPanel.js";
@@ -76,10 +77,7 @@ export const resumenOcupacion = onCall(
   // para poder filtrar con seguridad).
   { timeoutSeconds: 300, memory: "512MiB" },
   async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const { uid } = await exigirGerente(request, "Solo la cuenta admin puede ver esto.");
   // Lee TODAS las facturas de la historia del negocio en cada llamada
   // (ver el comentario junto a AVISO_FACTURAS_OCUPACION más abajo) --
   // sin límite de ritmo, un bucle sobre esta función es la forma más
@@ -87,10 +85,6 @@ export const resumenOcupacion = onCall(
   exigirRitmo(uid, "resumenOcupacion", 10);
 
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede ver esto.");
-  }
 
   const hoy = hoyEnLima();
   const limitePorVencer = sumarDias(hoy, DIAS_POR_VENCER);

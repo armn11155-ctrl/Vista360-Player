@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -53,17 +53,8 @@ const SEMILLA_INICIAL: RecordatorioDominioEstado = {
  * a aparecer solo, sin que quede "aceptado para siempre" por error.
  */
 export const administrarRecordatorioDominio = onCall<AdministrarRecordatorioDominioData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propioSnap = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propioSnap.data()?.role;
-  if (!propioSnap.exists || !esPersonalInterno(rol)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede administrar esto.");
-  }
+  await exigirPersonalInterno(request, "Solo el equipo interno puede administrar esto.");
 
   const accion = request.data?.accion ?? "leer";
   const ref = db.doc(DOC_REF);

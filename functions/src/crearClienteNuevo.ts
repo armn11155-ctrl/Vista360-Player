@@ -1,9 +1,9 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { randomInt } from "node:crypto";
-import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 
 if (getApps().length === 0) {
@@ -53,16 +53,11 @@ function validarPassword(password: string) {
  * poder dar de alta un cliente sin salir de Vista360 Player.
  */
 export const crearClienteNuevo = onCall<CrearClienteNuevoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede crear clientes.");
-  }
+  await exigirPersonalInterno(
+    request,
+    "Solo el equipo interno puede crear clientes."
+  );
 
   const empresa = limpiar(request.data.empresa);
   const ruc = limpiar(request.data.ruc);

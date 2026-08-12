@@ -1,4 +1,5 @@
-import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import { onCall, onRequest } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
@@ -218,15 +219,8 @@ export const sincronizarEstadoPanelesAhora = onCall<{ reconstruirResumenes?: boo
   // Reconstruir todos los resumenes puede tardar con muchos clientes.
   { timeoutSeconds: 540, memory: "512MiB" },
   async (request) => {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
+    await exigirGerente(request, "Solo la cuenta admin puede hacer esto.");
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
-    if (!propio.exists || propio.data()?.role !== "admin") {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede hacer esto.");
-    }
 
     const resultado = await sincronizar();
 

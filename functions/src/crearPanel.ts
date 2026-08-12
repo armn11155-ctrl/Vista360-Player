@@ -1,7 +1,8 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
-import { esGerente, esTrabajador } from "./rolesInternos.js";
+import { esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 
@@ -85,17 +86,10 @@ function validarPanel(data: CrearPanelData): PanelValidado {
  * "eliminar": el inventario físico es sensible en su totalidad.
  */
 export const crearPanel = onCall<CrearPanelData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  const rol = propio.data()?.role;
-  if (!propio.exists || !(esGerente(rol) || esTrabajador(rol))) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede crear paneles.");
-  }
+  const cuenta = await exigirPersonalInterno(request, "Solo el equipo interno puede crear paneles.");
+  const rol = cuenta.role;
+  const { uid } = cuenta;
 
   const panel = validarPanel(request.data);
 
@@ -104,7 +98,7 @@ export const crearPanel = onCall<CrearPanelData>(async (request) => {
       db,
       tipo: "crearPanel",
       solicitanteUid: uid,
-      solicitanteNombre: String(propio.data()?.nombre ?? "Un trabajador"),
+      solicitanteNombre: String(cuenta.nombre || "Un trabajador"),
       resumen: `Crear el panel "${panel.nombre}" en ${panel.ciudad}.`,
       payload: { ...panel },
     });

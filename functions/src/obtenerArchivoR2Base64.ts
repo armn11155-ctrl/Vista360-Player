@@ -1,8 +1,8 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, leerObjetoR2, esKeyValida } from "./r2Storage.js";
-import { esPersonalInterno } from "./rolesInternos.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -39,19 +39,14 @@ const FORMATO_FACTURA = /^vista360\/facturas\/[A-Za-z0-9._-]{1,80}$/;
 
 export const obtenerArchivoR2Base64 = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
-
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
     // El Trabajador tambien envia reportes y facturas por Correo/WhatsApp,
     // asi que necesita leer ESOS archivos. Lo que NO se le da -- ni a el ni
     // al Gerente -- es elegir libremente una key: eso se ata abajo.
-    if (!propio.exists || !esPersonalInterno(propio.data()?.role)) {
-      throw new HttpsError("permission-denied", "Solo el equipo interno puede pedir archivos por acá.");
-    }
+    await exigirPersonalInterno(
+      request,
+      "Solo el equipo interno puede pedir archivos por acá."
+    );
 
     const key = String(request.data?.key ?? "").trim();
     // La key entra cruda desde el navegador: se exige que este dentro de

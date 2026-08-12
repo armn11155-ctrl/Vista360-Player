@@ -1,10 +1,10 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { cuposPanel } from "./modalidadPanel.js";
 import { recalcularEstadoPaneles } from "./estadoPaneles.js";
 import { contratosQuePuedenChocar } from "./contratosDePaneles.js";
-import { esPersonalInterno } from "./rolesInternos.js";
 import { regenerarAgregadoClientes } from "./agregadoClientes.js";
 import { regenerarResumenCliente } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
@@ -34,14 +34,11 @@ function siguienteDia(fechaStr: string): string {
 }
 
 export const actualizarContrato = onCall<ActualizarContratoData>(async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-
   const db = getFirestore();
-  const usuario = await db.doc(`portalUsers/${uid}`).get();
-  if (!usuario.exists || !esPersonalInterno(usuario.data()?.role)) {
-    throw new HttpsError("permission-denied", "Solo el equipo interno puede editar campañas.");
-  }
+  const { uid } = await exigirPersonalInterno(
+    request,
+    "Solo el equipo interno puede editar campañas."
+  );
 
   const contratoId = exigirId(request.data?.contratoId, "contratoId");
   const nombre = nombreConMayuscula(limpiar(request.data.nombre));

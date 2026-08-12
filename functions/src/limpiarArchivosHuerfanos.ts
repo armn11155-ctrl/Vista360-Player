@@ -1,7 +1,10 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirRitmo } from "./limitador.js";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, listarObjetosR2 } from "./r2Storage.js";
+import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
@@ -88,16 +91,13 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
   // a la mitad y deja el recuento sin terminar -- sin decir por que.
   { secrets: R2_SECRETS, timeoutSeconds: 540, memory: "1GiB" },
   async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede hacer esto.");
-  }
+  const { uid } = await exigirGerente(request, "Solo la cuenta admin puede hacer esto.");
+  // Borra en bucle potencialmente cientos de archivos de R2 -- sin
+  // límite de ritmo, una sesión comprometida podría llamarla en bucle
+  // para maximizar el daño. Techo de peticiones por minuto: ver
+  // limitador.ts.
+  exigirRitmo(uid, "limpiarArchivosHuerfanos", 10);
 
   const confirmar = request.data?.confirmar === true;
   const enUso = await keysEnUso(db);
@@ -153,6 +153,10 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
         console.error(`No se pudo borrar ${h.key}`, err);
       }
     }
+    // Rastro de quién confirmó un borrado masivo real (no la
+    // simulación) y cuántos archivos se fueron -- antes esta función
+    // no dejaba ningún registro de auditoría.
+    auditar("archivos_huerfanos_borrados", { uid, cantidad: borrados });
   }
 
   return {

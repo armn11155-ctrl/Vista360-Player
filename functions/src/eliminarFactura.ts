@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { esGerente } from "./rolesInternos.js";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
 import { regenerarResumenFacturas } from "./agregadoCliente.js";
 import { exigirId } from "./identificadores.js";
@@ -27,19 +27,8 @@ if (getApps().length === 0) {
  */
 export const eliminarFactura = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-    }
-
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
-    // esGerente() en vez de comparar el rol a mano: si algún día cambia
-    // qué significa "Gerente" (otro nombre de rol, o varios), esta copia
-    // suelta se habría quedado atrás sin que nadie lo notara.
-    if (!propio.exists || !esGerente(propio.data()?.role)) {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar facturas.");
-    }
+    const { uid } = await exigirGerente(request, "Solo la cuenta admin puede eliminar facturas.");
 
     const facturaId = exigirId(request.data?.facturaId, "facturaId");
     if (!facturaId) {

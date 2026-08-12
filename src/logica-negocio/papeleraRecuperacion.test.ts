@@ -36,6 +36,7 @@ function leer(archivo: string): string {
 
 const r2Storage = leer("r2Storage.ts");
 const papeleraR2 = leer("papeleraR2.ts");
+const cuentaPortal = leer("cuentaPortal.ts");
 const indexTs = leer("index.ts");
 
 // ---------------------------------------------------------------------
@@ -173,7 +174,7 @@ describe("PRUEBA: destino fuera de carpeta permitida", () => {
 // ---------------------------------------------------------------------
 describe("PRUEBA: restauración válida (flujo completo de restaurarDePapelera)", () => {
   it("valida sesión, exige Gerente, valida key, deriva ruta, valida carpeta, copia, verifica y audita -- en ese orden", () => {
-    const idxGerente = papeleraR2.indexOf("rol = await exigirGerente(uid, db);");
+    const idxGerente = papeleraR2.indexOf('const cuenta = await exigirGerente(request, "Solo la cuenta admin puede usar la papelera.");');
     const idxClave = papeleraR2.indexOf("if (!esClavePapelera(clavePapelera))");
     const idxRuta = papeleraR2.indexOf("rutaOriginalDesdeClavePapelera(clavePapelera)");
     const idxPermitida = papeleraR2.indexOf("if (!esRutaOriginalPermitida(rutaOriginal))");
@@ -283,54 +284,76 @@ describe("la copia en _papelera/ se conserva tras restaurar (no se borra)", () =
 //    denegada.
 // ---------------------------------------------------------------------
 describe("PRUEBA: permisos -- Gerente puede, Trabajador y Cliente no pueden", () => {
-  it("listarPapelera y restaurarDePapelera comparten la misma función exigirGerente", () => {
+  // Desde la auditoría de agosto 2026 (cierre de la ventana residual de
+  // sesión archivada), papeleraR2.ts ya NO tiene su propia función
+  // exigirGerente(uid, db) local -- pasa por el helper centralizado de
+  // cuentaPortal.ts, el mismo que usan las otras ~50 Cloud Functions
+  // callable. Este bloque comprueba dos cosas separadas: que papeleraR2
+  // de verdad LLAMA al helper compartido (acá abajo), y que ESE helper
+  // sigue cumpliendo las mismas garantías que antes tenía la función
+  // local (ver cuentaPortal.test.ts para la batería completa).
+
+  it("listarPapelera y restaurarDePapelera comparten la misma función exigirGerente del helper centralizado", () => {
     const usosListar = papeleraR2.indexOf("export const listarPapelera");
     const usosRestaurar = papeleraR2.indexOf("export const restaurarDePapelera");
     const cuerpoListar = papeleraR2.slice(usosListar, usosRestaurar);
     const cuerpoRestaurar = papeleraR2.slice(usosRestaurar);
-    expect(cuerpoListar).toContain("await exigirGerente(uid, db)");
-    expect(cuerpoRestaurar).toContain("await exigirGerente(uid, db)");
+    expect(cuerpoListar).toContain("await exigirGerente(request,");
+    expect(cuerpoRestaurar).toContain("await exigirGerente(request,");
+    expect(papeleraR2).toContain('import { exigirGerente } from "./cuentaPortal.js";');
+    // Ya no queda ninguna función local con el mismo nombre en este
+    // archivo -- si alguien la reintrodujera "por las dudas", este test
+    // lo atrapa (una única exigirGerente en todo el archivo: el import).
+    expect(papeleraR2).not.toContain("async function exigirGerente");
   });
 
-  it("exigirGerente usa esGerente() -- NO esPersonalInterno() (ese error ya pasó una vez en producción con Analítica, ver menuPorRol.test.ts)", () => {
-    const cuerpo = papeleraR2.slice(
-      papeleraR2.indexOf("async function exigirGerente"),
-      papeleraR2.indexOf("type TipoRecurso")
+  it("exigirGerente (cuentaPortal.ts) usa esGerente() -- NO esPersonalInterno() (ese error ya pasó una vez en producción con Analítica, ver menuPorRol.test.ts)", () => {
+    const cuerpo = cuentaPortal.slice(
+      cuentaPortal.indexOf("export async function exigirGerente"),
+      cuentaPortal.indexOf("export async function exigirPersonalInterno")
     );
-    expect(cuerpo).toContain("!propio.exists || !esGerente(rol)");
-    // La condición de permiso en sí -- no el archivo entero, que sí
-    // menciona "esPersonalInterno" en un comentario explicando por qué
-    // NO se usa acá -- nunca llama a esPersonalInterno(rol).
-    expect(cuerpo).not.toContain("esPersonalInterno(rol)");
-    expect(cuerpo).not.toContain("!esPersonalInterno");
+    expect(cuerpo).toContain("esGerente(cuenta.role)");
+    expect(cuerpo).not.toContain("esPersonalInterno");
   });
 
-  it("importa esGerente desde rolesInternos.js, la fuente única de verdad de qué es un Gerente", () => {
-    expect(papeleraR2).toContain('import { esGerente } from "./rolesInternos.js";');
+  it("cuentaPortal.ts importa esGerente desde rolesInternos.js, la fuente única de verdad de qué es un Gerente", () => {
+    expect(cuentaPortal).toContain('import { esGerente, esPersonalInterno } from "./rolesInternos.js";');
   });
 
-  it("exigirGerente corta ANTES de tocar R2 o Firestore más allá de leer el propio rol", () => {
-    const cuerpo = papeleraR2.slice(
-      papeleraR2.indexOf("async function exigirGerente"),
-      papeleraR2.indexOf("type TipoRecurso")
+  it("exigirCuentaActiva (de la que depende exigirGerente) corta ANTES de tocar R2 o Firestore más allá de leer el propio rol", () => {
+    const cuerpo = cuentaPortal.slice(
+      cuentaPortal.indexOf("export async function exigirCuentaActiva"),
+      cuentaPortal.indexOf("export async function exigirGerente")
     );
     // Solo una lectura a portalUsers/{uid} -- nada de R2 ni de otras
     // colecciones antes de decidir si continúa.
-    expect(cuerpo).toContain("db.doc(`portalUsers/${uid}`)");
-    expect(cuerpo.match(/db\.(doc|collection)\(/g)?.length).toBe(1);
+    expect(cuerpo).toContain("portalUsers/${uid}");
+    expect(cuerpo.match(/\.doc\(|\.collection\(/g)?.length).toBe(1);
   });
 
   it("el rol se lee del propio documento de Firestore del uid autenticado, nunca de request.data (una llamada directa no puede declararse Gerente)", () => {
-    const cuerpo = papeleraR2.slice(
-      papeleraR2.indexOf("async function exigirGerente"),
-      papeleraR2.indexOf("type TipoRecurso")
+    const cuerpo = cuentaPortal.slice(
+      cuentaPortal.indexOf("export async function exigirCuentaActiva"),
+      cuentaPortal.indexOf("export async function exigirGerente")
     );
     expect(cuerpo).not.toContain("request.data");
-    expect(cuerpo).toContain("propio.data()?.role");
+    expect(cuerpo).toContain("data.role");
   });
 
   it("sin uid autenticado (llamada directa a la Cloud Function sin sesión) se rechaza con unauthenticated", () => {
-    expect(papeleraR2).toContain('throw new HttpsError("unauthenticated", "Debes iniciar sesión.");');
+    expect(cuentaPortal).toContain('throw new HttpsError("unauthenticated", "Debes iniciar sesión.");');
+  });
+
+  it("una cuenta ARCHIVADA no puede usar la papelera, aunque su token todavía sea válido", () => {
+    // Esta garantía es justo la que NO existía antes de la auditoría de
+    // cierre de ventana residual: exigirCuentaActiva (de la que depende
+    // exigirGerente, y por tanto listarPapelera/restaurarDePapelera)
+    // ahora rechaza cualquier cuenta con archived === true.
+    const cuerpo = cuentaPortal.slice(
+      cuentaPortal.indexOf("export async function exigirCuentaActiva"),
+      cuentaPortal.indexOf("export async function exigirGerente")
+    );
+    expect(cuerpo).toContain("data.archived === true");
   });
 });
 

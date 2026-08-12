@@ -1,4 +1,5 @@
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
@@ -17,16 +18,8 @@ if (getApps().length === 0) {
  */
 export const eliminarReporteCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
   try {
-    const uid = request.auth?.uid;
-    if (!uid) {
-      throw new HttpsError("unauthenticated", "Debes iniciar sesion.");
-    }
-
     const db = getFirestore();
-    const propio = await db.doc(`portalUsers/${uid}`).get();
-    if (!propio.exists || propio.data()?.role !== "admin") {
-      throw new HttpsError("permission-denied", "Solo la cuenta admin puede eliminar reportes.");
-    }
+    await exigirGerente(request, "Solo la cuenta admin puede eliminar reportes.");
 
     // VALIDADO: este id se pega directo a la key de R2 mas abajo
     // (`clientes/${clienteId}/reportes/...`). Sin validar, un

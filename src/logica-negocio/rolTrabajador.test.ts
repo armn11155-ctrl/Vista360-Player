@@ -63,7 +63,7 @@ describe("el Trabajador puede LEER lo mismo que puede escribir", () => {
     // Eso ademas endurece al Gerente, que antes podia pedir cualquier
     // archivo bajo el prefijo.
     const codigo = sinComentarios(leer("obtenerArchivoR2Base64.ts"));
-    expect(codigo).toContain("esPersonalInterno(");
+    expect(codigo).toContain("exigirPersonalInterno(");
     expect(codigo).toContain("FORMATO_REPORTE.exec(key)");
     expect(codigo).toContain('.where("pdfUrl", "==", key)');
   });

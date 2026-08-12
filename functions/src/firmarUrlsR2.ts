@@ -1,4 +1,5 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { exigirCuentaActiva } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, esKeyValida, firmarLecturaR2 } from "./r2Storage.js";
@@ -38,20 +39,14 @@ const EXPIRACION_AVATAR_SEGUNDOS = 7 * 24 * 60 * 60;
  * siempre.
  */
 export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) {
-    throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-  }
+  const cuenta = await exigirCuentaActiva(request);
+  const { uid } = cuenta;
   // Hasta 60 firmas de R2 + hasta 2 consultas a Firestore por llamada
   // (ver MAX_KEYS_POR_LLAMADA arriba) -- sin límite de ritmo, un bucle
   // amplifica ambas cosas sin que la UI lo necesite nunca.
   exigirRitmo(uid, "firmarUrlsR2", 30);
 
   const db = getFirestore();
-  const snap = await db.doc(`portalUsers/${uid}`).get();
-  if (!snap.exists) {
-    throw new HttpsError("permission-denied", "Tu cuenta no está vinculada al portal.");
-  }
 
   const keysRaw = request.data?.keys;
   if (!Array.isArray(keysRaw) || keysRaw.length === 0) {
@@ -63,7 +58,6 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
 
   const keys = keysRaw.map((k) => String(k)).filter(esKeyValida);
 
-  const propio = snap.data() ?? {};
 // El Trabajador es personal interno, no un cliente.
 //
 // Antes acá se preguntaba `role === "admin"`, o sea SOLO el Gerente. Un
@@ -75,8 +69,8 @@ export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
 // deja al Trabajador leer clientes, contratos, facturas e informes con
 // esPersonalDePortal(). Las reglas decían que sí y las Functions decían
 // que no: un Trabajador generaba un reporte y después no podía verlo.
-  const esInterno = esPersonalInterno(propio.role);
-  const clienteIdPropio = String(propio.clienteId ?? "");
+  const esInterno = esPersonalInterno(cuenta.role);
+  const clienteIdPropio = cuenta.clienteId;
 
   /**
    * Todas las facturas propias en una lectura agregada. Antes se hacía una

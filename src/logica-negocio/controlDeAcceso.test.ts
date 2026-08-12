@@ -56,7 +56,16 @@ describe("superficie de ataque: las Cloud Functions son endpoints públicos", ()
     for (const f of funciones) {
       const c = cuerpo(f.nombre, f.codigo);
       if (!c) continue;
-      const compruebaSesion = /request\.auth\?\.uid|request\.auth\.uid/.test(c);
+      const compruebaSesion =
+        /request\.auth\?\.uid|request\.auth\.uid/.test(c) ||
+        // Desde la auditoría de agosto 2026, la mayoría pasa la sesión
+        // a exigirCuentaActiva/exigirGerente/exigirPersonalInterno
+        // (cuentaPortal.ts), que lee request.auth?.uid puertas adentro
+        // -- no en el cuerpo de cada función. Los paréntesis pueden
+        // llevar el "request" en la misma línea o en la siguiente
+        // (llamadas envueltas por Prettier con el mensaje como segundo
+        // argumento), de ahí el \s*\n?\s* entre el "(" y "request".
+        /exigir(CuentaActiva|Gerente|PersonalInterno)\(\s*\n?\s*request\b/.test(c);
       // sincronizarEstadoPaneles es onRequest (la llama el cron de
       // GitHub Actions, que no tiene sesión de Firebase) y se protege
       // con un secreto compartido en la cabecera.
@@ -84,14 +93,23 @@ describe("superficie de ataque: las Cloud Functions son endpoints públicos", ()
 
   it("ninguna función decide permisos con datos del cliente en vez de portalUsers", () => {
     // El patrón correcto es leer portalUsers/{uid} del servidor.
-    const conRol = funciones.filter((f) => /role|esGerente|esTrabajador|esPersonalInterno/.test(cuerpo(f.nombre, f.codigo)));
+    const conRol = funciones.filter((f) =>
+      /role|esGerente|esTrabajador|esPersonalInterno|exigirGerente\(|exigirPersonalInterno\(/.test(
+        cuerpo(f.nombre, f.codigo)
+      )
+    );
     expect(conRol.length).toBeGreaterThan(20);
     for (const f of conRol) {
       const c = cuerpo(f.nombre, f.codigo);
       const leeDelServidor =
         /portalUsers\/\$\{uid\}/.test(c) ||
         /requireAdmin|requireGerente|esPersonalInterno\(|esGerente\(|esTrabajador\(/.test(c) ||
-        /portalUsers/.test(f.codigo);
+        /portalUsers/.test(f.codigo) ||
+        // El helper centralizado (cuentaPortal.ts) es quien lee
+        // portalUsers/{uid} ahora -- ver su propio archivo de pruebas
+        // (cuentaPortal.test.ts) para la comprobación de que ESE
+        // helper de verdad lee del servidor.
+        /exigirCuentaActiva\(|exigirGerente\(|exigirPersonalInterno\(/.test(c);
       expect(leeDelServidor, `${f.nombre} decide permisos sin leer portalUsers`).toBe(true);
     }
   });
@@ -158,7 +176,7 @@ describe("escalada de privilegios", () => {
 
   it("crear cuentas de personal interno exige ser Gerente", () => {
     const c = readFileSync(resolve(DIR, "crearTrabajadorAcceso.ts"), "utf-8");
-    expect(c).toMatch(/esGerente|role\s*!==\s*"admin"/);
+    expect(c).toMatch(/esGerente|role\s*!==\s*"admin"|exigirGerente\(/);
   });
 });
 
@@ -170,7 +188,8 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
     // (no puede sobrescribir ni leer lo ajeno) pero sí espacio y coste
     // a cuenta de Vista360.
     const c = readFileSync(resolve(DIR, "crearSubidaR2.ts"), "utf-8");
-    expect(c).toContain("esPersonalInterno(snap.data()?.role)");
+    expect(c).toContain("exigirPersonalInterno(");
+    expect(c).toContain("Solo el equipo interno puede subir archivos.");
   });
 
   it("el avatar propio SIGUE abierto a cualquier cuenta (no se rompió al cliente)", () => {
@@ -184,7 +203,7 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
   it("crear cuentas de cliente y restablecer contraseñas exige Gerente", () => {
     for (const archivo of ["crearClienteAcceso.ts", "restablecerPasswordCliente.ts", "crearTrabajadorAcceso.ts"]) {
       const c = readFileSync(resolve(DIR, archivo), "utf-8");
-      expect(c, archivo).toMatch(/esGerente|requireAdmin|role\s*!==\s*"admin"/);
+      expect(c, archivo).toMatch(/esGerente|requireAdmin|role\s*!==\s*"admin"|exigirGerente\(/);
     }
   });
 
@@ -194,8 +213,8 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
       // Vale tanto el helper como la comparación directa del rol; lo
       // que NO puede aparecer es esPersonalInterno(), que dejaría
       // borrar también a un Trabajador.
-      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"/);
-      expect(c, archivo).not.toMatch(/esPersonalInterno\(/);
+      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"|exigirGerente\(/);
+      expect(c, archivo).not.toMatch(/esPersonalInterno\(|exigirPersonalInterno\(/);
     }
   });
 
@@ -211,7 +230,8 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
 describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () => {
   it("generar reportes (540s, 1GiB) exige personal interno", () => {
     const c = readFileSync(resolve(DIR, "generarReporteCliente.ts"), "utf-8");
-    expect(c).toContain("esPersonalInterno(user?.role)");
+    expect(c).toContain("exigirPersonalInterno(");
+    expect(c).toContain("Solo el equipo interno puede generar reportes.");
     // Y sigue declarando el timeout largo: si alguien lo bajara sin
     // pensar, los reportes grandes se cortarían a medias.
     expect(c).toContain("timeoutSeconds: 540");
@@ -220,7 +240,7 @@ describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () =>
   it("las herramientas de mantenimiento que barren colecciones enteras exigen Gerente", () => {
     for (const archivo of ["limpiarArchivosHuerfanos.ts", "contarEvidenciasHuerfanas.ts", "obtenerEspacioR2.ts", "resumenOcupacion.ts"]) {
       const c = readFileSync(resolve(DIR, archivo), "utf-8");
-      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"|requireAdmin/);
+      expect(c, archivo).toMatch(/esGerente|role\s*!==\s*"admin"|requireAdmin|exigirGerente\(/);
     }
   });
 
@@ -231,7 +251,7 @@ describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () =>
 
   it("enviar correos exige personal interno (no es un relay abierto)", () => {
     const c = readFileSync(resolve(DIR, "enviarCorreoConPdf.ts"), "utf-8");
-    expect(c).toContain("esPersonalInterno(rol)");
+    expect(c).toContain("exigirPersonalInterno(");
     // Y valida el destinatario, para no mandar a cualquier cosa.
     expect(c).toMatch(/test\(destinatario\)/);
   });
@@ -244,7 +264,7 @@ describe("abuso de recursos: lo caro queda fuera del alcance del cliente", () =>
     // ruta EXACTA de un reporte cuyo cliente exista, o la de una factura
     // registrada. Un prefijo correcto ya no basta -- ni para el Gerente.
     const codigo = readFileSync(resolve(DIR, "obtenerArchivoR2Base64.ts"), "utf-8");
-    expect(codigo).toContain("esPersonalInterno(");
+    expect(codigo).toContain("exigirPersonalInterno(");
     expect(codigo).toContain("FORMATO_REPORTE");
     expect(codigo).toContain("FORMATO_FACTURA");
     expect(codigo).toContain("esKeyValida(key)");

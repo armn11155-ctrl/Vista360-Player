@@ -1,4 +1,6 @@
-import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
+import { exigirRitmo } from "./limitador.js";
+import { exigirGerente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2 } from "./r2Storage.js";
@@ -29,14 +31,12 @@ export const contarEvidenciasHuerfanas = onCall<Datos>(
   // Recorre la coleccion de contratos completa y cruza con R2.
   { secrets: R2_SECRETS, timeoutSeconds: 300, memory: "512MiB" },
   async (request) => {
-  const uid = request.auth?.uid;
-  if (!uid) throw new HttpsError("unauthenticated", "Debes iniciar sesión.");
-
   const db = getFirestore();
-  const propio = await db.doc(`portalUsers/${uid}`).get();
-  if (!propio.exists || propio.data()?.role !== "admin") {
-    throw new HttpsError("permission-denied", "Solo la cuenta admin puede hacer esto.");
-  }
+  const { uid } = await exigirGerente(request, "Solo la cuenta admin puede hacer esto.");
+  // Recorre TODOS los contratos del negocio en cada llamada -- sin
+  // límite de ritmo, un bucle agota la cuota de lecturas diaria.
+  // Techo de peticiones por minuto: ver limitador.ts.
+  exigirRitmo(uid, "contarEvidenciasHuerfanas", 10);
 
   const confirmar = request.data?.confirmar === true;
   const contratosSnap = await db.collection("contratos").get();
