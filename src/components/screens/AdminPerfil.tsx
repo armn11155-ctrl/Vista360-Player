@@ -3,6 +3,8 @@ import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { auth, cloudFunctions, logout } from "../../config/firebase";
+import { cerrarTodasMisSesiones, conReautenticacion } from "../../config/reautenticacion";
+import { MfaSetupModal } from "../MfaSetupModal";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { publicarAvatarPropio, useAvatarPropio } from "../../hooks/useAvatarPropio";
@@ -118,7 +120,34 @@ type LimpiezaEstado =
  * Muestra identidad (con foto propia editable) + espacio usado en R2.
  */
 export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBack }: Props) {
-  const { confirmar } = useDialogos();
+  const { confirmar, avisar, pedirContrasena } = useDialogos();
+  const [cerrandoSesiones, setCerrandoSesiones] = useState(false);
+  const [modalMfaAbierto, setModalMfaAbierto] = useState(false);
+
+  /** "Creo que alguien tiene una sesión de mi cuenta." Revoca en el
+   *  servidor y cierra también la de este navegador -- si no, la
+   *  pantalla se quedaría abierta con todo fallando por detrás. */
+  async function cerrarSesionesDeTodosLosDispositivos() {
+    const ok = await confirmar({
+      titulo: "¿Cerrar todas tus sesiones?",
+      mensaje: "Se cerrarán las sesiones de Vista360 asociadas a tu cuenta. Tendrás que iniciar sesión nuevamente.",
+      textoConfirmar: "Cerrar sesiones",
+      destructivo: true,
+    });
+    if (!ok) return;
+    setCerrandoSesiones(true);
+    try {
+      await cerrarTodasMisSesiones();
+    } catch (err) {
+      setCerrandoSesiones(false);
+      await avisar({
+        titulo: "No se pudieron cerrar las sesiones",
+        mensaje: mensajeDeError(err, "Intenta de nuevo en un momento."),
+        esError: true,
+      });
+    }
+  }
+
   const rolInterno = esGerente ? "Gerente" : "Trabajador";
   const espacio = useEspacioR2();
   const porcentajeUsado =
@@ -261,8 +290,22 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
     setLimpieza({ fase: "borrando", datos: previo });
     try {
       const fn = httpsCallable<{ confirmar: boolean }, LimpiezaResultado>(cloudFunctions, "limpiarArchivosHuerfanos");
-      const { data } = await fn({ confirmar: true });
-      setLimpieza({ fase: "listo", datos: data });
+      // Borrado masivo real: el backend exige identidad reciente. La
+      // simulación de arriba (confirmar:false) no la pide.
+      const res = await conReautenticacion(
+        () => fn({ confirmar: true }),
+        () =>
+          pedirContrasena({
+            titulo: "Confirma tu identidad",
+            mensaje: "Vas a borrar definitivamente archivos del almacenamiento. Escribe tu contraseña para continuar.",
+            textoConfirmar: "Borrar",
+          })
+      );
+      if (!res) {
+        setLimpieza({ fase: "listo", datos: previo });
+        return;
+      }
+      setLimpieza({ fase: "listo", datos: res.data });
     } catch (error) {
       setLimpieza({ fase: "error", mensaje: mensajeDeError(error, "No se pudo completar la limpieza.") });
     }
@@ -574,6 +617,39 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
         </section>
 
         <section className="profile-section">
+          <h2>Seguridad</h2>
+          <div className="profile-card-list">
+            {/* Solo para Gerentes por ahora: es la cuenta que puede
+                borrar clientes y cortar accesos, así que es la que
+                justifica el segundo factor. Cliente y Trabajador siguen
+                entrando igual que siempre. */}
+            {esGerente && (
+              <button
+                type="button"
+                className="profile-row clickable"
+                onClick={() => setModalMfaAbierto(true)}
+              >
+                <span className="profile-row-label">Autenticación en dos pasos</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className="profile-row danger clickable"
+              disabled={cerrandoSesiones}
+              onClick={() => void cerrarSesionesDeTodosLosDispositivos()}
+            >
+              <span className="profile-row-label">
+                {cerrandoSesiones ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
+              </span>
+            </button>
+          </div>
+          <p style={{ margin: "8px 4px 0", fontSize: 12, color: "#64748B", lineHeight: 1.45 }}>
+            Úsalo si crees que alguien más tiene una sesión de tu cuenta abierta. No
+            archiva ni elimina tu cuenta: solo expulsa las sesiones.
+          </p>
+        </section>
+
+        <section className="profile-section">
           <h2>Cuenta</h2>
           <div className="profile-card-list">
             <button type="button" className="profile-row clickable" onClick={() => setModalPasswordAbierto(true)}>
@@ -585,6 +661,8 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
           </div>
         </section>
       </div>
+
+      {modalMfaAbierto && <MfaSetupModal onCerrar={() => setModalMfaAbierto(false)} />}
 
       {modalPasswordAbierto && (
         <div

@@ -431,7 +431,7 @@ export default function App() {
                     }}
                   />
                 : view === "accesos"
-                  ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} esGerente={esGerente} />
+                  ? <Accesos onBack={() => { setVolverAGestion(true); setView("inicio"); }} esGerente={esGerente} uidPropio={auth.user.uid} />
                   : view === "miPerfil"
                     ? <AdminPerfil uid={auth.user.uid} nombre={auth.nombre ?? ""} email={auth.user.email ?? ""} esGerente={esGerente} onBack={() => setView("inicio")} />
                     : view === "paneles"
@@ -853,7 +853,7 @@ function AuthenticatedApp({
         ) : null;
         break;
       case "accesos":
-        content = isAdmin ? <Accesos onBack={() => setView("inicio")} esGerente={esGerente} /> : null;
+        content = isAdmin ? <Accesos onBack={() => setView("inicio")} esGerente={esGerente} uidPropio={uid} /> : null;
         break;
       case "paneles":
         content = isAdmin ? <Paneles onBack={() => setView("inicio")} esGerente={esGerente} /> : null;

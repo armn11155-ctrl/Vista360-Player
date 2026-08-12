@@ -1,6 +1,6 @@
 import { onCall } from "firebase-functions/v2/https";
 import { exigirRitmo } from "./limitador.js";
-import { exigirGerente } from "./cuentaPortal.js";
+import { exigirGerente, exigirAutenticacionReciente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 import { R2_SECRETS, borrarObjetoR2, listarObjetosR2 } from "./r2Storage.js";
@@ -100,6 +100,17 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
   exigirRitmo(uid, "limpiarArchivosHuerfanos", 10);
 
   const confirmar = request.data?.confirmar === true;
+
+  // Solo el borrado REAL es crítico. La simulación (confirmar:false) es
+  // de lectura y se usa para revisar antes de decidir: pedirle la
+  // contraseña a alguien que solo está mirando sería fricción sin
+  // ninguna ganancia de seguridad.
+  if (confirmar) {
+    exigirAutenticacionReciente(
+      request,
+      "Vuelve a escribir tu contraseña para borrar definitivamente estos archivos."
+    );
+  }
   const enUso = await keysEnUso(db);
 
   const limite = Date.now() - HORAS_DE_GRACIA * 60 * 60 * 1000;

@@ -1,16 +1,40 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { exigirRitmo } from "./limitador.js";
-import { exigirGerente, exigirPersonalInterno } from "./cuentaPortal.js";
+import {
+  exigirGerente,
+  exigirPersonalInterno,
+  exigirAutenticacionReciente,
+  exigirQueNoSeaUnoMismo,
+} from "./cuentaPortal.js";
 import { getAuth } from "firebase-admin/auth";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore } from "firebase-admin/firestore";
-import { esTrabajador } from "./rolesInternos.js";
+import { esGerente, esTrabajador } from "./rolesInternos.js";
 import { crearSolicitudPendiente } from "./solicitudesAccion.js";
 import { idOpcional } from "./identificadores.js";
 import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
   initializeApp();
+}
+
+
+/**
+ * ¿La cuenta que se va a tocar es de un Gerente?
+ *
+ * Se usa para decidir si la operación es CRÍTICA (hay que volver a pedir
+ * la contraseña) o solo SENSIBLE. Cortar una cuenta Gerente es el
+ * movimiento más destructivo que existe acá dentro -- es exactamente lo
+ * que haría un atacante para quedarse solo en la casa -- así que esa sí
+ * pide reautenticación. Archivar un cliente o un trabajador no la pide:
+ * es una operación de todos los días y llenar de contraseñas el trabajo
+ * normal solo consigue que la gente se acostumbre a escribirla sin
+ * mirar, que es justo lo que no queremos.
+ */
+async function objetivoEsGerente(db: Firestore, uid: string | null): Promise<boolean> {
+  if (!uid) return false;
+  const snap = await db.doc(`portalUsers/${uid}`).get();
+  return esGerente(snap.data()?.role);
 }
 
 type AccionUsuarioPortal = "archivar" | "restaurar" | "eliminar";
@@ -58,6 +82,22 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
     if (!uid && !invitacionId && !email) {
       throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
     }
+
+    // Nadie se archiva a sí mismo, ni siquiera queriendo. Ver
+    // exigirQueNoSeaUnoMismo() para el porqué.
+    if (accion === "archivar") {
+      exigirQueNoSeaUnoMismo(gerente.uid, uid);
+    }
+
+    // Archivar a OTRO Gerente sí se puede (hay que poder cortar una
+    // cuenta Gerente comprometida), pero exige contraseña reciente.
+    if (accion === "archivar" && (await objetivoEsGerente(db, uid))) {
+      exigirAutenticacionReciente(
+        request,
+        "Vuelve a escribir tu contraseña para archivar a otro Gerente."
+      );
+    }
+
     await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion, ejecutadoPor: gerente.uid });
     return { ok: true, pendiente: false };
   }
@@ -73,6 +113,15 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
   if (!uid && !invitacionId && !email) {
     throw new HttpsError("invalid-argument", "Falta el usuario a administrar.");
   }
+
+  // Vale igual para eliminar: ni un Gerente ni un Trabajador pueden
+  // borrarse a sí mismos (el Trabajador ni siquiera podría "pedirlo"
+  // para sí mismo y dejar la solicitud lista para que la aprueben).
+  exigirQueNoSeaUnoMismo(
+    cuenta.uid,
+    uid,
+    "No puedes eliminar tu propia cuenta. Pídeselo a otro Gerente."
+  );
 
   if (esTrabajador(rol)) {
     // Se guarda el email como texto suelto en el resumen (no como
@@ -93,6 +142,15 @@ export const administrarUsuarioPortal = onCall<AdministrarUsuarioPortalData>(asy
       payload: { invitacionId, uid, email },
     });
     return { ok: true, pendiente: true, solicitudId };
+  }
+
+  // Eliminar definitivamente a otro Gerente: igual que archivarlo, pero
+  // sin vuelta atrás. Contraseña reciente obligatoria.
+  if (await objetivoEsGerente(db, uid)) {
+    exigirAutenticacionReciente(
+      request,
+      "Vuelve a escribir tu contraseña para eliminar a otro Gerente."
+    );
   }
 
   await ejecutarAdministrarUsuarioPortal(db, { invitacionId, uid, accion: "eliminar", ejecutadoPor: cuenta.uid });
@@ -168,5 +226,7 @@ export async function ejecutarAdministrarUsuarioPortal(
   // mismo borrado definitivo.
   if (accion === "eliminar") {
     auditar("usuario_eliminado", { uid: ejecutadoPor, objetivoId: uid ?? invitacionId ?? undefined });
+  } else if (accion === "archivar") {
+    auditar("usuario_archivado", { uid: ejecutadoPor, objetivoId: uid ?? invitacionId ?? undefined });
   }
 }

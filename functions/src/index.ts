@@ -78,6 +78,8 @@ export { actualizarAvatarCliente } from "./actualizarAvatarCliente.js";
 export { actualizarImagenCampania } from "./actualizarImagenCampania.js";
 export { comprimirFacturaPdf } from "./comprimirFacturaPdf.js";
 export { administrarUsuarioPortal } from "./administrarUsuarioPortal.js";
+export { cerrarMisSesiones } from "./cerrarMisSesiones.js";
+export { registrarEventoMfa } from "./registrarEventoMfa.js";
 export { restablecerPasswordCliente } from "./restablecerPasswordCliente.js";
 export { administrarCotizaciones } from "./administrarCotizaciones.js";
 export { enviarCorreoConPdf } from "./enviarCorreoConPdf.js";

@@ -45,6 +45,13 @@ export interface OpcionesConfirmar {
   destructivo?: boolean;
 }
 
+export interface OpcionesPedirContrasena {
+  titulo: string;
+  mensaje?: string;
+  /** Texto del botón que confirma. Por defecto "Confirmar". */
+  textoConfirmar?: string;
+}
+
 export interface OpcionesAvisar {
   titulo: string;
   mensaje?: string;
@@ -57,13 +64,22 @@ export interface OpcionesAvisar {
 interface ContextoDialogos {
   confirmar: (opciones: OpcionesConfirmar) => Promise<boolean>;
   avisar: (opciones: OpcionesAvisar) => Promise<void>;
+  /** Pide la contraseña de la propia cuenta para confirmar una acción
+   *  crítica. Devuelve la contraseña escrita, o null si se canceló.
+   *
+   *  Ojo: quien la llama NO decide con esto si la acción se permite --
+   *  la contraseña se le pasa a Firebase (reautenticar()) y es el
+   *  backend quien comprueba, en el ID token, que la reautenticación
+   *  ocurrió de verdad. Este diálogo es solo la forma de pedirla. */
+  pedirContrasena: (opciones: OpcionesPedirContrasena) => Promise<string | null>;
 }
 
 const Contexto = createContext<ContextoDialogos | null>(null);
 
 type EstadoDialogo =
   | { tipo: "confirmar"; opciones: OpcionesConfirmar }
-  | { tipo: "avisar"; opciones: OpcionesAvisar };
+  | { tipo: "avisar"; opciones: OpcionesAvisar }
+  | { tipo: "contrasena"; opciones: OpcionesPedirContrasena };
 
 export function DialogosProvider({ children }: { children: ReactNode }) {
   const [dialogo, setDialogo] = useState<EstadoDialogo | null>(null);
@@ -73,9 +89,9 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
   // pantalla), la promesa quedaría colgada para siempre y con ella el
   // `await` de quien la llamó. Resolverla como "cancelado" deja todo
   // cerrado en vez de dejar una función a medio ejecutar.
-  const pendienteRef = useRef<((v: boolean) => void) | null>(null);
+  const pendienteRef = useRef<((v: boolean | string | null) => void) | null>(null);
 
-  const cerrar = useCallback((valor: boolean) => {
+  const cerrar = useCallback((valor: boolean | string | null) => {
     const resolver = pendienteRef.current;
     pendienteRef.current = null;
     setDialogo(null);
@@ -111,7 +127,7 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
           // Si ya había uno abierto (dos acciones disparadas casi a la
           // vez), el anterior se cancela en vez de quedar colgado.
           pendienteRef.current?.(false);
-          pendienteRef.current = resolve;
+          pendienteRef.current = (v) => resolve(v === true);
           setDialogo({ tipo: "confirmar", opciones });
         }),
       avisar: (opciones) =>
@@ -119,6 +135,17 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
           pendienteRef.current?.(false);
           pendienteRef.current = () => resolve();
           setDialogo({ tipo: "avisar", opciones });
+        }),
+      pedirContrasena: (opciones) =>
+        new Promise<string | null>((resolve) => {
+          pendienteRef.current?.(false);
+          // La contraseña nunca se guarda en estado de React ni en
+          // ningún sitio persistente: viaja del input a quien la pidió y
+          // ahí muere. Cancelar (Escape, tocar fuera, botón) resuelve
+          // null, no una cadena vacía, para que no se confunda con
+          // "escribió una contraseña vacía".
+          pendienteRef.current = (v) => resolve(typeof v === "string" ? v : null);
+          setDialogo({ tipo: "contrasena", opciones });
         }),
     }),
     []
@@ -132,7 +159,9 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function Dialogo({ estado, onCerrar }: { estado: EstadoDialogo; onCerrar: (v: boolean) => void }) {
+function Dialogo({ estado, onCerrar }: { estado: EstadoDialogo; onCerrar: (v: boolean | string | null) => void }) {
+  const [contrasena, setContrasena] = useState("");
+  const campoRef = useRef<HTMLInputElement | null>(null);
   const destructivo = estado.tipo === "confirmar" && Boolean(estado.opciones.destructivo);
   const esError = estado.tipo === "avisar" && Boolean(estado.opciones.esError);
   const botonInicialRef = useRef<HTMLButtonElement | null>(null);
@@ -141,8 +170,12 @@ function Dialogo({ estado, onCerrar }: { estado: EstadoDialogo; onCerrar: (v: bo
   // "Cancelar" (así un Enter reflejo NO borra nada); en el resto, en el
   // botón principal, que es lo que la persona va a querer casi siempre.
   useEffect(() => {
+    if (estado.tipo === "contrasena") {
+      campoRef.current?.focus();
+      return;
+    }
     botonInicialRef.current?.focus();
-  }, []);
+  }, [estado.tipo]);
 
   const { titulo, mensaje } = estado.opciones;
 
@@ -171,26 +204,53 @@ function Dialogo({ estado, onCerrar }: { estado: EstadoDialogo; onCerrar: (v: bo
             {mensaje}
           </div>
         )}
+        {estado.tipo === "contrasena" && (
+          <input
+            ref={campoRef}
+            type="password"
+            // autoComplete="current-password" para que el gestor de
+            // contraseñas del navegador la ofrezca; sin esto la gente
+            // acaba escribiéndola a mano cada vez y se cansa de la
+            // función de seguridad, que es como se terminan quitando.
+            autoComplete="current-password"
+            value={contrasena}
+            onChange={(e) => setContrasena(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && contrasena) onCerrar(contrasena);
+            }}
+            placeholder="Tu contraseña"
+            style={{
+              width: "100%", boxSizing: "border-box", marginTop: 12,
+              border: "1px solid var(--border)", borderRadius: 12,
+              padding: "12px", fontSize: 14,
+            }}
+          />
+        )}
         <div className="dialogo-acciones">
-          {estado.tipo === "confirmar" && (
+          {(estado.tipo === "confirmar" || estado.tipo === "contrasena") && (
             <button
               type="button"
               className="dialogo-btn secondary"
               ref={destructivo ? botonInicialRef : undefined}
-              onClick={() => onCerrar(false)}
+              onClick={() => onCerrar(estado.tipo === "contrasena" ? null : false)}
             >
-              {estado.opciones.textoCancelar ?? "Cancelar"}
+              {estado.tipo === "contrasena"
+                ? "Cancelar"
+                : estado.opciones.textoCancelar ?? "Cancelar"}
             </button>
           )}
           <button
             type="button"
             className={destructivo ? "dialogo-btn destructive" : "dialogo-btn primary"}
             ref={destructivo ? undefined : botonInicialRef}
-            onClick={() => onCerrar(true)}
+            disabled={estado.tipo === "contrasena" && !contrasena}
+            onClick={() => onCerrar(estado.tipo === "contrasena" ? contrasena : true)}
           >
             {estado.tipo === "confirmar"
               ? estado.opciones.textoConfirmar ?? "Confirmar"
-              : estado.opciones.textoCerrar ?? "Entendido"}
+              : estado.tipo === "contrasena"
+                ? estado.opciones.textoConfirmar ?? "Confirmar"
+                : estado.opciones.textoCerrar ?? "Entendido"}
           </button>
         </div>
       </div>

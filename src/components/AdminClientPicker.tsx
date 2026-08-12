@@ -11,6 +11,7 @@ import { brandColor } from "../utils/brandColor";
 import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
 import { useDialogos } from "./DialogosProvider";
+import { conReautenticacion } from "../config/reautenticacion";
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -51,7 +52,7 @@ interface Props {
  * escritorio, siempre centrado y ocupando toda la pantalla.
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
-  const { confirmar, avisar } = useDialogos();
+  const { confirmar, avisar, pedirContrasena } = useDialogos();
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -159,7 +160,19 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       cloudFunctions,
       "administrarClienteAdmin"
     );
-    const res = await fn({ clienteId, accion });
+    // eliminarDefinitivo es crítica en el backend (borra el cliente y
+    // todo lo suyo, sin vuelta atrás): si pide identidad reciente, se
+    // pide la contraseña y se reintenta. Archivar/restaurar no la piden.
+    const res = await conReautenticacion(
+      () => fn({ clienteId, accion }),
+      () =>
+        pedirContrasena({
+          titulo: "Confirma tu identidad",
+          mensaje: "Vas a eliminar definitivamente a este cliente y todo lo asociado. Escribe tu contraseña para continuar.",
+          textoConfirmar: "Eliminar",
+        })
+    );
+    if (!res) return {};
     return { pendiente: res.data.pendiente };
   }
 

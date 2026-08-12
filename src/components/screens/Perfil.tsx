@@ -4,11 +4,14 @@ import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 
 import type { Cliente, Contrato } from "../../types";
 import { estadoCampana, panelesDeContrato, rucCliente } from "../../types";
 import { auth, cloudFunctions, db, logout } from "../../config/firebase";
+import { cerrarTodasMisSesiones } from "../../config/reautenticacion";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { useFacturas } from "../../hooks/useFacturas";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
+import { useDialogos } from "../DialogosProvider";
+import { mensajeDeError } from "../../utils/errores";
 
 interface Props {
   cliente: Cliente | null;
@@ -118,6 +121,34 @@ function ProfileMetricRow({ icon, label, value, tone }: {
 }
 
 export default function Perfil({ cliente, contratos = [], email, isAdmin, esInterno, onCambiarCliente, onNotifClick, totalNotifs = 0 }: Props) {
+  const { confirmar, avisar } = useDialogos();
+  const [cerrandoSesiones, setCerrandoSesiones] = useState(false);
+
+  /** Mismo botón que en la pantalla del personal interno: expulsa las
+   *  sesiones, no toca la cuenta. Un cliente que perdió el teléfono
+   *  tiene el mismo problema que un Gerente, así que tiene el mismo
+   *  remedio. */
+  async function cerrarSesionesDeTodosLosDispositivos() {
+    const ok = await confirmar({
+      titulo: "¿Cerrar todas tus sesiones?",
+      mensaje: "Se cerrarán las sesiones de Vista360 asociadas a tu cuenta. Tendrás que iniciar sesión nuevamente.",
+      textoConfirmar: "Cerrar sesiones",
+      destructivo: true,
+    });
+    if (!ok) return;
+    setCerrandoSesiones(true);
+    try {
+      await cerrarTodasMisSesiones();
+    } catch (err) {
+      setCerrandoSesiones(false);
+      await avisar({
+        titulo: "No se pudieron cerrar las sesiones",
+        mensaje: mensajeDeError(err, "Intenta de nuevo en un momento."),
+        esError: true,
+      });
+    }
+  }
+
   const empresa = cliente?.empresa ?? "Cliente";
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc, cliente?.id);
@@ -457,6 +488,15 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
             <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
             <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="orange" />
           </div>
+        </ProfileSection>
+
+        <ProfileSection title="Seguridad">
+          <ProfileRow
+            icon="lock"
+            label={cerrandoSesiones ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
+            danger
+            onClick={() => void cerrarSesionesDeTodosLosDispositivos()}
+          />
         </ProfileSection>
 
         <ProfileSection title="Cuenta">

@@ -46,7 +46,12 @@ export type EventoAuditable =
   | "password_restablecida"
   | "factura_eliminada"
   | "archivo_restaurado_papelera"
-  | "archivos_huerfanos_borrados";
+  | "archivos_huerfanos_borrados"
+  | "usuario_archivado"
+  | "sesiones_revocadas"
+  | "mfa_enrolado"
+  | "mfa_desactivado"
+  | "mfa_recuperado_por_admin";
 
 interface DatosEvento {
   /** Quién lo hizo (uid de Firebase Auth). */

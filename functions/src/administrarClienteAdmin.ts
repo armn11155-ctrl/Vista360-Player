@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { exigirRitmo } from "./limitador.js";
-import { exigirPersonalInterno } from "./cuentaPortal.js";
+import { exigirAutenticacionReciente, exigirPersonalInterno } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { FieldValue, getFirestore, type Firestore, type Query } from "firebase-admin/firestore";
 import { esTrabajador } from "./rolesInternos.js";
@@ -93,6 +93,16 @@ export const administrarClienteAdmin = onCall<AdministrarClienteData>(async (req
     });
     return { ok: true, pendiente: true, solicitudId };
   }
+
+  // CRÍTICA: borra el cliente y todo lo suyo, sin vuelta atrás. Es
+  // exactamente el botón que apretaría alguien que agarró una sesión
+  // abierta para hacer daño, así que pide la contraseña otra vez. Un
+  // Gerente legítimo hace esto muy de vez en cuando; escribir la
+  // contraseña una vez más no le cambia el día.
+  exigirAutenticacionReciente(
+    request,
+    "Vuelve a escribir tu contraseña para eliminar definitivamente a este cliente."
+  );
 
   await ejecutarEliminarClienteDefinitivo(db, clienteId);
   // Lo más destructivo que puede hacer la app: borra el cliente y TODO

@@ -14,6 +14,7 @@ import { subirAvatarR2 } from "../../config/r2";
 import { cloudFunctions, db } from "../../config/firebase";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
 import { mensajeDeError } from "../../utils/errores";
+import { conReautenticacion } from "../../config/reautenticacion";
 import type { Cliente, PersonaInterna } from "../../types";
 import { useDialogos } from "../DialogosProvider";
 
@@ -26,6 +27,16 @@ interface Props {
    *  del Gerente en el backend, así que se ocultan acá también para
    *  no mostrar botones que van a fallar con permission-denied. */
   esGerente?: boolean;
+  /** uid de quien está usando la app ahora mismo. Sirve para no
+   *  ofrecerle "Archivar"/"Eliminar" sobre SU PROPIA cuenta: dejarse
+   *  fuera de la herramienta por un toque de más no es una acción que
+   *  alguien quiera de verdad, y si es el único Gerente no queda nadie
+   *  dentro que pueda restaurarlo.
+   *
+   *  Esto es SOLO comodidad de interfaz. La protección real vive en el
+   *  backend (exigirQueNoSeaUnoMismo en cuentaPortal.ts): quien llame la
+   *  Function a mano desde DevTools recibe permission-denied igual. */
+  uidPropio?: string;
 }
 
 function fmtFecha(inv: { createdAt?: { toDate: () => Date } | null }): string {
@@ -72,8 +83,8 @@ function MenuLink({ label, href, disabled }: { label: string; href: string; disa
   );
 }
 
-export default function Accesos({ onBack, esGerente = true }: Props) {
-  const { confirmar } = useDialogos();
+export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) {
+  const { confirmar, pedirContrasena } = useDialogos();
   const state = useInvitaciones(true);
   const [copiadoId, setCopiadoId] = useState<string | null>(null);
   const [menuAbierto, setMenuAbierto] = useState<string | null>(null);
@@ -563,7 +574,20 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
         { invitacionId: string; uid?: string; email: string; accion: "archivar" | "restaurar" | "eliminar" },
         { ok: boolean; pendiente?: boolean }
       >(cloudFunctions, "administrarUsuarioPortal");
-      const res = await fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion });
+      // Archivar o eliminar a OTRO Gerente es una acción crítica: el
+      // backend la rechaza si la sesión no demostró su identidad hace
+      // poco. Eso no es un error que mostrar, es una petición de
+      // contraseña -- conReautenticacion() la pide y reintenta.
+      const res = await conReautenticacion(
+        () => fn({ invitacionId: inv.id, uid: inv.uid, email: inv.email, accion }),
+        () =>
+          pedirContrasena({
+            titulo: "Confirma tu identidad",
+            mensaje: `Estás por ${accion === "archivar" ? "archivar" : "eliminar"} la cuenta de otro Gerente. Escribe tu contraseña para continuar.`,
+            textoConfirmar: accion === "archivar" ? "Archivar" : "Eliminar",
+          })
+      );
+      if (!res) return;
       if (res.data.pendiente) {
         setAvisoPendiente(`Enviado a tu Gerente para aprobación: eliminar el acceso de ${nombre}.`);
       } else if (esGerente) {
@@ -945,6 +969,9 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
           )}
           {usuariosVisibles.map((inv) => {
             const yaCopiado = copiadoId === inv.id;
+            // Solo comodidad de interfaz: el backend rechaza igual la
+            // llamada aunque alguien se salte esto desde DevTools.
+            const esMiPropiaCuenta = Boolean(uidPropio && inv.uid === uidPropio);
             const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
               `Hola, aquí tienes tu acceso a Vista360 Player. Crea tu contraseña con este link: ${inv.link}`
             )}`;
@@ -1024,11 +1051,16 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                         {esGerente && (
                           <MenuButton label="Restablecer contraseña" onClick={() => void restablecerPassword(inv)} />
                         )}
-                        {esGerente && (
+                        {esGerente && !esMiPropiaCuenta && (
                           <MenuButton label="Archivar usuario" danger onClick={() => administrarUsuario(inv, "archivar")} />
                         )}
-                        {!esGerente && (
+                        {!esGerente && !esMiPropiaCuenta && (
                           <MenuButton label="Eliminar (pedir aprobación)" danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                        )}
+                        {esMiPropiaCuenta && (
+                          <div style={{ padding: "12px 11px", fontSize: 11, color: "#64748B", fontWeight: 600, lineHeight: 1.4 }}>
+                            Es tu propia cuenta: no puedes archivarla ni eliminarla desde aquí.
+                          </div>
                         )}
                       </>
                     ) : (
@@ -1036,7 +1068,9 @@ export default function Accesos({ onBack, esGerente = true }: Props) {
                         {esGerente && (
                           <MenuButton label="Restaurar usuario" onClick={() => administrarUsuario(inv, "restaurar")} />
                         )}
-                        <MenuButton label={esGerente ? "Eliminar definitivo" : "Eliminar (pedir aprobación)"} danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                        {!esMiPropiaCuenta && (
+                          <MenuButton label={esGerente ? "Eliminar definitivo" : "Eliminar (pedir aprobación)"} danger onClick={() => administrarUsuario(inv, "eliminar")} />
+                        )}
                       </>
                     )}
                   </div>

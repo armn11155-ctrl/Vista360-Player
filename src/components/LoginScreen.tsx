@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { auth, login } from "../config/firebase";
 import { setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import type { MultiFactorResolver } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
+import { completarLoginConCodigo, pideSegundoFactor, resolverDeSegundoFactor } from "../config/mfa";
 import PixelGlobe from "./PixelGlobe";
 
 const LOGO = "/logo-player.webp";
@@ -34,6 +36,27 @@ function IconoCandado() {
 }
 
 export default function LoginScreen({ onLoggedIn }: Props) {
+  // Login en dos pasos cuando la cuenta tiene segundo factor. Mientras
+  // resolverMfa no sea null, la contraseña ya se validó pero la sesión
+  // NO existe todavía.
+  const [resolverMfa, setResolverMfa] = useState<MultiFactorResolver | null>(null);
+  const [codigoMfa, setCodigoMfa] = useState("");
+
+  async function enviarCodigoMfa(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resolverMfa || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await completarLoginConCodigo(resolverMfa, codigoMfa);
+      onLoggedIn();
+    } catch (error) {
+      setError(mensajeDeError(error, "Código incorrecto o vencido. Revisa tu aplicación de autenticación."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const savedRemember = localStorage.getItem(REMEMBER_KEY) !== "false";
   const savedEmail = savedRemember ? (localStorage.getItem(SAVED_EMAIL_KEY) ?? "") : "";
 
@@ -67,6 +90,23 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       await login(email.trim(), password);
       onLoggedIn();
     } catch (error) {
+      // La contraseña era correcta, pero la cuenta tiene un segundo
+      // factor: Firebase NO ha creado la sesión todavía. Se guarda el
+      // "resolver" que devuelve el SDK y se pide el código.
+      //
+      // Importante: aquí no se decide nada. La sesión la crea Firebase
+      // en completarLoginConCodigo() y solo si el código es válido. No
+      // existe ninguna bandera local que se pueda poner a mano para
+      // saltarse este paso -- sin código, no hay sesión que falsificar.
+      if (pideSegundoFactor(error)) {
+        const resolver = resolverDeSegundoFactor(error);
+        if (resolver) {
+          setResolverMfa(resolver);
+          setError("");
+          setBusy(false);
+          return;
+        }
+      }
       setError(mensajeDeError(error, "Usuario o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360."));
     } finally {
       setBusy(false);
@@ -108,11 +148,60 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <span>Acceso privado</span>
               <strong>V360</strong>
             </div>
-            <div className="login-title">Bienvenido</div>
+            <div className="login-title">{resolverMfa ? "Verificación en dos pasos" : "Bienvenido"}</div>
             <div className={`login-message-stack${error ? " has-error" : ""}`}>
-              <div className="login-sub">Ingresa tus credenciales para continuar.</div>
+              <div className="login-sub">
+                {resolverMfa
+                  ? "Escribe el código de 6 dígitos de tu aplicación de autenticación."
+                  : "Ingresa tus credenciales para continuar."}
+              </div>
               {error && <div id="login-error" className="login-error" role="alert">{error}</div>}
             </div>
+
+            {/* Segundo paso: la contraseña ya se validó, pero la sesión
+                todavía NO existe. Solo Firebase puede crearla, y solo
+                con un código válido. */}
+            {resolverMfa ? (
+              <form onSubmit={enviarCodigoMfa}>
+                <div className="form-group">
+                  <label className="form-label" htmlFor="login-mfa">Código de verificación</label>
+                  <div className="login-input-wrap">
+                    <input
+                      id="login-mfa"
+                      className="form-input"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      autoFocus
+                      maxLength={6}
+                      value={codigoMfa}
+                      onChange={(e) => setCodigoMfa(e.target.value.replace(/\D/g, ""))}
+                      placeholder="000000"
+                      aria-describedby={error ? "login-error" : undefined}
+                    />
+                  </div>
+                </div>
+                <button
+                  className={`login-btn${busy ? " is-busy" : ""}`}
+                  disabled={busy || codigoMfa.length < 6}
+                  type="submit"
+                  aria-busy={busy}
+                >
+                  <span className="login-btn-content">
+                    <span className="login-btn-spinner" aria-hidden="true" />
+                    <span>{busy ? "Verificando…" : "Verificar"}</span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className="login-secondary-link"
+                  style={{ marginTop: 14, background: "none", border: "none", color: "#64748B", fontSize: 13, cursor: "pointer", width: "100%" }}
+                  onClick={() => { setResolverMfa(null); setCodigoMfa(""); setError(""); }}
+                >
+                  Volver
+                </button>
+              </form>
+            ) : (
             <form onSubmit={submit}>
             <div className="form-group">
               <label className="form-label" htmlFor="login-email">Usuario</label>
@@ -202,6 +291,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               </span>
             </button>
             </form>
+            )}
           </div>
           <div className="login-foot">
             <span>Conexión protegida</span>

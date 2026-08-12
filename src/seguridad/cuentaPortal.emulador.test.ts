@@ -56,7 +56,14 @@ process.env.GCLOUD_PROJECT = "vista360-cuentaportal-test";
 
 let entorno: RulesTestEnvironment;
 
-const { exigirCuentaActiva, exigirGerente, exigirPersonalInterno } = await import(
+const {
+  exigirCuentaActiva,
+  exigirGerente,
+  exigirPersonalInterno,
+  exigirAutenticacionReciente,
+  exigirQueNoSeaUnoMismo,
+  EDAD_MAXIMA_AUTENTICACION_RECIENTE_SEG,
+} = await import(
   "../../functions/src/cuentaPortal.js"
 );
 
@@ -198,5 +205,104 @@ describe("casos límite", () => {
     await expect(exigirCuentaActiva(pedidoDe("uid-rol-corrupto"))).rejects.toMatchObject({
       code: "permission-denied",
     });
+  });
+});
+
+/**
+ * ── CIERRE DE SEGURIDAD DE LA CUENTA GERENTE ───────────────────────────
+ *
+ * Ejecución REAL de las protecciones nuevas contra el emulador. No se
+ * comprueba que el código "mencione" la protección: se llama la función
+ * de producción y se comprueba qué contesta.
+ */
+describe("sesiones cerradas a propósito (Cerrar todas mis sesiones)", () => {
+  it("una sesión ANTERIOR al corte queda fuera, aunque su token siga vivo", async () => {
+    await entorno.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), "portalUsers/uid-corto-sesiones"), {
+        role: "admin",
+        nombre: "Gerente que cerró sus sesiones",
+        // El corte ocurrió DESPUÉS de que esta sesión se autenticara.
+        sessionsRevokedAt: 2_000,
+      });
+    });
+    await expect(
+      exigirCuentaActiva({ auth: { uid: "uid-corto-sesiones", token: { auth_time: 1_000 } } })
+    ).rejects.toThrow(/cerraron todas las sesiones/i);
+  });
+
+  it("una sesión POSTERIOR al corte sí funciona (volver a entrar te devuelve el acceso)", async () => {
+    const cuenta = await exigirCuentaActiva({
+      auth: { uid: "uid-corto-sesiones", token: { auth_time: 3_000 } },
+    });
+    expect(cuenta.role).toBe("admin");
+  });
+
+  it("sin sessionsRevokedAt, una cuenta normal no se ve afectada", async () => {
+    const cuenta = await exigirCuentaActiva({
+      auth: { uid: "uid-gerente-activo", token: { auth_time: 1 } },
+    });
+    expect(cuenta.role).toBe("admin");
+  });
+
+  it("un token SIN auth_time se rechaza si la cuenta cortó sesiones (falla cerrado)", async () => {
+    await expect(
+      exigirCuentaActiva({ auth: { uid: "uid-corto-sesiones" } })
+    ).rejects.toThrow(/cerraron todas las sesiones/i);
+  });
+});
+
+describe("autenticación reciente para acciones críticas", () => {
+  const ahora = () => Math.floor(Date.now() / 1000);
+
+  it("una sesión recién autenticada pasa", () => {
+    expect(() =>
+      exigirAutenticacionReciente({ auth: { uid: "u", token: { auth_time: ahora() } } })
+    ).not.toThrow();
+  });
+
+  it("una sesión autenticada hace horas NO pasa", () => {
+    expect(() =>
+      exigirAutenticacionReciente({ auth: { uid: "u", token: { auth_time: ahora() - 3600 } } })
+    ).toThrow(/contraseña/i);
+  });
+
+  it("justo por encima de la ventana NO pasa", () => {
+    expect(() =>
+      exigirAutenticacionReciente({
+        auth: { uid: "u", token: { auth_time: ahora() - (EDAD_MAXIMA_AUTENTICACION_RECIENTE_SEG + 5) } },
+      })
+    ).toThrow();
+  });
+
+  it("un token sin auth_time NO pasa (no se puede probar nada, así que no se acepta)", () => {
+    expect(() => exigirAutenticacionReciente({ auth: { uid: "u" } })).toThrow();
+  });
+
+  it("NO se puede falsificar mandando datos en el body: solo se mira el token", () => {
+    // Esto es lo que intentaría alguien desde DevTools. El objeto que
+    // llega trae "reautenticado: true" en data, y da igual: la función
+    // no mira data en absoluto.
+    const intento = {
+      auth: { uid: "u", token: { auth_time: ahora() - 7200 } },
+      data: { reautenticado: true, reauthenticated: true, mfaPassed: true },
+    };
+    expect(() => exigirAutenticacionReciente(intento)).toThrow();
+  });
+});
+
+describe("nadie puede archivarse ni eliminarse a sí mismo", () => {
+  it("actor === objetivo se rechaza", () => {
+    expect(() => exigirQueNoSeaUnoMismo("uid-gerente-activo", "uid-gerente-activo")).toThrow(
+      /tu propia cuenta/i
+    );
+  });
+
+  it("actor !== objetivo se permite (sí se puede cortar a otro Gerente)", () => {
+    expect(() => exigirQueNoSeaUnoMismo("uid-gerente-activo", "uid-otro-gerente")).not.toThrow();
+  });
+
+  it("sin objetivo (solo invitación) no bloquea nada", () => {
+    expect(() => exigirQueNoSeaUnoMismo("uid-gerente-activo", null)).not.toThrow();
+    expect(() => exigirQueNoSeaUnoMismo("uid-gerente-activo", undefined)).not.toThrow();
   });
 });
