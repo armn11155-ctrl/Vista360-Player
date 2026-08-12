@@ -44,29 +44,22 @@ const TABS: { id: Tab; label: string; getIcon: (a: boolean) => React.ReactNode }
 
 export default function BottomNav({ active, onChange }: Props) {
   return (
-    <div className="bottom-nav" style={{
-      background:"#fff",
-      borderTop:"1px solid #EBEBEB",
-      display:"flex",
-      alignItems:"stretch",
-      flexShrink:0,
-    }}>
+    <nav className="bottom-nav" aria-label="Navegación principal">
       {TABS.map(tab => {
         const a = active === tab.id;
         return (
-          <button type="button" key={tab.id} className={`nav-item${a ? " active" : ""}`} onClick={() => onChange(tab.id)} style={{
-            flex:1, display:"flex", flexDirection:"column", alignItems:"center",
-            justifyContent:"center", gap:3, padding:"9px 4px 8px",
-            background:"none", border:"none", cursor:"pointer",
-            WebkitTapHighlightColor:"transparent",
-          }}>
+          <button
+            type="button"
+            key={tab.id}
+            className={`nav-item${a ? " active" : ""}`}
+            onClick={() => onChange(tab.id)}
+            aria-current={a ? "page" : undefined}
+          >
             {tab.getIcon(a)}
-            <span style={{ fontSize: 11, fontWeight: a ? 700 : 400, color: a ? "#0877FF" : "#64748B", letterSpacing:0 }}>
-              {tab.label}
-            </span>
+            <span>{tab.label}</span>
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }

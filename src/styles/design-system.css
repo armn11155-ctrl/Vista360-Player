@@ -2230,3 +2230,385 @@ a {
     line-height: 1;
   }
 }
+
+/* =====================================================================
+   SISTEMA VISUAL VISTA360 — INTERIOR DEL PRODUCTO
+   ---------------------------------------------------------------------
+   El login ya establece una identidad clara: azul noche, blanco limpio
+   y un único azul luminoso. Esta capa lleva ese mismo lenguaje a las
+   pantallas operativas sin oscurecer el contenido ni cambiar su layout.
+   Se limita a navegación, jerarquía, superficies y respuesta visual;
+   no agrega DOM, consultas, listeners ni lógica de negocio.
+   ===================================================================== */
+
+:root {
+  --v360-nav-gradient:
+    radial-gradient(circle at 86% -18%, rgba(22,119,255,.20), transparent 38%),
+    linear-gradient(155deg, #081426 0%, #030711 78%);
+  --v360-header-gradient:
+    radial-gradient(circle at 78% -80%, rgba(22,119,255,.26), transparent 54%),
+    linear-gradient(110deg, #07101d 0%, #0a1a31 56%, #07101d 100%);
+  --v360-canvas-gradient:
+    radial-gradient(circle at 82% 0%, rgba(22,119,255,.045), transparent 34%),
+    linear-gradient(180deg, #f4f7fb 0%, #eef3f8 100%);
+  --v360-card-border: rgba(203,214,227,.82);
+  --v360-card-shadow: 0 1px 2px rgba(15,23,42,.025), 0 18px 42px -32px rgba(15,23,42,.46);
+}
+
+/* Marco del producto: el contenido se mantiene claro y el azul noche
+   queda reservado para las superficies de orientación. */
+.main-area,
+.screens,
+.content-area,
+.campaign-list,
+.reports-screen-body,
+.quotes-scroll,
+.inicio-content,
+.admin-tool-screen,
+.admin-picker-management-screen {
+  background-color: var(--v360-canvas);
+}
+
+.screens,
+.content-area,
+.campaign-list,
+.reports-screen-body,
+.quotes-scroll,
+.inicio-content {
+  background-image: var(--v360-canvas-gradient);
+}
+
+/* El cambio de sección responde inmediatamente, pero sin la sensación de
+   "diapositiva". Cuatro píxeles de recorrido bastan para dar continuidad. */
+.screen.active > * {
+  transform-origin: 50% 0;
+  animation: v360-screen-enter var(--v360-motion-slow) var(--v360-ease) both;
+}
+
+@keyframes v360-screen-enter {
+  from { opacity: .72; transform: translateY(4px); }
+  /* Termina en `none`, no en translateY(0): así la raíz de la pantalla
+     no conserva un containing block que pueda alterar modales fixed. */
+  to { opacity: 1; transform: none; }
+}
+
+/* Navegación lateral: profundidad sobria, sin vidrio brillante ni ruido. */
+.sidebar-panel {
+  border-right: 1px solid rgba(148,163,184,.10);
+  background: var(--v360-nav-gradient);
+  box-shadow: 18px 0 48px -38px rgba(2,6,23,.92);
+}
+
+.sidebar-panel::before {
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px),
+    radial-gradient(circle at 34% 8%, rgba(91,156,255,.12), transparent 26%);
+  background-size: 28px 28px, 28px 28px, auto;
+  opacity: .62;
+}
+
+.sidebar-panel .sidebar-head {
+  border-bottom: 1px solid rgba(148,163,184,.085);
+}
+
+.sidebar-panel .sidebar-logo {
+  filter: drop-shadow(0 8px 18px rgba(0,0,0,.34));
+}
+
+.sidebar-item {
+  transition:
+    color var(--v360-motion-base) ease,
+    background-color var(--v360-motion-base) ease,
+    border-color var(--v360-motion-base) ease,
+    transform var(--v360-motion-base) var(--v360-ease);
+}
+
+.sidebar-item-icon {
+  transition: color var(--v360-motion-base) ease, transform var(--v360-motion-base) var(--v360-ease);
+}
+
+.sidebar-pill {
+  border-color: rgba(96,165,250,.32) !important;
+  background:
+    linear-gradient(105deg, rgba(22,119,255,.24), rgba(255,255,255,.075)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 12px 28px -18px rgba(22,119,255,.82) !important;
+}
+
+@media (hover: hover) {
+  .sidebar-item:hover:not(.sidebar-item-active):not(.sidebar-item-danger) {
+    border-color: rgba(148,163,184,.11) !important;
+    background: rgba(255,255,255,.045) !important;
+    transform: translateX(2px);
+  }
+
+  .sidebar-item:hover .sidebar-item-icon {
+    transform: scale(1.045);
+  }
+}
+
+/* Encabezados: una única barra corporativa para cliente y gestión. */
+.client-screen-header,
+.detail-header,
+.reports-header,
+.coverage-header-compact,
+.campanas-header,
+.quotes-header {
+  border-bottom: 1px solid rgba(96,165,250,.18);
+  background: var(--v360-header-gradient);
+  box-shadow: 0 14px 32px -28px rgba(2,6,23,.82), inset 0 -1px 0 rgba(255,255,255,.025);
+}
+
+.client-screen-header-title,
+.simple-title,
+.header-title,
+.reports-header .simple-title {
+  font-weight: 780;
+  letter-spacing: -.025em;
+}
+
+.client-screen-notification-btn,
+.mobile-sidebar-header-btn,
+.inicio-header-icon-btn {
+  border-color: rgba(148,197,255,.18) !important;
+  background: rgba(255,255,255,.07) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 24px -18px rgba(0,0,0,.82) !important;
+}
+
+@media (hover: hover) {
+  :where(.client-screen-notification-btn, .mobile-sidebar-header-btn, .inicio-header-icon-btn):hover {
+    border-color: rgba(148,197,255,.32) !important;
+    background: rgba(255,255,255,.115) !important;
+  }
+}
+
+/* Superficies: el mismo radio, borde y elevación en todo el producto.
+   Las tarjetas oscuras de campaña mantienen su identidad específica. */
+:where(
+  .card,
+  .report-card,
+  .report-empty-state,
+  .profile-card-list,
+  .profile-metric-card,
+  .inicio-kpi-card,
+  .inicio-evidence-card,
+  .inicio-current-client,
+  .inicio-account-status,
+  .quotes-form-card,
+  .quotes-list-card,
+  .factura-edit-panel,
+  .report-email-preview,
+  .coverage-panel-card,
+  .coverage-selected-card,
+  .admin-picker-management-group,
+  .admin-picker-management-card,
+  .access-user-card
+) {
+  border-color: var(--v360-card-border);
+  box-shadow: var(--v360-card-shadow);
+}
+
+:where(
+  .card,
+  .report-card,
+  .report-empty-state,
+  .profile-card-list,
+  .profile-metric-card,
+  .inicio-kpi-card,
+  .inicio-evidence-card,
+  .inicio-current-client,
+  .quotes-form-card,
+  .quotes-list-card,
+  .factura-edit-panel,
+  .report-email-preview,
+  .coverage-panel-card,
+  .coverage-selected-card,
+  .admin-picker-management-group,
+  .admin-picker-management-card,
+  .access-user-card
+) {
+  transition:
+    border-color var(--v360-motion-base) ease,
+    box-shadow var(--v360-motion-base) ease,
+    transform var(--v360-motion-base) var(--v360-ease);
+}
+
+@media (hover: hover) {
+  :where(
+    .inicio-kpi-card,
+    .inicio-evidence-card,
+    .inicio-current-client,
+    .report-card,
+    .profile-metric-card,
+    .admin-picker-management-card,
+    .access-user-card
+  ):hover {
+    border-color: rgba(22,119,255,.22);
+    box-shadow: 0 24px 48px -34px rgba(15,23,42,.62);
+    transform: translateY(-2px);
+  }
+}
+
+/* Jerarquía tipográfica: los títulos se leen como un sistema y no como
+   componentes creados en momentos distintos. */
+:where(
+  .inicio-section-title,
+  .section-title,
+  .reports-month-header,
+  .profile-section h2,
+  .quotes-card-heading-copy strong,
+  .admin-picker-management-group-head strong
+) {
+  color: var(--v360-text);
+  font-weight: 780;
+  letter-spacing: -.018em;
+}
+
+:where(
+  .report-empty-sub,
+  .profile-row-value,
+  .admin-picker-management-group-head small,
+  .quotes-card-heading-copy span
+) {
+  color: var(--v360-text-tertiary);
+}
+
+/* Acciones: azul plano para la acción primaria; secundarios blancos. */
+:where(
+  .btn-primary,
+  .quotes-primary-btn,
+  .report-action-primary,
+  .factura-action-primary,
+  .report-generate-btn,
+  .factura-upload-send,
+  .panel-create-toggle,
+  .accesos-create-btn.is-primary
+) {
+  background: linear-gradient(135deg, var(--v360-brand-500), var(--v360-brand-600)) !important;
+  box-shadow: 0 14px 28px -18px rgba(9,104,232,.78) !important;
+}
+
+/* Navegación inferior móvil: más liviana, estable y coherente con el
+   contenido claro. Los estilos salen del JSX para que exista una sola
+   fuente de verdad visual. */
+.bottom-nav {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(148,163,184,.22);
+  background: rgba(255,255,255,.965);
+  box-shadow: 0 -16px 38px -30px rgba(15,23,42,.62);
+  backdrop-filter: blur(16px) saturate(1.16);
+  -webkit-backdrop-filter: blur(16px) saturate(1.16);
+}
+
+.bottom-nav .nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 9px 4px 8px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav .nav-item span {
+  color: var(--v360-text-tertiary);
+  font-size: 11px;
+  font-weight: 580;
+  letter-spacing: -.008em;
+}
+
+.bottom-nav .nav-item.active span {
+  color: var(--v360-brand-500);
+  font-weight: 760;
+}
+
+.bottom-nav .nav-item.active::before {
+  background: linear-gradient(90deg, var(--v360-brand-400), var(--v360-brand-600));
+  box-shadow: 0 4px 12px rgba(22,119,255,.30);
+}
+
+@media (min-width: 900px) {
+  .sidebar-panel {
+    width: 196px;
+    min-width: 196px;
+  }
+
+  .sidebar-panel .sidebar-head {
+    padding-top: 42px;
+    padding-bottom: 25px;
+  }
+
+  .sidebar-panel .sidebar-logo {
+    height: 24px;
+  }
+
+  .sidebar-panel .sidebar-list {
+    padding-top: 18px;
+  }
+
+  .sidebar-item {
+    min-height: 46px;
+    margin: 3px 10px;
+    width: calc(100% - 20px);
+    padding: 11px 13px;
+  }
+
+  .client-screen-header {
+    min-height: 72px;
+    padding-left: clamp(32px, 4vw, 64px);
+    padding-right: clamp(32px, 4vw, 64px);
+  }
+
+  .content-area,
+  .campaign-list,
+  .reports-screen-body,
+  .quotes-scroll,
+  .inicio-content {
+    scrollbar-color: rgba(100,116,139,.32) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 899px) {
+  .sidebar-panel {
+    background: var(--v360-nav-gradient) !important;
+  }
+
+  .sidebar-panel .sidebar-head {
+    background: transparent !important;
+  }
+
+  .sidebar-profile-chip-expanded {
+    border-color: rgba(96,165,250,.18) !important;
+    background:
+      radial-gradient(circle at 0 0, rgba(22,119,255,.19), transparent 44%),
+      rgba(255,255,255,.052) !important;
+  }
+
+  .client-screen-header {
+    min-height: 66px;
+  }
+
+  .client-screen-header-title {
+    font-size: 16px;
+  }
+
+  .bottom-nav .nav-item:active {
+    transform: translateY(1px) scale(.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen.active > * {
+    animation: none;
+  }
+}
