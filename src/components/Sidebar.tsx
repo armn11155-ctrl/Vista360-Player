@@ -159,11 +159,15 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               900px), arriba del chip de perfil. En móvil el chip de
               perfil sigue siendo lo único visible acá. */}
           <img
-            src="/logo-player.webp"
+            src="/icon-192.png"
             alt="Vista360 Player"
             className="sidebar-logo"
             draggable={false}
           />
+          <div className="sidebar-desktop-context" aria-hidden="true">
+            <strong>Vista360 Player</strong>
+            <span>Portal de campañas</span>
+          </div>
           {/* Perfil de la cuenta: foto/ícono + nombre, tocable para ir
               a Perfil. Mismo componente BrandThumb que ya se usa en
               Accesos y el selector de clientes, para que se sienta
@@ -234,6 +238,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
                 it.mobileOnly ? "sidebar-item-mobile-only" : "",
                 it.desktopOnly ? "sidebar-item-desktop-only" : "",
               ].filter(Boolean).join(" ")}
+              aria-current={it.id === active ? "page" : undefined}
               onClick={() => {
                 onNavigate(it.id);
                 onClose();

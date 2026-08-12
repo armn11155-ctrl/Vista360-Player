@@ -188,17 +188,19 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain("border-radius: 999px");
   });
 
-  it("mantiene el sidebar negro y colorea la orientación solo en laptop", () => {
+  it("convierte el sidebar de laptop en navegación de escritorio de dos niveles", () => {
     const sidebar = leer("src/components/Sidebar.tsx");
     const sistema = leer("src/styles/design-system.css");
     expect(sidebar).toContain('data-active={active || ""}');
-    expect(sistema).toContain("SIDEBAR INTERACTIVO CORPORATIVO — SOLO LAPTOP / ESCRITORIO");
-    expect(sistema).toMatch(/@media \(min-width: 900px\)[\s\S]*?\.sidebar-panel \{[\s\S]*?background: #050a12;/);
-    expect(sistema).toContain('.sidebar-list[data-active="campanas"]');
-    expect(sistema).toContain('.sidebar-list[data-active="cobertura"]');
-    expect(sistema).toContain('.sidebar-list[data-active="reportes"]');
-    expect(sistema).toContain('.sidebar-list[data-active="facturas"]');
-    expect(sistema).toContain(".sidebar-panel .sidebar-pill::after");
+    expect(sidebar).toContain('className="sidebar-desktop-context"');
+    expect(sidebar).toContain('aria-current={it.id === active ? "page" : undefined}');
+    expect(sistema).toContain("NAVEGACIÓN DE ESCRITORIO EN DOS NIVELES — SOLO LAPTOP");
+    expect(sistema).toContain("--sidebar-rail: 60px");
+    expect(sistema).toContain("#050a12 0 var(--sidebar-rail), #fff var(--sidebar-rail) 100%");
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?background: #1677f2;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?background: #eef2f6;/);
+    expect(sistema).not.toContain('.sidebar-list[data-active="campanas"]');
   });
 
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
