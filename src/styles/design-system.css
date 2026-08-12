@@ -2510,3 +2510,203 @@ a {
     animation: none;
   }
 }
+
+/* =====================================================================
+   SIDEBAR INTERACTIVO CORPORATIVO — SOLO LAPTOP / ESCRITORIO
+   ---------------------------------------------------------------------
+   La referencia visual usa color para orientar, no para decorar toda la
+   interfaz. Vista360 conserva su negro original y asigna un acento breve
+   a cada módulo: icono, marcador y halo de selección. El contenido y la
+   versión móvil permanecen intactos.
+   ===================================================================== */
+
+@media (min-width: 900px) {
+  .sidebar-panel {
+    width: 204px;
+    min-width: 204px;
+    border-right: 1px solid rgba(255,255,255,.07);
+    background: #050a12;
+    box-shadow: 16px 0 44px -34px rgba(2,6,23,.94);
+  }
+
+  .sidebar-panel::before {
+    background:
+      radial-gradient(circle at 30% 0%, rgba(255,255,255,.055), transparent 24%),
+      linear-gradient(180deg, rgba(255,255,255,.018), transparent 26%);
+  }
+
+  .sidebar-panel::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,.14) 18%, rgba(255,255,255,.06) 82%, transparent);
+    pointer-events: none;
+  }
+
+  .sidebar-panel .sidebar-head {
+    min-height: 96px;
+    padding: 36px 18px 22px;
+    border-bottom: 1px solid rgba(255,255,255,.065);
+  }
+
+  .sidebar-panel .sidebar-logo {
+    height: 24px;
+    filter: drop-shadow(0 8px 20px rgba(0,0,0,.48));
+  }
+
+  .sidebar-panel .sidebar-list {
+    --sidebar-active: #438bff;
+    --sidebar-active-rgb: 67,139,255;
+    padding: 16px 10px 10px;
+    gap: 2px;
+    scrollbar-width: none;
+  }
+
+  .sidebar-panel .sidebar-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-list[data-active="inicio"] { --sidebar-active: #438bff; --sidebar-active-rgb: 67,139,255; }
+  .sidebar-list[data-active="campanas"] { --sidebar-active: #a855f7; --sidebar-active-rgb: 168,85,247; }
+  .sidebar-list[data-active="cobertura"] { --sidebar-active: #14b8a6; --sidebar-active-rgb: 20,184,166; }
+  .sidebar-list[data-active="reportes"] { --sidebar-active: #38bdf8; --sidebar-active-rgb: 56,189,248; }
+  .sidebar-list[data-active="facturas"] { --sidebar-active: #f59e0b; --sidebar-active-rgb: 245,158,11; }
+  .sidebar-list[data-active="perfil"] { --sidebar-active: #8b5cf6; --sidebar-active-rgb: 139,92,246; }
+
+  .sidebar-panel .sidebar-item {
+    --sidebar-item: #94a3b8;
+    --sidebar-item-rgb: 148,163,184;
+    min-height: 48px;
+    width: calc(100% - 4px);
+    margin: 2px;
+    padding: 8px 11px;
+    gap: 11px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    color: rgba(226,232,240,.68) !important;
+    transition:
+      color .18s ease,
+      border-color .18s ease,
+      background-color .18s ease,
+      transform .18s var(--v360-ease);
+  }
+
+  .sidebar-panel .sidebar-item[data-sidebar-id="inicio"] { --sidebar-item: #438bff; --sidebar-item-rgb: 67,139,255; }
+  .sidebar-panel .sidebar-item[data-sidebar-id="campanas"] { --sidebar-item: #a855f7; --sidebar-item-rgb: 168,85,247; }
+  .sidebar-panel .sidebar-item[data-sidebar-id="cobertura"] { --sidebar-item: #14b8a6; --sidebar-item-rgb: 20,184,166; }
+  .sidebar-panel .sidebar-item[data-sidebar-id="reportes"] { --sidebar-item: #38bdf8; --sidebar-item-rgb: 56,189,248; }
+  .sidebar-panel .sidebar-item[data-sidebar-id="facturas"] { --sidebar-item: #f59e0b; --sidebar-item-rgb: 245,158,11; }
+  .sidebar-panel .sidebar-item[data-sidebar-id="perfil"] { --sidebar-item: #8b5cf6; --sidebar-item-rgb: 139,92,246; }
+
+  .sidebar-panel .sidebar-item-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border: 1px solid rgba(var(--sidebar-item-rgb), .17);
+    border-radius: 10px;
+    color: var(--sidebar-item) !important;
+    background: rgba(var(--sidebar-item-rgb), .09);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+    transition:
+      color .2s ease,
+      background-color .2s ease,
+      border-color .2s ease,
+      box-shadow .2s ease,
+      transform .2s var(--v360-ease);
+  }
+
+  .sidebar-panel .sidebar-item-icon svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .sidebar-panel .sidebar-item-label {
+    color: rgba(226,232,240,.72) !important;
+    font-size: 13px;
+    font-weight: 620;
+    letter-spacing: -.006em;
+    transition: color .18s ease, font-weight .18s ease;
+  }
+
+  .sidebar-panel .sidebar-item-active .sidebar-item-icon {
+    color: #fff !important;
+    border-color: rgba(var(--sidebar-active-rgb), .72);
+    background: var(--sidebar-active);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.24),
+      0 8px 18px -8px rgba(var(--sidebar-active-rgb), .82);
+    transform: scale(1.035);
+  }
+
+  .sidebar-panel .sidebar-item-active .sidebar-item-label {
+    color: #fff !important;
+    font-weight: 760 !important;
+  }
+
+  .sidebar-panel .sidebar-pill {
+    overflow: hidden;
+    border: 1px solid rgba(var(--sidebar-active-rgb), .19);
+    border-radius: 13px;
+    background:
+      linear-gradient(90deg, rgba(var(--sidebar-active-rgb), .14), rgba(255,255,255,.052) 74%, rgba(255,255,255,.025));
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.08),
+      0 12px 24px -20px rgba(var(--sidebar-active-rgb), .90);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .sidebar-panel .sidebar-pill::after {
+    content: "";
+    position: absolute;
+    top: 10px;
+    right: 0;
+    bottom: 10px;
+    width: 2px;
+    border-radius: 999px 0 0 999px;
+    background: var(--sidebar-active);
+    box-shadow: 0 0 12px rgba(var(--sidebar-active-rgb), .72);
+  }
+
+  @media (hover: hover) {
+    .sidebar-panel .sidebar-item:hover:not(.sidebar-item-active):not(.sidebar-item-danger) {
+      border-color: rgba(var(--sidebar-item-rgb), .16) !important;
+      background: rgba(var(--sidebar-item-rgb), .065) !important;
+      transform: translateX(2px);
+    }
+
+    .sidebar-panel .sidebar-item:hover:not(.sidebar-item-active) .sidebar-item-icon {
+      border-color: rgba(var(--sidebar-item-rgb), .34);
+      background: rgba(var(--sidebar-item-rgb), .15);
+      transform: translateY(-1px);
+    }
+
+    .sidebar-panel .sidebar-item:hover:not(.sidebar-item-active) .sidebar-item-label {
+      color: rgba(255,255,255,.90) !important;
+    }
+  }
+
+  .sidebar-panel .sidebar-bottom {
+    gap: 5px;
+    padding-top: 8px;
+  }
+
+  .sidebar-panel .sidebar-bottom-section-logout {
+    border-top-color: rgba(255,255,255,.07);
+    padding-top: 8px;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger {
+    min-height: 44px;
+    background: transparent;
+  }
+
+  .sidebar-panel .sidebar-bottom .sidebar-item-danger .sidebar-item-icon {
+    color: #fb7185 !important;
+    border-color: rgba(251,113,133,.17);
+    background: rgba(251,113,133,.075);
+  }
+}

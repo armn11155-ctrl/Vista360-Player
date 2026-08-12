@@ -188,6 +188,19 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain("border-radius: 999px");
   });
 
+  it("mantiene el sidebar negro y colorea la orientación solo en laptop", () => {
+    const sidebar = leer("src/components/Sidebar.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    expect(sidebar).toContain('data-active={active || ""}');
+    expect(sistema).toContain("SIDEBAR INTERACTIVO CORPORATIVO — SOLO LAPTOP / ESCRITORIO");
+    expect(sistema).toMatch(/@media \(min-width: 900px\)[\s\S]*?\.sidebar-panel \{[\s\S]*?background: #050a12;/);
+    expect(sistema).toContain('.sidebar-list[data-active="campanas"]');
+    expect(sistema).toContain('.sidebar-list[data-active="cobertura"]');
+    expect(sistema).toContain('.sidebar-list[data-active="reportes"]');
+    expect(sistema).toContain('.sidebar-list[data-active="facturas"]');
+    expect(sistema).toContain(".sidebar-panel .sidebar-pill::after");
+  });
+
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {
     const detalle = leer("src/components/screens/DetalleCampana.tsx");
     const paneles = leer("src/components/screens/Paneles.tsx");

@@ -208,7 +208,7 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
             <IconCerrar size={13} />
           </div>
         </div>
-        <div className="sidebar-list" ref={listRef}>
+        <div className="sidebar-list" ref={listRef} data-active={active || ""}>
           {pill && (
             <div
               className="sidebar-pill"
