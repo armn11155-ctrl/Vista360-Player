@@ -71,6 +71,10 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("lineDashOffset");
     expect(globo).toContain("lat += 1.8");
     expect(globo).toContain("lon += 1.8");
+    expect(globo).toContain("lat += 3");
+    expect(globo).toContain("lon += 3");
+    expect(globo).toContain("if (esTierra(lon, lat))");
+    expect(globo).toContain("if (!esTierra(lon, lat))");
     expect(globo).toContain('const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"]');
     expect(globo).not.toContain("DURACION_ETIQUETA");
     expect(globo).toContain("seleccionados.length === ETIQUETAS.length");

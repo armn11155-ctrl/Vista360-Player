@@ -56,7 +56,13 @@ const PUNTOS: PuntoEsfera[] = [];
 for (let lat = -82; lat <= 82; lat += 1.8) {
   const desfase = Math.round((lat + 82) / 1.8) % 2 === 0 ? 0 : 0.9;
   for (let lon = -180 + desfase; lon < 180; lon += 1.8) {
-    PUNTOS.push({ tierra: esTierra(lon, lat), vector: aVector({ lat, lon }) });
+    if (esTierra(lon, lat)) PUNTOS.push({ tierra: true, vector: aVector({ lat, lon }) });
+  }
+}
+for (let lat = -81; lat <= 81; lat += 3) {
+  const desfase = Math.round((lat + 81) / 3) % 2 === 0 ? 0 : 1.5;
+  for (let lon = -180 + desfase; lon < 180; lon += 3) {
+    if (!esTierra(lon, lat)) PUNTOS.push({ tierra: false, vector: aVector({ lat, lon }) });
   }
 }
 
