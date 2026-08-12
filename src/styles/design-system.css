@@ -2635,29 +2635,38 @@ a {
   }
 
   .sidebar-panel .sidebar-item-active .sidebar-item-icon svg {
-    filter: drop-shadow(0 1px 4px rgba(2,6,23,.72));
+    filter:
+      drop-shadow(0 0 2px rgba(255,255,255,.72))
+      drop-shadow(0 1px 4px rgba(2,6,23,.68));
   }
 
   .sidebar-panel .sidebar-pill {
-    left: 17px !important;
-    width: 42px !important;
-    height: 42px !important;
-    margin-top: 4px;
+    left: 12px !important;
+    width: 52px !important;
+    height: 52px !important;
+    margin-top: -1px;
     overflow: visible;
     border: 0;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%,
-      rgba(255,255,255,.28) 0 18%,
-      rgba(67,137,255,.56) 34%,
-      rgba(124,72,255,.30) 52%,
-      rgba(255,63,99,.16) 64%,
-      transparent 76%);
-    box-shadow:
-      0 0 11px 2px rgba(40,125,255,.62),
-      -7px 1px 15px -3px rgba(255,64,92,.48),
-      7px 0 16px -3px rgba(121,72,255,.56);
+    background:
+      radial-gradient(circle at 52% 47%, rgba(255,255,255,.58) 0 9%, transparent 28%),
+      radial-gradient(circle at 62% 26%, rgba(44,145,255,.96) 0 8%, rgba(44,145,255,.56) 24%, transparent 57%),
+      radial-gradient(circle at 28% 45%, rgba(255,82,74,.74) 0 9%, rgba(255,82,74,.36) 27%, transparent 59%),
+      radial-gradient(circle at 52% 75%, rgba(202,49,255,.78) 0 10%, rgba(128,55,255,.38) 31%, transparent 63%);
+    box-shadow: none;
+    filter: blur(3.2px) saturate(1.18);
+    opacity: .96;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+
+  .sidebar-panel .sidebar-pill::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(104,169,255,.54) 0 22%, rgba(102,58,255,.26) 48%, transparent 72%);
+    filter: blur(4px);
   }
 
   .sidebar-panel .sidebar-item::after {
@@ -2700,10 +2709,16 @@ a {
     }
   }
 
-  .sidebar-panel .sidebar-item:focus-visible .sidebar-item-icon {
+  .sidebar-panel .sidebar-item:focus-visible:not(.sidebar-item-active) .sidebar-item-icon {
     border-color: rgba(255,255,255,.58);
     box-shadow: 0 0 0 3px rgba(37,119,235,.3);
     opacity: 1;
+  }
+
+  .sidebar-panel .sidebar-item-active:focus-visible .sidebar-item-icon {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
   }
 
   .sidebar-panel .sidebar-bottom {
@@ -3013,9 +3028,9 @@ a {
     background: #176fd5 !important;
   }
   .report-action-download {
-    border: 1px solid #d7e0eb !important;
-    color: #1d2939 !important;
-    background: #f7f9fc !important;
+    border: 1px solid #0b1220 !important;
+    color: #fff !important;
+    background: #0b1220 !important;
   }
   .report-action-muted {
     border: 1px solid #d5e2f1 !important;
@@ -3060,8 +3075,8 @@ a {
       box-shadow: 0 20px 42px -32px rgba(15,23,42,.5) !important;
     }
     .report-action-download:hover {
-      border-color: #c8d5e4 !important;
-      background: #f1f5f9 !important;
+      border-color: #172033 !important;
+      background: #172033 !important;
     }
     .report-action-muted:hover {
       border-color: #b9cfe8 !important;
