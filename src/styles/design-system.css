@@ -2710,3 +2710,308 @@ a {
     opacity: .56;
   }
 }
+
+/* =====================================================================
+   ESCRITORIO EDITORIAL — MENOS CAPAS, MÁS JERARQUÍA
+   El carril lateral ya establece una identidad fuerte. En laptop, el
+   contenido lo acompaña con una sola superficie protagonista, tarjetas
+   planas y acciones secundarias silenciosas. Móvil permanece intacto.
+   ===================================================================== */
+@media (min-width: 900px) {
+  :root {
+    --desktop-canvas: #f4f6f9;
+    --desktop-surface: #fff;
+    --desktop-line: #dfe5ed;
+    --desktop-line-soft: #e8edf3;
+    --desktop-ink: #0b1220;
+    --desktop-muted: #66758a;
+    --desktop-radius: 16px;
+    --desktop-shadow: 0 18px 42px -36px rgba(15,23,42,.52);
+  }
+
+  .screens, .screen, .screen.active { background: var(--desktop-canvas); }
+  .client-screen-header {
+    min-height: 68px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    background: #070c14;
+    box-shadow: none;
+  }
+  .client-screen-header-title { font-size: 17px; font-weight: 780; letter-spacing: -.015em; }
+
+  .reports-screen-body,
+  .facturas-screen-body {
+    width: 100%;
+    max-width: none;
+    padding: 26px clamp(28px,4vw,56px) 52px;
+    background: var(--desktop-canvas);
+  }
+  .reports-screen-body > *,
+  .facturas-screen-body > * {
+    width: min(1120px,100%);
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+
+  /* Inicio: el saludo oscuro es el único hero; el tablero recupera aire. */
+  .inicio-header {
+    padding: 24px clamp(32px,4vw,56px) 27px !important;
+    background: #070c14 !important;
+  }
+  .inicio-content {
+    padding: 24px clamp(28px,4vw,56px) 48px !important;
+    background: var(--desktop-canvas) !important;
+  }
+  .inicio-content > * { width: min(1160px,100%); }
+  .inicio-current-client {
+    min-height: 68px;
+    padding: 10px 14px;
+    border: 1px solid var(--desktop-line) !important;
+    border-radius: var(--desktop-radius) !important;
+    color: var(--desktop-ink) !important;
+    background: var(--desktop-surface) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+  .inicio-current-client::before { content: none !important; }
+  .inicio-current-client-copy small { color: var(--desktop-muted) !important; }
+  .inicio-current-client-copy strong { color: var(--desktop-ink) !important; }
+  .inicio-current-client-action {
+    border-color: #d9e3ef !important;
+    color: #176fd5 !important;
+    background: #f4f8fe !important;
+  }
+  .inicio-summary-grid { gap: 12px !important; margin-bottom: 22px !important; }
+  .inicio-kpi-card,
+  .inicio-quick-grid > button,
+  .inicio-evidence-card {
+    border: 1px solid var(--desktop-line) !important;
+    background: var(--desktop-surface) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+  .inicio-kpi-card {
+    min-height: 80px !important;
+    padding: 13px 15px !important;
+    border-radius: var(--desktop-radius) !important;
+  }
+  .inicio-kpi-icon { width: 38px !important; height: 38px !important; border-radius: 11px !important; }
+  .inicio-dashboard-grid { gap: 18px; }
+  .inicio-quick-grid { gap: 10px !important; }
+  .inicio-quick-grid > button {
+    min-height: 72px !important;
+    padding: 0 14px !important;
+    border-radius: 14px !important;
+  }
+  .inicio-side-col .inicio-evidence-card { margin-top: 17px; }
+  .inicio-evidence-card { padding: 20px !important; border-radius: var(--desktop-radius) !important; }
+  .inicio-report-title { margin-bottom: 14px !important; font-size: 16px !important; }
+  .inicio-report-icon { width: 56px !important; height: 70px !important; }
+  .inicio-report-month { font-size: 17px !important; }
+
+  .inicio-account-status {
+    margin-top: 20px;
+    padding: 21px;
+    border: 1px solid var(--desktop-line);
+    border-radius: 18px;
+    color: var(--desktop-ink);
+    background: #edf3fa;
+    box-shadow: var(--desktop-shadow);
+  }
+  .inicio-account-status-head { margin-bottom: 14px; }
+  .inicio-account-status-head span { color: #176fd5; }
+  .inicio-account-status-head h2 { color: var(--desktop-ink); font-size: 20px; }
+  .inicio-account-status-badge {
+    border-color: #d6e1ed;
+    color: var(--desktop-muted);
+    background: rgba(255,255,255,.64);
+  }
+  .inicio-account-status-grid { gap: 10px; }
+  .inicio-account-status-grid button {
+    min-height: 92px;
+    padding: 13px;
+    border-color: #dde5ee;
+    color: var(--desktop-ink);
+    background: rgba(255,255,255,.78);
+    box-shadow: none;
+  }
+  .inicio-account-status-grid button span { color: #77869a; }
+  .inicio-account-status-grid button strong { color: var(--desktop-ink); }
+  .inicio-account-status-grid button small { color: var(--desktop-muted); }
+  .inicio-account-status-icon { color: #176fd5; background: #e7f1ff; }
+  .inicio-account-status-arrow { color: #8a98aa; }
+
+  /* Campañas: filtros contenidos y estado mensual informativo. */
+  .campanas-filter-bar {
+    width: min(520px,calc(100% - 56px));
+    margin: 18px auto 2px;
+    padding: 4px;
+    border: 1px solid var(--desktop-line);
+    border-radius: 14px;
+    background: #e9eef4;
+    box-shadow: none;
+  }
+  .campanas-filter-tab { min-height: 38px; border-radius: 10px; color: #65758a; font-size: 12px; }
+  .campanas-filter-tab.active {
+    color: var(--desktop-ink);
+    background: #fff;
+    box-shadow: 0 5px 14px -10px rgba(15,23,42,.65);
+  }
+  .mis-campanas-list {
+    gap: 16px 18px;
+    padding: 22px clamp(28px,4vw,56px) 48px !important;
+    background: var(--desktop-canvas) !important;
+  }
+  .mis-campanas-month-status {
+    width: min(1070px,100%);
+    margin: 0 auto 4px;
+    border: 1px solid var(--desktop-line) !important;
+    border-radius: var(--desktop-radius) !important;
+    color: var(--desktop-ink) !important;
+    background: var(--desktop-surface) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+  .mis-campanas-month-status-header {
+    border-bottom-color: var(--desktop-line-soft) !important;
+    color: var(--desktop-ink) !important;
+  }
+  .mis-campanas-month-status-row { color: var(--desktop-muted); }
+  .premium-campaign-card {
+    border: 1px solid rgba(255,255,255,.13) !important;
+    border-radius: 17px !important;
+    box-shadow: 0 22px 46px -34px rgba(2,6,23,.78) !important;
+  }
+  .mis-campanas-cta {
+    width: auto;
+    max-width: none;
+    margin-top: 8px;
+    justify-self: center;
+    gap: 14px;
+    color: var(--desktop-muted);
+    font-size: 12px;
+  }
+  .mis-campanas-cta button {
+    width: auto;
+    min-height: 40px;
+    padding: 0 16px;
+    border-radius: 11px;
+    box-shadow: none;
+  }
+
+  /* Documentos: todas las acciones siguen presentes, pero solo Ver domina. */
+  details.report-admin-panel,
+  .factura-upload-card {
+    overflow: hidden;
+    border: 1px solid var(--desktop-line) !important;
+    border-radius: var(--desktop-radius) !important;
+    background: var(--desktop-surface) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+  .report-admin-header {
+    min-height: 72px;
+    padding: 15px 18px;
+    color: var(--desktop-ink) !important;
+    background: var(--desktop-surface) !important;
+  }
+  .report-admin-header::before {
+    content: "";
+    width: 3px;
+    align-self: stretch;
+    border-radius: 999px;
+    background: #2785f5;
+  }
+  .report-admin-icon { color: #176fd5 !important; background: #eaf3ff !important; }
+  .report-admin-title { color: var(--desktop-ink) !important; }
+  .report-admin-sub { color: var(--desktop-muted) !important; }
+  .report-admin-toggle {
+    border-color: #d7e1ec !important;
+    color: #466078 !important;
+    background: #f7f9fc !important;
+  }
+  .report-admin-content { border-top: 1px solid var(--desktop-line-soft); background: #fbfcfe; }
+  .report-admin-content .report-month-field > span,
+  .report-admin-content .report-campaign-field > span { color: #52657a; }
+  .report-admin-content .report-month-selects {
+    border-color: var(--desktop-line);
+    background: #f1f5f9;
+  }
+  .report-admin-content .report-auto-data span {
+    border-color: #dbe4ee;
+    color: #52657a;
+    background: #fff;
+  }
+  .reports-filter-stack, .reports-filter-bar { gap: 12px; }
+  .reports-filter-select {
+    min-height: 48px;
+    border: 1px solid var(--desktop-line) !important;
+    border-radius: 13px !important;
+    background-color: #fff !important;
+    box-shadow: none !important;
+  }
+  .reports-month-header { margin-top: 20px; margin-bottom: 12px; font-size: 17px; }
+  .reports-list { gap: 16px; }
+  .reports-list .report-card {
+    padding: 17px 18px;
+    border: 1px solid var(--desktop-line) !important;
+    border-radius: var(--desktop-radius) !important;
+    background: var(--desktop-surface) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+  .reports-list .report-card-main { grid-template-columns: 62px minmax(0,1fr) auto; gap: 14px; }
+  .reports-list .report-pdf-icon,
+  .reports-list .report-pdf-icon svg { width: 58px; }
+  .reports-list .report-title { font-size: 17px; }
+  .report-ready-badge { border: 1px solid #ccebd7; background: #edf9f1; box-shadow: none; }
+  .report-actions { gap: 8px; margin-top: 14px; }
+  .report-action, .report-action-primary {
+    min-height: 40px;
+    border-radius: 11px;
+    font-size: 12px;
+    box-shadow: none !important;
+  }
+  .report-action-primary, .factura-action-primary {
+    border-color: #176fd5 !important;
+    color: #fff !important;
+    background: #176fd5 !important;
+  }
+  .report-action-download {
+    border: 1px solid #d7e0eb !important;
+    color: #1d2939 !important;
+    background: #f7f9fc !important;
+  }
+  .report-action-muted {
+    border: 1px solid transparent !important;
+    color: #52657a !important;
+    background: transparent !important;
+  }
+
+  /* Cobertura conserva el mapa protagonista; se suaviza solo lo auxiliar. */
+  .coverage-selected-card,
+  .coverage-panel-card,
+  .coverage-panels-section {
+    border-color: var(--desktop-line) !important;
+    box-shadow: var(--desktop-shadow) !important;
+  }
+
+  @media (hover: hover) {
+    .inicio-kpi-card:hover,
+    .inicio-quick-grid > button:hover {
+      transform: translateY(-1px);
+      border-color: #c9d7e8 !important;
+      box-shadow: 0 18px 38px -30px rgba(15,23,42,.42) !important;
+    }
+    .inicio-account-status-grid button:hover {
+      transform: translateY(-1px);
+      border-color: #c8d9ec;
+      background: #fff;
+    }
+    .reports-list .report-card:hover {
+      transform: translateY(-1px);
+      border-color: #cbd7e5 !important;
+      box-shadow: 0 20px 42px -32px rgba(15,23,42,.5) !important;
+    }
+    .report-action-download:hover,
+    .report-action-muted:hover {
+      border-color: #c8d5e4 !important;
+      background: #f1f5f9 !important;
+    }
+  }
+}

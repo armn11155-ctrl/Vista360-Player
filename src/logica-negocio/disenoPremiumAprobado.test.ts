@@ -220,4 +220,14 @@ describe("refinamiento premium aprobado", () => {
     expect(analitica).toContain("analytics-summary");
     expect(estilos).toContain("ACABADO OPERATIVO PREMIUM");
   });
+
+  it("reduce la saturación visual de la app únicamente en laptop", () => {
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("ESCRITORIO EDITORIAL — MENOS CAPAS, MÁS JERARQUÍA");
+    expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?--desktop-canvas: #f4f6f9;/);
+    expect(sistema).toMatch(/\.inicio-account-status \{[\s\S]*?background: #edf3fa;/);
+    expect(sistema).toMatch(/\.mis-campanas-month-status \{[\s\S]*?background: var\(--desktop-surface\) !important;/);
+    expect(sistema).toMatch(/\.report-action-muted \{[\s\S]*?background: transparent !important;/);
+    expect(sistema).toContain("Cobertura conserva el mapa protagonista");
+  });
 });
