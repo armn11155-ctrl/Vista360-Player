@@ -203,7 +203,9 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain(".sidebar-panel .sidebar-item:hover::after");
     expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible::after");
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
-    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?linear-gradient\(145deg, #2785f5, #1165d9\)/);
+    expect(sistema).toMatch(/\.sidebar-panel \{[\s\S]*?border-radius: 0 21px 21px 0;[\s\S]*?background: #050505;/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?radial-gradient\(circle at 50% 50%/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?background: #f8fafc;/);
     expect(sistema).not.toContain('.sidebar-list[data-active="campanas"]');
   });
 

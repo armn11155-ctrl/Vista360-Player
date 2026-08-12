@@ -2528,16 +2528,20 @@ a {
     z-index: 40;
     width: var(--sidebar-rail);
     min-width: var(--sidebar-rail);
+    height: calc(100dvh - 16px);
+    min-height: calc(100dvh - 16px);
+    margin: 8px 0;
     overflow: visible;
-    border-right: 1px solid rgba(255,255,255,.08);
-    background: #050a12;
-    box-shadow: 14px 0 34px -28px rgba(2,6,23,.92);
+    border: 1px solid rgba(255,255,255,.09);
+    border-left: 0;
+    border-radius: 0 21px 21px 0;
+    background: #050505;
+    box-shadow: 12px 0 30px -24px rgba(2,6,23,.88);
   }
 
   .sidebar-panel::before {
-    background:
-      radial-gradient(circle at 50% 0%, rgba(61,130,246,.12), transparent 24%),
-      linear-gradient(180deg, rgba(255,255,255,.025), transparent 22%);
+    border-radius: inherit;
+    background: transparent;
   }
 
   .sidebar-panel .sidebar-head {
@@ -2546,7 +2550,7 @@ a {
     justify-content: center;
     min-height: 86px;
     padding: 0;
-    border-bottom: 1px solid rgba(255,255,255,.075);
+    border-bottom: 0;
     background: transparent;
   }
 
@@ -2616,13 +2620,19 @@ a {
   }
 
   .sidebar-panel .sidebar-item-active .sidebar-item-icon {
-    width: 42px;
-    height: 42px;
+    position: relative;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
     margin: 0;
-    flex-basis: 42px;
-    color: #fff !important;
-    background: transparent;
-    box-shadow: none;
+    flex-basis: 34px;
+    border-color: rgba(255,255,255,.92);
+    border-radius: 10px;
+    color: #174b96 !important;
+    background: #f8fafc;
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 5px 13px rgba(0,0,0,.42);
     opacity: 1;
   }
 
@@ -2631,13 +2641,19 @@ a {
     width: 42px !important;
     height: 42px !important;
     margin-top: 4px;
-    overflow: hidden;
-    border: 1px solid rgba(111,171,255,.62);
-    border-radius: 13px;
-    background: linear-gradient(145deg, #2785f5, #1165d9);
+    overflow: visible;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%,
+      rgba(255,255,255,.28) 0 18%,
+      rgba(67,137,255,.56) 34%,
+      rgba(124,72,255,.30) 52%,
+      rgba(255,63,99,.16) 64%,
+      transparent 76%);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.3),
-      0 10px 20px -12px rgba(35,126,244,.9);
+      0 0 11px 2px rgba(40,125,255,.62),
+      -7px 1px 15px -3px rgba(255,64,92,.48),
+      7px 0 16px -3px rgba(121,72,255,.56);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
