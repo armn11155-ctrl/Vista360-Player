@@ -118,6 +118,8 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain(".inicio-desktop-welcome { display: none; }");
     expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.inicio-desktop-welcome \{[\s\S]*?display: flex;/);
     expect(sistema).toMatch(/\.inicio-desktop-welcome[\s\S]*?margin-bottom: 22px;[\s\S]*?border-radius: 18px;/);
+    expect(sistema).toMatch(/\.inicio-desktop-welcome \{[\s\S]*?color: #ffffff;[\s\S]*?linear-gradient\(135deg, #0b1424 0%, #050910 100%\)/);
+    expect(inicio).not.toContain("<span>Para ti</span>");
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {
@@ -235,12 +237,21 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible::after");
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
     expect(sistema).toMatch(/\.sidebar-panel \{[\s\S]*?margin: 10px 0 10px 10px;[\s\S]*?border-radius: 20px;[\s\S]*?background: #050505;/);
-    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?filter: blur\(3\.2px\) saturate\(1\.18\);/);
+    expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?border-radius: 50%;[\s\S]*?conic-gradient[\s\S]*?filter: blur\(5px\) saturate\(1\.12\);/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?color: #fff !important;[\s\S]*?background: transparent;/);
     expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible:not(.sidebar-item-active) .sidebar-item-icon");
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active:focus-visible \.sidebar-item-icon \{[\s\S]*?border-color: transparent;[\s\S]*?box-shadow: none;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-bottom \.sidebar-item-danger,[\s\S]*?color: rgba\(255,255,255,\.62\) !important;/);
     expect(sistema).not.toContain('.sidebar-list[data-active="campanas"]');
+    expect(sistema).toContain(".app-shell:has(> .sidebar-panel)");
+    expect(sistema).toContain("background: #e9eef5");
+  });
+
+  it("distingue el generador de reportes sin oscurecer sus campos", () => {
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("details.report-admin-panel > .report-admin-header");
+    expect(sistema).toMatch(/details\.report-admin-panel > \.report-admin-header \{[\s\S]*?color: #ffffff !important;[\s\S]*?linear-gradient\(135deg, #0b1526 0%, #050910 100%\)/);
+    expect(sistema).toMatch(/details\.report-admin-panel > \.report-admin-content \{[\s\S]*?background: #fbfcfe;/);
   });
 
   it("añade jerarquía operativa con datos que las pantallas ya cargaron", () => {

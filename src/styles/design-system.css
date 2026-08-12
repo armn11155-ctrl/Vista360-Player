@@ -2754,21 +2754,22 @@ a {
   }
 
   .sidebar-panel .sidebar-pill {
-    left: 10px !important;
-    width: 52px !important;
-    height: 52px !important;
-    margin-top: -1px;
+    left: 11px !important;
+    width: 50px !important;
+    height: 50px !important;
+    margin-top: 0;
     overflow: visible;
     border: 0;
     border-radius: 50%;
     background:
-      radial-gradient(circle at 52% 47%, rgba(255,255,255,.58) 0 9%, transparent 28%),
-      radial-gradient(circle at 62% 26%, rgba(44,145,255,.96) 0 8%, rgba(44,145,255,.56) 24%, transparent 57%),
-      radial-gradient(circle at 28% 45%, rgba(255,82,74,.74) 0 9%, rgba(255,82,74,.36) 27%, transparent 59%),
-      radial-gradient(circle at 52% 75%, rgba(202,49,255,.78) 0 10%, rgba(128,55,255,.38) 31%, transparent 63%);
-    box-shadow: none;
-    filter: blur(3.2px) saturate(1.18);
-    opacity: .96;
+      radial-gradient(circle at 50% 50%, rgba(245,249,255,.7) 0 7%, rgba(84,154,255,.68) 16%, transparent 33%),
+      conic-gradient(from 20deg, #228dff 0deg, #6656ff 104deg, #e448bd 196deg, #ff5c51 267deg, #228dff 360deg);
+    box-shadow:
+      0 0 13px rgba(58,139,255,.64),
+      0 0 24px rgba(126,69,255,.38),
+      0 0 34px rgba(229,62,174,.18);
+    filter: blur(5px) saturate(1.12);
+    opacity: .88;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -2776,10 +2777,10 @@ a {
   .sidebar-panel .sidebar-pill::after {
     content: "";
     position: absolute;
-    inset: 7px;
+    inset: 9px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(104,169,255,.54) 0 22%, rgba(102,58,255,.26) 48%, transparent 72%);
-    filter: blur(4px);
+    background: radial-gradient(circle, rgba(255,255,255,.62) 0 8%, rgba(65,142,255,.42) 24%, rgba(99,67,255,.22) 48%, transparent 74%);
+    filter: blur(3px);
   }
 
   .sidebar-panel .sidebar-item::after {
@@ -3223,13 +3224,13 @@ a {
     margin-bottom: 22px;
     padding: 22px 24px 22px 27px;
     overflow: hidden;
-    border: 1px solid #dce5ef;
+    border: 1px solid rgba(147,197,253,.18);
     border-radius: 18px;
-    color: #0b1220;
+    color: #ffffff;
     background:
-      radial-gradient(circle at 92% 2%, rgba(47,111,237,.13), transparent 34%),
-      linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-    box-shadow: 0 20px 44px -38px rgba(15,23,42,.58);
+      radial-gradient(circle at 90% -20%, rgba(47,111,237,.26), transparent 38%),
+      linear-gradient(135deg, #0b1424 0%, #050910 100%);
+    box-shadow: 0 24px 48px -34px rgba(2,6,23,.86), inset 0 1px 0 rgba(255,255,255,.045);
     box-sizing: border-box;
   }
 
@@ -3254,7 +3255,7 @@ a {
   .inicio-desktop-welcome-kicker {
     display: block;
     margin-bottom: 6px;
-    color: #2f6fed;
+    color: #72a9ff;
     font-size: 10px;
     font-weight: 800;
     line-height: 1;
@@ -3264,7 +3265,7 @@ a {
 
   .inicio-desktop-welcome h2 {
     margin: 0;
-    color: #0b1220;
+    color: #ffffff;
     font-size: clamp(22px, 2vw, 28px);
     font-weight: 520;
     line-height: 1.1;
@@ -3277,7 +3278,7 @@ a {
 
   .inicio-desktop-welcome p {
     margin: 7px 0 0;
-    color: #65758a;
+    color: rgba(226,235,248,.67);
     font-size: 13px;
     font-weight: 520;
     line-height: 1.4;
@@ -3292,11 +3293,11 @@ a {
     gap: 8px;
     min-height: 34px;
     padding: 0 13px;
-    border: 1px solid #d7e4f2;
+    border: 1px solid rgba(255,255,255,.11);
     border-radius: 999px;
-    color: #40536a;
-    background: rgba(255,255,255,.76);
-    box-shadow: 0 8px 22px -18px rgba(15,23,42,.5);
+    color: rgba(240,246,255,.82);
+    background: rgba(255,255,255,.065);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
     font-size: 11px;
     font-weight: 720;
     white-space: nowrap;
@@ -3308,7 +3309,7 @@ a {
     flex: 0 0 7px;
     border-radius: 50%;
     background: #22a65a;
-    box-shadow: 0 0 0 4px rgba(34,166,90,.1);
+    box-shadow: 0 0 0 4px rgba(34,166,90,.12), 0 0 12px rgba(34,166,90,.32);
   }
 
   .inicio-desktop-welcome-status.is-alert > span {
@@ -3325,5 +3326,69 @@ a {
 
   .inicio-desktop-welcome h2 {
     font-size: 22px;
+  }
+}
+
+/* Composición de escritorio: el lienzo claro alrededor hace perceptible
+   el carril flotante y el contenido se comporta como una superficie de
+   producto independiente. Login y móvil quedan fuera de esta regla. */
+@media (min-width: 900px) {
+  .app-shell:has(> .sidebar-panel) {
+    gap: 10px;
+    padding: 10px 10px 10px 0;
+    background: #e9eef5;
+    box-sizing: border-box;
+  }
+
+  .app-shell:has(> .sidebar-panel) > .sidebar-panel {
+    height: calc(100dvh - 20px);
+    min-height: calc(100dvh - 20px);
+    margin: 0 0 0 10px;
+  }
+
+  .app-shell:has(> .sidebar-panel) > .main-area {
+    overflow: hidden;
+    border: 1px solid rgba(203,214,227,.86);
+    border-radius: 20px;
+    background: #f4f6f9;
+    box-shadow: 0 22px 48px -38px rgba(15,23,42,.5);
+  }
+
+  /* Generar reporte queda como acción operativa distinguible. Al abrir,
+     solo el encabezado conserva el azul noche y los campos siguen claros. */
+  details.report-admin-panel {
+    border-color: rgba(147,197,253,.18) !important;
+    background: #08111f !important;
+    box-shadow: 0 22px 46px -34px rgba(2,6,23,.76) !important;
+  }
+
+  details.report-admin-panel > .report-admin-header {
+    color: #ffffff !important;
+    background:
+      radial-gradient(circle at 90% -40%, rgba(47,111,237,.3), transparent 42%),
+      linear-gradient(135deg, #0b1526 0%, #050910 100%) !important;
+  }
+
+  details.report-admin-panel > .report-admin-header::before {
+    background: #438bff;
+    box-shadow: 0 0 14px rgba(67,139,255,.35);
+  }
+
+  details.report-admin-panel .report-admin-icon {
+    color: #b9d4ff !important;
+    background: rgba(67,139,255,.16) !important;
+  }
+
+  details.report-admin-panel .report-admin-title { color: #ffffff !important; }
+  details.report-admin-panel .report-admin-sub { color: rgba(220,231,246,.63) !important; }
+  details.report-admin-panel .report-admin-toggle {
+    border-color: rgba(255,255,255,.12) !important;
+    color: rgba(239,246,255,.84) !important;
+    background: rgba(255,255,255,.065) !important;
+  }
+
+  details.report-admin-panel > .report-admin-content {
+    border-top-color: #e7edf4;
+    background: #fbfcfe;
   }
 }

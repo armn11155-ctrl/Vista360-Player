@@ -384,7 +384,6 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
         <section className="inicio-account-status">
           <div className="inicio-account-status-head">
             <div>
-              <span>Para ti</span>
               <h2>Continúa aquí</h2>
             </div>
             <div className="inicio-account-status-badge">
