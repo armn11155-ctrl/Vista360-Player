@@ -244,6 +244,24 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
           </div>
         )}
 
+        <section className="inicio-desktop-welcome" aria-label={`${saludo}, ${nombre}`}>
+          <div className="inicio-desktop-welcome-copy">
+            <span className="inicio-desktop-welcome-kicker">
+              {isAdmin ? "Centro de gestión" : "Vista360 Player"}
+            </span>
+            <h2>{saludo}, <strong>{nombre}</strong></h2>
+            <p>
+              {isAdmin
+                ? "Tus clientes, campañas y resultados en una sola vista."
+                : "Tu presencia publicitaria, clara y bajo control."}
+            </p>
+          </div>
+          <div className={`inicio-desktop-welcome-status${!isAdmin && !todoOk ? " is-alert" : ""}`}>
+            <span aria-hidden="true" />
+            {isAdmin ? "Gestión centralizada" : todoOk ? "Todo funcionando" : "Revisa tus campañas"}
+          </div>
+        </section>
+
         <div className="inicio-section-title inicio-summary-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>
           Resumen general
         </div>

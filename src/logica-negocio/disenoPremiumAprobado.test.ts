@@ -109,6 +109,17 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-header > \.inicio-greeting-title,[\s\S]*?display: none !important;/);
   });
 
+  it("recupera el saludo como una bienvenida compacta exclusiva de laptop", () => {
+    const inicio = leer("src/components/screens/Inicio.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    expect(inicio).toContain('className="inicio-desktop-welcome"');
+    expect(inicio).toContain("Tus clientes, campañas y resultados en una sola vista.");
+    expect(inicio).toContain("Tu presencia publicitaria, clara y bajo control.");
+    expect(sistema).toContain(".inicio-desktop-welcome { display: none; }");
+    expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.inicio-desktop-welcome \{[\s\S]*?display: flex;/);
+    expect(sistema).toMatch(/\.inicio-desktop-welcome[\s\S]*?margin-bottom: 22px;[\s\S]*?border-radius: 18px;/);
+  });
+
   it("usa controles semánticos para el filtro de campañas", () => {
     const campanas = leer("src/components/screens/MisCampanas.tsx");
     expect(campanas).toContain('role="tablist"');
@@ -218,12 +229,12 @@ describe("refinamiento premium aprobado", () => {
     expect(sidebar).toContain('role="button"');
     expect(sidebar).toContain('tabIndex={0}');
     expect(sistema).toContain("NAVEGACIÓN COMPACTA INTERACTIVA — SOLO LAPTOP");
-    expect(sistema).toContain("--sidebar-rail: 76px");
+    expect(sistema).toContain("--sidebar-rail: 72px");
     expect(sistema).toContain("content: attr(data-tooltip)");
     expect(sistema).toContain(".sidebar-panel .sidebar-item:hover::after");
     expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible::after");
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-icon \{[\s\S]*?color: #fff !important;/);
-    expect(sistema).toMatch(/\.sidebar-panel \{[\s\S]*?border-radius: 0 21px 21px 0;[\s\S]*?background: #050505;/);
+    expect(sistema).toMatch(/\.sidebar-panel \{[\s\S]*?margin: 10px 0 10px 10px;[\s\S]*?border-radius: 20px;[\s\S]*?background: #050505;/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-pill \{[\s\S]*?filter: blur\(3\.2px\) saturate\(1\.18\);/);
     expect(sistema).toMatch(/\.sidebar-panel \.sidebar-item-active \.sidebar-item-icon \{[\s\S]*?color: #fff !important;[\s\S]*?background: transparent;/);
     expect(sistema).toContain(".sidebar-panel .sidebar-item:focus-visible:not(.sidebar-item-active) .sidebar-item-icon");
