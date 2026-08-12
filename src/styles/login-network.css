@@ -299,6 +299,60 @@
 
   .login-title { color: #0F172A; font-size: 32px; font-weight: 830; }
   .login-sub { color: #64748B; }
+
+  /* El aviso móvil está diseñado sobre una tarjeta oscura. En laptop
+     el formulario vive sobre blanco, por lo que necesita una superficie
+     clara propia y contraste real. Reemplaza el subtítulo sin mover los
+     campos: el bloque conserva la misma altura antes y después del error. */
+  .login-message-stack {
+    min-height: 58px;
+    margin-bottom: 10px;
+  }
+
+  .login-message-stack.has-error .login-sub {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+
+  .login-message-stack .login-error {
+    inset: 0;
+    min-height: 42px;
+    padding: 9px 11px 9px 36px;
+    border: 1px solid #FECDD3;
+    border-radius: 11px;
+    background: #FFF1F2;
+    box-shadow: 0 8px 20px -18px rgba(190,24,93,.55), inset 0 1px 0 rgba(255,255,255,.9);
+    color: #9F1239;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.38;
+  }
+
+  .login-message-stack .login-error::before {
+    content: "!";
+    position: absolute;
+    top: 50%;
+    left: 11px;
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #E11D48;
+    box-shadow: 0 5px 12px -7px rgba(190,24,93,.75);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1;
+    transform: translateY(-50%);
+  }
+
+  .login-card .form-input[aria-invalid="true"] {
+    border-color: #FDA4AF;
+    background: #FFFBFC;
+    box-shadow: 0 0 0 3px rgba(225,29,72,.055), inset 0 1px 0 #FFFFFF;
+  }
+
   .login-card .form-label { color: #334155; }
   .login-remember-label { color: #475569; }
   .login-remember-box { border-color: #CBD5E1; background: #FFFFFF; }

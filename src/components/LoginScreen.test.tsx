@@ -53,4 +53,19 @@ describe("LoginScreen en Safari móvil", () => {
     expect(screen.getByLabelText("Usuario")).toBe(usuario);
     expect(screen.getByLabelText("Contraseña")).toBe(password);
   });
+
+  it("muestra el aviso de credenciales y lo retira al corregir los datos", () => {
+    render(<LoginScreen onLoggedIn={() => undefined} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Ingresar" }));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("Ingresa tu usuario y contraseña.");
+    expect(screen.getByLabelText("Usuario")).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByLabelText("Contraseña")).toHaveAttribute("aria-invalid", "true");
+
+    fireEvent.change(screen.getByLabelText("Usuario"), { target: { value: "cliente@vista360.pe" } });
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Usuario")).toHaveAttribute("aria-invalid", "false");
+  });
 });

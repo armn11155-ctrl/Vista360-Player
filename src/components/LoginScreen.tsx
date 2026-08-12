@@ -127,7 +127,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "login-error" : undefined}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError("");
+                  }}
                   placeholder="correo@empresa.com"
                 />
               </div>
@@ -145,7 +148,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "login-error" : undefined}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError("");
+                  }}
                   placeholder="••••••••"
                 />
                 <button
