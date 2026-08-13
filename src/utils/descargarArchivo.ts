@@ -266,10 +266,10 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
  * Eso es feo, deja a la vista dónde está alojado todo, y expone una URL
  * firmada que quien la copie puede reenviar hasta que expire.
  *
- * LA SOLUCIÓN. Se trae el PDF y se abre como `blob:`, que el navegador
- * muestra bajo el dominio de la aplicación:
- * `blob:https://vista360player.pe/6f2a...`. Mismo PDF, sin firma a la
- * vista y con la marca propia.
+ * LA SOLUCIÓN. Una ruta estática mínima trae el PDF, lo mantiene como
+ * `blob:` privado dentro de su visor y limpia la barra con History API.
+ * La persona ve `vista360player.pe`; la firma y el identificador temporal
+ * nunca aparecen ni quedan disponibles para copiar.
  *
  * EL ORDEN IMPORTA. La pestaña se abre PRIMERO, dentro del clic. Si se
  * abriera después del `await`, el navegador ya no lo considera una
@@ -278,23 +278,15 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
 
-  // Safari deja en segundo plano una pestaña about:blank cuyo contenido
-  // cambia después de un await. En cambio, sí activa una ruta real abierta
-  // directamente por el clic. Guardamos los datos antes de abrirla:
-  // sessionStorage se copia al nuevo contexto del mismo origen, y la ruta
-  // /visor-pdf.html trae el archivo y lo muestra como blob bajo nuestro
-  // dominio SIN cargar otra copia de React/Firebase. Abrir toda la app en la
-  // pestaña del PDF hacía que esa pestaña también participara en Firebase
-  // Auth; al cerrarla, Safari podía propagar un estado nulo y sacar de la
-  // sesión a la pestaña principal.
+  // La nueva pestaña recibe una COPIA de sessionStorage en el instante de
+  // abrirse. Por eso basta una clave fija: no se pone la URL firmada, un
+  // token ni un blob con identificador en la barra de direcciones. El visor
+  // estático consume la copia y deja visible solo vista360player.pe.
+  const claveVisor = "vista360:visor-pdf";
+  const rutaVisor = "/visor-pdf.html";
+  sessionStorage.setItem(claveVisor, JSON.stringify({ url, nombre: _nombre }));
+
   if (esSafari()) {
-    const token =
-      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const clave = `vista360:visor-pdf:${token}`;
-    sessionStorage.setItem(clave, JSON.stringify({ url, nombre: _nombre }));
-    const rutaVisor = `/visor-pdf.html?token=${encodeURIComponent(token)}`;
 
     const pwaIOS =
       (/iPhone|iPad|iPod/.test(navigator.userAgent) ||
@@ -343,10 +335,11 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
         const blob = await obtenerBlobArchivo(url);
         const pdf = blob.type ? blob : new Blob([blob], { type: "application/pdf" });
         document.title = (_nombre || "Documento").replace(/\.pdf$/i, "");
+        sessionStorage.removeItem(claveVisor);
         window.location.href = URL.createObjectURL(pdf);
       } catch {
         cargando.remove();
-        // La ruta existente conserva el manejo de error y sirve de respaldo.
+        // La ruta interna conserva el manejo de error y sirve de respaldo.
         window.location.href = rutaVisor;
       }
       return;
@@ -365,89 +358,21 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
       // ventana actual. El dominio propio se conserva en ambos caminos.
       window.location.href = rutaVisor;
     }
+    window.setTimeout(() => sessionStorage.removeItem(claveVisor), 1_000);
     return;
   }
 
-  // Dentro del gesto, antes de cualquier espera.
-  //
-  // SIN "noopener", Y ES A PROPÓSITO. `window.open` DEVUELVE null cuando
-  // se le pasa noopener -- está en la especificación, no es un fallo del
-  // navegador. Con noopener puesto, esta función abría una pestaña en
-  // blanco, se quedaba sin referencia a ella, y cargaba el PDF en la
-  // pestaña original: la persona veía una pestaña `about:blank` huérfana
-  // que nunca se llenaba. Era justo el síntoma reportado.
-  //
-  // La protección que daba noopener se consigue igual anulando `opener`
-  // a mano justo después, que es lo que se hace abajo.
-  const ventana = window.open("", "_blank");
+  const ventana = window.open(rutaVisor, "_blank");
   if (ventana) {
-    // Que la pestaña nueva no pueda tocar la que la abrió.
     try {
       ventana.opener = null;
     } catch {
-      // Algún navegador no deja escribirlo; no es motivo para no abrir.
+      // La ruta es del mismo origen y no recibe datos por window.opener.
     }
-    // Safari a veces crea la pestaña en segundo plano. Pedir el foco aquí,
-    // todavía dentro del gesto de la persona, le da la mejor oportunidad
-    // de llevarla inmediatamente al documento.
-    try {
-      ventana.focus();
-    } catch {
-      // La política del navegador puede impedirlo; el PDF abrirá igual.
-    }
-    // Algo mientras carga: una pestaña en blanco parece que se colgó.
-    try {
-      // Igual que arriba: nada de <style> en linea, la CSP heredada lo
-      // bloquearia. Los estilos van por CSSOM.
-      ventana.document.write(
-        '<!doctype html><html><head><meta charset="utf-8"><title>Vista360</title></head>' +
-          "<body>Abriendo el documento…</body></html>",
-      );
-      ventana.document.close();
-      const cuerpo = ventana.document.body;
-      cuerpo.style.fontFamily = "system-ui, sans-serif";
-      cuerpo.style.display = "flex";
-      cuerpo.style.alignItems = "center";
-      cuerpo.style.justifyContent = "center";
-      cuerpo.style.height = "100vh";
-      cuerpo.style.margin = "0";
-      cuerpo.style.color = "#555";
-    } catch {
-      // Idem: si no se puede escribir, se sigue igual.
-    }
+  } else {
+    window.location.href = rutaVisor;
   }
-
-  try {
-    const blob = await obtenerBlobArchivo(url);
-    const urlLocal = URL.createObjectURL(
-      blob.type ? blob : new Blob([blob], { type: "application/pdf" })
-    );
-
-    if (ventana && !ventana.closed) {
-      // Navegar al blob directamente deja que Chrome use su visor PDF
-      // nativo. Incrustarlo con <embed> en un documento escrito en memoria
-      // puede mostrar "contenido bloqueado" cuando las protecciones de
-      // Cloudflare/CSP están activas. La URL sigue siendo un blob local:
-      // no se expone la firma de R2 ni se relaja ninguna cabecera.
-      ventana.location.href = urlLocal;
-      // Repetirlo al terminar cubre Safari cuando el cambio de contenido
-      // hizo que la pestaña perdiera el foco durante la espera.
-      try {
-        ventana.focus();
-      } catch {
-        // El navegador decide en última instancia si cambia de pestaña.
-      }
-    } else {
-      // Pestaña bloqueada: se navega en la actual, que también sirve.
-      window.location.href = urlLocal;
-    }
-    setTimeout(() => URL.revokeObjectURL(urlLocal), 60_000);
-  } catch (error) {
-    console.warn("No se pudo abrir el archivo desde el dominio propio; se usa el enlace directo.", error);
-    // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
-    if (ventana && !ventana.closed) ventana.location.href = url;
-    else abrirComoAntes(url);
-  }
+  window.setTimeout(() => sessionStorage.removeItem(claveVisor), 1_000);
 }
 
 

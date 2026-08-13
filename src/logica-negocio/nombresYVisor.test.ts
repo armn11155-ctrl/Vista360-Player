@@ -33,8 +33,8 @@ describe("el visor no puede volver a dejar una pestaña en blanco", () => {
   it("comprueba que la ventana existe antes de usarla", () => {
     // Si el navegador bloquea la pestaña emergente, window.open devuelve
     // null igual. Sin esta guarda, el fallo vuelve por otra puerta.
-    expect(verArchivo).toMatch(/if \(ventana && !ventana\.closed\)/);
-    expect(verArchivo).toContain("window.location.href = urlLocal");
+    expect(verArchivo).toMatch(/if \(ventana\)/);
+    expect(verArchivo).toContain("window.location.href = rutaVisor");
   });
 });
 
@@ -155,8 +155,9 @@ describe("el visor de escritorio es compatible con la CSP estricta", () => {
   const codigo = leer("src/utils/descargarArchivo.ts");
   const fn = codigo.slice(codigo.indexOf("export async function verArchivo"));
 
-  it("Chrome navega al blob privado sin incrustarlo en un embed bloqueable", () => {
-    expect(fn).toContain("ventana.location.href = urlLocal");
+  it("Chrome abre la ruta fija propia sin generar HTML en memoria", () => {
+    expect(fn).toContain('const rutaVisor = "/visor-pdf.html"');
+    expect(fn).toContain("window.open(rutaVisor");
     expect(fn).not.toContain("mostrarPdfConTitulo");
     expect(fn).not.toContain('document.write(`<embed');
   });

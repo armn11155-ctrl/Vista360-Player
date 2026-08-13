@@ -9,17 +9,21 @@
       * { box-sizing: border-box; }
       html, body { width: 100%; height: 100%; margin: 0; background: #050a12; }
       body { color: #dce6f5; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      #estado { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 24px; text-align: center; }
+      #estado { position: fixed; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 24px; background: #050a12; text-align: center; }
+      #visor { display: block; width: 100%; height: 100%; border: 0; background: #8a8a8a; }
+      .listo { display: none !important; }
     </style>
   </head>
   <body>
     <main id="estado" role="status" aria-live="polite">Abriendo el documento…</main>
+    <iframe id="visor" title="Reporte Vista360 Player"></iframe>
     <script>
       (() => {
         const estado = document.getElementById("estado");
-        const token = new URLSearchParams(location.search).get("token") || "";
-        const clave = "vista360:visor-pdf:" + token;
+        const clave = "vista360:visor-pdf";
+        const visor = document.getElementById("visor");
         let datos = null;
+        let urlLocal = "";
 
         try {
           const guardado = sessionStorage.getItem(clave);
@@ -39,6 +43,10 @@
         }
 
         document.title = String(datos.nombre || "Documento").replace(/\.pdf$/i, "");
+        // La pestaña sigue ejecutando este visor mínimo, pero la barra queda
+        // limpia: únicamente el dominio de Vista360 Player, sin firmas,
+        // tokens ni identificadores blob que se puedan copiar o reenviar.
+        history.replaceState(null, "", "/");
         const corte = new AbortController();
         const reloj = setTimeout(() => corte.abort(), 20_000);
 
@@ -48,13 +56,11 @@
             return respuesta.blob();
           })
           .then((blob) => {
-            const urlLocal = URL.createObjectURL(
+            urlLocal = URL.createObjectURL(
               blob.type ? blob : new Blob([blob], { type: "application/pdf" }),
             );
-            // Safari deja el visor incrustado gris aunque el Blob sea un PDF
-            // válido. Navegar al blob entrega el archivo al visor PDF
-            // nativo sin revelar la URL firmada de R2.
-            location.replace(urlLocal);
+            visor.src = urlLocal;
+            estado.classList.add("listo");
           })
           .catch(mostrarError)
           .finally(() => clearTimeout(reloj));
@@ -62,6 +68,7 @@
         addEventListener("pagehide", () => {
           corte.abort();
           clearTimeout(reloj);
+          if (urlLocal) URL.revokeObjectURL(urlLocal);
         }, { once: true });
       })();
     </script>

@@ -198,8 +198,8 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
     expect(valores.filter((v) => v.startsWith("https://")).sort()).toEqual(esperados.sort());
   });
 
-  it("el iframe del mapa está acotado a Google Maps, y el mapa sigue usándolo", () => {
-    expect(directiva(csp, "frame-src")).toBe("https://www.google.com");
+  it("los iframes quedan acotados al mapa y al PDF privado en memoria", () => {
+    expect(directiva(csp, "frame-src")).toBe("blob: https://www.google.com");
     const detalle = readFileSync(join(RAIZ, "src", "components", "screens", "DetalleCampana.tsx"), "utf8");
     expect(detalle).toContain("https://www.google.com/maps?q=");
   });
@@ -220,6 +220,7 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
   it("object-src vuelve a estar cerrado: el visor ya no incrusta plugins", () => {
     expect(directiva(csp, "object-src")).toBe("'none'");
     expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).not.toContain("<embed");
+    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).toContain('<iframe id="visor"');
   });
 });
 
@@ -286,9 +287,10 @@ describe("CSP: nada del codigo genera estilos o scripts en linea", () => {
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
     expect(codigo).not.toContain("<style>");
-    // El visor de Chrome ya no necesita dimensionar un <embed>: navega
-    // directamente al blob privado y usa el visor nativo.
-    expect(codigo).toContain("ventana.location.href = urlLocal");
+    // El visor vive en una ruta fija propia y el HTML estático coloca el
+    // blob privado dentro del iframe permitido expresamente por la CSP.
+    expect(codigo).toContain('const rutaVisor = "/visor-pdf.html"');
+    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).toContain("visor.src = urlLocal");
   });
 
   it("los popups del mapa no usan atributos style=", () => {

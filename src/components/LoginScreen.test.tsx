@@ -13,6 +13,7 @@ vi.mock("firebase/auth", () => ({
 }));
 
 import LoginScreen from "./LoginScreen";
+import { login } from "../config/firebase";
 
 describe("LoginScreen en Safari móvil", () => {
   beforeEach(() => localStorage.clear());
@@ -67,5 +68,22 @@ describe("LoginScreen en Safari móvil", () => {
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Usuario")).toHaveAttribute("aria-invalid", "false");
+  });
+
+  it("mantiene Ingresar bloqueado hasta que la pantalla de acceso se desmonte", async () => {
+    let completar!: () => void;
+    vi.mocked(login).mockReturnValueOnce(new Promise<void>((resolve) => { completar = resolve; }) as ReturnType<typeof login>);
+    const onLoggedIn = vi.fn();
+    render(<LoginScreen onLoggedIn={onLoggedIn} />);
+
+    fireEvent.change(screen.getByLabelText("Usuario"), { target: { value: "cliente@vista360.pe" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "segura" } });
+    fireEvent.click(screen.getByRole("button", { name: "Ingresar" }));
+
+    expect(screen.getByRole("button", { name: "Ingresando…" })).toBeDisabled();
+    await act(async () => completar());
+
+    expect(onLoggedIn).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Ingresando…" })).toBeDisabled();
   });
 });

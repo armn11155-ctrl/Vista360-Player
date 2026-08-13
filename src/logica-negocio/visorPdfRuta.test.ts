@@ -9,8 +9,8 @@ import { resolve } from "node:path";
  * que de verdad se abre) y un componente React `VisorPdf.tsx` colgado de
  * `main.tsx` tras `?visor-pdf`.
  *
- * Pero `descargarArchivo` abre `/visor-pdf.html?token=...`. El parametro
- * `visor-pdf` no lo generaba NADIE, asi que el componente nunca se
+ * `descargarArchivo` abre el HTML estático directamente. El parametro
+ * `visor-pdf` no lo generaba NADIE, así que el componente nunca se
  * renderizaba: 122 lineas muertas que ademas viajaban en el bundle
  * principal de todos los usuarios por ser un import estatico.
  *
@@ -25,32 +25,30 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
   const abridor = leer("src/utils/descargarArchivo.ts");
 
   it("la ruta que se abre corresponde a un archivo real", () => {
-    const rutas = [...abridor.matchAll(/["'`]\/([\w.-]+\.html)\?/g)].map((m) => m[1]);
+    const rutas = [...abridor.matchAll(/["'`]\/([\w.-]+\.html)["'`]/g)].map((m) => m[1]);
     expect(rutas.length, "descargarArchivo debe abrir alguna ruta de visor").toBeGreaterThan(0);
     for (const ruta of rutas) {
       expect(existsSync(resolve(RAIZ, `public/${ruta}`)), `falta public/${ruta}`).toBe(true);
     }
   });
 
-  it("el parámetro que se envía es el que el visor lee", () => {
-    // El desajuste exacto que dejo el componente muerto.
-    const enviado = abridor.match(/\/[\w.-]+\.html\?(\w+)=/)?.[1];
-    expect(enviado).toBeDefined();
+  it("no envía URL, firma ni token en la barra", () => {
     const visor = leer("public/visor-pdf.html");
-    expect(visor).toContain(`get("${enviado}")`);
+    expect(abridor).not.toMatch(/\/visor-pdf\.html\?/);
+    expect(visor).not.toContain("URLSearchParams");
+    expect(visor).toContain('history.replaceState(null, "", "/")');
   });
 
   it("la clave de sessionStorage coincide entre quien escribe y quien lee", () => {
     // Si los prefijos se separan, el visor abre siempre "no se pudo abrir".
     const visor = leer("public/visor-pdf.html");
-    expect(abridor).toContain("vista360:visor-pdf:");
-    expect(visor).toContain("vista360:visor-pdf:");
+    expect(abridor).toContain('"vista360:visor-pdf"');
+    expect(visor).toContain('"vista360:visor-pdf"');
   });
 
-  it("el token es imposible de adivinar", () => {
-    // El token viaja en la URL; si fuera secuencial o predecible, otra
-    // pestaña del mismo origen podria leer el documento de alguien.
-    expect(abridor).toContain("crypto.randomUUID()");
+  it("no existe ningún token copiable o adivinable", () => {
+    expect(abridor).not.toContain("crypto.randomUUID()");
+    expect(abridor).not.toContain("?token=");
   });
 
   it("el visor BORRA la entrada al leerla: un solo uso", () => {
@@ -60,11 +58,12 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
     expect(visor).toContain("sessionStorage.removeItem(clave)");
   });
 
-  it("Safari entrega el blob al visor nativo y no usa el embed gris", () => {
+  it("mantiene la URL propia mientras el PDF vive solo en memoria", () => {
     const visor = leer("public/visor-pdf.html");
-    expect(visor).toContain("location.replace(urlLocal)");
+    expect(visor).toContain("visor.src = urlLocal");
+    expect(visor).toContain('history.replaceState(null, "", "/")');
     expect(visor).not.toContain("<embed");
-    expect(visor).not.toContain("URL.revokeObjectURL(urlLocal)");
+    expect(visor).toContain("URL.revokeObjectURL(urlLocal)");
   });
 
   it("no queda un segundo visor en React compitiendo con el estático", () => {

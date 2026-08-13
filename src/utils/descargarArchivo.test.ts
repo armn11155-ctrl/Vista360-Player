@@ -222,63 +222,28 @@ describe("ver un PDF no enseña la dirección de R2", () => {
 
     await verArchivo(url, "Reporte.pdf");
 
-    expect(abrir).toHaveBeenCalledWith("/visor-pdf.html?token=token-prueba", "_blank");
+    expect(abrir).toHaveBeenCalledWith("/visor-pdf.html", "_blank");
     expect(ventana.opener).toBeNull();
-    expect(JSON.parse(sessionStorage.getItem("vista360:visor-pdf:token-prueba")!)).toEqual({
-      url,
-      nombre: "Reporte.pdf",
-    });
+    expect(abrir).not.toHaveBeenCalledWith(expect.stringContaining("token"), expect.anything());
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("el visor de Safari no carga otra instancia de Firebase Auth", () => {
     const visor = readFileSync(resolve(__dirname, "../../public/visor-pdf.html"), "utf-8");
-    expect(visor).toContain('get("token")');
-    expect(visor).toContain('"vista360:visor-pdf:" + token');
+    expect(visor).not.toContain('get("token")');
+    expect(visor).toContain('const clave = "vista360:visor-pdf"');
     expect(visor).toContain("fetch(datos.url");
+    expect(visor).toContain('history.replaceState(null, "", "/")');
     expect(visor).not.toContain("firebase");
     expect(visor).not.toContain('src="/src/main.tsx"');
   });
 
-  it("pide foco inmediatamente para que Safari lleve a la pestaña nueva", async () => {
-    const eventos: string[] = [];
-    const ventana = {
-      closed: false,
-      opener: {},
-      focus: vi.fn(() => eventos.push("focus")),
-      document: {
-        write: vi.fn(),
-        close: vi.fn(),
-        open: vi.fn(),
-      },
-      location: { href: "" },
-    };
-    vi.stubGlobal("open", vi.fn(() => {
-      eventos.push("open");
-      return ventana;
-    }));
-    vi.stubGlobal("fetch", vi.fn(async () => {
-      eventos.push("fetch");
-      return new Response(new Blob(["pdf"]), { status: 200 });
-    }));
-    URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
-    URL.revokeObjectURL = vi.fn();
-
+  it("abre una ruta fija propia, sin esperar red ni exponer identificadores", async () => {
+    const abrir = vi.fn(() => ({ opener: {} }));
+    vi.stubGlobal("open", abrir);
     await verArchivo("https://algo.r2/x.pdf", "Reporte.pdf");
-
-    expect(eventos.slice(0, 3)).toEqual(["open", "focus", "fetch"]);
-    expect(ventana.focus).toHaveBeenCalledTimes(2);
-  });
-
-  it("abre la pestaña ANTES de esperar, o el navegador la bloquea", () => {
-    // Si se abriera después del await, el navegador ya no lo considera
-    // una acción de la persona y lo trata como publicidad.
-    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
-    const cuerpo = fuente.slice(fuente.indexOf("export async function verArchivo"));
-    const ramaEscritorio = cuerpo.slice(cuerpo.indexOf('const ventana = window.open("", "_blank")'));
-    expect(ramaEscritorio.indexOf("window.open")).toBeLessThan(
-      ramaEscritorio.indexOf("await obtenerBlobArchivo"),
-    );
+    expect(abrir).toHaveBeenCalledWith("/visor-pdf.html", "_blank");
+    expect(abrir).not.toHaveBeenCalledWith(expect.stringMatching(/[?&](token|url)=/), expect.anything());
   });
 
   it("limpia la pantalla de carga al volver del PDF en la PWA", () => {
@@ -288,25 +253,10 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     expect(fuente).toContain("document.title = tituloAnterior");
   });
 
-  it("carga el PDF como blob, bajo el dominio propio", async () => {
-    URL.createObjectURL = vi.fn(() => "blob:https://vista360player.pe/abc");
-    URL.revokeObjectURL = vi.fn();
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(new Blob(["pdf"]), { status: 200 })));
-    const ventana = { closed: false, location: { href: "" } };
-    vi.stubGlobal("open", vi.fn(() => ventana));
-    await verArchivo("https://algo.r2.cloudflarestorage.com/x.pdf?X-Amz-Signature=abc", "x.pdf");
-    expect(ventana.location.href).toContain("blob:");
-    expect(ventana.location.href).not.toContain("r2.cloudflarestorage.com");
-  });
-
-  it("si no se puede, cae al enlace directo en la MISMA pestaña ya abierta", async () => {
-    // Peor presentación, pero el PDF se ve igual. Nunca un botón muerto.
-    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("CORS"); }));
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    const ventana = { closed: false, location: { href: "" } };
-    vi.stubGlobal("open", vi.fn(() => ventana));
-    await verArchivo("https://algo.r2/x.pdf", "x.pdf");
-    expect(ventana.location.href).toBe("https://algo.r2/x.pdf");
+  it("el visor carga el PDF en un iframe y conserva la barra limpia", () => {
+    const visor = readFileSync(resolve(__dirname, "../../public/visor-pdf.html"), "utf-8");
+    expect(visor).toContain("visor.src = urlLocal");
+    expect(visor).not.toContain("location.replace(urlLocal)");
   });
 });
 

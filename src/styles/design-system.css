@@ -6406,7 +6406,7 @@ a {
   }
 
   .admin-picker-editorial-brand {
-    margin-left: -7px;
+    margin-left: -18px;
     margin-top: 10px;
   }
 
@@ -6426,7 +6426,8 @@ a {
     height: 176px;
     border: 0;
     border-radius: 50%;
-    opacity: .64;
+    display: none !important;
+    opacity: 0;
     background: transparent;
     box-shadow: none;
     animation: v360-selector-orb-breathe 7s ease-in-out infinite;

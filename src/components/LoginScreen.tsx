@@ -47,13 +47,19 @@ export default function LoginScreen({ onLoggedIn }: Props) {
     if (!resolverMfa || busy) return;
     setBusy(true);
     setError("");
+    let sesionCompletada = false;
     try {
       await completarLoginConCodigo(resolverMfa, codigoMfa);
+      sesionCompletada = true;
       onLoggedIn();
     } catch (error) {
       setError(mensajeDeError(error, "Código incorrecto o vencido. Revisa tu aplicación de autenticación."));
     } finally {
-      setBusy(false);
+      // Si Firebase ya aceptó el acceso, el botón permanece bloqueado y
+      // cargando hasta que App sustituya esta pantalla. React desmontará el
+      // formulario al recibir la sesión; volver a habilitarlo antes dejaba
+      // una ventana breve para enviar las credenciales dos veces.
+      if (!sesionCompletada) setBusy(false);
     }
   }
 
@@ -75,6 +81,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       return;
     }
     setBusy(true);
+    let sesionCompletada = false;
     try {
       if (auth) {
         await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
@@ -88,6 +95,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
         localStorage.setItem(REMEMBER_KEY, "false");
       }
       await login(email.trim(), password);
+      sesionCompletada = true;
       onLoggedIn();
     } catch (error) {
       // La contraseña era correcta, pero la cuenta tiene un segundo
@@ -109,7 +117,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
       }
       setError(mensajeDeError(error, "Usuario o contraseña incorrectos. Si no tienes acceso, contacta a tu ejecutivo en Vista360."));
     } finally {
-      setBusy(false);
+      if (!sesionCompletada) setBusy(false);
     }
   }
 
