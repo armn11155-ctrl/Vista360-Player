@@ -6646,46 +6646,65 @@ a {
    ===================================================================== */
 @media (min-width: 900px) {
   .admin-picker-tile:not(.archived) {
-    border-color: rgba(191,219,254,.19) !important;
-    background:
-      linear-gradient(138deg, rgba(255,255,255,.085) 0%, transparent 29%),
-      radial-gradient(circle at 48% -12%, rgba(96,165,250,.16), transparent 49%),
-      linear-gradient(160deg, #13223a 0%, #081222 54%, #030812 100%) !important;
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.14),
-      inset 0 -18px 26px rgba(0,0,0,.22),
-      0 8px 0 -4px rgba(1,5,12,.94),
-      0 26px 48px -28px rgba(0,0,0,.98) !important;
+    gap: 0;
+    padding: 0;
+    border-color: transparent !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   .admin-picker-tile:not(.archived) .admin-picker-tile-avatar {
-    transform: translateY(-1px);
+    width: 100%;
+    transform: none;
     border-color: rgba(219,234,254,.19) !important;
+    border-radius: 17px;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,.15),
-      inset 0 -14px 24px rgba(1,6,15,.20),
-      0 9px 0 -6px rgba(1,6,15,.86),
-      0 20px 32px -22px rgba(0,0,0,.98) !important;
+      inset 0 1px 0 rgba(255,255,255,.12),
+      0 20px 38px -25px rgba(0,0,0,.98) !important;
   }
 
-  .admin-picker-tile-shine {
-    background: linear-gradient(145deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.035) 28%, transparent 48%);
+  .admin-picker-tile:not(.archived):not(.admin-picker-tile-vermas) .admin-picker-tile-shine {
+    background:
+      linear-gradient(180deg, transparent 48%, rgba(2,7,16,.12) 62%, rgba(2,7,16,.88) 100%),
+      linear-gradient(145deg, rgba(255,255,255,.10) 0%, transparent 34%);
+  }
+
+  .admin-picker-tile:not(.archived):not(.admin-picker-tile-vermas) .admin-picker-tile-name {
+    position: absolute;
+    right: 43px;
+    bottom: 13px;
+    left: 15px;
+    z-index: 3;
+    width: auto;
+    padding: 0;
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 760;
+    line-height: 1.2;
+    text-align: left;
+    text-shadow: 0 2px 8px rgba(0,0,0,.82);
+  }
+
+  .admin-picker-tile-main:hover .admin-picker-tile-avatar,
+  .admin-picker-tile-main:focus-visible .admin-picker-tile-avatar {
+    transform: translateY(-1px) scale(1.012);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.14),
+      0 24px 42px -24px rgba(0,0,0,1) !important;
   }
 
   @media (hover: hover) {
     .admin-picker-tile:has(.admin-picker-tile-main:not(:disabled)):hover {
-      transform: translateY(-3px);
-      border-color: rgba(147,197,253,.34) !important;
-      box-shadow:
-        inset 0 1px 0 rgba(255,255,255,.16),
-        inset 0 -18px 26px rgba(0,0,0,.20),
-        0 9px 0 -4px rgba(1,5,12,.96),
-        0 30px 54px -26px rgba(0,0,0,1) !important;
+      transform: translateY(-2px);
+      border-color: transparent !important;
+      background: transparent !important;
+      box-shadow: none !important;
     }
   }
 
   .inicio-side-col .inicio-evidence-card {
     min-height: 0;
+    margin-top: 29px;
   }
 
   .inicio-side-col .inicio-report-row {
@@ -6693,8 +6712,8 @@ a {
   }
 
   .sidebar-panel .sidebar-logo {
-    width: 52px;
-    height: 38px;
+    width: 58px;
+    height: 42px;
     border: 0;
     border-radius: 0;
     background: transparent;
