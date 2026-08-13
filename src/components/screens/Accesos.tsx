@@ -655,7 +655,7 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
 
       <div className="content-area">
         {esGerente && (
-          <div className="card" style={{ marginBottom: 12 }}>
+          <div className="card accesos-internal-card" style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", marginBottom: 8 }}>
               Personal interno
             </div>
@@ -690,7 +690,7 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
             )}
           </div>
         )}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <div className="accesos-tabs" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           {[
             { id: "activos" as const, label: "Activos", count: usuariosActivos.length },
             { id: "archivados" as const, label: "Archivados", count: usuariosArchivados.length },
@@ -958,7 +958,7 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+        <div className="accesos-users-list" style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
           {usuariosDelTab.length > 0 && (
             <CampoBusqueda
               valor={busqueda}
