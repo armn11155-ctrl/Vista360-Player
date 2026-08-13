@@ -335,11 +335,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <h1>Una operación.<br />Todas tus cuentas.</h1>
             <p>Clientes, campañas y resultados conectados en una sola experiencia.</p>
           </div>
-          <div className="admin-picker-editorial-planet" aria-hidden="true">
-            <span className="admin-picker-editorial-planet-sphere">
-              <i /><i /><i />
-            </span>
-            <b /><b /><b />
+          <div className="admin-picker-editorial-orbit" aria-hidden="true">
+            <span className="admin-picker-editorial-orbit-field" />
+            <span className="admin-picker-editorial-orbit-ring"><i /></span>
+            <b /><b /><b /><b />
           </div>
         </section>
         <div className="admin-picker-console">
@@ -552,9 +551,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       {gestionAbierta && (
         <div className="admin-picker-management-screen">
           <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-management-logo" draggable={false} />
-          <div className="admin-picker-management-illustration" aria-hidden="true">
-            <span className="admin-picker-management-star"><i /><i /><i /><i /></span>
-            <b /><b /><b />
+          <div className="admin-picker-management-flow" aria-hidden="true">
+            <span />
+            <i /><i /><i /><i />
           </div>
           <div className="admin-picker-management-head">
             <button type="button" onClick={() => setGestionAbierta(false)} aria-label="Volver a clientes">
