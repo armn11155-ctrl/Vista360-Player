@@ -4966,3 +4966,694 @@ a {
     animation: none !important;
   }
 }
+
+/* =====================================================================
+   AJUSTE VISUAL FINAL — INICIO, PERFIL, SELECTOR Y GESTIÓN
+   ---------------------------------------------------------------------
+   La composición de escritorio recupera densidad útil en Inicio y lleva
+   el selector/centro de gestión al mismo lenguaje editorial del login.
+   No añade canvas, peticiones, listeners ni estados de React.
+   ===================================================================== */
+.admin-picker-stage,
+.admin-picker-console {
+  display: contents;
+}
+
+.admin-picker-editorial,
+.profile-desktop-page-title {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  /* Perfil vuelve a declarar claramente la pantalla activa en la cabecera. */
+  .profile-top-bar {
+    align-items: center;
+    justify-content: space-between !important;
+    min-height: 42px;
+    margin-bottom: 22px !important;
+  }
+
+  .profile-desktop-page-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+  }
+
+  .profile-desktop-page-title > span {
+    width: 26px;
+    height: 2px;
+    flex: 0 0 26px;
+    border-radius: 999px;
+    background: #438bff;
+    box-shadow: 0 0 13px rgba(67,139,255,.44);
+  }
+
+  .profile-desktop-page-title > strong {
+    font-size: 18px;
+    font-weight: 780;
+    line-height: 1;
+    letter-spacing: -.018em;
+  }
+
+  /* Inicio: las piezas vuelven a llenar el lienzo sin regresar al exceso
+     de tarjetas independientes de versiones anteriores. */
+  .inicio-content {
+    padding-top: 20px !important;
+    padding-bottom: 32px !important;
+  }
+
+  .inicio-current-client {
+    min-height: 62px !important;
+    padding: 9px 12px !important;
+  }
+
+  .inicio-current-client-mark {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .inicio-desktop-welcome {
+    min-height: 96px;
+    margin-bottom: 20px;
+    padding: 18px 22px 18px 26px;
+    border-radius: 17px;
+  }
+
+  .inicio-desktop-welcome::before {
+    top: 20px;
+    bottom: 20px;
+  }
+
+  .inicio-desktop-welcome-kicker {
+    margin-bottom: 6px;
+    font-size: 9.5px;
+  }
+
+  .inicio-desktop-welcome h2 {
+    font-size: clamp(22px, 2vw, 27px);
+  }
+
+  .inicio-desktop-welcome p {
+    display: block;
+    margin-top: 5px;
+    color: rgba(216,227,242,.66);
+    font-size: 12px;
+  }
+
+  .inicio-desktop-welcome-status {
+    min-height: 34px;
+    padding-inline: 13px;
+    font-size: 10.5px;
+  }
+
+  .inicio-section-title {
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+  }
+
+  .inicio-summary-grid {
+    margin-bottom: 20px !important;
+    border-radius: 15px;
+  }
+
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 86px !important;
+    padding: 13px 16px !important;
+  }
+
+  .inicio-kpi-icon {
+    width: 39px !important;
+    height: 39px !important;
+    border-radius: 11px !important;
+  }
+
+  .inicio-kpi-label {
+    margin-bottom: 4px !important;
+    font-size: 11.5px !important;
+  }
+
+  .inicio-kpi-value {
+    font-size: 18px !important;
+  }
+
+  .inicio-dashboard-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, .7fr);
+    gap: 18px;
+  }
+
+  .inicio-quick-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .inicio-quick-grid > button {
+    min-height: 82px !important;
+    padding: 12px 15px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    text-align: left;
+  }
+
+  .inicio-quick-grid > button:nth-child(2n) {
+    border-right: 0 !important;
+  }
+
+  .inicio-quick-copy {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .inicio-quick-copy span {
+    font-size: 12px !important;
+    text-align: left !important;
+  }
+
+  .inicio-quick-copy small {
+    display: block;
+    overflow: hidden;
+    color: #7b899b;
+    font-size: 10.5px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inicio-side-col .inicio-evidence-card {
+    min-height: 192px;
+    margin-top: 17px;
+    padding: 20px !important;
+    border-radius: 15px !important;
+  }
+
+  .inicio-account-status {
+    grid-template-columns: 176px minmax(0, 1fr);
+    gap: 16px;
+    margin-top: 18px;
+    padding: 15px 16px;
+    border-radius: 16px;
+  }
+
+  .inicio-account-status-head h2 {
+    font-size: 17px !important;
+  }
+
+  .inicio-account-status-grid button {
+    min-height: 70px !important;
+    padding: 10px 12px !important;
+  }
+
+  .inicio-account-status-grid button strong {
+    font-size: 12.5px !important;
+  }
+
+  .inicio-account-status-grid button small {
+    display: block !important;
+    overflow: hidden;
+    font-size: 9.5px !important;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Selector: composición editorial a la izquierda y consola de cuentas a
+     la derecha. Comparte azul, negro, radios y contraste con el login. */
+  .admin-picker-shell {
+    background:
+      radial-gradient(circle at 15% 14%, rgba(96,165,250,.22), transparent 28%),
+      radial-gradient(circle at 66% 104%, rgba(37,99,235,.22), transparent 35%),
+      linear-gradient(125deg, #071b3e 0%, #0a3477 48%, #08265a 100%) !important;
+  }
+
+  .admin-picker-shell::after {
+    content: none !important;
+    display: none !important;
+    animation: none !important;
+  }
+
+  .admin-picker-stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(300px, .78fr) minmax(560px, 1.22fr);
+    align-items: stretch;
+    gap: clamp(28px, 4vw, 58px);
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    padding: 74px clamp(34px, 5vw, 68px) 58px;
+    box-sizing: border-box;
+  }
+
+  .admin-picker-editorial {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
+    overflow: hidden;
+    padding: 8px 0 58px;
+    color: #fff;
+  }
+
+  .admin-picker-editorial::before {
+    content: "";
+    position: absolute;
+    left: -88px;
+    bottom: -132px;
+    width: 390px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: .58;
+    background-image: radial-gradient(circle, rgba(226,238,255,.92) 0 1.2px, transparent 1.55px);
+    background-size: 11px 11px;
+    -webkit-mask-image: radial-gradient(circle, #000 0 57%, transparent 58%);
+    mask-image: radial-gradient(circle, #000 0 57%, transparent 58%);
+  }
+
+  .admin-picker-editorial::after {
+    content: "";
+    position: absolute;
+    left: 34px;
+    bottom: 52px;
+    width: 262px;
+    height: 86px;
+    border-top: 1px solid rgba(219,234,254,.26);
+    border-radius: 50%;
+    transform: rotate(-10deg);
+  }
+
+  .admin-picker-editorial-brand,
+  .admin-picker-editorial-copy {
+    position: relative;
+    z-index: 2;
+  }
+
+  .admin-picker-editorial-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .admin-picker-editorial-brand img {
+    width: 142px;
+    filter: brightness(0) invert(1);
+  }
+
+  .admin-picker-editorial-brand span {
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,.22);
+    color: rgba(219,234,254,.62);
+    font-size: 9px;
+    font-weight: 760;
+    letter-spacing: .16em;
+  }
+
+  .admin-picker-editorial-copy {
+    max-width: 410px;
+    margin-bottom: 92px;
+  }
+
+  .admin-picker-editorial-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    color: rgba(219,234,254,.7);
+    font-size: 10px;
+    font-weight: 760;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+
+  .admin-picker-editorial-kicker::before {
+    content: "";
+    width: 28px;
+    height: 2px;
+    border-radius: 999px;
+    background: #8bc0ff;
+    box-shadow: 0 0 14px rgba(139,192,255,.5);
+  }
+
+  .admin-picker-editorial h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(34px, 3.25vw, 50px);
+    font-weight: 790;
+    line-height: .98;
+    letter-spacing: -.052em;
+  }
+
+  .admin-picker-editorial p {
+    max-width: 350px;
+    margin: 18px 0 0;
+    color: rgba(219,234,254,.68);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .admin-picker-editorial-network i {
+    position: absolute;
+    z-index: 3;
+    width: 7px;
+    height: 7px;
+    border: 2px solid rgba(219,234,254,.8);
+    border-radius: 50%;
+    background: #1f6fd8;
+    box-shadow: 0 0 0 4px rgba(96,165,250,.12), 0 0 18px rgba(147,197,253,.6);
+  }
+
+  .admin-picker-editorial-network i:nth-child(1) { left: 30px; bottom: 150px; }
+  .admin-picker-editorial-network i:nth-child(2) { left: 136px; bottom: 98px; }
+  .admin-picker-editorial-network i:nth-child(3) { left: 224px; bottom: 156px; }
+  .admin-picker-editorial-network i:nth-child(4) { left: 286px; bottom: 82px; }
+
+  .admin-picker-console {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    padding: 30px 30px 26px;
+    border: 1px solid rgba(191,219,254,.16);
+    border-radius: 26px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.13), transparent 34%),
+      linear-gradient(155deg, rgba(7,17,31,.975), rgba(3,8,17,.965) 64%, rgba(5,12,24,.97));
+    box-shadow: 0 34px 86px -42px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: blur(18px) saturate(1.05);
+    -webkit-backdrop-filter: blur(18px) saturate(1.05);
+  }
+
+  .admin-picker-header {
+    display: block;
+    width: auto;
+    margin: 0;
+    padding: 0 0 22px;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(191,219,254,.10) !important;
+    border-radius: 0;
+    text-align: left;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .admin-picker-logo,
+  .admin-picker-badge,
+  .admin-picker-actions {
+    display: none !important;
+  }
+
+  .admin-picker-title {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 2.55vw, 36px);
+    font-weight: 760;
+    line-height: 1.02;
+    letter-spacing: -.045em;
+  }
+
+  .admin-picker-sub {
+    margin: 0 0 20px;
+    padding: 0;
+    color: rgba(203,213,225,.59);
+    font-size: 12.5px;
+    text-align: left;
+  }
+
+  .admin-picker-tabs {
+    width: fit-content;
+    margin: 0 0 12px;
+    background: rgba(255,255,255,.045);
+    border-color: rgba(191,219,254,.12);
+  }
+
+  .admin-picker-tabs button {
+    background: transparent;
+  }
+
+  .admin-picker-tabs button.active {
+    color: #fff;
+    background: rgba(47,111,237,.2);
+    box-shadow: inset 0 0 0 1px rgba(96,165,250,.22);
+  }
+
+  .admin-picker-search-wrap {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .admin-picker-search {
+    min-height: 46px;
+    border-color: rgba(191,219,254,.13);
+    background: rgba(255,255,255,.045);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .admin-picker-body {
+    flex: 1;
+    width: auto;
+    min-height: 0;
+    margin: 0;
+    padding: 22px 2px 2px;
+  }
+
+  .admin-picker-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    width: 100%;
+    max-width: none;
+  }
+
+  .admin-picker-tile:not(.archived) {
+    gap: 10px;
+    padding: 9px 9px 13px;
+    border-color: rgba(191,219,254,.12);
+    border-radius: 17px;
+    background: rgba(255,255,255,.035);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .admin-picker-tile-avatar {
+    width: 100%;
+    border-radius: 13px;
+  }
+
+  .admin-picker-tile-name {
+    color: #eaf2ff;
+    font-size: 12.5px;
+  }
+
+  .admin-picker-footer {
+    position: absolute;
+    left: clamp(34px, 5vw, 68px);
+    bottom: 24px;
+    z-index: 4;
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .admin-picker-logout {
+    border-color: rgba(255,255,255,.14);
+    color: rgba(255,255,255,.7);
+    background: rgba(3,8,17,.46);
+  }
+
+  /* Centro de Gestión adopta la misma escena azul y una consola única. */
+  .admin-picker-management-screen {
+    padding: 42px clamp(42px, 6vw, 76px) 46px;
+    background:
+      radial-gradient(circle at 14% 12%, rgba(96,165,250,.22), transparent 29%),
+      radial-gradient(circle at 84% 94%, rgba(37,99,235,.20), transparent 34%),
+      linear-gradient(125deg, #071b3e 0%, #0a3477 48%, #08265a 100%) !important;
+  }
+
+  .admin-picker-management-screen::before {
+    left: auto;
+    right: -90px;
+    top: -120px;
+    bottom: auto;
+    width: 480px;
+    height: 480px;
+    inset: auto -90px auto auto;
+    border-radius: 50%;
+    opacity: .38;
+    background-image: radial-gradient(circle, rgba(226,238,255,.9) 0 1px, transparent 1.4px);
+    background-size: 12px 12px;
+    -webkit-mask-image: radial-gradient(circle, #000 0 57%, transparent 58%);
+    mask-image: radial-gradient(circle, #000 0 57%, transparent 58%);
+    animation: none !important;
+  }
+
+  .admin-picker-management-logo {
+    left: auto !important;
+    top: 38px;
+    right: clamp(42px, 6vw, 76px);
+    width: 122px;
+    filter: brightness(0) invert(1);
+    opacity: .92;
+  }
+
+  .admin-picker-management-head {
+    width: min(1120px, 100%);
+    min-height: 76px;
+    margin: 52px auto 18px;
+    padding: 8px 2px;
+    border: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .admin-picker-management-head::before,
+  .admin-picker-management-head::after {
+    content: none;
+    display: none;
+  }
+
+  .admin-picker-management-head > button {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+    border-color: rgba(191,219,254,.17);
+    border-radius: 13px;
+    background: rgba(3,8,17,.38);
+  }
+
+  .admin-picker-management-head strong {
+    color: #fff;
+    font-size: 30px;
+    font-weight: 760;
+    letter-spacing: -.045em;
+  }
+
+  .admin-picker-management-head span {
+    margin-top: 5px;
+    color: rgba(219,234,254,.64);
+    font-size: 12.5px;
+  }
+
+  .admin-picker-management-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 !important;
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    overflow: hidden;
+    padding: 14px;
+    border: 1px solid rgba(191,219,254,.16);
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.12), transparent 34%),
+      linear-gradient(155deg, rgba(7,17,31,.97), rgba(3,8,17,.96) 64%, rgba(5,12,24,.97)) !important;
+    box-shadow: 0 34px 86px -42px rgba(0,0,0,.92), inset 0 1px 0 rgba(255,255,255,.055) !important;
+    backdrop-filter: blur(18px) saturate(1.05);
+    -webkit-backdrop-filter: blur(18px) saturate(1.05);
+  }
+
+  .admin-picker-management-group {
+    min-height: 324px;
+    padding: 18px 18px 16px;
+    border: 0 !important;
+    border-right: 1px solid rgba(191,219,254,.1) !important;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .admin-picker-management-group:last-child {
+    border-right: 0 !important;
+  }
+
+  .admin-picker-management-group::before {
+    content: none;
+    display: none;
+  }
+
+  .admin-picker-management-group-head {
+    min-height: 48px;
+    margin: 0 0 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(191,219,254,.09);
+  }
+
+  .admin-picker-management-group-head > span {
+    width: 31px;
+    height: 31px;
+    color: #c5ddff;
+    background: rgba(37,99,235,.12);
+  }
+
+  .admin-picker-management-group-head strong {
+    font-size: 13px;
+  }
+
+  .admin-picker-management-group-head small {
+    color: #7f90a7;
+    font-size: 9.5px;
+  }
+
+  .admin-picker-management-group-cards {
+    gap: 7px;
+  }
+
+  .admin-picker-management-card {
+    min-height: 55px;
+    padding: 8px 9px;
+    border: 1px solid rgba(255,255,255,.055) !important;
+    border-radius: 11px;
+    color: #fff;
+    background: rgba(255,255,255,.035) !important;
+  }
+
+  .admin-picker-management-card strong {
+    color: #f4f8fe;
+    font-size: 11.5px;
+  }
+
+  .admin-picker-management-card small {
+    color: #77889f;
+    font-size: 9.5px;
+  }
+
+  .admin-picker-management-card .admin-picker-action-icon {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+    color: #a9ceff;
+    background: rgba(37,99,235,.11);
+    border-color: rgba(147,197,253,.13);
+  }
+
+  .admin-picker-management-card i {
+    color: #73859c;
+  }
+
+  .admin-picker-management-card:hover {
+    border-color: rgba(96,165,250,.2) !important;
+    background: rgba(37,99,235,.09) !important;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1080px) {
+  .admin-picker-stage {
+    grid-template-columns: minmax(250px, .68fr) minmax(520px, 1.32fr);
+    gap: 26px;
+    padding-inline: 34px;
+  }
+
+  .admin-picker-editorial h1 {
+    font-size: 34px;
+  }
+
+  .admin-picker-editorial-brand span {
+    display: none;
+  }
+
+  .inicio-dashboard-grid {
+    grid-template-columns: minmax(0, 1.18fr) minmax(280px, .82fr);
+  }
+}

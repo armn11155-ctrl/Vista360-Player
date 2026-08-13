@@ -273,6 +273,10 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
     <div className="profile-screen">
       <header className="profile-top">
         <div className="profile-top-bar">
+          <div className="profile-desktop-page-title" aria-hidden="true">
+            <span />
+            <strong>Perfil</strong>
+          </div>
           <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="profile-top-logo" draggable={false} />
           <button type="button" className="profile-bell" aria-label="Notificaciones" onClick={onNotifClick}>
             <Icon type="bell" />

@@ -324,7 +324,23 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           )}
         </button>
       )}
-      <div className="admin-picker-header">
+      <div className="admin-picker-stage">
+        <section className="admin-picker-editorial" aria-hidden="true">
+          <div className="admin-picker-editorial-brand">
+            <img src="/logo-player.webp" decoding="async" alt="" draggable={false} />
+            <span>PORTAL DE GESTIÓN</span>
+          </div>
+          <div className="admin-picker-editorial-copy">
+            <span className="admin-picker-editorial-kicker">Control centralizado</span>
+            <h1>Una operación.<br />Todas tus cuentas.</h1>
+            <p>Clientes, campañas y resultados conectados en una sola experiencia.</p>
+          </div>
+          <div className="admin-picker-editorial-network">
+            <i /><i /><i /><i />
+          </div>
+        </section>
+        <div className="admin-picker-console">
+          <div className="admin-picker-header">
         <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
         <div className="admin-picker-badge">
           <span className="admin-picker-badge-dot" />
@@ -384,9 +400,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             className="admin-picker-search"
           />
         </div>
-      </div>
+          </div>
 
-      <div className="admin-picker-body">
+          <div className="admin-picker-body">
         {state.status === "error" && (
           <div className="admin-picker-empty admin-picker-empty-error">{state.message}</div>
         )}
@@ -502,6 +518,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <span className="admin-picker-tile-name">Ver más ({clientesRestantes})</span>
             </div>
           )}
+        </div>
+          </div>
         </div>
       </div>
 
