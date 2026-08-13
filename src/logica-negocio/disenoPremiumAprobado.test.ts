@@ -40,7 +40,10 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?linear-gradient\(155deg, #07111F 0%, #030811 58%, #050C18 100%\);/);
     expect(estilos).toMatch(/\.login-network-globe-canvas \{[\s\S]*?filter: drop-shadow\(0 34px 72px rgba\(1,8,24,\.30\)\)/);
     expect(estilos).toMatch(/\.login-access-kicker strong \{[\s\S]*?display: block;[\s\S]*?color: #FFFFFF;/);
-    expect(estilos).toMatch(/\.login-btn \{[\s\S]*?background: #2563EB;/);
+    expect(estilos).toContain("background: linear-gradient(180deg, #2B6DE8 0%, #245FD2 100%)");
+    expect(estilos).toMatch(/\.login-btn:hover:not\(:disabled\) \{[\s\S]*?transform: translateY\(-1px\);/);
+    expect(estilos).toMatch(/\.login-btn:active:not\(:disabled\) \{[\s\S]*?transform: translateY\(0\);/);
+    expect(estilos).toMatch(/\.login-foot \{[\s\S]*?color: rgba\(214,225,240,\.68\);/);
     expect(estilos).toContain("min-height: 100dvh");
     expect(estilos).toContain("max-width: none");
     expect(estilos).toContain("border-radius: 0");
@@ -190,6 +193,7 @@ describe("refinamiento premium aprobado", () => {
   it("lleva la consola premium del login de escritorio a móvil sin tocar su formulario", () => {
     const login = leer("src/components/LoginScreen.tsx");
     const estilos = leer("src/styles/design-system.css");
+    const estilosLogin = leer("src/styles/login-network.css");
 
     expect(login).toContain('className="login-right-panel"');
     expect(estilos).toContain("LOGIN MÓVIL — CONSOLA DE ACCESO VISTA360");
@@ -197,7 +201,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.login-logo \.login-tagline \{[\s\S]*?color: rgba\(191,219,254,\.60\);/);
     expect(estilos).toMatch(/\.login-card \{[\s\S]*?background: transparent;[\s\S]*?backdrop-filter: none;/);
     expect(estilos).toMatch(/\.login-card \.form-input \{[\s\S]*?min-height: 52px;[\s\S]*?background: #f8fafd;/);
-    expect(estilos).toMatch(/\.login-btn \{[\s\S]*?background: #2563eb;[\s\S]*?text-transform: uppercase;/);
+    expect(estilosLogin).toContain("background: linear-gradient(180deg, #2B6DE8 0%, #245FD2 100%)");
+    expect(estilos).toContain("text-transform: uppercase");
     expect(estilos).toContain(".login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel");
     expect(login).not.toContain("login-mobile-only-form");
   });

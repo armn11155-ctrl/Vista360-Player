@@ -163,9 +163,9 @@ export default function PixelGlobe() {
       const senoAngulo = Math.sin(angulo);
 
       const resplandor = contexto.createRadialGradient(centroX - radio * 0.18, centroY - radio * 0.16, radio * 0.08, centroX, centroY, radio * 1.34);
-      resplandor.addColorStop(0, "rgba(128, 187, 255, .25)");
-      resplandor.addColorStop(0.57, "rgba(48, 120, 230, .10)");
-      resplandor.addColorStop(0.82, "rgba(25, 76, 164, .055)");
+      resplandor.addColorStop(0, "rgba(128, 187, 255, .20)");
+      resplandor.addColorStop(0.57, "rgba(48, 120, 230, .075)");
+      resplandor.addColorStop(0.82, "rgba(25, 76, 164, .038)");
       resplandor.addColorStop(1, "rgba(8, 35, 86, 0)");
       contexto.fillStyle = resplandor;
       contexto.beginPath();
@@ -189,7 +189,7 @@ export default function PixelGlobe() {
       contexto.rotate(-0.22);
       contexto.setLineDash([3, 12]);
       contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.008;
-      contexto.strokeStyle = "rgba(205, 226, 255, .27)";
+      contexto.strokeStyle = "rgba(205, 226, 255, .18)";
       contexto.lineWidth = 1;
       contexto.beginPath();
       contexto.ellipse(0, 0, radio * 1.24, radio * 0.79, 0, 0, Math.PI * 2);
@@ -201,7 +201,7 @@ export default function PixelGlobe() {
       contexto.rotate(0.48);
       contexto.setLineDash([1.5, 15]);
       contexto.lineDashOffset = movimientoReducido.matches ? 0 : tiempo * 0.0055;
-      contexto.strokeStyle = "rgba(147, 197, 253, .13)";
+      contexto.strokeStyle = "rgba(147, 197, 253, .08)";
       contexto.lineWidth = 1;
       contexto.beginPath();
       contexto.ellipse(0, 0, radio * 1.12, radio * 0.93, 0, 0, Math.PI * 2);
@@ -226,7 +226,7 @@ export default function PixelGlobe() {
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
         const tamano = (punto.tierra ? 1.28 : 0.58) * proyectado.escala;
-        const opacidad = punto.tierra ? 0.21 + frente * 0.74 : 0.022 + frente * 0.088;
+        const opacidad = punto.tierra ? 0.21 + frente * 0.74 : 0.012 + frente * 0.055;
         contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
         contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
       }
@@ -236,7 +236,7 @@ export default function PixelGlobe() {
       contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.016;
       contexto.lineCap = "round";
       contexto.lineWidth = 1.35;
-      contexto.strokeStyle = "rgba(207, 228, 255, .64)";
+      contexto.strokeStyle = "rgba(207, 228, 255, .54)";
       contexto.shadowColor = "rgba(116, 173, 255, .52)";
       contexto.shadowBlur = 8;
       for (const [indiceOrigen, indiceDestino] of RUTAS) {
