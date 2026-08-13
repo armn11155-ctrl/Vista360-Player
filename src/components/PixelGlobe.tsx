@@ -164,9 +164,9 @@ export default function PixelGlobe() {
       // La composición de referencia reserva el tercio superior al mensaje y
       // centra el planeta en la zona inferior. El margen final mantiene la
       // circunferencia completa incluso en un MacBook de 13 pulgadas.
-      const radio = Math.min(ancho * 0.39, alto * 0.33);
-      const centroX = ancho * 0.5;
-      const centroY = alto * 0.65;
+      const radio = Math.min(ancho * 0.39, alto * 0.31);
+      const centroX = ancho * 0.506;
+      const centroY = alto * 0.654;
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.
@@ -175,9 +175,9 @@ export default function PixelGlobe() {
       const senoAngulo = Math.sin(angulo);
 
       const resplandor = contexto.createRadialGradient(centroX - radio * 0.18, centroY - radio * 0.16, radio * 0.08, centroX, centroY, radio * 1.34);
-      resplandor.addColorStop(0, "rgba(128, 187, 255, .20)");
-      resplandor.addColorStop(0.57, "rgba(48, 120, 230, .075)");
-      resplandor.addColorStop(0.82, "rgba(25, 76, 164, .038)");
+      resplandor.addColorStop(0, "rgba(128, 187, 255, .16)");
+      resplandor.addColorStop(0.57, "rgba(48, 120, 230, .06)");
+      resplandor.addColorStop(0.82, "rgba(25, 76, 164, .03)");
       resplandor.addColorStop(1, "rgba(8, 35, 86, 0)");
       contexto.fillStyle = resplandor;
       contexto.beginPath();
@@ -221,9 +221,9 @@ export default function PixelGlobe() {
       contexto.restore();
 
       const esfera = contexto.createRadialGradient(centroX - radio * 0.34, centroY - radio * 0.36, radio * 0.035, centroX + radio * 0.12, centroY + radio * 0.1, radio * 1.06);
-      esfera.addColorStop(0, "rgba(130, 188, 255, .24)");
-      esfera.addColorStop(0.32, "rgba(67, 139, 239, .15)");
-      esfera.addColorStop(0.69, "rgba(19, 68, 156, .105)");
+      esfera.addColorStop(0, "rgba(130, 188, 255, .18)");
+      esfera.addColorStop(0.32, "rgba(67, 139, 239, .12)");
+      esfera.addColorStop(0.69, "rgba(19, 68, 156, .08)");
       esfera.addColorStop(1, "rgba(3, 18, 48, .055)");
       contexto.fillStyle = esfera;
       contexto.strokeStyle = "rgba(206, 227, 255, .24)";
@@ -265,8 +265,8 @@ export default function PixelGlobe() {
         const tamano = 0.48 * proyectado.escala;
         capaOceano.rect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
       }
-      acumularGrupo(PUNTOS_TIERRA, capasTierra, 1.08);
-      acumularGrupo(PUNTOS_FRONTERA, capasFrontera, 1.22);
+      acumularGrupo(PUNTOS_TIERRA, capasTierra, 1.16);
+      acumularGrupo(PUNTOS_FRONTERA, capasFrontera, 1.30);
 
       contexto.fillStyle = "rgba(111, 169, 238, .055)";
       contexto.fill(capaOceano);

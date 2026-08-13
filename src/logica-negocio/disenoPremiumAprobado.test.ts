@@ -58,7 +58,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("CIERRE EDITORIAL DEL ACCESO");
     expect(estilos).toMatch(/\.login-network-kicker,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
     expect(estilos).toMatch(/\.login-right-panel \.login-logo \{[\s\S]*?position: static;[\s\S]*?max-width: 340px;[\s\S]*?margin: 0 auto 30px;[\s\S]*?text-align: center;[\s\S]*?transform: translateY\(-10px\);/);
-    expect(estilos).toMatch(/\.login-network-copy h1 \{[\s\S]*?font-size: clamp\(44px, 4\.15vw, 58px\);[\s\S]*?text-shadow:/);
+    expect(estilos).toMatch(/\.login-network-copy h1 \{[\s\S]*?font-size: clamp\(52px, 5\.2vw, 60px\);[\s\S]*?text-shadow:/);
     expect(estilos).toMatch(/\.login-network-message > p \{[\s\S]*?display: block;[\s\S]*?max-width: 430px;/);
     expect(estilos).not.toContain(".jpg");
     expect(estilos).not.toContain(".png");
@@ -77,9 +77,9 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('from "../data/naturalEarthGlobe"');
     expect(globo).toContain("MASCARA_FRONTERAS_GLOBO");
     expect(globo).not.toContain("const CONTINENTES");
-    expect(globo).toContain("const radio = Math.min(ancho * 0.39, alto * 0.33)");
-    expect(globo).toContain("const centroX = ancho * 0.5");
-    expect(globo).toContain("const centroY = alto * 0.65");
+    expect(globo).toContain("const radio = Math.min(ancho * 0.39, alto * 0.31)");
+    expect(globo).toContain("const centroX = ancho * 0.506");
+    expect(globo).toContain("const centroY = alto * 0.654");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
     expect(globo).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
     expect(globo).toContain("window.requestAnimationFrame");
@@ -115,7 +115,7 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
-    expect(globo).toContain("ancho * 0.5");
+    expect(globo).toContain("ancho * 0.506");
     expect(globo).toContain("ancho * 0.39");
     expect(globo).toContain("-0.62 + tiempo * 0.000092");
     expect(globo).not.toContain('globalCompositeOperation = "destination-in"');

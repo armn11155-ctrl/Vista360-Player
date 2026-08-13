@@ -579,9 +579,14 @@
 
   .login-left-panel {
     background:
-      radial-gradient(circle at 26% 56%, rgba(37,112,226,.22), transparent 38%),
-      radial-gradient(circle at 78% 18%, rgba(18,65,145,.20), transparent 42%),
-      linear-gradient(145deg, #0b326f 0%, #08275c 48%, #041329 100%);
+      radial-gradient(circle at 22% 58%, rgba(0,88,210,.22), transparent 42%),
+      radial-gradient(circle at 12% 15%, rgba(0,51,128,.12), transparent 40%),
+      linear-gradient(112deg, #01306f 0%, #01265d 48%, #011f4b 100%);
+  }
+
+  .login-left-panel::after {
+    opacity: .20;
+    background: linear-gradient(104deg, transparent 28%, rgba(24,132,255,.13) 50%, transparent 72%);
   }
 
   .login-right-panel .login-logo {
@@ -605,7 +610,7 @@
   }
 
   .login-network-copy {
-    top: clamp(54px, 7.6vh, 76px);
+    top: clamp(64px, 8.8vh, 76px);
     right: auto;
     left: clamp(58px, 5.4vw, 82px);
     width: min(560px, 62%);
@@ -632,7 +637,7 @@
   .login-network-copy h1 {
     max-width: 560px;
     color: #fff;
-    font-size: clamp(44px, 4.15vw, 58px);
+    font-size: clamp(52px, 5.2vw, 60px);
     font-weight: 720;
     line-height: 1;
     letter-spacing: -.052em;
@@ -649,8 +654,8 @@
     display: block;
     max-width: 430px;
     margin: 18px auto 0 0;
-    color: rgba(219,234,254,.74);
-    font-size: 14px;
+    color: rgba(219,234,254,.78);
+    font-size: 15px;
     font-weight: 520;
     line-height: 1.5;
   }
@@ -659,11 +664,11 @@
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-network-copy {
     right: auto;
-    left: 48px;
+    left: 58px;
     width: min(470px, 72%);
   }
 
   .login-network-copy h1 {
-    font-size: clamp(40px, 4.3vw, 50px);
+    font-size: clamp(52px, 5.2vw, 58px);
   }
 }
