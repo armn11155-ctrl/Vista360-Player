@@ -193,7 +193,7 @@
     left: 0;
     right: 0;
     z-index: 999;
-    background: #B45309;
+    background: #0B3F8A;
     color: #FFFFFF;
     font-size: 12px;
     font-weight: 600;
@@ -2844,7 +2844,7 @@
   }
   .profile-metric-row.blue .profile-metric-icon { background: #EFF6FF; color: #0877FF; }
   .profile-metric-row.green .profile-metric-icon { background: #ECFDF5; color: #16A34A; }
-  .profile-metric-row.orange .profile-metric-icon { background: #EAF3FF; color: #0B3F8A; }
+  .profile-metric-row.attention .profile-metric-icon { background: #EAF3FF; color: #0B3F8A; }
   .profile-metric-label {
     flex: 1;
     min-width: 0;
@@ -2862,7 +2862,7 @@
   }
   .profile-metric-row.blue strong { color: #0877FF; }
   .profile-metric-row.green strong { color: #16A34A; }
-  .profile-metric-row.orange strong { color: #0B3F8A; }
+  .profile-metric-row.attention strong { color: #0B3F8A; }
   .storage-usage-bar-wrap {
     padding: 4px 18px 16px;
   }
@@ -4622,8 +4622,8 @@
     background: rgba(34,197,94,.12);
   }
   .report-email-preview-chip.is-warn {
-    color: #B45309;
-    background: rgba(180,83,9,.12);
+    color: #0B4E9D;
+    background: rgba(8,119,255,.10);
   }
   .report-email-preview-actions {
     display: flex;

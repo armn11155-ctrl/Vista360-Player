@@ -10,7 +10,7 @@ interface Props {
 /** Semáforo de urgencia según cuántos días faltan. */
 function colorUrgencia(dias: number) {
   if (dias <= 7) return { fondo: "rgba(239,68,68,0.10)", borde: "rgba(239,68,68,0.28)", texto: "#DC2626" };
-  if (dias <= 21) return { fondo: "rgba(245,158,11,0.10)", borde: "rgba(245,158,11,0.30)", texto: "#B45309" };
+  if (dias <= 21) return { fondo: "rgba(79,70,229,0.09)", borde: "rgba(79,70,229,0.25)", texto: "#4338CA" };
   return { fondo: "rgba(8,119,255,0.08)", borde: "rgba(8,119,255,0.22)", texto: "#0877FF" };
 }
 
@@ -95,24 +95,24 @@ function SeccionTitulo({ icon, titulo, sub }: { icon: ReactNode; titulo: string;
 }
 
 const ICONO_COBRO = (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="8.5" />
     <path d="M12 7.5v9M15 9.8c0-1.3-1.3-2.3-3-2.3s-3 .9-3 2.1c0 3 6 1.4 6 4.4 0 1.2-1.3 2.1-3 2.1s-3-1-3-2.3" />
   </svg>
 );
 const ICONO_LLAMAR = (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="M6.6 10.8c1.4 2.7 3.6 4.9 6.3 6.3l2.1-2.1c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.6c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1L6.6 10.8Z" />
   </svg>
 );
 const ICONO_INVENTARIO = (
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4.5" width="18" height="11" rx="1.6" />
     <path d="M8.5 20h7M12 15.5V20" />
   </svg>
 );
 const ICONO_OCUPACION = (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 19V10M10 19V5M16 19v-7M20 19H4" />
   </svg>
 );
@@ -192,7 +192,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
             : vacio
               ? "#94A3B8"
               : llena
-                ? "#F59E0B"
+                ? "#2563EB"
                 : "#16A34A",
         }} />
         <span style={{ flex: 1, minWidth: 0 }}>
@@ -201,8 +201,8 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
             <span style={{
               marginLeft: 7, fontSize: 11, fontWeight: 800, letterSpacing: 0.3,
               verticalAlign: "middle", padding: "2px 6px", borderRadius: 999,
-              color: esLona || esUnipolar ? "#B45309" : "#0877FF",
-              background: esLona || esUnipolar ? "rgba(245,158,11,0.13)" : "rgba(8,119,255,0.10)",
+              color: esLona || esUnipolar ? "#4338CA" : "#0877FF",
+              background: esLona || esUnipolar ? "rgba(79,70,229,0.10)" : "rgba(8,119,255,0.10)",
             }}>
               {esUnipolar ? "UNIPOLAR" : esLona ? "LONA" : "LED"}
             </span>
@@ -262,7 +262,7 @@ export default function Ocupacion({ onBack }: Props) {
   }, [state, filtro]);
 
   return (
-    <div className="admin-tool-screen">
+    <div className="admin-tool-screen ocupacion-screen">
       <div className="detail-header">
         <div className="back-btn" onClick={onBack}>
           <BackChevron />

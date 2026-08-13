@@ -197,8 +197,8 @@ export default function Papelera({ onBack }: Props) {
                   {item.requiereRecuperacionAdicional && (
                     <div
                       style={{
-                        background: "rgba(217,119,6,0.1)", border: "1px solid rgba(217,119,6,0.28)",
-                        color: "#B45309", fontSize: 12, lineHeight: 1.5, padding: "8px 12px",
+                        background: "rgba(8,119,255,0.08)", border: "1px solid rgba(8,119,255,0.24)",
+                        color: "#0B4E9D", fontSize: 12, lineHeight: 1.5, padding: "8px 12px",
                         borderRadius: 10, marginBottom: 12,
                       }}
                     >

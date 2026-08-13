@@ -476,7 +476,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                   ))}
                 </div>
                 {tipo && !TIPOS_PANEL.some((t) => t.tipo === tipo) ? (
-                  <div style={{ fontSize: 11, color: "#B45309", marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: "#0B4E9D", marginTop: 8 }}>
                     Este panel tiene un tipo antiguo ("{tipo}") que ya no es una opción -- elige uno de arriba para corregirlo.
                   </div>
                 ) : null}

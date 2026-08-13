@@ -29,7 +29,7 @@ const ICONOS = {
 };
 
 const COLORES_BG = {
-  solicitud_pendiente: "#FEF3C7",
+  solicitud_pendiente: "#EAF3FF",
   contrato_por_vencer: "#FEE2E2",
 };
 

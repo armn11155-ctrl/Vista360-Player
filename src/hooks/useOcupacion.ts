@@ -98,6 +98,46 @@ const VIGENCIA_OCUPACION_MS = 120_000;
 let cacheOcupacion: { datos: ResumenOcupacion; actualizadoEn: number } | null = null;
 let ocupacionEnCurso: Promise<ResumenOcupacion> | null = null;
 
+/**
+ * Cloud Functions y frontend no siempre se publican en el mismo instante.
+ * Durante esa ventana una versión anterior de `resumenOcupacion` puede no
+ * incluir los bloques añadidos después (por ejemplo `cobranza` o métricas de
+ * unipolares). La pantalla no debe caerse por eso: completa únicamente los
+ * campos ausentes, sin inventar datos ni realizar otra lectura.
+ */
+export function normalizarResumenOcupacion(datos: ResumenOcupacion): ResumenOcupacion {
+  const totales = datos?.totales ?? ({} as ResumenOcupacion["totales"]);
+  const cobranza = datos?.cobranza;
+  return {
+    ...datos,
+    paneles: Array.isArray(datos?.paneles) ? datos.paneles : [],
+    porVencer: Array.isArray(datos?.porVencer) ? datos.porVencer : [],
+    libres: Array.isArray(datos?.libres) ? datos.libres : [],
+    totales: {
+      paneles: Number(totales.paneles ?? 0),
+      operativos: Number(totales.operativos ?? 0),
+      enMantenimiento: Number(totales.enMantenimiento ?? 0),
+      trabajando: Number(totales.trabajando ?? 0),
+      libres: Number(totales.libres ?? 0),
+      ocupacionPct: Number(totales.ocupacionPct ?? 0),
+      anunciantesActivos: Number(totales.anunciantesActivos ?? 0),
+      ingresoActivo: Number(totales.ingresoActivo ?? 0),
+      seLiberanEnVentana: Number(totales.seLiberanEnVentana ?? 0),
+      lonas: Number(totales.lonas ?? 0),
+      lonasLibres: Number(totales.lonasLibres ?? 0),
+      ledConEspacio: Number(totales.ledConEspacio ?? 0),
+      unipolares: Number(totales.unipolares ?? 0),
+      unipolaresConEspacio: Number(totales.unipolaresConEspacio ?? 0),
+    },
+    cobranza: {
+      facturas: Array.isArray(cobranza?.facturas) ? cobranza.facturas : [],
+      total: Number(cobranza?.total ?? 0),
+      vencidas: Number(cobranza?.vencidas ?? 0),
+      totalVencido: Number(cobranza?.totalVencido ?? 0),
+    },
+  };
+}
+
 function pedirOcupacion(forzar: boolean): Promise<ResumenOcupacion> {
   if (!forzar && cacheOcupacion && Date.now() - cacheOcupacion.actualizadoEn < VIGENCIA_OCUPACION_MS) {
     return Promise.resolve(cacheOcupacion.datos);
@@ -108,8 +148,9 @@ function pedirOcupacion(forzar: boolean): Promise<ResumenOcupacion> {
   const fn = httpsCallable<Record<string, never>, ResumenOcupacion>(cloudFunctions, "resumenOcupacion");
   ocupacionEnCurso = fn()
     .then(({ data }) => {
-      cacheOcupacion = { datos: data, actualizadoEn: Date.now() };
-      return data;
+      const normalizados = normalizarResumenOcupacion(data);
+      cacheOcupacion = { datos: normalizados, actualizadoEn: Date.now() };
+      return normalizados;
     })
     .finally(() => { ocupacionEnCurso = null; });
   return ocupacionEnCurso;

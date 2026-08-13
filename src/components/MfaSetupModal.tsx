@@ -114,7 +114,7 @@ export function MfaSetupModal({ onCerrar }: { onCerrar: () => void }) {
         <h3 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 800 }}>Autenticación en dos pasos</h3>
 
         {sinVerificar && (
-          <p style={{ fontSize: 13, color: "#B45309", background: "#FEF3C7", padding: 10, borderRadius: 10, lineHeight: 1.45 }}>
+          <p style={{ fontSize: 13, color: "#0B4E9D", background: "#EAF3FF", padding: 10, borderRadius: 10, lineHeight: 1.45 }}>
             Firebase exige que el correo de la cuenta esté verificado antes de poder
             activar el segundo factor. Verifica el correo de esta cuenta y vuelve a
             intentarlo.
@@ -129,7 +129,7 @@ export function MfaSetupModal({ onCerrar }: { onCerrar: () => void }) {
                 : "Añade un código de un solo uso a tu inicio de sesión. Necesitarás una aplicación como Google Authenticator o Microsoft Authenticator."}
             </p>
             {!yaEnrolado && (
-              <p style={{ fontSize: 12, color: "#B45309", background: "#FEF3C7", padding: 10, borderRadius: 10, lineHeight: 1.45 }}>
+              <p style={{ fontSize: 12, color: "#0B4E9D", background: "#EAF3FF", padding: 10, borderRadius: 10, lineHeight: 1.45 }}>
                 Antes de activarlo, asegúrate de poder recuperar la cuenta si pierdes el
                 teléfono. Lee el procedimiento de recuperación con tu Gerente.
               </p>

@@ -44,7 +44,7 @@ type ProfileIcon =
   | "logout"
   | "lock";
 
-type MetricTone = "blue" | "green" | "orange";
+type MetricTone = "blue" | "green" | "attention";
 
 function Icon({ type }: { type: ProfileIcon }) {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -490,7 +490,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
           <div className="profile-metric-card">
             <ProfileMetricRow icon="campaign" label="Campañas activas" value={String(activas)} tone="blue" />
             <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
-            <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="orange" />
+            <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="attention" />
           </div>
         </ProfileSection>
 
