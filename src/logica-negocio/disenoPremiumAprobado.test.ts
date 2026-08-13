@@ -38,7 +38,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("border-right: 1px solid rgba(147,197,253,.18)");
     expect(estilos).toMatch(/\.login-left-panel \{[\s\S]*?linear-gradient\(145deg, #0A2C66 0%, #0A3B8F 46%, #071D48 100%\);/);
     expect(estilos).toMatch(/\.login-right-panel \{[\s\S]*?linear-gradient\(155deg, #07111F 0%, #030811 58%, #050C18 100%\);/);
-    expect(estilos).toMatch(/\.login-network-globe-canvas \{[\s\S]*?filter: drop-shadow\(0 28px 58px rgba\(1,8,24,\.22\)\)/);
+    expect(estilos).toMatch(/\.login-network-globe-canvas \{[\s\S]*?filter: drop-shadow\(0 34px 72px rgba\(1,8,24,\.30\)\)/);
     expect(estilos).toMatch(/\.login-access-kicker strong \{[\s\S]*?display: block;[\s\S]*?color: #FFFFFF;/);
     expect(estilos).toMatch(/\.login-btn \{[\s\S]*?background: #2563EB;/);
     expect(estilos).toContain("min-height: 100dvh");
@@ -92,12 +92,12 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
-    expect(globo).toContain("ancho * 0.23");
-    expect(globo).toContain("ancho * 0.33");
-    expect(globo).toContain("-0.55 - tiempo * 0.000105");
+    expect(globo).toContain("ancho * 0.285");
+    expect(globo).toContain("ancho * 0.385");
+    expect(globo).toContain("-0.62 + tiempo * 0.000092");
     expect(globo).not.toContain('globalCompositeOperation = "destination-in"');
     expect(globo).not.toContain("const mascaraCircular");
-    expect(globo).toContain('strokeStyle = "rgba(198, 221, 255, .20)"');
+    expect(globo).toContain('strokeStyle = "rgba(206, 227, 255, .24)"');
     expect(globo).not.toContain("fetch(");
   });
 

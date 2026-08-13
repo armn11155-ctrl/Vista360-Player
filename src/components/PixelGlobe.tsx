@@ -152,40 +152,69 @@ export default function PixelGlobe() {
       // En escritorio el formulario vive a la izquierda y la narrativa a la
       // derecha; el planeta se apoya en el lado opuesto al texto para que
       // ambos respiren sin superponerse.
-      const centroX = ancho * 0.23;
-      const centroY = alto * 0.52;
-      const radio = Math.min(ancho * 0.33, alto * 0.405);
-      const angulo = movimientoReducido.matches ? -0.55 : -0.55 - tiempo * 0.000105;
+      const centroX = ancho * 0.285;
+      const centroY = alto * 0.535;
+      const radio = Math.min(ancho * 0.385, alto * 0.455);
+      // La longitud avanza en sentido positivo para que el volumen visual
+      // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
+      // competir con el formulario ni marear en pantallas grandes.
+      const angulo = movimientoReducido.matches ? -0.62 : -0.62 + tiempo * 0.000092;
       const cosenoAngulo = Math.cos(angulo);
       const senoAngulo = Math.sin(angulo);
 
-      const resplandor = contexto.createRadialGradient(centroX, centroY, radio * 0.12, centroX, centroY, radio * 1.3);
-      resplandor.addColorStop(0, "rgba(102, 169, 255, .19)");
-      resplandor.addColorStop(0.72, "rgba(43, 112, 222, .07)");
-      resplandor.addColorStop(1, "rgba(12, 47, 105, 0)");
+      const resplandor = contexto.createRadialGradient(centroX - radio * 0.18, centroY - radio * 0.16, radio * 0.08, centroX, centroY, radio * 1.34);
+      resplandor.addColorStop(0, "rgba(128, 187, 255, .25)");
+      resplandor.addColorStop(0.57, "rgba(48, 120, 230, .10)");
+      resplandor.addColorStop(0.82, "rgba(25, 76, 164, .055)");
+      resplandor.addColorStop(1, "rgba(8, 35, 86, 0)");
       contexto.fillStyle = resplandor;
       contexto.beginPath();
-      contexto.arc(centroX, centroY, radio * 1.3, 0, Math.PI * 2);
+      contexto.arc(centroX, centroY, radio * 1.34, 0, Math.PI * 2);
       contexto.fill();
+
+      // Halo atmosférico doble: crea profundidad sin usar filtros costosos ni
+      // una segunda animación. La luz principal cae desde arriba a la izquierda.
+      contexto.save();
+      contexto.strokeStyle = "rgba(202, 225, 255, .18)";
+      contexto.lineWidth = Math.max(1, radio * 0.012);
+      contexto.shadowColor = "rgba(96, 165, 250, .30)";
+      contexto.shadowBlur = Math.max(9, radio * 0.055);
+      contexto.beginPath();
+      contexto.arc(centroX, centroY, radio * 1.012, 0, Math.PI * 2);
+      contexto.stroke();
+      contexto.restore();
 
       contexto.save();
       contexto.translate(centroX, centroY);
       contexto.rotate(-0.22);
-      contexto.setLineDash([3, 11]);
+      contexto.setLineDash([3, 12]);
       contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.008;
-      contexto.strokeStyle = "rgba(205, 226, 255, .24)";
+      contexto.strokeStyle = "rgba(205, 226, 255, .27)";
       contexto.lineWidth = 1;
       contexto.beginPath();
-      contexto.ellipse(0, 0, radio * 1.22, radio * 0.78, 0, 0, Math.PI * 2);
+      contexto.ellipse(0, 0, radio * 1.24, radio * 0.79, 0, 0, Math.PI * 2);
       contexto.stroke();
       contexto.restore();
 
-      const esfera = contexto.createRadialGradient(centroX - radio * 0.28, centroY - radio * 0.32, radio * 0.05, centroX, centroY, radio);
-      esfera.addColorStop(0, "rgba(99, 165, 255, .17)");
-      esfera.addColorStop(0.55, "rgba(28, 92, 193, .10)");
-      esfera.addColorStop(1, "rgba(5, 26, 67, .04)");
+      contexto.save();
+      contexto.translate(centroX, centroY);
+      contexto.rotate(0.48);
+      contexto.setLineDash([1.5, 15]);
+      contexto.lineDashOffset = movimientoReducido.matches ? 0 : tiempo * 0.0055;
+      contexto.strokeStyle = "rgba(147, 197, 253, .13)";
+      contexto.lineWidth = 1;
+      contexto.beginPath();
+      contexto.ellipse(0, 0, radio * 1.12, radio * 0.93, 0, 0, Math.PI * 2);
+      contexto.stroke();
+      contexto.restore();
+
+      const esfera = contexto.createRadialGradient(centroX - radio * 0.34, centroY - radio * 0.36, radio * 0.035, centroX + radio * 0.12, centroY + radio * 0.1, radio * 1.06);
+      esfera.addColorStop(0, "rgba(130, 188, 255, .24)");
+      esfera.addColorStop(0.32, "rgba(67, 139, 239, .15)");
+      esfera.addColorStop(0.69, "rgba(19, 68, 156, .105)");
+      esfera.addColorStop(1, "rgba(3, 18, 48, .055)");
       contexto.fillStyle = esfera;
-      contexto.strokeStyle = "rgba(198, 221, 255, .20)";
+      contexto.strokeStyle = "rgba(206, 227, 255, .24)";
       contexto.lineWidth = 1;
       contexto.beginPath();
       contexto.arc(centroX, centroY, radio, 0, Math.PI * 2);
@@ -196,8 +225,8 @@ export default function PixelGlobe() {
         const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
-        const tamano = (punto.tierra ? 1.18 : 0.54) * proyectado.escala;
-        const opacidad = punto.tierra ? 0.18 + frente * 0.72 : 0.018 + frente * 0.082;
+        const tamano = (punto.tierra ? 1.28 : 0.58) * proyectado.escala;
+        const opacidad = punto.tierra ? 0.21 + frente * 0.74 : 0.022 + frente * 0.088;
         contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
         contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
       }
@@ -206,8 +235,8 @@ export default function PixelGlobe() {
       contexto.setLineDash([4, 8]);
       contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.016;
       contexto.lineCap = "round";
-      contexto.lineWidth = 1.25;
-      contexto.strokeStyle = "rgba(196, 220, 255, .58)";
+      contexto.lineWidth = 1.35;
+      contexto.strokeStyle = "rgba(207, 228, 255, .64)";
       contexto.shadowColor = "rgba(116, 173, 255, .52)";
       contexto.shadowBlur = 8;
       for (const [indiceOrigen, indiceDestino] of RUTAS) {
@@ -254,7 +283,7 @@ export default function PixelGlobe() {
           etiqueta: ETIQUETAS[indice % ETIQUETAS.length],
           punto: proyectar(vector, cosenoAngulo, senoAngulo, centroX, centroY, radio),
         }))
-        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.06 && punto.x < ancho * 0.55)
+        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.045 && punto.x < ancho * 0.665)
         .sort((a, b) => b.punto.z - a.punto.z);
       const seleccionados: typeof candidatos = [];
       for (const candidato of candidatos) {
@@ -276,7 +305,7 @@ export default function PixelGlobe() {
         contexto.textBaseline = "middle";
         const anchoEtiqueta = Math.ceil(contexto.measureText(texto.toUpperCase()).width) + 34;
         const altoEtiqueta = 30;
-        const limiteDerecho = ancho * 0.58;
+        const limiteDerecho = ancho * 0.70;
         const espacioDerecho = limiteDerecho - candidato.punto.x;
         const aLaDerecha = espacioDerecho >= anchoEtiqueta + 16;
         const xEtiqueta = aLaDerecha
