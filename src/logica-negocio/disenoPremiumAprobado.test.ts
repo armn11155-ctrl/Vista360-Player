@@ -159,6 +159,7 @@ describe("refinamiento premium aprobado", () => {
 
   it("mantiene el refinamiento de selector, gestión y usuarios validado en Safari", () => {
     const selector = leer("src/components/AdminClientPicker.tsx");
+    const estilosApp = leer("src/styles/app.css");
     const sistema = leer("src/styles/design-system.css");
     expect(sistema).toContain("REFINAMIENTO VISUAL VALIDADO EN SAFARI");
     expect(sistema).toMatch(/\.admin-picker-editorial-orbit \{[\s\S]*?width: 176px;[\s\S]*?height: 176px;[\s\S]*?border-radius: 50%;/);
@@ -172,6 +173,14 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.admin-picker-management-screen \.admin-picker-management-grid \{[\s\S]*?border-color: #000 !important;/);
     expect(sistema).toMatch(/\.accesos-screen \.accesos-users-list \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
     expect(sistema).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(sistema).toMatch(/\.screen\.active > \*,\s*\.admin-picker-shell \{[\s\S]*?var\(--v360-motion-base\)/);
+    expect(estilosApp).toMatch(/\.screens \{ flex: 1; overflow: hidden; position: relative; \}/);
+    expect(estilosApp).toMatch(/\.admin-picker-modal-backdrop \{[\s\S]*?animation: dialogo-entrada-fondo var\(--v360-motion-fast/);
+    expect(estilosApp).toMatch(/\.admin-picker-modal \{[\s\S]*?animation: dialogo-entrada var\(--v360-motion-base/);
+    expect(selector).toContain('aria-haspopup="dialog"');
+    expect(selector).toContain('role="dialog"');
+    expect(selector).toContain('aria-modal="true"');
+    expect(selector).toContain('if (event.key === "Escape") setMenuCliente(null)');
   });
 
   it("usa controles semánticos para el filtro de campañas", () => {

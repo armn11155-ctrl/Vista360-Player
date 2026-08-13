@@ -2387,15 +2387,17 @@ a {
   background-image: var(--v360-canvas-gradient);
 }
 
-/* El cambio de sección responde inmediatamente, pero sin la sensación de
-   "diapositiva". Cuatro píxeles de recorrido bastan para dar continuidad. */
-.screen.active > * {
+/* El cambio de superficie responde inmediatamente, sin sensación de
+   "diapositiva". Selector y rutas comparten una sola entrada corta y
+   nunca parten de opacity:0, por lo que no revelan el fondo intermedio. */
+.screen.active > *,
+.admin-picker-shell {
   transform-origin: 50% 0;
-  animation: v360-screen-enter var(--v360-motion-slow) var(--v360-ease) both;
+  animation: v360-screen-enter var(--v360-motion-base) var(--v360-ease) both;
 }
 
 @keyframes v360-screen-enter {
-  from { opacity: .72; transform: translateY(4px); }
+  from { opacity: .86; transform: translateY(3px); }
   /* Termina en `none`, no en translateY(0): así la raíz de la pantalla
      no conserva un containing block que pueda alterar modales fixed. */
   to { opacity: 1; transform: none; }
@@ -2620,7 +2622,8 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .screen.active > * {
+  .screen.active > *,
+  .admin-picker-shell {
     animation: none;
   }
 }

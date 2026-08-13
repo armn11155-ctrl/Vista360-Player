@@ -463,7 +463,10 @@
      podía crear su propia costura — quitarla es más simple y más sólido. */
 
   /* Screen container */
-  .screens { flex: 1; overflow: hidden; position: relative; animation: appFadeIn .3s ease; }
+  /* La raiz no vuelve a desvanecerse desde opacity:0. Cada vista ya tiene
+     la entrada breve del sistema visual; animar tambien este contenedor
+     revelaba el fondo intermedio al pasar del selector al portal. */
+  .screens { flex: 1; overflow: hidden; position: relative; }
   /* Cada pantalla y su div-raíz directo deben llenar el 100% del espacio
      disponible en columna — así content-area (flex:1) sabe su límite y
      el scroll nunca va más allá del contenido real. */
@@ -5054,7 +5057,9 @@
     background-repeat: no-repeat;
     background-size: cover, cover, auto 105%;
     background-position: center, center, 50% bottom;
-    animation: appFadeIn .3s ease;
+    /* La entrada breve y comun con el portal vive en design-system.css;
+       evitar un segundo fade desde cero elimina el frame oscuro. */
+    animation: none;
   }
   .admin-picker-shell::after {
     content: none;
@@ -5846,6 +5851,7 @@
     align-items: flex-end;
     justify-content: center;
     padding: 18px;
+    animation: dialogo-entrada-fondo var(--v360-motion-fast, 120ms) ease-out both;
   }
   .admin-picker-modal {
     width: min(420px, 100%);
@@ -5854,6 +5860,7 @@
     padding: 24px;
     border: 1px solid rgba(147,197,253,.20);
     box-shadow: 0 34px 90px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.08);
+    animation: dialogo-entrada var(--v360-motion-base, 180ms) var(--v360-ease, cubic-bezier(.2,.75,.25,1)) both;
   }
   .admin-picker-modal-kicker {
     color: #0877FF;
@@ -5887,7 +5894,13 @@
     font-weight: 900;
     cursor: pointer;
     margin-top: 9px;
+    transition:
+      background-color var(--v360-motion-fast, 120ms) ease,
+      border-color var(--v360-motion-fast, 120ms) ease,
+      color var(--v360-motion-fast, 120ms) ease,
+      transform var(--v360-motion-fast, 120ms) ease;
   }
+  .admin-picker-modal-action:active:not(:disabled) { transform: translateY(1px); }
   .admin-picker-modal-action.danger {
     background: #EF4444;
     color: #FFFFFF;

@@ -472,6 +472,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                       }}
                       disabled={busy}
                       aria-label="Configuración"
+                      aria-haspopup="dialog"
                       title="Configuración"
                     >
                       <img src="/setting-2-svgrepo-com.svg" decoding="async" alt="" draggable={false} />
@@ -527,10 +528,20 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
       {menuCliente && (
         <div className="admin-picker-modal-backdrop" onClick={() => setMenuCliente(null)}>
-          <div className="admin-picker-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="admin-picker-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="admin-picker-modal-title"
+            aria-describedby="admin-picker-modal-copy"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setMenuCliente(null);
+            }}
+          >
             <div className="admin-picker-modal-kicker">Configuración</div>
-            <div className="admin-picker-modal-title">{menuCliente.empresa}</div>
-            <div className="admin-picker-modal-copy">
+            <div id="admin-picker-modal-title" className="admin-picker-modal-title">{menuCliente.empresa}</div>
+            <div id="admin-picker-modal-copy" className="admin-picker-modal-copy">
               Al eliminar ahora se moverá a Archivados. Desde Archivados podrás recuperarlo o borrarlo definitivamente.
             </div>
             <button
@@ -541,7 +552,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             >
               Eliminar perfil
             </button>
-            <button type="button" className="admin-picker-modal-action secondary" onClick={() => setMenuCliente(null)}>
+            <button type="button" className="admin-picker-modal-action secondary" onClick={() => setMenuCliente(null)} autoFocus>
               Cancelar
             </button>
           </div>
