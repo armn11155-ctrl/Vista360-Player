@@ -275,62 +275,6 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
  * abriera después del `await`, el navegador ya no lo considera una
  * acción de la persona y lo bloquea como si fuera publicidad.
  */
-/**
- * Muestra el PDF en la pestaña YA ABIERTA, con el nombre en el título.
- *
- * Navegar directamente a la URL `blob:` funciona, pero deja la pestaña
- * llamándose "untitled": un `blob:` no lleva nombre de archivo, así que
- * el visor de Chrome no tiene de dónde sacarlo. Con varias facturas
- * abiertas no hay forma de saber cuál es cuál.
- *
- * Metiendo el PDF en un <embed> dentro de una página propia se controla
- * el <title>, y la barra de direcciones sigue mostrando el dominio de la
- * aplicación en vez de la URL firmada de R2.
- */
-function mostrarPdfConTitulo(ventana: Window, urlLocal: string, nombre: string): void {
-  const titulo = (nombre || "Documento").replace(/\.pdf$/i, "");
-  // Se escapa: el nombre sale de datos (el número o la fecha de la
-  // factura) y aquí se está construyendo HTML.
-  const seguro = titulo.replace(/[&<>"']/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string
-  );
-  try {
-    // SIN bloque <style> y SIN atributos style=, a proposito.
-    //
-    // Esta pestaña se abre con window.open("") desde nuestro origen, asi
-    // que HEREDA nuestra Content-Security-Policy. Un <style> escrito aqui
-    // no esta en la lista de hashes de la CSP (no puede estarlo: se
-    // construye en tiempo de ejecucion), asi que el navegador lo
-    // bloquearia y el PDF saldria sin fondo y sin tamaño -- roto en la
-    // practica. Los estilos se aplican por CSSOM justo debajo, que la CSP
-    // no bloquea. Lo detecto una prueba con navegador real antes de
-    // publicar el enforcement.
-    ventana.document.open();
-    ventana.document.write(
-      '<!doctype html><html lang="es"><head><meta charset="utf-8">' +
-        `<title>${seguro}</title></head><body>` +
-        `<embed src="${urlLocal}" type="application/pdf"></body></html>`
-    );
-    ventana.document.close();
-    const doc = ventana.document;
-    for (const el of [doc.documentElement, doc.body]) {
-      el.style.margin = "0";
-      el.style.height = "100%";
-      el.style.background = "#050a12";
-    }
-    const visor = doc.querySelector("embed");
-    if (visor) {
-      visor.style.width = "100%";
-      visor.style.height = "100%";
-      visor.style.border = "0";
-    }
-  } catch {
-    // Si por lo que sea no se puede escribir en la pestaña, se navega a
-    // la URL del blob como antes: se pierde el título, no el documento.
-    ventana.location.href = urlLocal;
-  }
-}
-
 export async function verArchivo(url: string, _nombre: string): Promise<void> {
   if (!url) return;
 
@@ -480,7 +424,12 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
     );
 
     if (ventana && !ventana.closed) {
-      mostrarPdfConTitulo(ventana, urlLocal, _nombre);
+      // Navegar al blob directamente deja que Chrome use su visor PDF
+      // nativo. Incrustarlo con <embed> en un documento escrito en memoria
+      // puede mostrar "contenido bloqueado" cuando las protecciones de
+      // Cloudflare/CSP están activas. La URL sigue siendo un blob local:
+      // no se expone la firma de R2 ni se relaja ninguna cabecera.
+      ventana.location.href = urlLocal;
       // Repetirlo al terminar cubre Safari cuando el cambio de contenido
       // hizo que la pestaña perdiera el foco durante la espera.
       try {

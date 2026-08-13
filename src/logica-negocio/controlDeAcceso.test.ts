@@ -192,6 +192,13 @@ describe("mínimo privilegio: cada rol solo lo que le toca", () => {
     expect(c).toContain("Solo el equipo interno puede subir archivos.");
   });
 
+  it("la subida de fotos de reporte por servidor también exige personal interno", () => {
+    const c = readFileSync(resolve(DIR, "subirFotoReporteServidor.ts"), "utf-8");
+    expect(c).toContain("exigirPersonalInterno(");
+    expect(c).toContain("MAX_BYTES");
+    expect(c).toContain('nuevaKey("vista360/campanas"');
+  });
+
   it("el avatar propio SIGUE abierto a cualquier cuenta (no se rompió al cliente)", () => {
     // Va por otro camino a propósito: cada quien debe poder cambiar su
     // foto sin ser personal interno.

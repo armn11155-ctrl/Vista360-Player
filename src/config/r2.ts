@@ -118,14 +118,14 @@ export async function subirAvatarR2(file: File): Promise<SubidaR2> {
 export async function subirFotoReporteR2(dataUrl: string): Promise<string> {
   const blob = await (await fetch(dataUrl)).blob();
   const contentType = blob.type || "image/jpeg";
-  const { key, uploadUrl } = await pedirUrlFirmada(
-    "vista360/campanas",
-    contentType === "image/png" ? "png" : "jpg",
-    contentType,
-    blob.size
-  );
-  await subirBlob(uploadUrl, blob, contentType);
-  return key;
+  const dataBase64 = await blobABase64(blob);
+  const functions = getFunctions(app ?? undefined);
+  const subirFotoReporteServidor = httpsCallable<
+    { dataBase64: string; contentType: string },
+    { key: string }
+  >(functions, "subirFotoReporteServidor");
+  const { data } = await subirFotoReporteServidor({ dataBase64, contentType });
+  return data.key;
 }
 
 export async function subirFacturaR2(file: File): Promise<{ key: string }> {

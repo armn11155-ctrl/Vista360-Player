@@ -289,9 +289,9 @@ describe("CSP: nada del codigo genera estilos o scripts en linea", () => {
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
     expect(codigo).not.toContain("<style>");
-    // Y sigue aplicandolos, para que el arreglo no se convierta en
-    // "quitamos los estilos y ya".
-    expect(codigo).toContain('el.style.background = "#050a12"');
+    // El visor de Chrome ya no necesita dimensionar un <embed>: navega
+    // directamente al blob privado y usa el visor nativo.
+    expect(codigo).toContain("ventana.location.href = urlLocal");
   });
 
   it("los popups del mapa no usan atributos style=", () => {

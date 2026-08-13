@@ -36,6 +36,7 @@ export { actualizarAvatarPropio } from "./actualizarAvatarPropio.js";
 export { actualizarNombrePropio } from "./actualizarNombrePropio.js";
 export { administrarClienteAdmin } from "./administrarClienteAdmin.js";
 export { subirAvatarServidor } from "./subirAvatarServidor.js";
+export { subirFotoReporteServidor } from "./subirFotoReporteServidor.js";
 export { obtenerEspacioR2 } from "./obtenerEspacioR2.js";
 export { firmarUrlsR2 } from "./firmarUrlsR2.js";
 export { registrarAcceso } from "./registrarAcceso.js";
