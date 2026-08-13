@@ -217,12 +217,9 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
     );
   });
 
-  it("object-src permite blob: SOLO por el visor de PDF, y está documentado", () => {
-    expect(directiva(csp, "object-src")).toBe("blob:");
-    expect(headers).toContain("RELAJACION DOCUMENTADA");
-    // La razón tiene que seguir siendo cierta: si el visor deja de usar
-    // <embed>, hay que volver a object-src 'none'.
-    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).toContain("<embed");
+  it("object-src vuelve a estar cerrado: el visor ya no incrusta plugins", () => {
+    expect(directiva(csp, "object-src")).toBe("'none'");
+    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).not.toContain("<embed");
   });
 });
 

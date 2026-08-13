@@ -242,17 +242,39 @@ function mensajeErrorReporte(error: unknown) {
 
       const claves = new Map<string, string>();
       let subidas = 0;
+      let usarRespaldoEnLlamada = false;
       const EN_PARALELO = 4;
-      for (let i = 0; i < pendientes.length; i += EN_PARALELO) {
-        const lote = pendientes.slice(i, i + EN_PARALELO);
-        await Promise.all(
-          lote.map(async (item) => {
-            claves.set(`${item.panelId}:${item.indice}`, await subirFotoReporteR2(item.dataUrl));
-          })
+      try {
+        for (let i = 0; i < pendientes.length; i += EN_PARALELO) {
+          const lote = pendientes.slice(i, i + EN_PARALELO);
+          const resultados = await Promise.allSettled(
+            lote.map((item) => subirFotoReporteR2(item.dataUrl))
+          );
+          resultados.forEach((resultado, indice) => {
+            if (resultado.status === "fulfilled") {
+              const item = lote[indice];
+              claves.set(`${item.panelId}:${item.indice}`, resultado.value);
+            }
+          });
+          const fallida = resultados.find((resultado) => resultado.status === "rejected");
+          if (fallida?.status === "rejected") throw fallida.reason;
+          subidas += lote.length;
+          setMensajeAdminTipo("ok");
+          setMensajeAdmin(`Subiendo fotos… ${subidas} de ${pendientes.length}`);
+        }
+      } catch (errorSubida) {
+        // Respaldo seguro: las fotos pendientes viajan por la misma
+        // callable autenticada del generador. No abre el bucket ni cambia
+        // CORS. El tope deja holgura bajo el límite del payload.
+        const pendientesSinClave = pendientes.filter(
+          (item) => !claves.has(`${item.panelId}:${item.indice}`)
         );
-        subidas += lote.length;
+        const bytesRespaldo = pendientesSinClave.reduce((total, item) => total + item.dataUrl.length, 0);
+        const MAX_RESPALDO_BASE64 = 7 * 1024 * 1024;
+        if (bytesRespaldo > MAX_RESPALDO_BASE64) throw errorSubida;
+        usarRespaldoEnLlamada = true;
         setMensajeAdminTipo("ok");
-        setMensajeAdmin(`Subiendo fotos… ${subidas} de ${pendientes.length}`);
+        setMensajeAdmin("La subida se interrumpió; continuando por el canal seguro alternativo…");
       }
       setMensajeAdmin("Armando el PDF…");
 
@@ -260,7 +282,9 @@ function mensajeErrorReporte(error: unknown) {
         panelId: id,
         panelNombre: paneles[id]?.nombre,
         fotos: (fotosPorPanel[id] ?? [])
-          .map((_, indice) => claves.get(`${id}:${indice}`))
+          .map((foto, indice) =>
+            claves.get(`${id}:${indice}`) ?? (usarRespaldoEnLlamada ? foto.dataUrl : undefined)
+          )
           .filter((k): k is string => Boolean(k))
           .map((url) => ({ url, fecha })),
       }));

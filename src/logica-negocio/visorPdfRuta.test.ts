@@ -60,6 +60,13 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
     expect(visor).toContain("sessionStorage.removeItem(clave)");
   });
 
+  it("Safari entrega el blob al visor nativo y no usa el embed gris", () => {
+    const visor = leer("public/visor-pdf.html");
+    expect(visor).toContain("location.replace(urlLocal)");
+    expect(visor).not.toContain("<embed");
+    expect(visor).not.toContain("URL.revokeObjectURL(urlLocal)");
+  });
+
   it("no queda un segundo visor en React compitiendo con el estático", () => {
     expect(existsSync(resolve(RAIZ, "src/components/VisorPdf.tsx"))).toBe(false);
     expect(leer("src/main.tsx")).not.toContain("VisorPdf");

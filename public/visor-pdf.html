@@ -10,20 +10,16 @@
       html, body { width: 100%; height: 100%; margin: 0; background: #050a12; }
       body { color: #dce6f5; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
       #estado { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 24px; text-align: center; }
-      #pdf { display: none; width: 100%; height: 100%; border: 0; }
     </style>
   </head>
   <body>
     <main id="estado" role="status" aria-live="polite">Abriendo el documento…</main>
-    <embed id="pdf" type="application/pdf" aria-label="Documento PDF" />
     <script>
       (() => {
         const estado = document.getElementById("estado");
-        const pdf = document.getElementById("pdf");
         const token = new URLSearchParams(location.search).get("token") || "";
         const clave = "vista360:visor-pdf:" + token;
         let datos = null;
-        let urlLocal = "";
 
         try {
           const guardado = sessionStorage.getItem(clave);
@@ -52,12 +48,13 @@
             return respuesta.blob();
           })
           .then((blob) => {
-            urlLocal = URL.createObjectURL(
+            const urlLocal = URL.createObjectURL(
               blob.type ? blob : new Blob([blob], { type: "application/pdf" }),
             );
-            pdf.src = urlLocal;
-            pdf.style.display = "block";
-            estado.remove();
+            // Safari deja el visor incrustado gris aunque el Blob sea un PDF
+            // válido. Navegar al blob entrega el archivo al visor PDF
+            // nativo sin revelar la URL firmada de R2.
+            location.replace(urlLocal);
           })
           .catch(mostrarError)
           .finally(() => clearTimeout(reloj));
@@ -65,7 +62,6 @@
         addEventListener("pagehide", () => {
           corte.abort();
           clearTimeout(reloj);
-          if (urlLocal) URL.revokeObjectURL(urlLocal);
         }, { once: true });
       })();
     </script>
