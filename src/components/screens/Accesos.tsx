@@ -160,6 +160,15 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
     if (esGerente) void cargarPersonalInterno();
   }, [esGerente, cargarPersonalInterno]);
 
+  // Esta pantalla puede mantenerse montada mientras el admin vuelve a
+  // Gestión y entra otra vez. La vista de entrada siempre debe ser Activos,
+  // nunca la última pestaña que quedó seleccionada en una visita anterior.
+  useEffect(() => {
+    setTab("activos");
+    setBusqueda("");
+    setMenuAbierto(null);
+  }, []);
+
   // ── Crear cuenta de Trabajador (solo Gerente) -- mismo patrón que
   // "crear cliente" de arriba, pero sin empresa/RUC/avatar: un
   // Trabajador es cuenta interna, no un cliente. ──
@@ -499,7 +508,20 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
     .filter((c) => !c.archived && !clientesConAcceso.has(c.id));
   const usuariosActivos = invitaciones.filter((inv) => !inv.archived);
   const usuariosArchivados = invitaciones.filter((inv) => !!inv.archived);
-  const usuariosDelTab = tab === "activos" ? usuariosActivos : usuariosArchivados;
+  // Las cuentas internas ya se muestran con su fuente de verdad
+  // (portalUsers) en la sección Personal interno. Se excluyen de la lista
+  // de clientes para no duplicarlas ni hacer parecer que un Gerente es un
+  // cliente. Las invitaciones históricas sin flags de rol siguen tratándose
+  // como clientes para mantener compatibilidad con datos antiguos.
+  const esCuentaInterna = (inv: InvitacionPortal) => !!inv.esAdmin || !!inv.esTrabajador;
+  const clientesActivos = usuariosActivos.filter((inv) => !esCuentaInterna(inv));
+  const clientesArchivados = usuariosArchivados.filter((inv) => !esCuentaInterna(inv));
+  const clientesDelTab = tab === "activos" ? clientesActivos : clientesArchivados;
+  const personalDelTab = personalInterno.status === "ready"
+    ? personalInterno.personal.filter((persona) => tab === "activos" ? !persona.archived : persona.archived)
+    : [];
+  const totalActivos = clientesActivos.length + (personalInterno.status === "ready" ? personalInterno.personal.filter((p) => !p.archived).length : 0);
+  const totalArchivados = clientesArchivados.length + (personalInterno.status === "ready" ? personalInterno.personal.filter((p) => p.archived).length : 0);
   const [busqueda, setBusqueda] = useState("");
 
   // Las cuentas de Trabajador en invitacionesPortal nunca guardaron un
@@ -525,12 +547,12 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
   // acuerda de un cliente cuando la lista ya no cabe en una pantalla.
   const usuariosVisibles = useMemo(() => {
     const q = busqueda.trim().toLowerCase();
-    if (!q) return usuariosDelTab;
-    return usuariosDelTab.filter((u) =>
+    if (!q) return clientesDelTab;
+    return clientesDelTab.filter((u) =>
       [u.clienteNombre, u.email, u.uid ? nombrePorUid[u.uid] : undefined, (u as { contacto?: string }).contacto]
         .some((campo) => String(campo ?? "").toLowerCase().includes(q))
     );
-  }, [usuariosDelTab, busqueda, nombrePorUid]);
+  }, [clientesDelTab, busqueda, nombrePorUid]);
 
 
   async function administrarUsuario(inv: InvitacionPortal, accion: "archivar" | "restaurar" | "eliminar") {
@@ -654,53 +676,24 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
       </div>
 
       <div className="content-area">
-        {esGerente && (
-          <div className="card accesos-internal-card" style={{ marginBottom: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", marginBottom: 8 }}>
-              Personal interno
-            </div>
-            {personalInterno.status === "loading" && (
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>Cargando…</div>
-            )}
-            {personalInterno.status === "error" && (
-              <div style={{ fontSize: 12, color: "var(--red)" }}>{personalInterno.message}</div>
-            )}
-            {personalInterno.status === "ready" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {personalInterno.personal.map((p) => {
-                  const nombreMostrado = p.nombre || nombreConocidoPorEmail(p.email) || p.email;
-                  return (
-                  <div key={p.uid} className={`access-person-row${p.archived ? " is-archived" : ""}`}>
-                    <BrandThumb name={nombreMostrado} avatarUrl={p.avatarUrl} size={36} radius={10} />
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {nombreMostrado}
-                      </div>
-                      <div className={`access-role-chip is-${p.role.toLowerCase()}`}>
-                        {p.role}{p.archived ? " · archivado" : ""}
-                      </div>
-                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {p.email}
-                      </div>
-                    </div>
-                  </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-        <div className="accesos-tabs" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+        <div className="accesos-tabs" role="tablist" aria-label="Estado de usuarios" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           {[
-            { id: "activos" as const, label: "Activos", count: usuariosActivos.length },
-            { id: "archivados" as const, label: "Archivados", count: usuariosArchivados.length },
+            { id: "activos" as const, label: "Activos", count: totalActivos },
+            { id: "archivados" as const, label: "Archivados", count: totalArchivados },
           ].map((item) => {
             const active = tab === item.id;
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setTab(item.id)}
+                role="tab"
+                aria-selected={active}
+                className={active ? "is-active" : ""}
+                onClick={() => {
+                  setTab(item.id);
+                  setBusqueda("");
+                  setMenuAbierto(null);
+                }}
                 style={{
                   border: active ? "1px solid #0877FF" : "1px solid #E5E7EB",
                   background: active ? "rgba(8,119,255,0.09)" : "#fff",
@@ -717,6 +710,46 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
             );
           })}
         </div>
+
+        {esGerente && (
+          <section className="card accesos-internal-card" aria-labelledby="accesos-personal-title" style={{ marginBottom: 12 }}>
+            <div className="accesos-section-heading">
+              <div>
+                <span>Equipo Vista360</span>
+                <h2 id="accesos-personal-title">Personal interno {tab === "activos" ? "activo" : "archivado"}</h2>
+              </div>
+              <b>{personalDelTab.length}</b>
+            </div>
+            {personalInterno.status === "loading" && (
+              <div className="accesos-section-state">Cargando personal…</div>
+            )}
+            {personalInterno.status === "error" && (
+              <div className="accesos-section-state is-error">{personalInterno.message}</div>
+            )}
+            {personalInterno.status === "ready" && personalDelTab.length === 0 && (
+              <div className="accesos-section-state">No hay personal interno {tab === "activos" ? "activo" : "archivado"}.</div>
+            )}
+            {personalInterno.status === "ready" && personalDelTab.length > 0 && (
+              <div className="accesos-person-grid">
+                {personalDelTab.map((p) => {
+                  const nombreMostrado = p.nombre || nombreConocidoPorEmail(p.email) || p.email;
+                  return (
+                    <div key={p.uid} className={`access-person-row${p.archived ? " is-archived" : ""}`}>
+                      <BrandThumb name={nombreMostrado} avatarUrl={p.avatarUrl} size={40} radius={11} />
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div className="access-person-name">{nombreMostrado}</div>
+                        <div className={`access-role-chip is-${p.role.toLowerCase()}`}>
+                          {p.role}{p.archived ? " · archivado" : ""}
+                        </div>
+                        <div className="access-person-email">{p.email}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
 
         <div className="accesos-create-btn-row" style={{ margin: "12px 0", display: "flex", gap: 8 }}>
           <button type="button"
@@ -952,14 +985,21 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
             {state.message}
           </div>
         )}
-        {state.status === "ready" && usuariosDelTab.length === 0 && (
+        {state.status === "ready" && clientesDelTab.length === 0 && (
           <div className="state-sub" style={{ marginTop: 24, textAlign: "center" }}>
-            {tab === "activos" ? "Aún no hay usuarios activos." : "No hay usuarios archivados."}
+            {tab === "activos" ? "Aún no hay clientes activos." : "No hay clientes archivados."}
           </div>
         )}
 
         <div className="accesos-users-list" style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
-          {usuariosDelTab.length > 0 && (
+          <div className="accesos-section-heading is-clients">
+            <div>
+              <span>Portal de clientes</span>
+              <h2>Clientes {tab === "activos" ? "activos" : "archivados"}</h2>
+            </div>
+            <b>{clientesDelTab.length}</b>
+          </div>
+          {clientesDelTab.length > 0 && (
             <CampoBusqueda
               valor={busqueda}
               onCambio={setBusqueda}

@@ -4889,7 +4889,7 @@ a {
     padding-bottom: 38px;
   }
 
-  .accesos-screen .content-area > .card:first-child {
+  .accesos-screen .accesos-internal-card {
     border: 1px solid rgba(191,219,254,.15);
     color: #fff;
     background:
@@ -4898,29 +4898,12 @@ a {
     box-shadow: 0 24px 54px -40px rgba(2,6,23,.94);
   }
 
-  .accesos-screen .content-area > .card:first-child > div:first-child,
-  .accesos-screen .content-area > .card:first-child .access-person-row > div > div:first-child {
+  .accesos-screen .accesos-internal-card .access-person-name {
     color: #fff !important;
   }
 
-  .accesos-screen .content-area > .card:first-child .access-person-row > div > div:last-child {
+  .accesos-screen .accesos-internal-card .access-person-email {
     color: #9fb0c6 !important;
-  }
-
-  .accesos-screen .content-area > div:nth-child(2) {
-    width: min(480px, 100%);
-  }
-
-  .accesos-screen .content-area > div:nth-child(2) > button {
-    border-color: #dfe6ef !important;
-    background: #fff !important;
-    box-shadow: 0 14px 30px -26px rgba(15,23,42,.48);
-  }
-
-  .accesos-screen .content-area > div:nth-child(2) > button[style*="rgba(8, 119, 255"],
-  .accesos-screen .content-area > div:nth-child(2) > button[style*="rgba(8,119,255"] {
-    border-color: rgba(8,119,255,.28) !important;
-    background: #edf5ff !important;
   }
 
   .solicitudes-screen .solicitudes-area,
@@ -5304,6 +5287,7 @@ a {
   .accesos-screen .accesos-internal-card {
     position: relative;
     overflow: hidden;
+    width: min(1120px, 100%);
     padding: 20px 22px !important;
     border-radius: 18px;
   }
@@ -5331,6 +5315,30 @@ a {
     background: rgba(255,255,255,.035);
   }
 
+  .accesos-screen .accesos-internal-card .accesos-section-heading span {
+    color: #8297b1;
+  }
+
+  .accesos-screen .accesos-internal-card .accesos-section-heading h2 {
+    color: #f5f9ff;
+  }
+
+  .accesos-screen .accesos-internal-card .accesos-section-heading > b {
+    border-color: rgba(147,197,253,.17);
+    color: #cbe3ff;
+    background: rgba(37,99,235,.13);
+  }
+
+  .accesos-screen .accesos-internal-card .accesos-section-state {
+    border-color: rgba(191,219,254,.12);
+    color: #91a4ba;
+    background: rgba(255,255,255,.025);
+  }
+
+  .accesos-screen .accesos-person-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .accesos-screen .accesos-tabs {
     width: min(430px, 100%) !important;
     align-self: flex-start;
@@ -5339,6 +5347,9 @@ a {
     border: 1px solid #e1e8f1;
     border-radius: 14px;
     background: #f2f5f9;
+    position: relative;
+    z-index: 4;
+    pointer-events: auto;
   }
 
   .accesos-screen .accesos-tabs > button {
@@ -5346,6 +5357,13 @@ a {
     border: 0 !important;
     border-radius: 10px !important;
     box-shadow: none !important;
+    pointer-events: auto;
+  }
+
+  .accesos-screen .accesos-tabs > button.is-active {
+    color: #0e64c7 !important;
+    background: #fff !important;
+    box-shadow: 0 8px 20px -17px rgba(15,23,42,.62), inset 0 0 0 1px rgba(37,99,235,.16) !important;
   }
 
   .accesos-screen .accesos-create-btn-row {
@@ -5365,6 +5383,10 @@ a {
     width: min(1120px, 100%);
     gap: 12px !important;
     padding-top: 4px;
+  }
+
+  .accesos-screen .accesos-section-heading.is-clients {
+    margin: 5px 2px 2px;
   }
 
   .accesos-screen .access-user-card {
