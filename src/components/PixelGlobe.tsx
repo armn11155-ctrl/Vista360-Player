@@ -149,12 +149,13 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      // En escritorio el formulario vive a la izquierda y la narrativa a la
-      // derecha; el planeta se apoya en el lado opuesto al texto para que
-      // ambos respiren sin superponerse.
-      const centroX = ancho * 0.285;
-      const centroY = alto * 0.535;
-      const radio = Math.min(ancho * 0.385, alto * 0.455);
+      // El planeta ocupa la zona inferior del panel. Su circunferencia queda
+      // completa dentro del alto disponible y solo roza el borde izquierdo,
+      // donde el panel negro puede ocultar una franja mínima. Así nunca se
+      // corta por abajo ni por la derecha y tampoco invade el texto.
+      const radio = Math.min(ancho * 0.355, alto * 0.27);
+      const centroX = Math.max(ancho * 0.21, radio * 0.94);
+      const centroY = alto * 0.71;
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.

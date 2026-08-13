@@ -573,22 +573,34 @@
    La entrada necesita dos protagonistas, no una colección de etiquetas:
    la marca en la consola negra y la promesa principal sobre la red azul. */
 @media (min-width: 900px) {
+  .login-right-panel {
+    align-items: center;
+  }
+
+  .login-right-panel .login-logo {
+    position: static;
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto 44px;
+    flex: 0 0 auto;
+    text-align: center;
+  }
+
   .login-right-panel .login-logo img {
-    width: clamp(178px, 15.5vw, 206px);
+    width: clamp(182px, 15.5vw, 198px);
     filter: brightness(0) invert(1) drop-shadow(0 12px 28px rgba(0,0,0,.38));
   }
 
   .login-access-kicker,
   .login-network-kicker,
-  .login-network-message > p,
   .login-network-live {
     display: none !important;
   }
 
   .login-network-copy {
-    top: clamp(54px, 8vh, 82px);
-    left: clamp(54px, 5.4vw, 82px);
-    width: min(570px, 72%);
+    top: clamp(54px, 7.6vh, 76px);
+    left: clamp(58px, 5.4vw, 82px);
+    width: min(520px, 68%);
   }
 
   .login-network-copy::after {
@@ -597,7 +609,7 @@
   }
 
   .login-network-message {
-    max-width: 570px;
+    max-width: 520px;
     padding-left: 0;
   }
 
@@ -607,12 +619,12 @@
   }
 
   .login-network-copy h1 {
-    max-width: 570px;
+    max-width: 520px;
     color: #fff;
-    font-size: clamp(46px, 4.7vw, 68px);
-    font-weight: 690;
-    line-height: .98;
-    letter-spacing: -.058em;
+    font-size: clamp(44px, 4.15vw, 58px);
+    font-weight: 720;
+    line-height: 1;
+    letter-spacing: -.052em;
     text-shadow: 0 14px 34px rgba(1,8,24,.38);
   }
 
@@ -620,6 +632,16 @@
     margin-top: 2px;
     color: #dcecff;
     font-weight: 860;
+  }
+
+  .login-network-message > p {
+    display: block;
+    max-width: 430px;
+    margin: 18px 0 0;
+    color: rgba(219,234,254,.74);
+    font-size: 14px;
+    font-weight: 520;
+    line-height: 1.5;
   }
 }
 
@@ -630,6 +652,6 @@
   }
 
   .login-network-copy h1 {
-    font-size: clamp(40px, 4.7vw, 54px);
+    font-size: clamp(40px, 4.3vw, 50px);
   }
 }
