@@ -599,17 +599,21 @@
 
   .login-network-copy {
     top: clamp(54px, 7.6vh, 76px);
-    left: clamp(58px, 5.4vw, 82px);
-    width: min(520px, 68%);
+    right: clamp(58px, 5.4vw, 82px);
+    left: auto;
+    width: min(560px, 68%);
+    text-align: right;
   }
 
   .login-network-copy::after {
-    inset: -72px -132px -88px -76px;
-    background: radial-gradient(ellipse at 24% 46%, rgba(7,35,80,.94) 0%, rgba(7,35,80,.68) 52%, transparent 78%);
+    inset: -72px -76px -88px -132px;
+    background: radial-gradient(ellipse at 76% 46%, rgba(7,35,80,.94) 0%, rgba(7,35,80,.68) 52%, transparent 78%);
   }
 
   .login-network-message {
-    max-width: 520px;
+    max-width: 560px;
+    margin-right: 0;
+    margin-left: auto;
     padding-left: 0;
   }
 
@@ -619,7 +623,7 @@
   }
 
   .login-network-copy h1 {
-    max-width: 520px;
+    max-width: 560px;
     color: #fff;
     font-size: clamp(44px, 4.15vw, 58px);
     font-weight: 720;
@@ -637,7 +641,7 @@
   .login-network-message > p {
     display: block;
     max-width: 430px;
-    margin: 18px 0 0;
+    margin: 18px 0 0 auto;
     color: rgba(219,234,254,.74);
     font-size: 14px;
     font-weight: 520;
@@ -647,7 +651,8 @@
 
 @media (min-width: 900px) and (max-width: 1120px) {
   .login-network-copy {
-    left: 48px;
+    right: 48px;
+    left: auto;
     width: min(470px, 72%);
   }
 

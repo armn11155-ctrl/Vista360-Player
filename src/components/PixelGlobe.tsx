@@ -1,18 +1,16 @@
 import { useEffect, useRef } from "react";
+import {
+  COLUMNAS_GLOBO,
+  FILAS_GLOBO,
+  LATITUD_MINIMA_GLOBO,
+  MASCARA_FRONTERAS_GLOBO,
+  MASCARA_TIERRA_GLOBO,
+  PASO_GLOBO,
+} from "../data/naturalEarthGlobe";
 
 type PuntoGeografico = { lat: number; lon: number };
 type Vector3 = { x: number; y: number; z: number };
-type PuntoEsfera = { tierra: boolean; vector: Vector3 };
-
-const CONTINENTES: Array<Array<[number, number]>> = [
-  [[-168, 71], [-145, 71], [-124, 60], [-105, 55], [-82, 48], [-60, 48], [-52, 35], [-76, 17], [-98, 18], [-113, 31], [-126, 48], [-151, 58]],
-  [[-81, 12], [-67, 10], [-49, -2], [-35, -9], [-44, -25], [-57, -39], [-68, -55], [-76, -43], [-80, -22]],
-  [[-54, 82], [-24, 78], [-18, 65], [-43, 58], [-61, 68]],
-  [[-11, 36], [2, 45], [22, 56], [43, 61], [63, 56], [92, 69], [126, 61], [151, 49], [179, 53], [161, 35], [135, 24], [111, 18], [99, 8], [77, 7], [60, 23], [45, 29], [32, 34], [19, 31], [7, 36]],
-  [[-17, 35], [8, 37], [28, 30], [43, 11], [36, -10], [24, -35], [10, -35], [-5, -17], [-16, 8]],
-  [[112, -11], [137, -10], [154, -27], [147, -42], [119, -36], [111, -22]],
-  [[130, 33], [143, 45], [146, 35], [138, 30]],
-];
+type PuntoEsfera = { vector: Vector3 };
 
 const NODOS: PuntoGeografico[] = [
   { lat: -12.05, lon: -77.04 },
@@ -43,21 +41,6 @@ const ETIQUETAS = [
 const MAX_ETIQUETAS_VISIBLES = 4;
 const INTERVALO_CUADRO = 1000 / 30;
 
-function estaDentro(lon: number, lat: number, poligono: Array<[number, number]>) {
-  let dentro = false;
-  for (let i = 0, j = poligono.length - 1; i < poligono.length; j = i++) {
-    const [xi, yi] = poligono[i];
-    const [xj, yj] = poligono[j];
-    const cruza = ((yi > lat) !== (yj > lat)) && (lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi);
-    if (cruza) dentro = !dentro;
-  }
-  return dentro;
-}
-
-function esTierra(lon: number, lat: number) {
-  return CONTINENTES.some((continente) => estaDentro(lon, lat, continente));
-}
-
 function aVector({ lat, lon }: PuntoGeografico): Vector3 {
   const latitud = lat * Math.PI / 180;
   const longitud = lon * Math.PI / 180;
@@ -65,17 +48,45 @@ function aVector({ lat, lon }: PuntoGeografico): Vector3 {
   return { x: coseno * Math.sin(longitud), y: -Math.sin(latitud), z: coseno * Math.cos(longitud) };
 }
 
-const PUNTOS: PuntoEsfera[] = [];
-for (let lat = -82; lat <= 82; lat += 1.45) {
-  const desfase = Math.round((lat + 82) / 1.45) % 2 === 0 ? 0 : 0.725;
-  for (let lon = -180 + desfase; lon < 180; lon += 1.45) {
-    if (esTierra(lon, lat)) PUNTOS.push({ tierra: true, vector: aVector({ lat, lon }) });
+function decodificarMascara(base64: string) {
+  const binario = atob(base64);
+  return Uint8Array.from(binario, (caracter) => caracter.charCodeAt(0));
+}
+
+function bitActivo(mascara: Uint8Array, indice: number) {
+  return (mascara[indice >> 3] & (1 << (indice & 7))) !== 0;
+}
+
+function esTierraEnMascara(lon: number, lat: number) {
+  const fila = Math.max(0, Math.min(FILAS_GLOBO - 1, Math.round((lat - LATITUD_MINIMA_GLOBO) / PASO_GLOBO)));
+  const columna = Math.max(0, Math.min(COLUMNAS_GLOBO - 1, Math.round((lon + 180) / PASO_GLOBO)));
+  return bitActivo(MASCARA_TIERRA, fila * COLUMNAS_GLOBO + columna);
+}
+
+const MASCARA_TIERRA = decodificarMascara(MASCARA_TIERRA_GLOBO);
+const MASCARA_FRONTERAS = decodificarMascara(MASCARA_FRONTERAS_GLOBO);
+const PUNTOS_TIERRA: PuntoEsfera[] = [];
+const PUNTOS_FRONTERA: PuntoEsfera[] = [];
+const PUNTOS_OCEANO: PuntoEsfera[] = [];
+for (let fila = 0; fila < FILAS_GLOBO; fila++) {
+  const lat = LATITUD_MINIMA_GLOBO + fila * PASO_GLOBO;
+  for (let columna = 0; columna < COLUMNAS_GLOBO; columna++) {
+    const indice = fila * COLUMNAS_GLOBO + columna;
+    if (bitActivo(MASCARA_TIERRA, indice)) {
+      const grupo = bitActivo(MASCARA_FRONTERAS, indice) ? PUNTOS_FRONTERA : PUNTOS_TIERRA;
+      grupo.push({ vector: aVector({ lat, lon: -180 + columna * PASO_GLOBO }) });
+    }
   }
 }
-for (let lat = -81; lat <= 81; lat += 2.6) {
-  const desfase = Math.round((lat + 81) / 2.6) % 2 === 0 ? 0 : 1.3;
-  for (let lon = -180 + desfase; lon < 180; lon += 2.6) {
-    if (!esTierra(lon, lat)) PUNTOS.push({ tierra: false, vector: aVector({ lat, lon }) });
+// El océano puede ser más espaciado: la precisión importante está en las
+// costas y fronteras. Esta segunda trama suma profundidad sin duplicar el
+// coste de los 15 000 puntos cartográficos de tierra.
+for (let lat = -81; lat <= 81; lat += 2.45) {
+  const desfase = Math.round((lat + 81) / 2.45) % 2 === 0 ? 0 : 1.225;
+  for (let lon = -180 + desfase; lon < 180; lon += 2.45) {
+    if (!esTierraEnMascara(lon, lat)) {
+      PUNTOS_OCEANO.push({ vector: aVector({ lat, lon }) });
+    }
   }
 }
 
@@ -149,12 +160,11 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      // El planeta ocupa el centro de la zona inferior del panel. El radio
-      // crece con moderación, pero conserva un margen real en los cuatro
-      // lados para que la circunferencia nunca vuelva a verse cortada.
-      const radio = Math.min(ancho * 0.4, alto * 0.29);
-      const centroX = ancho * 0.5;
-      const centroY = alto * 0.695;
+      // Más grande y hacia la izquierda: comparte la composición con el
+      // mensaje alineado a la derecha sin perder la circunferencia inferior.
+      const radio = Math.min(ancho * 0.43, alto * 0.325);
+      const centroX = ancho * 0.39;
+      const centroY = alto * 0.665;
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.
@@ -221,15 +231,21 @@ export default function PixelGlobe() {
       contexto.fill();
       contexto.stroke();
 
-      for (const punto of PUNTOS) {
-        const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
-        if (proyectado.z < -0.06) continue;
-        const frente = Math.max(0, proyectado.z);
-        const tamano = (punto.tierra ? 1.28 : 0.58) * proyectado.escala;
-        const opacidad = punto.tierra ? 0.21 + frente * 0.74 : 0.012 + frente * 0.055;
-        contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
-        contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
-      }
+      // Tres pasadas y solo tres cambios de fillStyle por cuadro. Aunque hay
+      // más puntos, evitar construir un color RGBA por cada uno reduce mucho
+      // el trabajo del canvas y deja las fronteras por encima de la tierra.
+      const dibujarGrupo = (puntos: PuntoEsfera[], color: string, tamanoBase: number) => {
+        contexto.fillStyle = color;
+        for (const punto of puntos) {
+          const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
+          if (proyectado.z < -0.06) continue;
+          const tamano = tamanoBase * proyectado.escala;
+          contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
+        }
+      };
+      dibujarGrupo(PUNTOS_OCEANO, "rgba(150, 192, 244, .045)", 0.52);
+      dibujarGrupo(PUNTOS_TIERRA, "rgba(214, 232, 255, .68)", 1.02);
+      dibujarGrupo(PUNTOS_FRONTERA, "rgba(241, 248, 255, .92)", 1.18);
 
       contexto.save();
       contexto.setLineDash([4, 8]);

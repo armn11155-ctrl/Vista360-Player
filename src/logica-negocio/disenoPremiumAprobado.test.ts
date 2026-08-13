@@ -72,10 +72,14 @@ describe("refinamiento premium aprobado", () => {
 
   it("anima un planeta pixelado eficiente y libera todos sus recursos", () => {
     const globo = leer("src/components/PixelGlobe.tsx");
+    const cartografia = leer("src/data/naturalEarthGlobe.ts");
     expect(globo).toContain('className="login-network-globe-canvas"');
-    expect(globo).toContain("const radio = Math.min(ancho * 0.4, alto * 0.29)");
-    expect(globo).toContain("const centroX = ancho * 0.5");
-    expect(globo).toContain("const centroY = alto * 0.695");
+    expect(globo).toContain('from "../data/naturalEarthGlobe"');
+    expect(globo).toContain("MASCARA_FRONTERAS_GLOBO");
+    expect(globo).not.toContain("const CONTINENTES");
+    expect(globo).toContain("const radio = Math.min(ancho * 0.43, alto * 0.325)");
+    expect(globo).toContain("const centroX = ancho * 0.39");
+    expect(globo).toContain("const centroY = alto * 0.665");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
     expect(globo).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
     expect(globo).toContain("window.requestAnimationFrame");
@@ -85,12 +89,18 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('removeEventListener("visibilitychange"');
     expect(globo).toContain("document.hidden");
     expect(globo).toContain("lineDashOffset");
-    expect(globo).toContain("lat += 1.45");
-    expect(globo).toContain("lon += 1.45");
-    expect(globo).toContain("lat += 2.6");
-    expect(globo).toContain("lon += 2.6");
-    expect(globo).toContain("if (esTierra(lon, lat))");
-    expect(globo).toContain("if (!esTierra(lon, lat))");
+    expect(cartografia).toContain("Natural Earth 1:110m");
+    expect(cartografia).toContain("PASO_GLOBO = 1.1");
+    expect(globo).toContain("fila < FILAS_GLOBO");
+    expect(globo).toContain("columna < COLUMNAS_GLOBO");
+    expect(globo).toContain("lat += 2.45");
+    expect(globo).toContain("lon += 2.45");
+    expect(globo).toContain("if (bitActivo(MASCARA_TIERRA, indice))");
+    expect(globo).toContain("if (!esTierraEnMascara(lon, lat))");
+    expect(globo).toContain("PUNTOS_FRONTERA");
+    expect(globo).toContain("PUNTOS_TIERRA");
+    expect(globo).toContain("PUNTOS_OCEANO");
+    expect(globo).toContain("solo tres cambios de fillStyle por cuadro");
     expect(globo).toContain('"Cobertura",');
     expect(globo).toContain('"Ubicaciones",');
     expect(globo).toContain("MAX_ETIQUETAS_VISIBLES = 4");
@@ -103,8 +113,8 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
-    expect(globo).toContain("ancho * 0.5");
-    expect(globo).toContain("ancho * 0.4");
+    expect(globo).toContain("ancho * 0.39");
+    expect(globo).toContain("ancho * 0.43");
     expect(globo).toContain("-0.62 + tiempo * 0.000092");
     expect(globo).not.toContain('globalCompositeOperation = "destination-in"');
     expect(globo).not.toContain("const mascaraCircular");
