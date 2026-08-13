@@ -158,15 +158,26 @@ export default function PixelGlobe() {
     };
 
     const dibujar = (tiempo: number) => {
-      if (!ancho || !alto || !escritorio.matches) return;
+      if (!ancho || !alto) return;
 
       contexto.clearRect(0, 0, ancho, alto);
       // La composición de referencia reserva el tercio superior al mensaje y
       // centra el planeta en la zona inferior. El margen final mantiene la
       // circunferencia completa incluso en un MacBook de 13 pulgadas.
-      const radio = Math.min(ancho * 0.39, alto * 0.31);
-      const centroX = ancho * 0.506;
-      const centroY = alto * 0.654;
+      let radio = Math.min(ancho * 0.39, alto * 0.31);
+      let centroX = ancho * 0.506;
+      let centroY = alto * 0.654;
+      const esMovil = !escritorio.matches;
+      // En móvil el mismo planeta ocupa una franja editorial más baja y
+      // ancha. Se conserva completo, pero se desplaza hacia la derecha para
+      // que el titular tenga aire a la izquierda. La malla se dibuja a media
+      // densidad más abajo: mantiene la forma real de los países sin castigar
+      // la batería de un teléfono.
+      if (esMovil) {
+        radio = Math.min(ancho * 0.28, alto * 0.46);
+        centroX = ancho * 0.70;
+        centroY = alto * 0.54;
+      }
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.
@@ -241,7 +252,9 @@ export default function PixelGlobe() {
       const capaOceano = new Path2D();
       const capaDestellos = new Path2D();
       const acumularGrupo = (puntos: PuntoEsfera[], capas: Path2D[], tamanoBase: number) => {
-        for (const punto of puntos) {
+        const salto = esMovil ? 2 : 1;
+        for (let indicePunto = 0; indicePunto < puntos.length; indicePunto += salto) {
+          const punto = puntos[indicePunto];
           const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
           if (proyectado.z < -0.06) continue;
           const tamano = tamanoBase * proyectado.escala;
@@ -259,7 +272,9 @@ export default function PixelGlobe() {
         }
       };
 
-      for (const punto of PUNTOS_OCEANO) {
+      const saltoOceano = esMovil ? 2 : 1;
+      for (let indiceOceano = 0; indiceOceano < PUNTOS_OCEANO.length; indiceOceano += saltoOceano) {
+        const punto = PUNTOS_OCEANO[indiceOceano];
         const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
         if (proyectado.z < 0.02) continue;
         const tamano = 0.48 * proyectado.escala;
@@ -362,7 +377,7 @@ export default function PixelGlobe() {
         contexto.fill();
       }
 
-      const candidatos = vectoresNodos
+      const candidatos = esMovil ? [] : vectoresNodos
         .map((vector, indice) => ({
           etiqueta: ETIQUETAS[indice % ETIQUETAS.length],
           punto: proyectar(vector, cosenoAngulo, senoAngulo, centroX, centroY, radio),
@@ -432,7 +447,8 @@ export default function PixelGlobe() {
 
     const cuadro = (tiempo: number) => {
       if (!activo) return;
-      if (tiempo - ultimoCuadro >= INTERVALO_CUADRO) {
+      const intervalo = escritorio.matches ? INTERVALO_CUADRO : 1000 / 24;
+      if (tiempo - ultimoCuadro >= intervalo) {
         dibujar(tiempo);
         ultimoCuadro = tiempo;
       }
@@ -446,10 +462,6 @@ export default function PixelGlobe() {
 
     const iniciar = () => {
       detener();
-      if (!escritorio.matches) {
-        contexto.clearRect(0, 0, ancho, alto);
-        return;
-      }
       dibujar(performance.now());
       if (!movimientoReducido.matches && !document.hidden) {
         activo = true;
@@ -462,7 +474,8 @@ export default function PixelGlobe() {
       const caja = canvas.getBoundingClientRect();
       ancho = Math.max(1, Math.round(caja.width));
       alto = Math.max(1, Math.round(caja.height));
-      const densidad = Math.min(window.devicePixelRatio || 1, 1.75);
+      const limiteDensidad = escritorio.matches ? 1.75 : 1.4;
+      const densidad = Math.min(window.devicePixelRatio || 1, limiteDensidad);
       canvas.width = Math.round(ancho * densidad);
       canvas.height = Math.round(alto * densidad);
       contexto.setTransform(densidad, 0, 0, densidad, 0, 0);

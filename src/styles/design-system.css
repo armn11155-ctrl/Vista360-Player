@@ -7060,3 +7060,493 @@ a {
   .paneles-hero .panel-create-toggle { margin: 0; }
   .paneles-catalog { display: flex; flex-direction: column; gap: 10px; }
 }
+
+/* =====================================================================
+   PORTAL DE GESTIÓN MÓVIL — CONTINUIDAD CON LAPTOP
+   ---------------------------------------------------------------------
+   Selector y Centro de gestión usan la misma escena azul y la misma
+   consola negro/navy del escritorio, reorganizadas en una columna táctil.
+   Solo cambia presentación; roles, acciones y datos permanecen intactos.
+   ===================================================================== */
+@media (max-width: 899px) {
+  .admin-picker-shell {
+    background:
+      radial-gradient(circle at 14% 10%, rgba(96,165,250,.24), transparent 28%),
+      radial-gradient(circle at 88% 88%, rgba(37,99,235,.24), transparent 36%),
+      linear-gradient(148deg, #071b3e 0%, #0a3477 48%, #061d46 100%) !important;
+  }
+
+  .admin-picker-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.016) 0 1px, transparent 1px 54px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 54px);
+    mask-image: linear-gradient(180deg, #000, rgba(0,0,0,.42) 58%, transparent 96%);
+  }
+
+  .admin-picker-shell::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .admin-picker-top-left-actions,
+  .admin-picker-push-btn,
+  .admin-picker-perfil-btn,
+  .admin-picker-stage,
+  .admin-picker-footer {
+    z-index: 3;
+  }
+
+  .admin-picker-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: calc(68px + env(safe-area-inset-top)) 12px calc(74px + env(safe-area-inset-bottom));
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .admin-picker-editorial {
+    position: relative;
+    width: 100%;
+    min-height: 148px;
+    display: flex;
+    flex: 0 0 148px;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    padding: 16px 18px 17px;
+    border: 1px solid rgba(191,219,254,.13);
+    border-radius: 22px;
+    color: #fff;
+    background:
+      radial-gradient(circle at 92% 12%, rgba(96,165,250,.18), transparent 34%),
+      linear-gradient(150deg, rgba(7,31,71,.64), rgba(3,13,31,.48));
+    box-shadow: 0 24px 54px -36px rgba(0,0,0,.88), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: blur(10px) saturate(1.04);
+    -webkit-backdrop-filter: blur(10px) saturate(1.04);
+  }
+
+  .admin-picker-editorial::before,
+  .admin-picker-editorial::after { content: none; }
+
+  .admin-picker-editorial-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .admin-picker-editorial-brand img {
+    width: 122px;
+    height: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  .admin-picker-editorial-brand span {
+    padding-left: 11px;
+    border-left: 1px solid rgba(219,234,254,.22);
+    color: rgba(219,234,254,.62);
+    font-size: 7.5px;
+    font-weight: 780;
+    letter-spacing: .14em;
+  }
+
+  .admin-picker-editorial-copy {
+    max-width: 310px;
+  }
+
+  .admin-picker-editorial-kicker {
+    display: block;
+    margin-bottom: 6px;
+    color: #8fc2ff;
+    font-size: 7.5px;
+    font-weight: 820;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+
+  .admin-picker-editorial-kicker::before { content: none; }
+
+  .admin-picker-editorial h1 {
+    margin: 0;
+    color: #fff;
+    font-size: 25px;
+    font-weight: 790;
+    line-height: .98;
+    letter-spacing: -.048em;
+  }
+
+  .admin-picker-editorial p {
+    display: none;
+  }
+
+  .admin-picker-editorial-orbit { display: none !important; }
+
+  .admin-picker-console {
+    width: 100%;
+    min-height: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 17px 16px 14px;
+    border: 1px solid rgba(191,219,254,.15);
+    border-radius: 23px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.12), transparent 34%),
+      linear-gradient(155deg, rgba(7,17,31,.985), rgba(3,8,17,.98) 64%, rgba(5,12,24,.985));
+    box-shadow: 0 28px 72px -40px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.055);
+    backdrop-filter: blur(16px) saturate(1.05);
+    -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  }
+
+  .admin-picker-header {
+    width: 100%;
+    margin: 0;
+    padding: 0 0 14px;
+    flex: 0 0 auto;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(191,219,254,.10) !important;
+    border-radius: 0;
+    text-align: left;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .admin-picker-logo,
+  .admin-picker-badge,
+  .admin-picker-actions { display: none !important; }
+
+  .admin-picker-title {
+    margin: 0 0 5px;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 760;
+    line-height: 1;
+    letter-spacing: -.042em;
+    text-align: left;
+  }
+
+  .admin-picker-sub {
+    margin: 0 0 13px;
+    padding: 0;
+    color: rgba(203,213,225,.60);
+    font-size: 10.5px;
+    line-height: 1.35;
+    text-align: left;
+  }
+
+  .admin-picker-tabs {
+    width: fit-content;
+    margin: 0 0 9px;
+    padding: 3px;
+    border: 1px solid rgba(191,219,254,.12);
+    border-radius: 11px;
+    background: rgba(255,255,255,.045);
+  }
+
+  .admin-picker-tabs button {
+    min-height: 35px;
+    border-radius: 8px;
+    color: rgba(219,234,254,.66);
+    background: transparent;
+  }
+
+  .admin-picker-tabs button.active {
+    color: #fff;
+    background: rgba(47,111,237,.24);
+    box-shadow: inset 0 0 0 1px rgba(96,165,250,.22);
+  }
+
+  .admin-picker-search-wrap {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
+
+  .admin-picker-search {
+    min-height: 43px;
+    border-color: rgba(191,219,254,.13);
+    border-radius: 11px;
+    background: rgba(255,255,255,.045);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+
+  .admin-picker-body {
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 14px 0 3px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  .admin-picker-grid {
+    width: 100%;
+    max-width: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .admin-picker-tile:not(.archived),
+  .admin-picker-tile-vermas {
+    gap: 8px;
+    padding: 8px 8px 11px;
+    border-color: rgba(191,219,254,.13) !important;
+    border-radius: 16px;
+    background: linear-gradient(160deg, rgba(255,255,255,.058), rgba(255,255,255,.018)) !important;
+    box-shadow: 0 18px 38px -29px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05) !important;
+  }
+
+  .admin-picker-tile:not(.archived)::before { content: none; }
+
+  .admin-picker-tile-avatar {
+    width: 100%;
+    border-color: rgba(191,219,254,.12) !important;
+    border-radius: 13px;
+    box-shadow: 0 13px 25px -21px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  }
+
+  .admin-picker-tile-name {
+    color: #eaf2ff;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .admin-picker-tile-gear {
+    top: 7px;
+    right: 7px;
+    width: 30px;
+    height: 30px;
+    border-color: rgba(219,234,254,.19);
+    border-radius: 9px;
+    color: #dbeafe;
+    background: rgba(3,10,23,.82);
+    box-shadow: 0 9px 20px -14px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.08);
+  }
+
+  .admin-picker-footer {
+    height: calc(68px + env(safe-area-inset-bottom));
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent, rgba(3,10,25,.56));
+  }
+
+  .admin-picker-logout {
+    border-color: #000 !important;
+    color: #ff5b69 !important;
+    background: #000 !important;
+    box-shadow: 0 14px 28px -20px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  }
+
+  /* Centro de gestión: una consola única, apilada por áreas. */
+  .admin-picker-management-screen {
+    padding: calc(14px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(96,165,250,.24), transparent 28%),
+      radial-gradient(circle at 90% 92%, rgba(37,99,235,.24), transparent 36%),
+      linear-gradient(148deg, #071b3e 0%, #0a3477 48%, #061d46 100%) !important;
+  }
+
+  .admin-picker-management-screen::before,
+  .admin-picker-management-flow {
+    content: none !important;
+    display: none !important;
+  }
+
+  .admin-picker-management-head {
+    position: relative;
+    width: 100%;
+    min-height: 68px;
+    margin: 0 auto 12px;
+    padding: 8px 5px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 88px;
+    align-items: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .admin-picker-management-head::before,
+  .admin-picker-management-head::after { content: none !important; display: none !important; }
+
+  .admin-picker-management-head > button {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(191,219,254,.18);
+    border-radius: 13px;
+    color: #fff;
+    background: rgba(3,8,17,.40);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  .admin-picker-management-head > div {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+    text-align: left;
+  }
+
+  .admin-picker-management-head strong {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 760;
+    line-height: 1;
+    letter-spacing: -.035em;
+    white-space: nowrap;
+  }
+
+  .admin-picker-management-head span {
+    overflow: hidden;
+    color: rgba(219,234,254,.62);
+    font-size: 9px;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .admin-picker-management-head .admin-picker-management-logo {
+    position: static !important;
+    width: 88px !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 !important;
+    opacity: .92;
+    filter: brightness(0) invert(1);
+    transform: none !important;
+  }
+
+  .admin-picker-management-grid {
+    width: 100%;
+    margin: 0 auto;
+    padding: 9px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid rgba(191,219,254,.15) !important;
+    border-radius: 23px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.12), transparent 34%),
+      linear-gradient(155deg, rgba(7,17,31,.985), rgba(3,8,17,.98) 64%, rgba(5,12,24,.985)) !important;
+    box-shadow: 0 30px 76px -42px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.055) !important;
+    backdrop-filter: blur(16px) saturate(1.05);
+    -webkit-backdrop-filter: blur(16px) saturate(1.05);
+  }
+
+  .admin-picker-management-group {
+    min-height: 0;
+    margin: 0;
+    padding: 14px 11px 15px;
+    overflow: visible;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(191,219,254,.10) !important;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .admin-picker-management-group:last-child {
+    border-bottom: 0 !important;
+  }
+
+  .admin-picker-management-group::before { content: none; }
+
+  .admin-picker-management-group-head {
+    min-height: 38px;
+    margin: 0 0 10px;
+    padding: 0 1px 10px;
+    border-bottom: 1px solid rgba(191,219,254,.075);
+  }
+
+  .admin-picker-management-group-head > span {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-color: rgba(147,197,253,.16);
+    border-radius: 9px;
+    color: #cce3ff;
+    background: rgba(37,99,235,.13);
+    box-shadow: none;
+  }
+
+  .admin-picker-management-group-head strong {
+    color: #f5f9ff;
+    font-size: 12px;
+  }
+
+  .admin-picker-management-group-head small {
+    color: #7f90a7;
+    font-size: 8.5px;
+  }
+
+  .admin-picker-management-group-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .admin-picker-management-card {
+    min-height: 72px;
+    padding: 9px;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    align-content: center;
+    gap: 8px;
+    border: 1px solid rgba(191,219,254,.08) !important;
+    border-radius: 12px;
+    color: #fff;
+    background: rgba(255,255,255,.035) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.03) !important;
+  }
+
+  .admin-picker-management-card .admin-picker-action-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    border-color: rgba(147,197,253,.16);
+    border-radius: 10px;
+    color: #dbeafe;
+    background: rgba(37,99,235,.12);
+    box-shadow: none;
+  }
+
+  .admin-picker-management-card strong {
+    color: #f4f8fe;
+    font-size: 11.5px;
+  }
+
+  .admin-picker-management-card small {
+    color: #7f90a7;
+    font-size: 9px;
+    line-height: 1.22;
+  }
+
+  .admin-picker-management-card i { display: none; }
+
+  .admin-picker-management-group-cards > .admin-picker-management-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 370px) {
+  .admin-picker-editorial { min-height: 134px; flex-basis: 134px; }
+  .admin-picker-editorial h1 { font-size: 22px; }
+  .admin-picker-editorial-brand img { width: 108px; }
+  .admin-picker-management-head { grid-template-columns: 40px minmax(0, 1fr) 72px; gap: 8px; }
+  .admin-picker-management-head strong { font-size: 18px; }
+  .admin-picker-management-head .admin-picker-management-logo { width: 72px !important; }
+}

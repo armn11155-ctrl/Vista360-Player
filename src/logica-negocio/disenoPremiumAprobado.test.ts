@@ -77,9 +77,12 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('from "../data/naturalEarthGlobe"');
     expect(globo).toContain("MASCARA_FRONTERAS_GLOBO");
     expect(globo).not.toContain("const CONTINENTES");
-    expect(globo).toContain("const radio = Math.min(ancho * 0.39, alto * 0.31)");
-    expect(globo).toContain("const centroX = ancho * 0.506");
-    expect(globo).toContain("const centroY = alto * 0.654");
+    expect(globo).toContain("let radio = Math.min(ancho * 0.39, alto * 0.31)");
+    expect(globo).toContain("let centroX = ancho * 0.506");
+    expect(globo).toContain("let centroY = alto * 0.654");
+    expect(globo).toContain("radio = Math.min(ancho * 0.28, alto * 0.46)");
+    expect(globo).toContain("const salto = esMovil ? 2 : 1");
+    expect(globo).toContain("const intervalo = escritorio.matches ? INTERVALO_CUADRO : 1000 / 24");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
     expect(globo).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
     expect(globo).toContain("window.requestAnimationFrame");
@@ -251,6 +254,22 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("text-transform: uppercase");
     expect(estilos).toContain(".login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel");
     expect(login).not.toContain("login-mobile-only-form");
+  });
+
+  it("adapta a móvil el mismo lenguaje azul de Login, selector y Centro de gestión", () => {
+    const estilos = leer("src/styles/design-system.css");
+    const estilosLogin = leer("src/styles/login-network.css");
+
+    expect(estilosLogin).toContain("ACCESO MÓVIL — MISMA RED AZUL DE LAPTOP");
+    expect(estilosLogin).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.login-left-panel \{[\s\S]*?display: block;[\s\S]*?flex: 0 0 238px;/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \{[\s\S]*?margin: -24px auto 0;[\s\S]*?border-radius: 26px 26px 0 0;/);
+    expect(estilosLogin).toContain(".login-network-globe-canvas");
+    expect(estilos).toContain("PORTAL DE GESTIÓN MÓVIL — CONTINUIDAD CON LAPTOP");
+    expect(estilos).toMatch(/\.admin-picker-stage \{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;/);
+    expect(estilos).toMatch(/\.admin-picker-editorial \{[\s\S]*?display: flex;[\s\S]*?flex: 0 0 148px;/);
+    expect(estilos).toMatch(/\.admin-picker-console \{[\s\S]*?border-radius: 23px;[\s\S]*?linear-gradient\(155deg/);
+    expect(estilos).toMatch(/\.admin-picker-management-grid \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?border-radius: 23px;/);
+    expect(estilos).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-bottom: 1px solid rgba\(191,219,254,\.10\)/);
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
