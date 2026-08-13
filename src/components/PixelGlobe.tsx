@@ -10,7 +10,7 @@ import {
 
 type PuntoGeografico = { lat: number; lon: number };
 type Vector3 = { x: number; y: number; z: number };
-type PuntoEsfera = { vector: Vector3 };
+type PuntoEsfera = { vector: Vector3; destacado: boolean };
 
 const NODOS: PuntoGeografico[] = [
   { lat: -12.05, lon: -77.04 },
@@ -74,7 +74,8 @@ for (let fila = 0; fila < FILAS_GLOBO; fila++) {
     const indice = fila * COLUMNAS_GLOBO + columna;
     if (bitActivo(MASCARA_TIERRA, indice)) {
       const grupo = bitActivo(MASCARA_FRONTERAS, indice) ? PUNTOS_FRONTERA : PUNTOS_TIERRA;
-      grupo.push({ vector: aVector({ lat, lon: -180 + columna * PASO_GLOBO }) });
+      const destacado = (fila * 37 + columna * 17) % 53 === 0;
+      grupo.push({ vector: aVector({ lat, lon: -180 + columna * PASO_GLOBO }), destacado });
     }
   }
 }
@@ -85,7 +86,7 @@ for (let lat = -81; lat <= 81; lat += 2.45) {
   const desfase = Math.round((lat + 81) / 2.45) % 2 === 0 ? 0 : 1.225;
   for (let lon = -180 + desfase; lon < 180; lon += 2.45) {
     if (!esTierraEnMascara(lon, lat)) {
-      PUNTOS_OCEANO.push({ vector: aVector({ lat, lon }) });
+      PUNTOS_OCEANO.push({ vector: aVector({ lat, lon }), destacado: false });
     }
   }
 }
@@ -160,11 +161,12 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      // Más grande y hacia la izquierda: comparte la composición con el
-      // mensaje alineado a la derecha sin perder la circunferencia inferior.
-      const radio = Math.min(ancho * 0.43, alto * 0.325);
-      const centroX = ancho * 0.39;
-      const centroY = alto * 0.665;
+      // La composición de referencia reserva el tercio superior al mensaje y
+      // centra el planeta en la zona inferior. El margen final mantiene la
+      // circunferencia completa incluso en un MacBook de 13 pulgadas.
+      const radio = Math.min(ancho * 0.39, alto * 0.33);
+      const centroX = ancho * 0.5;
+      const centroY = alto * 0.65;
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.
@@ -231,21 +233,87 @@ export default function PixelGlobe() {
       contexto.fill();
       contexto.stroke();
 
-      // Tres pasadas y solo tres cambios de fillStyle por cuadro. Aunque hay
-      // más puntos, evitar construir un color RGBA por cada uno reduce mucho
-      // el trabajo del canvas y deja las fronteras por encima de la tierra.
-      const dibujarGrupo = (puntos: PuntoEsfera[], color: string, tamanoBase: number) => {
-        contexto.fillStyle = color;
+      // La malla se proyecta una sola vez y se reparte en tres capas de
+      // profundidad. Path2D permite iluminar miles de puntos con unos pocos
+      // fills por cuadro, sin construir un color diferente para cada punto.
+      const capasTierra = [new Path2D(), new Path2D(), new Path2D()];
+      const capasFrontera = [new Path2D(), new Path2D(), new Path2D()];
+      const capaOceano = new Path2D();
+      const capaDestellos = new Path2D();
+      const acumularGrupo = (puntos: PuntoEsfera[], capas: Path2D[], tamanoBase: number) => {
         for (const punto of puntos) {
           const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
           if (proyectado.z < -0.06) continue;
           const tamano = tamanoBase * proyectado.escala;
-          contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
+          const indiceCapa = proyectado.z < 0.28 ? 0 : proyectado.z < 0.68 ? 1 : 2;
+          capas[indiceCapa].rect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
+          if (punto.destacado && proyectado.z > 0.18) {
+            const tamanoDestello = tamano * 1.65;
+            capaDestellos.rect(
+              proyectado.x - tamanoDestello / 2,
+              proyectado.y - tamanoDestello / 2,
+              tamanoDestello,
+              tamanoDestello,
+            );
+          }
         }
       };
-      dibujarGrupo(PUNTOS_OCEANO, "rgba(150, 192, 244, .045)", 0.52);
-      dibujarGrupo(PUNTOS_TIERRA, "rgba(214, 232, 255, .68)", 1.02);
-      dibujarGrupo(PUNTOS_FRONTERA, "rgba(241, 248, 255, .92)", 1.18);
+
+      for (const punto of PUNTOS_OCEANO) {
+        const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
+        if (proyectado.z < 0.02) continue;
+        const tamano = 0.48 * proyectado.escala;
+        capaOceano.rect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
+      }
+      acumularGrupo(PUNTOS_TIERRA, capasTierra, 1.08);
+      acumularGrupo(PUNTOS_FRONTERA, capasFrontera, 1.22);
+
+      contexto.fillStyle = "rgba(111, 169, 238, .055)";
+      contexto.fill(capaOceano);
+      [
+        "rgba(146, 191, 247, .22)",
+        "rgba(190, 219, 255, .56)",
+        "rgba(226, 239, 255, .92)",
+      ].forEach((color, indice) => {
+        contexto.fillStyle = color;
+        contexto.fill(capasTierra[indice]);
+      });
+      [
+        "rgba(181, 214, 255, .34)",
+        "rgba(219, 236, 255, .74)",
+        "rgba(247, 251, 255, 1)",
+      ].forEach((color, indice) => {
+        contexto.fillStyle = color;
+        contexto.fill(capasFrontera[indice]);
+      });
+
+      // Solo una fracción estable de la cartografía recibe halo. Así aparecen
+      // los puntos luminosos de la referencia sin aplicar sombras a toda la
+      // malla ni introducir parpadeos durante la rotación.
+      contexto.save();
+      contexto.fillStyle = "rgba(240, 248, 255, .98)";
+      contexto.shadowColor = "rgba(126, 184, 255, .95)";
+      contexto.shadowBlur = Math.max(3, radio * 0.018);
+      contexto.fill(capaDestellos);
+      contexto.restore();
+
+      // Luz rasante: refuerza el volumen en el borde superior izquierdo y en
+      // la base, dos rasgos visibles en la referencia enviada por el usuario.
+      contexto.save();
+      contexto.lineCap = "round";
+      contexto.shadowColor = "rgba(145, 196, 255, .68)";
+      contexto.shadowBlur = Math.max(8, radio * 0.045);
+      contexto.strokeStyle = "rgba(222, 237, 255, .62)";
+      contexto.lineWidth = Math.max(1, radio * 0.006);
+      contexto.beginPath();
+      contexto.arc(centroX, centroY, radio * 1.006, Math.PI * 1.08, Math.PI * 1.55);
+      contexto.stroke();
+      contexto.strokeStyle = "rgba(233, 244, 255, .80)";
+      contexto.lineWidth = Math.max(1.2, radio * 0.009);
+      contexto.beginPath();
+      contexto.arc(centroX, centroY, radio * 1.006, Math.PI * 0.38, Math.PI * 0.64);
+      contexto.stroke();
+      contexto.restore();
 
       contexto.save();
       contexto.setLineDash([4, 8]);

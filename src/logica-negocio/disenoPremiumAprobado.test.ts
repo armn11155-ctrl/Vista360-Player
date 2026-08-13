@@ -77,9 +77,9 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain('from "../data/naturalEarthGlobe"');
     expect(globo).toContain("MASCARA_FRONTERAS_GLOBO");
     expect(globo).not.toContain("const CONTINENTES");
-    expect(globo).toContain("const radio = Math.min(ancho * 0.43, alto * 0.325)");
-    expect(globo).toContain("const centroX = ancho * 0.39");
-    expect(globo).toContain("const centroY = alto * 0.665");
+    expect(globo).toContain("const radio = Math.min(ancho * 0.39, alto * 0.33)");
+    expect(globo).toContain("const centroX = ancho * 0.5");
+    expect(globo).toContain("const centroY = alto * 0.65");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
     expect(globo).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
     expect(globo).toContain("window.requestAnimationFrame");
@@ -100,7 +100,9 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("PUNTOS_FRONTERA");
     expect(globo).toContain("PUNTOS_TIERRA");
     expect(globo).toContain("PUNTOS_OCEANO");
-    expect(globo).toContain("solo tres cambios de fillStyle por cuadro");
+    expect(globo).toContain("const capasTierra = [new Path2D(), new Path2D(), new Path2D()]");
+    expect(globo).toContain("const capaDestellos = new Path2D()");
+    expect(globo).toContain("sin aplicar sombras a toda la");
     expect(globo).toContain('"Cobertura",');
     expect(globo).toContain('"Ubicaciones",');
     expect(globo).toContain("MAX_ETIQUETAS_VISIBLES = 4");
@@ -113,8 +115,8 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("const cosenoAngulo = Math.cos(angulo)");
     expect(globo).toContain("const senoAngulo = Math.sin(angulo)");
     expect(globo).not.toContain("function rotar");
+    expect(globo).toContain("ancho * 0.5");
     expect(globo).toContain("ancho * 0.39");
-    expect(globo).toContain("ancho * 0.43");
     expect(globo).toContain("-0.62 + tiempo * 0.000092");
     expect(globo).not.toContain('globalCompositeOperation = "destination-in"');
     expect(globo).not.toContain("const mascaraCircular");
