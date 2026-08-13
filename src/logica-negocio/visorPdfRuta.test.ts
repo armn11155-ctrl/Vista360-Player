@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 /**
  * EL FALLO QUE ESTO HABRIA ATRAPADO.
  *
- * Habia DOS visores de PDF: `public/visor-pdf.html` (estatico, ligero, el
+ * Había DOS visores de PDF: `visor-pdf.html` (entrada dedicada, ligera, la
  * que de verdad se abre) y un componente React `VisorPdf.tsx` colgado de
  * `main.tsx` tras `?visor-pdf`.
  *
@@ -28,12 +28,12 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
     const rutas = [...abridor.matchAll(/["'`]\/([\w.-]+\.html)["'`]/g)].map((m) => m[1]);
     expect(rutas.length, "descargarArchivo debe abrir alguna ruta de visor").toBeGreaterThan(0);
     for (const ruta of rutas) {
-      expect(existsSync(resolve(RAIZ, `public/${ruta}`)), `falta public/${ruta}`).toBe(true);
+      expect(existsSync(resolve(RAIZ, ruta)), `falta ${ruta}`).toBe(true);
     }
   });
 
   it("no envía URL, firma ni token en la barra", () => {
-    const visor = leer("public/visor-pdf.html");
+    const visor = leer("src/visor-pdf.ts");
     expect(abridor).not.toMatch(/\/visor-pdf\.html\?/);
     expect(visor).not.toContain("URLSearchParams");
     expect(visor).toContain('history.replaceState(null, "", "/")');
@@ -41,7 +41,7 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
 
   it("la clave de sessionStorage coincide entre quien escribe y quien lee", () => {
     // Si los prefijos se separan, el visor abre siempre "no se pudo abrir".
-    const visor = leer("public/visor-pdf.html");
+    const visor = leer("src/visor-pdf.ts");
     expect(abridor).toContain('"vista360:visor-pdf"');
     expect(visor).toContain('"vista360:visor-pdf"');
   });
@@ -54,16 +54,17 @@ describe("la ruta del visor de PDF apunta a algo que existe", () => {
   it("el visor BORRA la entrada al leerla: un solo uso", () => {
     // La URL con el token puede quedar en el historial o en una captura.
     // Si la entrada siguiera ahi, reabrirla mostraria el documento otra vez.
-    const visor = leer("public/visor-pdf.html");
-    expect(visor).toContain("sessionStorage.removeItem(clave)");
+    const visor = leer("src/visor-pdf.ts");
+    expect(visor).toContain("sessionStorage.removeItem(CLAVE_VISOR)");
   });
 
-  it("mantiene la URL propia mientras el PDF vive solo en memoria", () => {
-    const visor = leer("public/visor-pdf.html");
-    expect(visor).toContain("visor.src = urlLocal");
+  it("mantiene la URL propia mientras PDF.js pinta cada página", () => {
+    const visor = leer("src/visor-pdf.ts");
+    expect(visor).toContain('document.createElement("canvas")');
+    expect(visor).toContain("pagina.render({");
     expect(visor).toContain('history.replaceState(null, "", "/")');
     expect(visor).not.toContain("<embed");
-    expect(visor).toContain("URL.revokeObjectURL(urlLocal)");
+    expect(visor).not.toContain("<iframe");
   });
 
   it("no queda un segundo visor en React compitiendo con el estático", () => {

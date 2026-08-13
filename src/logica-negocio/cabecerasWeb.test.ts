@@ -68,7 +68,7 @@ function directiva(politica: string, nombre: string): string {
 
 const HTMLS = [
   { archivo: "index.html", ruta: join(RAIZ, "index.html") },
-  { archivo: "public/visor-pdf.html", ruta: join(RAIZ, "public", "visor-pdf.html") },
+  { archivo: "visor-pdf.html", ruta: join(RAIZ, "visor-pdf.html") },
   { archivo: "public/404.html", ruta: join(RAIZ, "public", "404.html") },
 ];
 
@@ -113,8 +113,7 @@ describe("CSP: los hashes coinciden con el HTML real", () => {
     // en línea, tiene que entrar en esta lista (y en la CSP).
     const { readdirSync } = require("node:fs") as typeof import("node:fs");
     const htmlsPublic = readdirSync(join(RAIZ, "public")).filter((f) => f.endsWith(".html"));
-    const cubiertos = HTMLS.map((h) => h.archivo.replace("public/", ""));
-    expect(htmlsPublic.sort()).toEqual(cubiertos.filter((c) => c !== "index.html").sort());
+    expect(htmlsPublic.sort()).toEqual(["404.html"]);
   });
 });
 
@@ -158,7 +157,7 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
     expect(csp).not.toContain("unsafe-hashes");
   });
 
-  it("script-src no admite comodines: solo 'self' y hashes", () => {
+  it("script-src no admite comodines ni scripts inline: solo 'self'", () => {
     const valores = directiva(csp, "script-src").split(/\s+/).filter(Boolean);
     expect(valores).toContain("'self'");
     for (const v of valores) {
@@ -198,8 +197,8 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
     expect(valores.filter((v) => v.startsWith("https://")).sort()).toEqual(esperados.sort());
   });
 
-  it("los iframes quedan acotados al mapa y al PDF privado en memoria", () => {
-    expect(directiva(csp, "frame-src")).toBe("blob: https://www.google.com");
+  it("los iframes quedan acotados exclusivamente al mapa", () => {
+    expect(directiva(csp, "frame-src")).toBe("https://www.google.com");
     const detalle = readFileSync(join(RAIZ, "src", "components", "screens", "DetalleCampana.tsx"), "utf8");
     expect(detalle).toContain("https://www.google.com/maps?q=");
   });
@@ -219,8 +218,11 @@ describe("CSP: la política es de lista blanca, no de comodines", () => {
 
   it("object-src vuelve a estar cerrado: el visor ya no incrusta plugins", () => {
     expect(directiva(csp, "object-src")).toBe("'none'");
-    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).not.toContain("<embed");
-    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).toContain('<iframe id="visor"');
+    const visorHtml = readFileSync(join(RAIZ, "visor-pdf.html"), "utf8");
+    const visorTs = readFileSync(join(RAIZ, "src", "visor-pdf.ts"), "utf8");
+    expect(visorHtml).not.toContain("<embed");
+    expect(visorHtml).not.toContain("<iframe");
+    expect(visorTs).toContain('document.createElement("canvas")');
   });
 });
 
@@ -287,10 +289,9 @@ describe("CSP: nada del codigo genera estilos o scripts en linea", () => {
       .replace(/\/\*[\s\S]*?\*\//g, "")
       .split("\n").filter((l) => !l.trim().startsWith("//")).join("\n");
     expect(codigo).not.toContain("<style>");
-    // El visor vive en una ruta fija propia y el HTML estático coloca el
-    // blob privado dentro del iframe permitido expresamente por la CSP.
+    // El visor vive en una ruta fija propia y PDF.js renderiza localmente.
     expect(codigo).toContain('const rutaVisor = "/visor-pdf.html"');
-    expect(readFileSync(join(RAIZ, "public", "visor-pdf.html"), "utf8")).toContain("visor.src = urlLocal");
+    expect(readFileSync(join(RAIZ, "src", "visor-pdf.ts"), "utf8")).toContain("getDocument({ data:");
   });
 
   it("los popups del mapa no usan atributos style=", () => {

@@ -43,16 +43,16 @@ Ninguno se arregló abriendo la política. No se añadió `unsafe-inline`, ni `u
 | Directiva | Valor | Por qué |
 |---|---|---|
 | `default-src` | `'self'` | Todo lo no declarado queda cerrado |
-| `script-src` | `'self'` + 1 hash | Solo nuestro bundle y el script en línea de `visor-pdf.html` |
-| `style-src` | `'self'` + 3 hashes | Los bloques `<style>` de `index.html`, `visor-pdf.html` y `404.html` |
+| `script-src` | `'self'` | Solo nuestros bundles compilados; no hay scripts en línea |
+| `style-src` | `'self'` + 2 hashes | Los bloques `<style>` de `index.html` y `404.html` |
 | `img-src` | `'self' data: blob:` + R2 + tiles | Avatares y fotos (R2, URL firmada), mapa de cobertura, imágenes generadas |
 | `font-src` | `'self' data:` | No se usan Google Fonts ni ninguna fuente externa (verificado) |
 | `connect-src` | 7 orígenes concretos | Ver abajo |
 | `frame-src` | `https://www.google.com` | El iframe del mapa en Detalle de campaña |
-| `worker-src` | `'self'` | El service worker de la PWA |
+| `worker-src` | `'self'` | El service worker de la PWA y el worker local de PDF.js |
 | `manifest-src` | `'self'` | `manifest.json` |
 | `media-src` | `'self' blob:` | — |
-| `object-src` | `blob:` | Relajación documentada, ver §1.5 |
+| `object-src` | `'none'` | No se permiten plugins, objetos ni visores PDF nativos incrustados |
 
 Los siete orígenes de `connect-src`, todos verificados en el código:
 
@@ -81,18 +81,18 @@ Decisión: **no se autoriza**. Meter un dominio de terceros en `script-src` es e
 - **Efecto real**: Cloudflare Web Analytics deja de registrar visitas, y el navegador anota la violación en la consola de cada visita.
 - **Si molesta el ruido** (o si se quiere recuperar la métrica): la decisión correcta es **apagar Web Analytics en el panel de Cloudflare**, no abrir la CSP. Cloudflare Dashboard → el sitio → Web Analytics → desactivar.
 
-### 1.6 Única relajación: `object-src blob:`
+### 1.6 Visor PDF sin relajación de `object-src`
 
-- **Qué dependencia**: `public/visor-pdf.html`, el visor de PDF.
-- **Qué necesita**: muestra el documento con `<embed type="application/pdf">` apuntando a un `blob:` local.
-- **Por qué**: con `object-src 'none'` el visor de PDF deja de funcionar por completo.
-- **Riesgo residual**: permite incrustar objetos desde `blob:`. Para explotarlo hay que poder crear un blob e inyectar un `<embed>`, y eso exige ejecutar script primero — que ya corta `script-src 'self'`. Riesgo bajo y acotado.
+- **Qué dependencia**: `visor-pdf.html` y `src/visor-pdf.ts`.
+- **Cómo funciona**: PDF.js, empaquetado localmente, descarga el archivo desde la URL firmada y dibuja cada página en un `<canvas>`.
+- **Por qué**: Safari podía dejar completamente gris el visor nativo basado en `<iframe>`/`<embed>`. El renderizado en canvas es consistente y permite mantener `object-src 'none'`.
+- **Seguridad**: no se permite ningún CDN, script en línea, `iframe`, `<embed>` ni plugin. El worker de PDF.js también se sirve desde el mismo origen.
 
-Hay una prueba que comprueba que el visor **sigue** usando `<embed>`: si algún día deja de hacerlo, avisa para volver a `object-src 'none'`.
+Las pruebas comprueban tanto la presencia del renderizado en canvas como la ausencia de `<iframe>` y `<embed>`.
 
 ### 1.7 Los hashes se pueden desincronizar (y por eso hay una prueba)
 
-Si alguien edita un bloque `<style>` o `<script>` en línea y no actualiza el hash, el navegador deja de aplicarlo: la pantalla se ve mal o el visor de PDF deja de abrir, **en producción y en silencio**.
+Si alguien edita un bloque `<style>` en línea y no actualiza el hash, el navegador deja de aplicarlo: la pantalla se ve mal **en producción y en silencio**.
 
 Para regenerarlos:
 
@@ -228,7 +228,7 @@ Todo lo de abajo se comprobó contra `https://vista360player.pe` **con la CSP ya
 | Service worker registrado + `manifest.json` | ✅ |
 | `*.r2.cloudflarestorage.com` (subdominio, el patrón real) | ✅ sin violación CSP |
 | `www.google.com` en iframe (mapa de Detalle de campaña) | ✅ permitido |
-| Pestaña del PDF (hereda la CSP) con estilos por CSSOM | ✅ fondo y `<embed>` a tamaño completo |
+| Pestaña del PDF con PDF.js local | ✅ 2 páginas reales renderizadas en canvas, zoom operativo y URL limpia |
 | Popup del mapa con estilos por CSSOM | ✅ foto y color aplicados |
 
 Detalle sobre los tiles del mapa: `tile.openstreetmap.org` está en **`img-src`**, no en `connect-src`, porque Leaflet los carga como `<img>`. Un `fetch()` a ese host sí da violación de `connect-src` — y es correcto: la app nunca hace `fetch` de tiles. La carga como `<img>` no genera ninguna violación.
@@ -250,11 +250,11 @@ Sobre `eval()`: la política **no incluye** `'unsafe-eval'`, y el bundle compila
 
 Requieren una **sesión iniciada** (no tengo credenciales, y no debo introducir contraseñas):
 
-- Abrir/descargar un PDF real de R2, abrir una factura real.
+- Abrir un PDF real de R2 desde la cuenta. El visor sí se verificó con un PDF real local de dos páginas; falta únicamente el recorrido autenticado contra R2.
 - Subir una foto o cambiar un avatar (PUT firmado a R2).
 - Ver imágenes reales de R2 y los tiles del mapa dentro de la app.
 
-Las directivas que esas acciones necesitan (`img-src`/`connect-src` con `*.r2.cloudflarestorage.com`, `img-src` con los tiles, `object-src blob:`, `frame-src` con Google) **sí** están verificadas una por una arriba. Lo que falta es el recorrido con datos reales.
+Las directivas que esas acciones necesitan (`img-src`/`connect-src` con `*.r2.cloudflarestorage.com`, `img-src` con los tiles y `frame-src` con Google) **sí** están verificadas una por una arriba. Lo que falta es el recorrido autenticado con datos de la cuenta.
 
 **Recorrido de 3 minutos para cerrarlo** (con F12 → Console abierta, buscando `Refused to`):
 

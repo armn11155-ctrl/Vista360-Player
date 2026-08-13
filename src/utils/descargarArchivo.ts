@@ -176,15 +176,6 @@ export function esIOS(): boolean {
   return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
 }
 
-/** Safari necesita abrir una página REAL dentro del clic para tratarla
- * como un enlace normal y activar la pestaña. Esa página es una ruta de
- * Vista360; el PDF se carga dentro sin enseñar la dirección firmada. */
-function esSafari(): boolean {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent || "";
-  return /Safari\//.test(ua) && !/(Chrome|Chromium|CriOS|Edg|OPR|FxiOS)\//.test(ua);
-}
-
 /**
  * ¿Hay que usar la hoja de compartir del sistema en vez de descargar?
  *
@@ -266,8 +257,8 @@ export async function descargarArchivo(url: string, nombre: string): Promise<voi
  * Eso es feo, deja a la vista dónde está alojado todo, y expone una URL
  * firmada que quien la copie puede reenviar hasta que expire.
  *
- * LA SOLUCIÓN. Una ruta estática mínima trae el PDF, lo mantiene como
- * `blob:` privado dentro de su visor y limpia la barra con History API.
+ * LA SOLUCIÓN. Una ruta mínima trae el PDF, lo renderiza con PDF.js local
+ * dentro de canvas y limpia la barra con History API.
  * La persona ve `vista360player.pe`; la firma y el identificador temporal
  * nunca aparecen ni quedan disponibles para copiar.
  *
@@ -281,86 +272,10 @@ export async function verArchivo(url: string, _nombre: string): Promise<void> {
   // La nueva pestaña recibe una COPIA de sessionStorage en el instante de
   // abrirse. Por eso basta una clave fija: no se pone la URL firmada, un
   // token ni un blob con identificador en la barra de direcciones. El visor
-  // estático consume la copia y deja visible solo vista360player.pe.
+  // independiente consume la copia y deja visible solo vista360player.pe.
   const claveVisor = "vista360:visor-pdf";
   const rutaVisor = "/visor-pdf.html";
   sessionStorage.setItem(claveVisor, JSON.stringify({ url, nombre: _nombre }));
-
-  if (esSafari()) {
-
-    const pwaIOS =
-      (/iPhone|iPad|iPod/.test(navigator.userAgent) ||
-        (/Macintosh/.test(navigator.userAgent) && (navigator.maxTouchPoints ?? 0) > 1)) &&
-      (window.matchMedia("(display-mode: standalone)").matches ||
-        (navigator as Navigator & { standalone?: boolean }).standalone === true);
-
-    // Una ventana nueva en la PWA de iOS aparece primero como una pantalla
-    // blanca. Además, pasar primero por la ruta interna obliga a recargar
-    // todo React antes de empezar a traer el PDF. Lo descargamos desde la
-    // pantalla actual: la respuesta al toque es inmediata y, al terminar,
-    // entramos directamente al visor nativo con zoom.
-    if (pwaIOS) {
-      const cargando = document.createElement("div");
-      cargando.setAttribute("role", "status");
-      cargando.setAttribute("aria-live", "polite");
-      cargando.textContent = "Abriendo el documento…";
-      Object.assign(cargando.style, {
-        alignItems: "center",
-        background: "#050a12",
-        color: "#dce6f5",
-        display: "flex",
-        fontFamily: "system-ui, sans-serif",
-        inset: "0",
-        justifyContent: "center",
-        padding: "24px",
-        position: "fixed",
-        zIndex: "2147483647",
-      });
-      document.body.appendChild(cargando);
-
-      // iOS conserva el documento de la PWA en su back-forward cache.
-      // Al volver desde el PDF restaura exactamente ese DOM, incluida esta
-      // capa. La quitamos en pageshow para regresar a la app al instante.
-      const tituloAnterior = document.title;
-      window.addEventListener(
-        "pageshow",
-        () => {
-          cargando.remove();
-          document.title = tituloAnterior;
-        },
-        { once: true },
-      );
-
-      try {
-        const blob = await obtenerBlobArchivo(url);
-        const pdf = blob.type ? blob : new Blob([blob], { type: "application/pdf" });
-        document.title = (_nombre || "Documento").replace(/\.pdf$/i, "");
-        sessionStorage.removeItem(claveVisor);
-        window.location.href = URL.createObjectURL(pdf);
-      } catch {
-        cargando.remove();
-        // La ruta interna conserva el manejo de error y sirve de respaldo.
-        window.location.href = rutaVisor;
-      }
-      return;
-    }
-
-    const ventanaSafari = window.open(rutaVisor, "_blank");
-
-    if (ventanaSafari) {
-      try {
-        ventanaSafari.opener = null;
-      } catch {
-        // La ruta ya está abierta; esto es solo aislamiento adicional.
-      }
-    } else {
-      // Si el navegador bloquea la pestaña, usamos la misma ruta en la
-      // ventana actual. El dominio propio se conserva en ambos caminos.
-      window.location.href = rutaVisor;
-    }
-    window.setTimeout(() => sessionStorage.removeItem(claveVisor), 1_000);
-    return;
-  }
 
   const ventana = window.open(rutaVisor, "_blank");
   if (ventana) {

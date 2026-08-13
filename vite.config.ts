@@ -42,6 +42,10 @@ export default defineConfig({
     // ruido por algo que ya está optimizado.
     chunkSizeWarningLimit: 700,
     rollupOptions: {
+      input: {
+        principal: resolve(dirname(fileURLToPath(import.meta.url)), "index.html"),
+        visorPdf: resolve(dirname(fileURLToPath(import.meta.url)), "visor-pdf.html"),
+      },
       output: {
         // Separa las librerías grandes en su propio archivo, igual que el
         // ERP. El navegador cachea vendor-firebase/vendor-react aparte del

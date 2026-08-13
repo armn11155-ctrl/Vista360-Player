@@ -6406,7 +6406,7 @@ a {
   }
 
   .admin-picker-editorial-brand {
-    margin-left: -18px;
+    margin-left: -7px;
     margin-top: 10px;
   }
 
@@ -6498,7 +6498,7 @@ a {
     width: 138px !important;
     height: auto !important;
     flex: 0 0 138px;
-    margin: 10px 32px 0 auto !important;
+    margin: 10px 54px 0 auto !important;
     opacity: .92;
     filter: brightness(0) invert(1);
     transform: none !important;

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050a12" />
+    <title>Reporte - Vista360 Player</title>
+  </head>
+  <body>
+    <header class="visor-toolbar">
+      <div class="visor-brand">
+        <img src="/logo-player.webp" alt="Vista360 Player" />
+        <span id="documento-titulo">Reporte</span>
+      </div>
+      <div class="visor-controls" aria-label="Controles del documento">
+        <button id="zoom-menos" type="button" aria-label="Alejar">−</button>
+        <output id="zoom-valor" aria-live="polite">100%</output>
+        <button id="zoom-mas" type="button" aria-label="Acercar">+</button>
+        <button id="descargar" class="visor-download" type="button">Descargar</button>
+      </div>
+    </header>
+    <main id="paginas" class="visor-pages" aria-busy="true">
+      <div id="estado" class="visor-status" role="status" aria-live="polite">Abriendo el reporte…</div>
+    </main>
+    <script type="module" src="/src/visor-pdf.ts"></script>
+  </body>
+</html>

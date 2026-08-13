@@ -143,9 +143,10 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain("REFINAMIENTO VISUAL VALIDADO EN SAFARI");
     expect(sistema).toMatch(/\.admin-picker-editorial-orbit \{[\s\S]*?width: 176px;[\s\S]*?height: 176px;[\s\S]*?border-radius: 50%;/);
     expect(sistema).toContain("animation: v360-selector-orb-breathe 7s ease-in-out infinite");
+    expect(sistema).toMatch(/\.admin-picker-editorial-brand \{[\s\S]*?margin-left: -7px;[\s\S]*?margin-top: 10px;/);
     expect(sistema).toMatch(/\.admin-picker-management-head \{[\s\S]*?padding-right: 174px;/);
     expect(selector).toMatch(/admin-picker-management-head[\s\S]*?admin-picker-management-logo/);
-    expect(sistema).toMatch(/\.admin-picker-management-head \.admin-picker-management-logo \{[\s\S]*?position: static !important;[\s\S]*?margin: 10px 32px 0 auto !important;/);
+    expect(sistema).toMatch(/\.admin-picker-management-head \.admin-picker-management-logo \{[\s\S]*?position: static !important;[\s\S]*?margin: 10px 54px 0 auto !important;/);
     expect(sistema).toMatch(/\.admin-picker-console \{[\s\S]*?border-color: #000 !important;/);
     expect(sistema).toMatch(/\.admin-picker-logout \{[\s\S]*?border-color: #000 !important;[\s\S]*?color: #ff4d5f !important;/);
     expect(sistema).toMatch(/\.admin-picker-management-screen \.admin-picker-management-grid \{[\s\S]*?border-color: #000 !important;/);

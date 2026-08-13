@@ -229,9 +229,9 @@ describe("ver un PDF no enseña la dirección de R2", () => {
   });
 
   it("el visor de Safari no carga otra instancia de Firebase Auth", () => {
-    const visor = readFileSync(resolve(__dirname, "../../public/visor-pdf.html"), "utf-8");
+    const visor = readFileSync(resolve(__dirname, "../../src/visor-pdf.ts"), "utf-8");
     expect(visor).not.toContain('get("token")');
-    expect(visor).toContain('const clave = "vista360:visor-pdf"');
+    expect(visor).toContain('const CLAVE_VISOR = "vista360:visor-pdf"');
     expect(visor).toContain("fetch(datos.url");
     expect(visor).toContain('history.replaceState(null, "", "/")');
     expect(visor).not.toContain("firebase");
@@ -246,16 +246,10 @@ describe("ver un PDF no enseña la dirección de R2", () => {
     expect(abrir).not.toHaveBeenCalledWith(expect.stringMatching(/[?&](token|url)=/), expect.anything());
   });
 
-  it("limpia la pantalla de carga al volver del PDF en la PWA", () => {
-    const fuente = readFileSync(resolve(__dirname, "descargarArchivo.ts"), "utf-8");
-    expect(fuente).toContain('window.addEventListener(\n        "pageshow"');
-    expect(fuente).toContain("cargando.remove()");
-    expect(fuente).toContain("document.title = tituloAnterior");
-  });
-
-  it("el visor carga el PDF en un iframe y conserva la barra limpia", () => {
-    const visor = readFileSync(resolve(__dirname, "../../public/visor-pdf.html"), "utf-8");
-    expect(visor).toContain("visor.src = urlLocal");
+  it("el visor renderiza páginas con PDF.js y conserva la barra limpia", () => {
+    const visor = readFileSync(resolve(__dirname, "../../src/visor-pdf.ts"), "utf-8");
+    expect(visor).toContain('document.createElement("canvas")');
+    expect(visor).toContain("pagina.render({");
     expect(visor).not.toContain("location.replace(urlLocal)");
   });
 });

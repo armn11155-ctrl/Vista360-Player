@@ -125,19 +125,19 @@
 #                      unicos ".eval(" son metodos de un objeto interno
 #                      de Firestore, no el eval() global, y no hay
 #                      new Function() en ningun sitio.
-#   'unsafe-inline' -- no hace falta. Los bloques <style>/<script> en
-#                      linea van por HASH. Los estilos inline de React
+#   'unsafe-inline' -- no hace falta. Los únicos bloques <style> en
+#                      línea van por HASH y no hay <script> inline. Los estilos inline de React
 #                      (style={{...}}) no los bloquea la CSP: React los
 #                      aplica por CSSOM (node.style.x = ...), que no
 #                      cuenta como atributo -- comprobado en un
 #                      navegador real, no supuesto.
-#   comodines       -- script-src es 'self' mas un hash; connect-src son
+#   comodines       -- script-src es solo 'self'; connect-src son
 #                      dominios concretos. Los dos unicos * son
 #                      subdominio de un dominio fijo, no * suelto.
 #
-# object-src 'none' -- sigue sin permitirse ningún plugin. El visor usa un
-#   iframe limitado a blob:, un documento privado creado por esta misma
-#   aplicación; frame-src no admite ningún sitio nuevo ni comodín.
+# object-src 'none' -- sigue sin permitirse ningún plugin. El visor dibuja
+#   cada página con PDF.js local sobre canvas; no usa iframe, embed ni abre
+#   ningún origen adicional en la política.
 #
 # SI ALGO SE ROMPE: no metas * ni unsafe-*. Mira en la consola que
 # recurso y de que dominio, comprueba que funcion legitima lo necesita y
@@ -150,4 +150,4 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
   Strict-Transport-Security: max-age=31536000
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-rzqneEguK8FOMa06kSPUGZLoSlhLssN/usyuxC6iayU='; style-src 'self' 'sha256-1uqmG4sZfx5T09wI7G9WOoB5kXzEVz4dzRULqSwimAM=' 'sha256-ydaL3t/XfBDaqpQOMX6pxufWt3AFyonGblAibUentwc=' 'sha256-Np23DIo7jzQvvn18U2m4TjC4QTFQ964BmAZrXPexmEQ='; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://*.cloudfunctions.net https://*.r2.cloudflarestorage.com; frame-src blob: https://www.google.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'sha256-1uqmG4sZfx5T09wI7G9WOoB5kXzEVz4dzRULqSwimAM=' 'sha256-Np23DIo7jzQvvn18U2m4TjC4QTFQ964BmAZrXPexmEQ='; img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https://tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://fcmregistrations.googleapis.com https://*.cloudfunctions.net https://*.r2.cloudflarestorage.com; frame-src https://www.google.com; worker-src 'self'; manifest-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'

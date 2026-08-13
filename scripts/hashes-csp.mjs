@@ -48,7 +48,7 @@ function hashCsp(contenido) {
   return `'sha256-${createHash("sha256").update(contenido, "utf8").digest("base64")}'`;
 }
 
-for (const archivo of ["index.html", "public/visor-pdf.html", "public/404.html"]) {
+for (const archivo of ["index.html", "visor-pdf.html", "public/404.html"]) {
   const html = readFileSync(join(RAIZ, archivo), "utf8");
   const estilos = bloquesEnLinea(html, "style").map(hashCsp);
   const scripts = bloquesEnLinea(html, "script").map(hashCsp);
