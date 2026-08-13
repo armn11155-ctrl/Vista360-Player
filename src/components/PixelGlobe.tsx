@@ -136,7 +136,10 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      const centroX = ancho * 0.84;
+      // En escritorio el formulario vive a la izquierda y la narrativa a la
+      // derecha; el planeta se apoya en el lado opuesto al texto para que
+      // ambos respiren sin superponerse.
+      const centroX = ancho * 0.34;
       const centroY = alto * 0.52;
       const radio = Math.min(ancho * 0.37, alto * 0.405);
       const angulo = movimientoReducido.matches ? -0.55 : -0.55 + tiempo * 0.000105;
@@ -238,7 +241,7 @@ export default function PixelGlobe() {
           etiqueta: ETIQUETAS[indice % ETIQUETAS.length],
           punto: proyectar(vector, cosenoAngulo, senoAngulo, centroX, centroY, radio),
         }))
-        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.48 && punto.x < ancho - 26)
+        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.12 && punto.x < ancho * 0.66)
         .sort((a, b) => b.punto.z - a.punto.z);
       const seleccionados: typeof candidatos = [];
       for (const candidato of candidatos) {

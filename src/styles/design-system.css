@@ -620,6 +620,7 @@ a {
 @media (min-width: 900px) {
   .profile-top { overflow: hidden; }
 }
+
 @media (max-width: 899px) {
   .profile-top {
     overflow: hidden;
@@ -4352,5 +4353,170 @@ a {
   .admin-picker-management-group-head strong,
   .admin-picker-management-card strong {
     font-weight: 720;
+  }
+}
+
+/* =====================================================================
+   COMPOSICIÓN EJECUTIVA — INICIO Y GESTIÓN EN LAPTOP
+   ---------------------------------------------------------------------
+   Reduce la densidad vertical de Inicio y traslada el lenguaje de red del
+   login a Gestión mediante una trama estática. No agrega canvas, timers ni
+   listeners y no modifica la experiencia móvil.
+   ===================================================================== */
+@media (min-width: 900px) {
+  .inicio-content {
+    padding-top: 15px !important;
+    padding-bottom: 26px !important;
+  }
+
+  .inicio-current-client {
+    min-height: 52px !important;
+    padding: 6px 10px !important;
+  }
+
+  .inicio-current-client-mark {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .inicio-desktop-welcome {
+    min-height: 78px;
+    margin-bottom: 14px;
+    padding: 13px 18px 13px 22px;
+    border-radius: 14px;
+  }
+
+  .inicio-desktop-welcome::before {
+    top: 16px;
+    bottom: 16px;
+  }
+
+  .inicio-desktop-welcome-kicker {
+    margin-bottom: 4px;
+    font-size: 9px;
+  }
+
+  .inicio-desktop-welcome h2 {
+    font-size: clamp(19px, 1.65vw, 23px);
+  }
+
+  .inicio-desktop-welcome p {
+    margin-top: 3px;
+    font-size: 11px;
+  }
+
+  .inicio-desktop-welcome-status {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 10px;
+  }
+
+  .inicio-section-title {
+    margin-bottom: 8px !important;
+    font-size: 15px !important;
+  }
+
+  .inicio-summary-grid {
+    margin-bottom: 14px !important;
+    border-radius: 13px;
+  }
+
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 66px !important;
+    padding: 9px 13px !important;
+  }
+
+  .inicio-kpi-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 9px !important;
+  }
+
+  .inicio-kpi-label {
+    margin-bottom: 2px !important;
+    font-size: 10.5px !important;
+  }
+
+  .inicio-kpi-value {
+    font-size: 16px !important;
+  }
+
+  .inicio-dashboard-grid {
+    gap: 14px;
+  }
+
+  .inicio-quick-grid > button {
+    min-height: 58px !important;
+    gap: 5px !important;
+  }
+
+  .inicio-quick-copy small {
+    display: none;
+  }
+
+  .inicio-side-col .inicio-evidence-card {
+    margin-top: 13px;
+    padding: 14px !important;
+    border-radius: 13px !important;
+  }
+
+  .inicio-side-col .inicio-report-title {
+    margin-bottom: 10px !important;
+    font-size: 15px !important;
+  }
+
+  .inicio-side-col .inicio-report-icon {
+    width: 50px !important;
+    height: 54px !important;
+  }
+
+  .inicio-account-status {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .inicio-account-status-grid button {
+    min-height: 68px;
+  }
+
+  .admin-picker-shell,
+  .admin-picker-management-screen {
+    isolation: isolate;
+  }
+
+  .admin-picker-shell::after,
+  .admin-picker-management-screen::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    pointer-events: none;
+    opacity: .32;
+    background-image: radial-gradient(circle, rgba(210,229,255,.78) 0 1px, transparent 1.35px);
+    background-size: 15px 15px;
+    background-position: 78% 34%;
+    -webkit-mask-image: radial-gradient(circle at 78% 34%, transparent 0 118px, #000 120px 220px, transparent 222px);
+    mask-image: radial-gradient(circle at 78% 34%, transparent 0 118px, #000 120px 220px, transparent 222px);
+  }
+
+  .admin-picker-shell > .admin-picker-header,
+  .admin-picker-shell > .admin-picker-body,
+  .admin-picker-shell > .admin-picker-footer,
+  .admin-picker-management-screen > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .admin-picker-header {
+    width: min(720px, calc(100% - 64px));
+    margin-top: 62px;
+    padding: 20px 30px 18px;
+  }
+
+  .admin-picker-management-head,
+  .admin-picker-management-grid {
+    backdrop-filter: blur(18px) saturate(1.1);
+    -webkit-backdrop-filter: blur(18px) saturate(1.1);
   }
 }

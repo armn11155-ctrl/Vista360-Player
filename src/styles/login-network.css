@@ -32,7 +32,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     max-height: none;
-    grid-template-columns: minmax(0, 1.55fr) minmax(400px, .82fr);
+    grid-template-columns: minmax(400px, .82fr) minmax(0, 1.55fr);
     overflow: hidden;
     border: 0;
     border-radius: 0;
@@ -43,7 +43,7 @@
 
   .login-left-panel {
     position: relative;
-    grid-column: 1;
+    grid-column: 2;
     grid-row: 1;
     width: auto;
     max-width: none;
@@ -56,8 +56,8 @@
     aspect-ratio: auto;
     border-radius: 0;
     background:
-      radial-gradient(circle at 80% 38%, rgba(103,166,255,.20), transparent 34%),
-      radial-gradient(circle at 18% 82%, rgba(42,100,208,.24), transparent 38%),
+      radial-gradient(circle at 20% 38%, rgba(103,166,255,.20), transparent 34%),
+      radial-gradient(circle at 82% 82%, rgba(42,100,208,.24), transparent 38%),
       linear-gradient(145deg, #0A2C66 0%, #0A3B8F 46%, #071D48 100%);
     animation: login-network-panel-in .85s cubic-bezier(.2,.75,.2,1) both;
   }
@@ -69,10 +69,10 @@
     z-index: 0;
     pointer-events: none;
     background:
-      linear-gradient(115deg, rgba(2,12,34,.62) 0%, rgba(3,20,54,.22) 50%, transparent 76%),
+      linear-gradient(245deg, rgba(2,12,34,.62) 0%, rgba(3,20,54,.22) 50%, transparent 76%),
       repeating-linear-gradient(90deg, rgba(255,255,255,.018) 0 1px, transparent 1px 64px),
       repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 64px);
-    mask-image: linear-gradient(90deg, black, rgba(0,0,0,.65) 62%, transparent);
+    mask-image: linear-gradient(270deg, black, rgba(0,0,0,.65) 62%, transparent);
   }
 
   .login-left-panel::after {
@@ -102,18 +102,20 @@
     position: absolute;
     z-index: 4;
     top: clamp(52px, 7.5vh, 76px);
-    left: clamp(40px, 4.5vw, 66px);
-    width: min(390px, 52%);
+    right: clamp(40px, 4.5vw, 66px);
+    left: auto;
+    width: min(390px, 44%);
+    text-align: right;
     isolation: isolate;
   }
 
   .login-network-copy::after {
     content: "";
     position: absolute;
-    inset: -48px -96px -48px -58px;
+    inset: -48px -58px -48px -96px;
     z-index: -1;
     pointer-events: none;
-    background: radial-gradient(ellipse at 28% 50%, rgba(7,35,80,.90) 0%, rgba(7,35,80,.66) 52%, transparent 76%);
+    background: radial-gradient(ellipse at 72% 50%, rgba(7,35,80,.90) 0%, rgba(7,35,80,.66) 52%, transparent 76%);
     filter: blur(10px);
   }
 
@@ -126,6 +128,7 @@
     font-weight: 820;
     letter-spacing: .19em;
     text-transform: uppercase;
+    justify-content: flex-end;
   }
 
   .login-network-kicker > span {
@@ -134,19 +137,21 @@
     border-radius: 99px;
     background: #9FC5FF;
     box-shadow: 0 0 15px rgba(147,197,253,.64);
+    order: 2;
   }
 
   .login-network-logo {
     width: clamp(184px, 16vw, 226px);
     height: auto;
-    margin: 27px 0 30px;
+    margin: 27px 0 30px auto;
     filter: brightness(0) invert(1) drop-shadow(0 12px 28px rgba(1,8,24,.28));
   }
 
   .login-network-message {
     position: relative;
     max-width: 355px;
-    padding-left: 19px;
+    margin-left: auto;
+    padding-right: 19px;
   }
 
   .login-network-message::before {
@@ -154,7 +159,7 @@
     position: absolute;
     top: 3px;
     bottom: 3px;
-    left: 0;
+    right: 0;
     width: 1px;
     background: linear-gradient(180deg, #A8CDFF 0%, rgba(147,197,253,.34) 58%, rgba(147,197,253,.04) 100%);
     box-shadow: 0 0 12px rgba(147,197,253,.22);
@@ -179,7 +184,7 @@
 
   .login-network-message > p {
     max-width: 306px;
-    margin: 17px 0 0;
+    margin: 17px 0 0 auto;
     color: rgba(219,234,254,.68);
     font-size: 13px;
     font-weight: 520;
@@ -238,7 +243,7 @@
 
   .login-right-panel {
     position: relative;
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
     width: auto;
     min-width: 0;
@@ -248,7 +253,7 @@
     justify-content: center;
     overflow: hidden;
     border: 0;
-    border-left: 1px solid rgba(147,197,253,.18);
+    border-right: 1px solid rgba(147,197,253,.18);
     border-radius: 0;
     background:
       radial-gradient(circle at 100% 0%, rgba(37,99,235,.12), transparent 34%),
@@ -405,12 +410,12 @@
   .login-secondary-link { color: #94A3B8 !important; }
 
   @keyframes login-network-panel-in {
-    from { opacity: 0; transform: translate3d(-10px,0,0); }
+    from { opacity: 0; transform: translate3d(10px,0,0); }
     to { opacity: 1; transform: translate3d(0,0,0); }
   }
 
   @keyframes login-network-access-in {
-    from { opacity: 0; transform: translate3d(10px,0,0); }
+    from { opacity: 0; transform: translate3d(-10px,0,0); }
     to { opacity: 1; transform: translate3d(0,0,0); }
   }
 
@@ -428,9 +433,9 @@
 }
 
 @media (min-width: 900px) and (max-width: 1120px) {
-  .login-experience { grid-template-columns: minmax(0, 1.38fr) minmax(350px, .92fr); }
-  .login-network-copy { left: 38px; width: 52%; }
-  .login-network-logo { width: 180px; margin: 24px 0 27px; }
+  .login-experience { grid-template-columns: minmax(350px, .92fr) minmax(0, 1.38fr); }
+  .login-network-copy { right: 38px; left: auto; width: 46%; }
+  .login-network-logo { width: 180px; margin: 24px 0 27px auto; }
   .login-network-copy h1 { font-size: clamp(31px, 3.55vw, 38px); }
   .login-network-message > p { max-width: 280px; font-size: 11.5px; }
   .login-right-panel { padding: 42px 34px; }
