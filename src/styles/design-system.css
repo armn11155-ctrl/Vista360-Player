@@ -4520,3 +4520,449 @@ a {
     -webkit-backdrop-filter: blur(18px) saturate(1.1);
   }
 }
+
+/* =====================================================================
+   REFINAMIENTO EJECUTIVO — PERFIL, INICIO Y CENTRO DE GESTIÓN
+   ---------------------------------------------------------------------
+   Ajustes observados en Safari a 1245 px. Reducen texto repetido y grandes
+   superficies cerradas sin ocultar acciones ni cambiar navegación, datos o
+   comportamiento. El campo orbital usa solo transform en CSS: no añade
+   canvas, timers, listeners, lecturas ni trabajo de React.
+   ===================================================================== */
+@media (min-width: 900px) {
+  /* Perfil: Cuenta queda visible arriba a la izquierda, tal como se espera
+     al entrar al perfil de un cliente. Seguridad permanece a su lado y la
+     información de empresa continúa debajo, con una lectura más natural. */
+  .profile-content {
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 410px);
+    grid-template-rows: auto auto;
+    align-items: start;
+  }
+
+  .profile-section:nth-child(4) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .profile-section:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .profile-section:nth-child(1) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .profile-section:nth-child(2) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  /* Inicio: conserva las tres acciones recomendadas, pero las convierte en
+     una franja de continuidad. Los detalles secundarios siguen accesibles en
+     sus pantallas de destino y dejan de competir con el resumen principal. */
+  .inicio-desktop-welcome {
+    min-height: 64px;
+    padding-block: 10px;
+  }
+
+  .inicio-desktop-welcome p {
+    display: none;
+  }
+
+  .inicio-account-status {
+    display: grid;
+    grid-template-columns: 148px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 11px 12px;
+  }
+
+  .inicio-account-status-head {
+    margin: 0 !important;
+  }
+
+  .inicio-account-status-head h2 {
+    margin: 0;
+    font-size: 15px !important;
+  }
+
+  .inicio-account-status-badge {
+    display: none !important;
+  }
+
+  .inicio-account-status-grid {
+    gap: 8px !important;
+  }
+
+  .inicio-account-status-grid button {
+    min-height: 54px !important;
+    padding: 8px 10px !important;
+    border-radius: 11px !important;
+  }
+
+  .inicio-account-status-grid button > div:nth-child(2) {
+    min-width: 0;
+  }
+
+  .inicio-account-status-grid button span {
+    font-size: 8.5px !important;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+  }
+
+  .inicio-account-status-grid button strong {
+    display: block;
+    overflow: hidden;
+    font-size: 11.5px !important;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inicio-account-status-grid button small {
+    display: none !important;
+  }
+
+  .inicio-account-status-icon {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 9px !important;
+  }
+
+  .inicio-account-status-icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Selector: desaparece el gran rectángulo cerrado. La identidad, filtros
+     y atajos ahora respiran sobre el fondo y cada control conserva su propia
+     superficie, igual que el lenguaje editorial del login. */
+  .admin-picker-header {
+    display: grid;
+    grid-template-columns: 112px minmax(260px, 1fr) minmax(330px, .9fr);
+    grid-template-rows: auto auto auto auto;
+    column-gap: 20px;
+    row-gap: 9px;
+    width: min(980px, calc(100% - 96px));
+    margin-top: 76px;
+    margin-bottom: 20px;
+    padding: 18px 20px 16px;
+    border: 0 !important;
+    border-radius: 0;
+    text-align: left;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .admin-picker-logo {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-self: start;
+    width: 102px;
+    margin: 0;
+  }
+
+  .admin-picker-badge {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: start;
+    margin: 0;
+  }
+
+  .admin-picker-title {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: end;
+    margin: 0;
+    font-size: clamp(24px, 2.3vw, 31px);
+    line-height: 1.03;
+    letter-spacing: -.04em;
+  }
+
+  .admin-picker-sub {
+    grid-column: 1 / span 2;
+    grid-row: 3;
+    margin: 0;
+    padding-left: 132px;
+    text-align: left;
+  }
+
+  .admin-picker-actions {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: stretch;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    margin: 0;
+  }
+
+  .admin-picker-action {
+    min-height: 44px;
+    padding: 7px 9px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.055);
+  }
+
+  .admin-picker-action small {
+    display: none;
+  }
+
+  .admin-picker-tabs {
+    grid-column: 1 / span 2;
+    grid-row: 4;
+    width: auto;
+    margin: 4px 0 0;
+  }
+
+  .admin-picker-search-wrap {
+    grid-column: 3;
+    grid-row: 3 / span 2;
+    align-self: end;
+    width: 100%;
+    margin: 0;
+  }
+
+  .admin-picker-body {
+    width: min(980px, calc(100% - 96px));
+    margin-inline: auto;
+  }
+
+  .admin-picker-grid {
+    gap: 13px;
+  }
+
+  .admin-picker-tile:not(.archived) {
+    border-radius: 17px;
+    box-shadow: 0 24px 54px -42px rgba(0,0,0,.96), inset 0 1px 0 rgba(255,255,255,.055);
+  }
+
+  /* Centro de Gestión: tres módulos independientes sustituyen al bloque
+     monolítico. La agrupación sigue siendo la misma y cada destino conserva
+     exactamente su botón y permisos actuales. */
+  .admin-picker-management-screen {
+    padding: 26px 54px 44px;
+    background-image:
+      radial-gradient(circle at 78% 28%, rgba(29,104,224,.14), transparent 25%),
+      linear-gradient(135deg, rgba(2,7,15,.96), rgba(4,11,23,.94)),
+      url('/selector-clientes-atardecer-desktop.jpg');
+    background-position: center;
+    background-size: cover;
+  }
+
+  .admin-picker-management-head {
+    width: min(1040px, 100%);
+    min-height: 66px;
+    margin: 54px auto 18px;
+    padding: 10px 14px;
+    border-color: rgba(191,219,254,.13);
+    border-radius: 16px;
+  }
+
+  .admin-picker-management-head strong {
+    font-size: 19px;
+    letter-spacing: -.025em;
+  }
+
+  .admin-picker-management-head span {
+    margin-top: 2px;
+    font-size: 11px;
+  }
+
+  .admin-picker-management-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px !important;
+    width: min(1040px, 100%);
+    margin: 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .admin-picker-management-group {
+    min-height: 292px;
+    padding: 17px 15px;
+    border: 1px solid rgba(191,219,254,.13) !important;
+    border-radius: 17px;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.105), transparent 38%),
+      linear-gradient(155deg, rgba(7,17,31,.93), rgba(3,8,17,.91)) !important;
+    box-shadow: 0 28px 64px -44px rgba(0,0,0,.98), inset 0 1px 0 rgba(255,255,255,.055) !important;
+    backdrop-filter: blur(18px) saturate(1.08);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+  }
+
+  .admin-picker-management-group::before {
+    top: 0;
+    bottom: auto;
+    left: 16px;
+    width: 34px;
+    height: 2px;
+    border-radius: 0 0 999px 999px;
+    background: linear-gradient(90deg, var(--management-accent), transparent);
+  }
+
+  .admin-picker-management-group-head {
+    min-height: 42px;
+    margin-bottom: 12px;
+  }
+
+  .admin-picker-management-group-head > span {
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(147,197,253,.15);
+    border-radius: 9px;
+    color: #bcd9ff;
+    background: rgba(37,99,235,.09);
+  }
+
+  .admin-picker-management-group-head strong {
+    color: #f8fbff;
+    font-size: 13px;
+  }
+
+  .admin-picker-management-group-head small {
+    color: #7f90a7;
+    font-size: 9.5px;
+  }
+
+  .admin-picker-management-group-cards {
+    gap: 7px;
+  }
+
+  .admin-picker-management-card {
+    min-height: 51px;
+    padding: 7px 8px;
+    border: 1px solid rgba(255,255,255,.06) !important;
+    border-radius: 11px;
+    background: rgba(255,255,255,.035) !important;
+    box-shadow: none !important;
+  }
+
+  .admin-picker-management-card + .admin-picker-management-card {
+    border-top-width: 1px !important;
+  }
+
+  .admin-picker-management-card .admin-picker-action-icon {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    color: #9fc9ff;
+    background: rgba(37,99,235,.105);
+  }
+
+  .admin-picker-management-card strong {
+    color: #f4f8fe;
+    font-size: 11.5px;
+  }
+
+  .admin-picker-management-card small {
+    color: #77889f;
+    font-size: 9.5px;
+  }
+
+  .admin-picker-management-card i {
+    color: #6f8199;
+  }
+
+  .admin-picker-management-card:hover {
+    border-color: rgba(96,165,250,.21) !important;
+    background: rgba(37,99,235,.09) !important;
+    transform: translateY(-1px);
+  }
+
+  /* Los módulos internos de Gestión comparten una misma geometría limpia.
+     Se actúa solo sobre presentación de escritorio; formularios, estados y
+     operaciones permanecen intactos. */
+  .admin-tool-screen > .content-area {
+    padding-top: 24px;
+    padding-bottom: 38px;
+  }
+
+  .accesos-screen .content-area > .card:first-child {
+    border: 1px solid rgba(191,219,254,.15);
+    color: #fff;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.16), transparent 36%),
+      linear-gradient(145deg, #101e35, #07101e 74%);
+    box-shadow: 0 24px 54px -40px rgba(2,6,23,.94);
+  }
+
+  .accesos-screen .content-area > .card:first-child > div:first-child,
+  .accesos-screen .content-area > .card:first-child .access-person-row > div > div:first-child {
+    color: #fff !important;
+  }
+
+  .accesos-screen .content-area > .card:first-child .access-person-row > div > div:last-child {
+    color: #9fb0c6 !important;
+  }
+
+  .accesos-screen .content-area > div:nth-child(2) {
+    width: min(480px, 100%);
+  }
+
+  .accesos-screen .content-area > div:nth-child(2) > button {
+    border-color: #dfe6ef !important;
+    background: #fff !important;
+    box-shadow: 0 14px 30px -26px rgba(15,23,42,.48);
+  }
+
+  .accesos-screen .content-area > div:nth-child(2) > button[style*="rgba(8, 119, 255"],
+  .accesos-screen .content-area > div:nth-child(2) > button[style*="rgba(8,119,255"] {
+    border-color: rgba(8,119,255,.28) !important;
+    background: #edf5ff !important;
+  }
+
+  .solicitudes-screen .solicitudes-area,
+  .analitica-screen > .content-area,
+  .accesos-screen > .content-area {
+    width: 100%;
+  }
+
+  .solicitudes-screen .solicitudes-card {
+    padding: 17px 18px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 20px 42px -36px rgba(15,23,42,.54);
+  }
+
+  .solicitudes-screen .solicitudes-card.is-attention {
+    border-color: rgba(37,99,235,.22);
+    box-shadow: inset 3px 0 0 #2f7fed, 0 20px 42px -36px rgba(15,23,42,.54);
+  }
+
+  .analitica-screen .analytics-summary {
+    border-radius: 16px;
+    box-shadow: 0 20px 42px -36px rgba(15,23,42,.54);
+  }
+
+  /* La órbita gana vida mediante un único compositor de transform. */
+  .admin-picker-shell::after,
+  .admin-picker-management-screen::before {
+    opacity: .42;
+    background-size: 12px 12px;
+    transform-origin: 78% 34%;
+    animation: v360-management-orbit 26s linear infinite;
+  }
+}
+
+@keyframes v360-management-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-picker-shell::after,
+  .admin-picker-management-screen::before {
+    animation: none !important;
+  }
+}
