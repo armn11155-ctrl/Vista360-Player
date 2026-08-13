@@ -137,6 +137,18 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toContain("mask-image: radial-gradient(circle at 78% 34%");
   });
 
+  it("mantiene el refinamiento de selector, gestión y usuarios validado en Safari", () => {
+    const selector = leer("src/components/AdminClientPicker.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    expect(sistema).toContain("REFINAMIENTO VISUAL VALIDADO EN SAFARI");
+    expect(sistema).toMatch(/\.admin-picker-editorial-orbit \{[\s\S]*?width: 176px;[\s\S]*?height: 176px;[\s\S]*?border-radius: 50%;/);
+    expect(sistema).toContain("animation: v360-selector-orb-breathe 7s ease-in-out infinite");
+    expect(sistema).toMatch(/\.admin-picker-management-head \{[\s\S]*?padding-right: 174px;/);
+    expect(selector).toMatch(/admin-picker-management-head[\s\S]*?admin-picker-management-logo/);
+    expect(sistema).toMatch(/\.accesos-screen \.accesos-users-list \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
+    expect(sistema).toContain("@media (prefers-reduced-motion: reduce)");
+  });
+
   it("usa controles semánticos para el filtro de campañas", () => {
     const campanas = leer("src/components/screens/MisCampanas.tsx");
     expect(campanas).toContain('role="tablist"');

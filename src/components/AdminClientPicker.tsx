@@ -550,7 +550,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
       {gestionAbierta && (
         <div className="admin-picker-management-screen">
-          <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-management-logo" draggable={false} />
           <div className="admin-picker-management-flow" aria-hidden="true">
             <span />
             <i /><i /><i /><i />
@@ -563,6 +562,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <strong>Centro de gestión</strong>
               <span>Administra tu operación desde un solo lugar.</span>
             </div>
+            <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-management-logo" draggable={false} />
           </div>
           <div className="admin-picker-management-grid">
             <section className="admin-picker-management-group">
