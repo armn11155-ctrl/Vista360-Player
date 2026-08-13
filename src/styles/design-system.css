@@ -6498,7 +6498,9 @@ a {
     width: 138px !important;
     height: auto !important;
     flex: 0 0 138px;
-    margin: 10px 54px 0 auto !important;
+    /* Alineado dentro del borde derecho de la consola negra. En Safari,
+       54px todavía dejaban la marca visualmente fuera del panel. */
+    margin: 10px 90px 0 auto !important;
     opacity: .92;
     filter: brightness(0) invert(1);
     transform: none !important;

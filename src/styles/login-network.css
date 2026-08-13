@@ -568,3 +568,68 @@
     top: 25px;
   }
 }
+
+/* CIERRE EDITORIAL DEL ACCESO — validado a tamaño real en Safari.
+   La entrada necesita dos protagonistas, no una colección de etiquetas:
+   la marca en la consola negra y la promesa principal sobre la red azul. */
+@media (min-width: 900px) {
+  .login-right-panel .login-logo img {
+    width: clamp(178px, 15.5vw, 206px);
+    filter: brightness(0) invert(1) drop-shadow(0 12px 28px rgba(0,0,0,.38));
+  }
+
+  .login-access-kicker,
+  .login-network-kicker,
+  .login-network-message > p,
+  .login-network-live {
+    display: none !important;
+  }
+
+  .login-network-copy {
+    top: clamp(54px, 8vh, 82px);
+    left: clamp(54px, 5.4vw, 82px);
+    width: min(570px, 72%);
+  }
+
+  .login-network-copy::after {
+    inset: -72px -132px -88px -76px;
+    background: radial-gradient(ellipse at 24% 46%, rgba(7,35,80,.94) 0%, rgba(7,35,80,.68) 52%, transparent 78%);
+  }
+
+  .login-network-message {
+    max-width: 570px;
+    padding-left: 0;
+  }
+
+  .login-network-message::before {
+    content: none;
+    display: none;
+  }
+
+  .login-network-copy h1 {
+    max-width: 570px;
+    color: #fff;
+    font-size: clamp(46px, 4.7vw, 68px);
+    font-weight: 690;
+    line-height: .98;
+    letter-spacing: -.058em;
+    text-shadow: 0 14px 34px rgba(1,8,24,.38);
+  }
+
+  .login-network-copy h1 strong {
+    margin-top: 2px;
+    color: #dcecff;
+    font-weight: 860;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1120px) {
+  .login-network-copy {
+    left: 48px;
+    width: min(470px, 72%);
+  }
+
+  .login-network-copy h1 {
+    font-size: clamp(40px, 4.7vw, 54px);
+  }
+}

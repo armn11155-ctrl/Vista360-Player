@@ -55,6 +55,9 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).not.toContain("login-billboard-code-arrive");
     expect(estilos).not.toContain("login-network-index-three");
     expect(estilos).toContain("prefers-reduced-motion: reduce");
+    expect(estilos).toContain("CIERRE EDITORIAL DEL ACCESO");
+    expect(estilos).toMatch(/\.login-access-kicker,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
+    expect(estilos).toMatch(/\.login-network-copy h1 \{[\s\S]*?font-size: clamp\(46px, 4\.7vw, 68px\);[\s\S]*?text-shadow:/);
     expect(estilos).not.toContain(".jpg");
     expect(estilos).not.toContain(".png");
     expect(login).not.toContain("login-led-scene");
@@ -146,7 +149,7 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.admin-picker-editorial-brand \{[\s\S]*?margin-left: -7px;[\s\S]*?margin-top: 10px;/);
     expect(sistema).toMatch(/\.admin-picker-management-head \{[\s\S]*?padding-right: 174px;/);
     expect(selector).toMatch(/admin-picker-management-head[\s\S]*?admin-picker-management-logo/);
-    expect(sistema).toMatch(/\.admin-picker-management-head \.admin-picker-management-logo \{[\s\S]*?position: static !important;[\s\S]*?margin: 10px 54px 0 auto !important;/);
+    expect(sistema).toMatch(/\.admin-picker-management-head \.admin-picker-management-logo \{[\s\S]*?position: static !important;[\s\S]*?margin: 10px 90px 0 auto !important;/);
     expect(sistema).toMatch(/\.admin-picker-console \{[\s\S]*?border-color: #000 !important;/);
     expect(sistema).toMatch(/\.admin-picker-logout \{[\s\S]*?border-color: #000 !important;[\s\S]*?color: #ff4d5f !important;/);
     expect(sistema).toMatch(/\.admin-picker-management-screen \.admin-picker-management-grid \{[\s\S]*?border-color: #000 !important;/);
