@@ -6721,3 +6721,342 @@ a {
     mix-blend-mode: screen;
   }
 }
+
+/* =====================================================================
+   INVENTARIO EJECUTIVO — PANELES Y OCUPACIÓN
+   ---------------------------------------------------------------------
+   Paneles deja de ser una lista de formularios blancos y Ocupación pasa
+   a leerse como un tablero operativo. Los datos, filtros y acciones son
+   exactamente los mismos; solo cambia su jerarquía visual en laptop.
+   ===================================================================== */
+@media (min-width: 900px) {
+  .paneles-screen,
+  .ocupacion-screen {
+    background:
+      radial-gradient(circle at 88% 8%, rgba(37,99,235,.08), transparent 24%),
+      linear-gradient(180deg, #f2f5f9 0%, #eaf0f6 100%);
+  }
+
+  .paneles-screen > .content-area,
+  .ocupacion-screen > .content-area {
+    width: min(1180px, calc(100% - 72px));
+    margin: 0 auto;
+    padding: 26px 0 48px;
+  }
+
+  .paneles-hero {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    min-height: 164px;
+    padding: 28px 30px;
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    box-sizing: border-box;
+    border: 1px solid rgba(147,197,253,.18);
+    border-radius: 24px;
+    color: #fff;
+    background:
+      radial-gradient(circle at 88% -18%, rgba(59,130,246,.32), transparent 43%),
+      linear-gradient(135deg, #111e34 0%, #08111f 62%, #040912 100%);
+    box-shadow: 0 30px 62px -42px rgba(2,6,23,.96), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+
+  .paneles-hero::after,
+  .occupancy-hero::after {
+    content: "";
+    position: absolute;
+    right: -42px;
+    bottom: -90px;
+    width: 260px;
+    height: 260px;
+    border: 1px solid rgba(147,197,253,.10);
+    border-radius: 50%;
+    box-shadow: 0 0 0 30px rgba(96,165,250,.025), 0 0 0 64px rgba(96,165,250,.014);
+    pointer-events: none;
+  }
+
+  .paneles-hero-icon {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(147,197,253,.18);
+    border-radius: 18px;
+    color: #9dccff;
+    background: rgba(37,99,235,.13);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 34px -24px rgba(37,99,235,.9);
+  }
+
+  .paneles-hero-icon svg { width: 28px; height: 28px; }
+  .paneles-hero-copy { min-width: 0; }
+  .paneles-hero-copy > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #78b7ff;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+  .paneles-hero-copy h1 {
+    max-width: 660px;
+    margin: 0;
+    color: #fff;
+    font-size: clamp(24px, 2.2vw, 31px);
+    font-weight: 790;
+    line-height: 1.04;
+    letter-spacing: -.038em;
+  }
+  .paneles-hero-copy p {
+    max-width: 650px;
+    margin: 10px 0 0;
+    color: rgba(215,228,245,.66);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .paneles-hero .panel-create-toggle {
+    position: relative;
+    z-index: 2;
+    min-width: 148px;
+    min-height: 46px;
+    margin: 0;
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 13px;
+    background: linear-gradient(180deg, #3d83f1, #2867cc);
+    box-shadow: 0 18px 30px -20px rgba(37,99,235,.9), inset 0 1px 0 rgba(255,255,255,.18);
+  }
+
+  .paneles-screen .panel-form-card {
+    width: min(780px, 100%);
+    margin: 18px auto;
+    padding: 24px !important;
+    border-color: #dce5ef;
+    border-radius: 20px;
+    box-shadow: 0 28px 58px -46px rgba(15,23,42,.65);
+  }
+
+  .paneles-screen .panel-status-legend {
+    margin: 16px 0;
+    padding: 9px;
+    border-color: #dce5ef;
+    border-radius: 18px;
+    box-shadow: 0 20px 44px -38px rgba(15,23,42,.62);
+  }
+  .paneles-screen .panel-status-legend > div {
+    min-height: 58px;
+    padding: 9px 13px;
+    border: 1px solid #e8edf3;
+    border-radius: 13px;
+    background: linear-gradient(180deg, #fff, #f8fafc);
+  }
+  .paneles-screen .panel-status-legend strong { font-size: 17px; }
+  .paneles-screen .panel-status-legend small { font-size: 10px; }
+
+  .paneles-catalog {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px !important;
+    margin-top: 0 !important;
+  }
+  .paneles-catalog > div:has(.campo-busqueda) { grid-column: 1 / -1; }
+  .paneles-catalog .campo-busqueda {
+    min-height: 48px;
+    border-color: #d8e2ed;
+    border-radius: 14px;
+    background: rgba(255,255,255,.88);
+    box-shadow: 0 15px 34px -30px rgba(15,23,42,.55);
+  }
+  .panel-inventory-card {
+    overflow: visible;
+    min-height: 104px;
+    margin: 0;
+    padding: 18px 18px 18px 22px !important;
+    border: 1px solid #dce5ef !important;
+    border-radius: 18px !important;
+    background:
+      linear-gradient(135deg, rgba(235,244,255,.84), transparent 34%),
+      #fff !important;
+    box-shadow: 0 22px 46px -38px rgba(15,23,42,.62) !important;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .panel-inventory-card::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    bottom: 20px;
+    left: 0;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(180deg, #67b1ff, #266bd4);
+  }
+  .panel-inventory-copy > div:first-child {
+    font-size: 15px !important;
+    font-weight: 780 !important;
+    color: #0d1729 !important;
+  }
+  @media (hover: hover) {
+    .panel-inventory-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(37,99,235,.24) !important;
+      box-shadow: 0 28px 52px -38px rgba(15,23,42,.72) !important;
+    }
+  }
+
+  .ocupacion-screen .occupancy-hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 210px;
+    padding: 28px 30px !important;
+    border: 1px solid rgba(147,197,253,.18) !important;
+    border-radius: 24px !important;
+    background:
+      radial-gradient(circle at 86% 4%, rgba(37,99,235,.34), transparent 38%),
+      linear-gradient(135deg, #111e34 0%, #08111f 66%, #040912 100%) !important;
+    box-shadow: 0 30px 64px -42px rgba(2,6,23,.96), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  }
+  .ocupacion-screen .occupancy-hero-header {
+    position: relative;
+    z-index: 2;
+    margin: 0 0 20px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    color: #fff !important;
+    background: transparent !important;
+  }
+  .ocupacion-screen .occupancy-hero-header::before { content: none !important; }
+  .ocupacion-screen .occupancy-hero-header .report-admin-icon {
+    color: #9dccff !important;
+    background: rgba(37,99,235,.15) !important;
+  }
+  .ocupacion-screen .occupancy-hero-header .report-admin-title { color: #fff !important; font-size: 18px; }
+  .ocupacion-screen .occupancy-hero-header .report-admin-sub { color: rgba(215,228,245,.63) !important; }
+  .occupancy-hero-value { position: relative; z-index: 2; }
+  .occupancy-hero-number {
+    font-size: clamp(56px, 6vw, 78px) !important;
+    font-weight: 780 !important;
+    letter-spacing: -.06em;
+  }
+
+  .occupancy-kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px !important;
+    margin-top: 10px !important;
+  }
+  .occupancy-kpi {
+    position: relative;
+    overflow: hidden;
+    min-height: 84px;
+    padding: 16px 17px !important;
+    border: 1px solid #dce5ef;
+    border-radius: 17px !important;
+    background: linear-gradient(145deg, #fff, #f8fafc) !important;
+    box-shadow: 0 20px 40px -34px rgba(15,23,42,.58) !important;
+  }
+  .occupancy-kpi::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 16px;
+    width: 34px;
+    height: 2px;
+    border-radius: 999px;
+    background: #4b91f1;
+  }
+  .occupancy-kpi > div:first-child { font-size: 28px !important; }
+
+  .occupancy-section {
+    margin-top: 18px !important;
+    padding: 22px;
+    border: 1px solid #dce5ef;
+    border-radius: 21px;
+    background: rgba(255,255,255,.86);
+    box-shadow: 0 24px 52px -44px rgba(15,23,42,.65), inset 0 1px 0 #fff;
+  }
+  .occupancy-section-title .report-admin-icon {
+    border: 1px solid #d9e8fb;
+    color: #2875d8;
+    background: #edf5ff;
+    box-shadow: none;
+  }
+  .occupancy-billing-total {
+    border: 1px solid rgba(147,197,253,.16);
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #101c30, #070e1a) !important;
+  }
+  .occupancy-invoice-row,
+  .occupancy-timeline-item,
+  .occupancy-panel-card {
+    border-radius: 15px !important;
+    box-shadow: 0 16px 34px -30px rgba(15,23,42,.48) !important;
+  }
+  .occupancy-filters {
+    padding: 5px;
+    border: 1px solid #e0e7f0;
+    border-radius: 14px;
+    background: #f4f7fa;
+  }
+  .occupancy-filters button {
+    flex: 1 1 120px;
+    min-height: 38px;
+    border-radius: 10px !important;
+  }
+  .occupancy-inventory-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px !important;
+  }
+  .occupancy-panel-card {
+    overflow: hidden;
+    border: 1px solid #e0e7f0;
+    background: #fff !important;
+  }
+  .occupancy-panel-toggle { min-height: 66px; padding: 13px 15px !important; }
+  .occupancy-panel-dot { box-shadow: 0 0 0 5px rgba(148,163,184,.10); }
+  .occupancy-panel-details { background: #f8fafc; }
+  .occupancy-refresh {
+    min-height: 46px;
+    border-color: #d9e3ee !important;
+    border-radius: 14px !important;
+    color: #2f659f !important;
+    background: rgba(255,255,255,.82) !important;
+  }
+
+  /* Contraste explícito: las fichas claras de clientes siempre usan texto
+     oscuro, aun si el avatar subido tiene fondo blanco. El personal interno
+     conserva texto blanco únicamente dentro de su consola azul noche. */
+  .accesos-screen .access-user-card {
+    color: #0f172a !important;
+    background: #fff !important;
+  }
+  .accesos-screen .access-user-card > div:first-child > div:nth-child(2) > div:first-child,
+  .accesos-screen .access-user-card > div:first-child > div:nth-child(2) > div:first-child span:first-child {
+    color: #0f172a !important;
+  }
+  .accesos-screen .access-user-card > div:first-child > div:nth-child(2) > div:nth-child(2),
+  .accesos-screen .access-user-card > div:first-child > div:nth-child(2) > div:nth-child(3) {
+    color: #64748b !important;
+  }
+  .accesos-screen .accesos-internal-card .access-person-name { color: #f8fbff !important; }
+  .accesos-screen .accesos-internal-card .access-person-email { color: #9eb0c7 !important; }
+}
+
+@media (max-width: 899px) {
+  .paneles-hero {
+    margin-bottom: 14px;
+    padding: 18px;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(135deg, #111e34, #07101e);
+  }
+  .paneles-hero-icon { display: none; }
+  .paneles-hero-copy > span { color: #78b7ff; font-size: 9px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+  .paneles-hero-copy h1 { margin: 6px 0; color: #fff; font-size: 21px; line-height: 1.1; }
+  .paneles-hero-copy p { margin: 0 0 14px; color: rgba(220,231,245,.66); font-size: 11px; line-height: 1.45; }
+  .paneles-hero .panel-create-toggle { margin: 0; }
+  .paneles-catalog { display: flex; flex-direction: column; gap: 10px; }
+}

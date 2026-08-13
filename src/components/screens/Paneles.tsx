@@ -409,24 +409,37 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
       </div>
 
       <div className="content-area">
-        <button type="button"
-          className="panel-create-toggle"
-          onClick={() => {
-            if (mostrarForm) {
-              limpiarForm();
-              setMostrarForm(false);
-            } else {
-              limpiarForm();
-              setMostrarForm(true);
-            }
-            setMensajeOk("");
-          }}
-        >
-          {mostrarForm ? "Cerrar formulario" : "+ Crear panel"}
-        </button>
+        <section className="paneles-hero" aria-labelledby="paneles-hero-title">
+          <div className="paneles-hero-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M8 21h8M12 17v4M7 8h10M7 12h6" />
+            </svg>
+          </div>
+          <div className="paneles-hero-copy">
+            <span>Inventario operativo</span>
+            <h1 id="paneles-hero-title">Todos tus soportes, en una sola vista.</h1>
+            <p>Controla disponibilidad, ubicación y estado sin perder de vista lo que está listo para vender.</p>
+          </div>
+          <button type="button"
+            className="panel-create-toggle"
+            onClick={() => {
+              if (mostrarForm) {
+                limpiarForm();
+                setMostrarForm(false);
+              } else {
+                limpiarForm();
+                setMostrarForm(true);
+              }
+              setMensajeOk("");
+            }}
+          >
+            {mostrarForm ? "Cerrar formulario" : "+ Crear panel"}
+          </button>
+        </section>
 
         {mostrarForm && (
-          <div className="card">
+          <div className="card panel-form-card">
             <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 10 }}>
               {panelEditando ? `Editar panel — ${panelEditando.nombre}` : "Panel nuevo"}
             </div>
@@ -576,7 +589,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 4 }}>
+        <div className="paneles-catalog">
           {panelesTodos.length > 0 && (
             <CampoBusqueda
               valor={busqueda}
@@ -589,20 +602,20 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
             const badge = ESTADO_BADGE[p.estado] ?? ESTADO_BADGE.Disponible;
             return (
               <div
-                className="card"
+                className="card panel-inventory-card"
                 key={p.id}
                 onClick={() => abrirEdicion(p)}
                 style={{ padding: 14, cursor: "pointer", position: "relative" }}
               >
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
-                  <div style={{ minWidth: 0 }}>
+                <div className="panel-inventory-main" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+                  <div className="panel-inventory-copy" style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)" }}>{p.nombre}</div>
                     <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{p.tipo} · {p.ciudad}</div>
                     {p.direccion && (
                       <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{p.direccion}</div>
                     )}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <div className="panel-inventory-actions" style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                     <span style={{
                       fontSize: 11, fontWeight: 700,
                       padding: "3px 9px", borderRadius: 20, background: badge.bg, color: badge.color,

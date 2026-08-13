@@ -6,6 +6,7 @@ const factura = readFileSync("functions/src/crearFacturaAdmin.ts", "utf8");
 const campana = readFileSync("functions/src/crearSolicitudCampana.ts", "utf8");
 const resolucion = readFileSync("functions/src/actualizarEstadoSolicitud.ts", "utf8");
 const indice = readFileSync("functions/src/index.ts", "utf8");
+const pushNavegador = readFileSync("src/utils/pushNotifications.ts", "utf8");
 
 describe("notificaciones de aprobaciones internas", () => {
   it("avisa al Gerente después de guardar una solicitud del Trabajador", () => {
@@ -35,5 +36,16 @@ describe("notificaciones de aprobaciones internas", () => {
     expect(indice).not.toContain("notificarSolicitudCampana");
     expect(indice).not.toContain("notificarResolucionSolicitud");
     expect(indice).not.toContain("notificarReporteListo");
+  });
+
+  it("pide el permiso de Safari dentro del clic antes de cualquier espera asíncrona", () => {
+    const leerPermiso = pushNavegador.indexOf("const permisoActual = estadoPermisoNotificaciones()");
+    const pedirPermiso = pushNavegador.indexOf("await Notification.requestPermission()", leerPermiso);
+    const comprobarSoporte = pushNavegador.indexOf("await pushDisponible()", leerPermiso);
+
+    expect(leerPermiso).toBeGreaterThan(-1);
+    expect(pedirPermiso).toBeGreaterThan(leerPermiso);
+    expect(comprobarSoporte).toBeGreaterThan(pedirPermiso);
+    expect(pushNavegador).toContain('permisoActual === "granted"');
   });
 });

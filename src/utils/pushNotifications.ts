@@ -63,14 +63,25 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
   if (!app) return { ok: false, error: "Firebase no está configurado." };
   if (!env.vapidKey) return { ok: false, error: "Las notificaciones push aún no están configuradas." };
 
-  const soportado = await pushDisponible();
-  if (!soportado) return { ok: false, error: "Tu navegador no soporta notificaciones push." };
-
   try {
-    const permiso = await Notification.requestPermission();
+    // Safari/macOS exige que requestPermission ocurra pegado al gesto del
+    // usuario. Antes había un `await pushDisponible()` primero; aunque la
+    // comprobación fuese rápida, Safari podía perder la activación del clic
+    // y convertir el segundo intento en denegado. Las comprobaciones
+    // síncronas ya se hicieron arriba, así que se pide permiso de inmediato
+    // y nunca se vuelve a preguntar si ya estaba concedido.
+    const permisoActual = estadoPermisoNotificaciones();
+    const permiso = permisoActual === "granted"
+      ? permisoActual
+      : permisoActual === "default"
+        ? await Notification.requestPermission()
+        : permisoActual;
     if (permiso !== "granted") {
       return { ok: false, error: "No diste permiso para las notificaciones." };
     }
+
+    const soportado = await pushDisponible();
+    if (!soportado) return { ok: false, error: "Tu navegador no soporta notificaciones push." };
 
     const registro = await navigator.serviceWorker.ready;
     const { getMessaging, getToken } = await import("firebase/messaging");

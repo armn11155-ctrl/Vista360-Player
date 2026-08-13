@@ -34,7 +34,7 @@ function FilaFactura({ f }: { f: FacturaPendiente }) {
     ? { fondo: "rgba(239,68,68,0.10)", borde: "rgba(239,68,68,0.28)", texto: "#DC2626" }
     : colorUrgencia(f.diasParaVencer ?? 999);
   return (
-    <div style={{
+    <div className="occupancy-invoice-row" style={{
       background: "#fff", border: `1px solid ${c.borde}`, borderRadius: 12,
       padding: "11px 13px", display: "flex", alignItems: "center", gap: 12,
     }}>
@@ -68,7 +68,7 @@ function FilaFactura({ f }: { f: FacturaPendiente }) {
 function Kpi({ valor, etiqueta, tono }: { valor: string | number; etiqueta: string; tono?: "alerta" | "ok" }) {
   const color = tono === "alerta" ? "#DC2626" : tono === "ok" ? "#16A34A" : "#0B1220";
   return (
-    <div style={{
+    <div className="occupancy-kpi" style={{
       flex: "1 1 96px", minWidth: 96, background: "#fff", borderRadius: 16,
       padding: "13px 12px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
     }}>
@@ -84,7 +84,7 @@ function Kpi({ valor, etiqueta, tono }: { valor: string | number; etiqueta: stri
  *  pantallas "premium" en vez de ser la única con títulos planos. */
 function SeccionTitulo({ icon, titulo, sub }: { icon: ReactNode; titulo: string; sub?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: sub ? 4 : 10 }}>
+    <div className="occupancy-section-title" style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: sub ? 4 : 10 }}>
       <span className="report-admin-icon" aria-hidden="true">{icon}</span>
       <div style={{ paddingTop: 2 }}>
         <h2 style={{ fontSize: 15, fontWeight: 800, color: "#0B1220", margin: 0 }}>{titulo}</h2>
@@ -176,8 +176,9 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
           : ` · ${panel.anunciantesActivos} anunciante${panel.anunciantesActivos === 1 ? "" : "s"}`;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+    <div className="occupancy-panel-card" style={{ background: "#fff", borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
       <button
+        className="occupancy-panel-toggle"
         type="button"
         onClick={() => setAbierto((v) => !v)}
         style={{
@@ -185,7 +186,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
           display: "flex", alignItems: "center", gap: 11, cursor: "pointer", textAlign: "left",
         }}
       >
-        <span aria-hidden="true" style={{
+        <span className="occupancy-panel-dot" aria-hidden="true" style={{
           width: 9, height: 9, borderRadius: "50%", flexShrink: 0,
           background: panel.enMantenimiento
             ? "#7C3AED"
@@ -222,7 +223,7 @@ function FilaPanel({ panel }: { panel: PanelOcupacion }) {
       </button>
 
       {abierto && panel.ocupantes.length > 0 && (
-        <div style={{ borderTop: "1px solid #F1F5F9", padding: "9px 13px 11px" }}>
+        <div className="occupancy-panel-details" style={{ borderTop: "1px solid #F1F5F9", padding: "9px 13px 11px" }}>
           {panel.ocupantes.map((o) => (
             <div key={`${o.clienteId}-${o.fin}`} style={{
               display: "flex", justifyContent: "space-between", gap: 10,
@@ -305,16 +306,16 @@ export default function Ocupacion({ onBack }: Props) {
                tamaño, así que el número que de verdad importa (qué
                tan ocupado está el inventario) no resaltaba más que
                cualquier otro dato secundario. */}
-            <div className="report-admin-panel" style={{ marginTop: 4 }}>
-              <div className="report-admin-header" style={{ marginBottom: 16 }}>
+            <div className="report-admin-panel occupancy-hero" style={{ marginTop: 4 }}>
+              <div className="report-admin-header occupancy-hero-header" style={{ marginBottom: 16 }}>
                 <span className="report-admin-icon" aria-hidden="true">{ICONO_OCUPACION}</span>
                 <div className="report-admin-copy">
                   <div className="report-admin-title">Ocupación de pantallas</div>
                   <div className="report-admin-sub">Qué parte del inventario está trabajando ahora mismo.</div>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 46, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
+              <div className="occupancy-hero-value" style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap" }}>
+                <span className="occupancy-hero-number" style={{ fontSize: 46, fontWeight: 800, color: "#fff", lineHeight: 1 }}>
                   {state.datos.totales.ocupacionPct}%
                 </span>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -336,7 +337,7 @@ export default function Ocupacion({ onBack }: Props) {
                 </div>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
+            <div className="occupancy-kpi-grid" style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
               <Kpi valor={state.datos.totales.anunciantesActivos} etiqueta="Campañas al aire" />
               <Kpi valor={state.datos.totales.seLiberanEnVentana}
                    etiqueta={`Vencen en ${state.datos.ventanaDias} días`}
@@ -344,7 +345,7 @@ export default function Ocupacion({ onBack }: Props) {
               <Kpi valor={state.datos.totales.enMantenimiento} etiqueta="En mantenimiento" />
             </div>
             {state.datos.totales.lonas > 0 && (
-              <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
+              <div className="occupancy-kpi-grid" style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
                 <Kpi valor={state.datos.totales.lonas} etiqueta="Murales y paraderos" />
                 <Kpi valor={state.datos.totales.lonasLibres} etiqueta="Libres"
                      tono={state.datos.totales.lonasLibres > 0 ? "alerta" : undefined} />
@@ -352,7 +353,7 @@ export default function Ocupacion({ onBack }: Props) {
               </div>
             )}
             {state.datos.totales.unipolares > 0 && (
-              <div style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
+              <div className="occupancy-kpi-grid" style={{ display: "flex", gap: 9, flexWrap: "wrap", marginTop: 9 }}>
                 <Kpi valor={state.datos.totales.unipolares} etiqueta="Unipolares" />
                 <Kpi valor={state.datos.totales.unipolaresConEspacio} etiqueta="Unipolares con cara libre"
                      tono={state.datos.totales.unipolaresConEspacio > 0 ? "alerta" : undefined} />
@@ -360,7 +361,7 @@ export default function Ocupacion({ onBack }: Props) {
             )}
 
             {state.datos.cobranza.facturas.length > 0 && (
-              <section style={{ marginTop: 26 }}>
+              <section className="occupancy-section occupancy-billing" style={{ marginTop: 26 }}>
                 <SeccionTitulo icon={ICONO_COBRO} titulo="Pendiente de cobro" />
                 <p style={{ fontSize: 12, color: "#64748B", margin: "0 0 12px 52px", lineHeight: 1.5 }}>
                   Facturas emitidas que todavía no figuran como pagadas.
@@ -373,7 +374,7 @@ export default function Ocupacion({ onBack }: Props) {
                     </strong></>
                   )}
                 </p>
-                <div style={{
+                <div className="occupancy-billing-total" style={{
                   background: "#0B1220", color: "#fff", borderRadius: 12,
                   padding: "13px 15px", marginBottom: 12,
                   display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12,
@@ -383,13 +384,13 @@ export default function Ocupacion({ onBack }: Props) {
                     {montoCorto(state.datos.cobranza.total, "PEN")}
                   </strong>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="occupancy-billing-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {state.datos.cobranza.facturas.map((f) => <FilaFactura key={f.id} f={f} />)}
                 </div>
               </section>
             )}
 
-            <section style={{ marginTop: 26 }}>
+            <section className="occupancy-section occupancy-renewals" style={{ marginTop: 26 }}>
               <SeccionTitulo icon={ICONO_LLAMAR} titulo="A quién llamar" />
               <p style={{ fontSize: 11, color: "#64748B", margin: "0 0 12px 52px", lineHeight: 1.5 }}>
                 Campañas que terminan en los próximos {state.datos.ventanaDias} días. Renovar antes de que
@@ -411,9 +412,9 @@ export default function Ocupacion({ onBack }: Props) {
               )}
             </section>
 
-            <section style={{ marginTop: 28 }}>
+            <section className="occupancy-section occupancy-inventory" style={{ marginTop: 28 }}>
               <SeccionTitulo icon={ICONO_INVENTARIO} titulo="Inventario" />
-              <div style={{ display: "flex", gap: 7, marginBottom: 12, flexWrap: "wrap" }}>
+              <div className="occupancy-filters" style={{ display: "flex", gap: 7, marginBottom: 12, flexWrap: "wrap" }}>
                 {([
                   ["todas", `Todas (${state.datos.totales.paneles})`],
                   ["libres", `Libres (${state.datos.totales.libres})`],
@@ -436,13 +437,13 @@ export default function Ocupacion({ onBack }: Props) {
                   No hay pantallas en esta categoría.
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="occupancy-inventory-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {panelesFiltrados.map((panel) => <FilaPanel key={panel.id} panel={panel} />)}
                 </div>
               )}
             </section>
 
-            <button type="button" onClick={state.recargar} style={{
+            <button type="button" className="occupancy-refresh" onClick={state.recargar} style={{
               marginTop: 22, width: "100%", padding: "14px", borderRadius: 12,
               border: "1.5px solid #E5E7EB", background: "#fff", fontSize: 13,
               fontWeight: 700, color: "#64748B", cursor: "pointer",
