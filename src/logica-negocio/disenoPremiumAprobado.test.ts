@@ -146,6 +146,9 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.admin-picker-management-head \{[\s\S]*?padding-right: 174px;/);
     expect(selector).toMatch(/admin-picker-management-head[\s\S]*?admin-picker-management-logo/);
     expect(sistema).toMatch(/\.admin-picker-management-head \.admin-picker-management-logo \{[\s\S]*?position: static !important;[\s\S]*?margin: 10px 32px 0 auto !important;/);
+    expect(sistema).toMatch(/\.admin-picker-console \{[\s\S]*?border-color: #000 !important;/);
+    expect(sistema).toMatch(/\.admin-picker-logout \{[\s\S]*?border-color: #000 !important;[\s\S]*?color: #ff4d5f !important;/);
+    expect(sistema).toMatch(/\.admin-picker-management-screen \.admin-picker-management-grid \{[\s\S]*?border-color: #000 !important;/);
     expect(sistema).toMatch(/\.accesos-screen \.accesos-users-list \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 1fr\)\);/);
     expect(sistema).toContain("@media (prefers-reduced-motion: reduce)");
   });

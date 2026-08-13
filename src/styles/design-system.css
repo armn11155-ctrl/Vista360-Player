@@ -6416,6 +6416,7 @@ a {
 
   .admin-picker-console {
     padding: 32px 32px 28px;
+    border-color: #000 !important;
   }
 
   .admin-picker-editorial .admin-picker-editorial-orbit {
@@ -6467,14 +6468,14 @@ a {
   }
 
   .admin-picker-logout {
-    border-color: rgba(239,68,68,.34) !important;
+    border-color: #000 !important;
     color: #ff4d5f !important;
     background: #000 !important;
     box-shadow: 0 12px 28px -18px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.06) !important;
   }
 
   .admin-picker-logout:hover {
-    border-color: rgba(255,77,95,.58) !important;
+    border-color: #000 !important;
     color: #ff6675 !important;
     background: #050505 !important;
   }
@@ -6506,6 +6507,7 @@ a {
     width: min(1200px, 100%);
     min-height: 390px;
     padding: 12px;
+    border-color: #000 !important;
   }
 
   .admin-picker-management-screen .admin-picker-management-group {
