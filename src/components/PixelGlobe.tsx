@@ -149,13 +149,12 @@ export default function PixelGlobe() {
       if (!ancho || !alto || !escritorio.matches) return;
 
       contexto.clearRect(0, 0, ancho, alto);
-      // El planeta ocupa la zona inferior del panel. Su circunferencia queda
-      // completa dentro del alto disponible y solo roza el borde izquierdo,
-      // donde el panel negro puede ocultar una franja mínima. Así nunca se
-      // corta por abajo ni por la derecha y tampoco invade el texto.
-      const radio = Math.min(ancho * 0.355, alto * 0.27);
-      const centroX = Math.max(ancho * 0.21, radio * 0.94);
-      const centroY = alto * 0.71;
+      // El planeta ocupa el centro de la zona inferior del panel. El radio
+      // crece con moderación, pero conserva un margen real en los cuatro
+      // lados para que la circunferencia nunca vuelva a verse cortada.
+      const radio = Math.min(ancho * 0.4, alto * 0.29);
+      const centroX = ancho * 0.5;
+      const centroY = alto * 0.695;
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin
       // competir con el formulario ni marear en pantallas grandes.

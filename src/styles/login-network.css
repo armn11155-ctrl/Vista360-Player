@@ -581,9 +581,10 @@
     position: static;
     width: 100%;
     max-width: 340px;
-    margin: 0 auto 44px;
+    margin: 0 auto 30px;
     flex: 0 0 auto;
     text-align: center;
+    transform: translateY(-10px);
   }
 
   .login-right-panel .login-logo img {
@@ -591,7 +592,6 @@
     filter: brightness(0) invert(1) drop-shadow(0 12px 28px rgba(0,0,0,.38));
   }
 
-  .login-access-kicker,
   .login-network-kicker,
   .login-network-live {
     display: none !important;
