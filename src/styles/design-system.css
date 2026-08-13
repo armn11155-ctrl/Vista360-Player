@@ -7095,11 +7095,12 @@ a {
 
   .admin-picker-top-left-actions,
   .admin-picker-push-btn,
-  .admin-picker-perfil-btn,
-  .admin-picker-stage,
-  .admin-picker-footer {
-    z-index: 3;
+  .admin-picker-perfil-btn {
+    z-index: 20;
   }
+
+  .admin-picker-stage { z-index: 1; }
+  .admin-picker-footer { z-index: 5; }
 
   .admin-picker-stage {
     position: relative;

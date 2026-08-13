@@ -266,6 +266,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toContain(".login-network-globe-canvas");
     expect(estilos).toContain("PORTAL DE GESTIÓN MÓVIL — CONTINUIDAD CON LAPTOP");
     expect(estilos).toMatch(/\.admin-picker-stage \{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;/);
+    expect(estilos).toMatch(/\.admin-picker-top-left-actions,[\s\S]*?\.admin-picker-perfil-btn \{[\s\S]*?z-index: 20;/);
+    expect(estilos).toContain(".admin-picker-stage { z-index: 1; }");
     expect(estilos).toMatch(/\.admin-picker-editorial \{[\s\S]*?display: flex;[\s\S]*?flex: 0 0 148px;/);
     expect(estilos).toMatch(/\.admin-picker-console \{[\s\S]*?border-radius: 23px;[\s\S]*?linear-gradient\(155deg/);
     expect(estilos).toMatch(/\.admin-picker-management-grid \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?border-radius: 23px;/);
