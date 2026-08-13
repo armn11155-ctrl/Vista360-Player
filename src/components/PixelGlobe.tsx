@@ -27,7 +27,20 @@ const NODOS: PuntoGeografico[] = [
 ];
 
 const RUTAS: Array<[number, number]> = [[0, 1], [0, 2], [2, 3], [3, 4]];
-const ETIQUETAS = ["Cobertura", "Resultados", "Impacto"] as const;
+// Cada nodo representa una parte distinta del servicio. Aunque la rotación
+// solo deja ver algunos a la vez, nunca se repite el concepto de un punto.
+const ETIQUETAS = [
+  "Cobertura",
+  "Resultados",
+  "Impacto",
+  "Alcance",
+  "Presencia",
+  "Evidencia",
+  "Control",
+  "Campañas",
+  "Ubicaciones",
+] as const;
+const MAX_ETIQUETAS_VISIBLES = 4;
 const INTERVALO_CUADRO = 1000 / 30;
 
 function estaDentro(lon: number, lat: number, poligono: Array<[number, number]>) {
@@ -53,15 +66,15 @@ function aVector({ lat, lon }: PuntoGeografico): Vector3 {
 }
 
 const PUNTOS: PuntoEsfera[] = [];
-for (let lat = -82; lat <= 82; lat += 1.8) {
-  const desfase = Math.round((lat + 82) / 1.8) % 2 === 0 ? 0 : 0.9;
-  for (let lon = -180 + desfase; lon < 180; lon += 1.8) {
+for (let lat = -82; lat <= 82; lat += 1.45) {
+  const desfase = Math.round((lat + 82) / 1.45) % 2 === 0 ? 0 : 0.725;
+  for (let lon = -180 + desfase; lon < 180; lon += 1.45) {
     if (esTierra(lon, lat)) PUNTOS.push({ tierra: true, vector: aVector({ lat, lon }) });
   }
 }
-for (let lat = -81; lat <= 81; lat += 3) {
-  const desfase = Math.round((lat + 81) / 3) % 2 === 0 ? 0 : 1.5;
-  for (let lon = -180 + desfase; lon < 180; lon += 3) {
+for (let lat = -81; lat <= 81; lat += 2.6) {
+  const desfase = Math.round((lat + 81) / 2.6) % 2 === 0 ? 0 : 1.3;
+  for (let lon = -180 + desfase; lon < 180; lon += 2.6) {
     if (!esTierra(lon, lat)) PUNTOS.push({ tierra: false, vector: aVector({ lat, lon }) });
   }
 }
@@ -139,10 +152,10 @@ export default function PixelGlobe() {
       // En escritorio el formulario vive a la izquierda y la narrativa a la
       // derecha; el planeta se apoya en el lado opuesto al texto para que
       // ambos respiren sin superponerse.
-      const centroX = ancho * 0.34;
+      const centroX = ancho * 0.23;
       const centroY = alto * 0.52;
-      const radio = Math.min(ancho * 0.37, alto * 0.405);
-      const angulo = movimientoReducido.matches ? -0.55 : -0.55 + tiempo * 0.000105;
+      const radio = Math.min(ancho * 0.33, alto * 0.405);
+      const angulo = movimientoReducido.matches ? -0.55 : -0.55 - tiempo * 0.000105;
       const cosenoAngulo = Math.cos(angulo);
       const senoAngulo = Math.sin(angulo);
 
@@ -183,7 +196,7 @@ export default function PixelGlobe() {
         const proyectado = proyectar(punto.vector, cosenoAngulo, senoAngulo, centroX, centroY, radio);
         if (proyectado.z < -0.06) continue;
         const frente = Math.max(0, proyectado.z);
-        const tamano = (punto.tierra ? 1.38 : 0.62) * proyectado.escala;
+        const tamano = (punto.tierra ? 1.18 : 0.54) * proyectado.escala;
         const opacidad = punto.tierra ? 0.18 + frente * 0.72 : 0.018 + frente * 0.082;
         contexto.fillStyle = `rgba(${punto.tierra ? "225, 238, 255" : "167, 202, 248"}, ${opacidad})`;
         contexto.fillRect(proyectado.x - tamano / 2, proyectado.y - tamano / 2, tamano, tamano);
@@ -241,16 +254,15 @@ export default function PixelGlobe() {
           etiqueta: ETIQUETAS[indice % ETIQUETAS.length],
           punto: proyectar(vector, cosenoAngulo, senoAngulo, centroX, centroY, radio),
         }))
-        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.12 && punto.x < ancho * 0.66)
+        .filter(({ punto }) => punto.z > 0.08 && punto.x > ancho * 0.06 && punto.x < ancho * 0.55)
         .sort((a, b) => b.punto.z - a.punto.z);
       const seleccionados: typeof candidatos = [];
       for (const candidato of candidatos) {
-        const etiquetaDisponible = seleccionados.every(({ etiqueta }) => etiqueta !== candidato.etiqueta);
         const espacioDisponible = seleccionados.every(({ punto }) => Math.abs(punto.y - candidato.punto.y) >= 58);
-        if (etiquetaDisponible && espacioDisponible) {
+        if (espacioDisponible) {
           seleccionados.push(candidato);
         }
-        if (seleccionados.length === ETIQUETAS.length) break;
+        if (seleccionados.length === MAX_ETIQUETAS_VISIBLES) break;
       }
 
       seleccionados.forEach((candidato) => {
@@ -264,7 +276,8 @@ export default function PixelGlobe() {
         contexto.textBaseline = "middle";
         const anchoEtiqueta = Math.ceil(contexto.measureText(texto.toUpperCase()).width) + 34;
         const altoEtiqueta = 30;
-        const espacioDerecho = ancho - 22 - candidato.punto.x;
+        const limiteDerecho = ancho * 0.58;
+        const espacioDerecho = limiteDerecho - candidato.punto.x;
         const aLaDerecha = espacioDerecho >= anchoEtiqueta + 16;
         const xEtiqueta = aLaDerecha
           ? candidato.punto.x + 16
