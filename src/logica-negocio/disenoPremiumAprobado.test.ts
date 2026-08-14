@@ -278,8 +278,10 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toContain("PULIDA MÓVIL — PROMESA CLARA Y ACCESO MÁS ESBELTO");
     expect(estilosLogin).toMatch(/\.login-network-message > p,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/\.login-left-panel,[\s\S]*?min-height: 280px;[\s\S]*?flex-basis: 280px;/);
-    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-card,[\s\S]*?\.login-foot,[\s\S]*?width: min\(100%, 288px\);/);
-    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo img \{[\s\S]*?width: 108px;/);
+    expect(estilosLogin).toMatch(/\.login-left-panel::before \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
+    expect(estilosLogin).toMatch(/\.login-network-logo \{[\s\S]*?display: block !important;[\s\S]*?width: 104px;[\s\S]*?margin: 0 0 12px;/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-logo \{[\s\S]*?display: none !important;/);
+    expect(estilosLogin).toMatch(/\.login-card,[\s\S]*?\.login-foot,[\s\S]*?width: min\(100%, 288px\);/);
     expect(estilosLogin).toMatch(/\.login-access-kicker::before \{[\s\S]*?width: 22px;[\s\S]*?height: 1\.5px;[\s\S]*?linear-gradient\(90deg, #2563eb, #60a5fa\)/);
     expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(esMovil\) \{[\s\S]*?ancho \* 0\.225[\s\S]*?alto \* 0\.36/);
     expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(!esMovil\) \{[\s\S]*?contexto\.ellipse\(0, 0, radio \* 1\.24/);

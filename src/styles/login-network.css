@@ -1248,13 +1248,26 @@
     flex-basis: 280px;
   }
 
+  .login-left-panel::before {
+    content: none !important;
+    display: none !important;
+  }
+
   .login-network-message > p,
   .login-network-live {
     display: none !important;
   }
 
   .login-network-copy {
-    top: calc(22px + env(safe-area-inset-top));
+    top: calc(10px + env(safe-area-inset-top));
+  }
+
+  .login-network-logo {
+    display: block !important;
+    width: 104px;
+    height: auto;
+    margin: 0 0 12px;
+    filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgba(1,8,24,.34));
   }
 
   .login-right-panel,
@@ -1263,19 +1276,14 @@
   }
 
   .login-right-panel .login-logo,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-logo {
+    display: none !important;
+  }
+
   .login-card,
   .login-foot,
-  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-logo, .login-card, .login-foot) {
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-card, .login-foot) {
     width: min(100%, 288px);
-  }
-
-  .login-right-panel .login-logo,
-  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-logo {
-    margin: -2px auto 7px;
-  }
-
-  .login-right-panel .login-logo img {
-    width: 108px;
   }
 
   .login-access-kicker {
@@ -1303,7 +1311,12 @@
   }
 
   .login-network-copy {
-    top: calc(13px + env(safe-area-inset-top));
+    top: calc(8px + env(safe-area-inset-top));
+  }
+
+  .login-network-logo {
+    width: 88px;
+    margin-bottom: 7px;
   }
 
   .login-right-panel,
