@@ -7806,7 +7806,11 @@ a {
     overflow-x: auto;
     padding: 1px 1px 5px;
     scroll-snap-type: x proximity;
+    scrollbar-width: none;
   }
+
+  .accesos-screen .accesos-person-grid::-webkit-scrollbar,
+  .accesos-screen .accesos-create-btn-row::-webkit-scrollbar { display: none; }
 
   .accesos-screen .accesos-internal-card .access-person-row {
     min-height: 60px;
@@ -7823,11 +7827,14 @@ a {
     padding: 5px;
     gap: 6px !important;
     overflow-x: auto;
+    flex-direction: row !important;
     flex-wrap: nowrap !important;
+    align-items: stretch;
     border: 1px solid #dfe7f1;
     border-radius: 15px;
     background: rgba(255,255,255,.82);
     box-shadow: 0 18px 38px -32px rgba(15,23,42,.48);
+    scrollbar-width: none;
   }
 
   .accesos-screen .accesos-create-btn {
