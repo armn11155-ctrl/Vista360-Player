@@ -8579,3 +8579,86 @@ a {
   .inicio-side-col .inicio-report-meta { font-size: 10px !important; }
   .inicio-side-col .inicio-report-link { min-height: 32px; padding: 0 8px !important; font-size: 11px !important; }
 }
+
+/* SELECTOR MÓVIL — PERFILES MÁS FINOS Y CENTRADOS
+   El fondo nocturno permanece como una sola escena. Se reduce el ancho de
+   cada perfil, se adelanta el contenido y se centra también la última cuenta
+   cuando la cantidad es impar, evitando el aspecto de una tarjeta suelta. */
+@media (max-width: 899px) {
+  .admin-picker-stage {
+    gap: 6px;
+    padding-top: calc(58px + env(safe-area-inset-top));
+  }
+
+  .admin-picker-editorial {
+    min-height: 68px;
+    flex-basis: 68px;
+    grid-template-columns: 102px minmax(0, 1fr);
+    gap: 11px;
+  }
+
+  .admin-picker-editorial-brand img {
+    width: 98px;
+  }
+
+  .admin-picker-editorial h1 {
+    font-size: 17px;
+  }
+
+  .admin-picker-console {
+    width: min(100%, 354px);
+    margin-inline: auto;
+    padding: 13px 14px 12px;
+  }
+
+  .admin-picker-header {
+    padding-bottom: 10px;
+  }
+
+  .admin-picker-body {
+    padding-top: 10px;
+  }
+
+  .admin-picker-grid {
+    width: fit-content;
+    max-width: 100%;
+    margin-inline: auto;
+    grid-template-columns: repeat(2, minmax(0, 140px));
+    justify-content: center;
+    gap: 10px 12px;
+  }
+
+  .admin-picker-tile:not(.archived),
+  .admin-picker-tile-vermas {
+    width: 140px;
+    padding: 5px 5px 8px;
+    border-radius: 14px;
+  }
+
+  .admin-picker-tile-avatar {
+    border-radius: 11px;
+  }
+
+  .admin-picker-grid > .admin-picker-tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+  }
+}
+
+@media (max-width: 370px) {
+  .admin-picker-stage {
+    padding-top: calc(54px + env(safe-area-inset-top));
+  }
+
+  .admin-picker-editorial {
+    min-height: 62px;
+    flex-basis: 62px;
+    grid-template-columns: 88px minmax(0, 1fr);
+  }
+
+  .admin-picker-editorial-brand img { width: 86px; }
+  .admin-picker-editorial h1 { font-size: 15px; }
+  .admin-picker-grid { grid-template-columns: repeat(2, minmax(0, 132px)); }
+  .admin-picker-tile:not(.archived),
+  .admin-picker-tile-vermas { width: 132px; }
+}

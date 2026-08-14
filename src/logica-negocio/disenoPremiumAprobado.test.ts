@@ -275,6 +275,13 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-console \{[\s\S]*?border-radius: 23px;[\s\S]*?linear-gradient\(155deg/);
     expect(estilos).toMatch(/\.admin-picker-management-grid \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?border-radius: 23px;/);
     expect(estilos).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-bottom: 1px solid rgba\(191,219,254,\.10\)/);
+    expect(estilosLogin).toContain("PULIDA MÓVIL — PROMESA CLARA Y ACCESO MÁS ESBELTO");
+    expect(estilosLogin).toMatch(/\.login-network-message > p,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-card,[\s\S]*?\.login-foot \{[\s\S]*?width: min\(100%, 310px\);/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo img \{[\s\S]*?width: 116px;/);
+    expect(estilos).toContain("SELECTOR MÓVIL — PERFILES MÁS FINOS Y CENTRADOS");
+    expect(estilos).toMatch(/\.admin-picker-grid \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 140px\)\);[\s\S]*?justify-content: center;/);
+    expect(estilos).toMatch(/\.admin-picker-grid > \.admin-picker-tile:last-child:nth-child\(odd\) \{[\s\S]*?grid-column: 1 \/ -1;[\s\S]*?justify-self: center;/);
   });
 
   it("iguala en móvil las superficies premium de Usuarios, Campañas e Inventario", () => {

@@ -937,6 +937,7 @@
     border-radius: 22px 22px 0 0;
   }
 }
+
 /* Pulida final móvil: añade señales de red y profundidad sin competir con
    el formulario ni recargar el canvas cartográfico. */
 @media (max-width: 899px) {
@@ -1235,5 +1236,50 @@
     max-height: var(--app-height, 100dvh);
     overflow: hidden !important;
     overscroll-behavior: none !important;
+  }
+}
+
+/* PULIDA MÓVIL — PROMESA CLARA Y ACCESO MÁS ESBELTO
+   Autoridad de cierre: mantiene la misma geometría al enfocar un campo. */
+@media (max-width: 899px) {
+  .login-network-message > p,
+  .login-network-live {
+    display: none !important;
+  }
+
+  .login-network-copy {
+    top: calc(22px + env(safe-area-inset-top));
+  }
+
+  .login-right-panel,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    padding-top: 11px;
+  }
+
+  .login-right-panel .login-logo,
+  .login-card,
+  .login-foot,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-logo, .login-card, .login-foot) {
+    width: min(100%, 310px);
+  }
+
+  .login-right-panel .login-logo,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-logo {
+    margin: -2px auto 7px;
+  }
+
+  .login-right-panel .login-logo img {
+    width: 116px;
+  }
+}
+
+@media (max-width: 899px) and (max-height: 740px) {
+  .login-network-copy {
+    top: calc(13px + env(safe-area-inset-top));
+  }
+
+  .login-right-panel,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    padding-top: 10px;
   }
 }
