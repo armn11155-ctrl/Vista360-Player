@@ -1439,6 +1439,29 @@
   }
 }
 
+/* INTERACCIÓN TÁCTIL NATIVA — EL TAP PERTENECE AL CAMPO
+   La pantalla sigue fija mediante overflow, pero ya no se cancela la acción
+   táctil vertical del ancestro. Safari conserva así la activación de usuario
+   necesaria para mostrar y volver a mostrar el teclado de iOS. */
+@media (max-width: 899px) {
+  html .login-shell,
+  html .login-experience,
+  html .login-right-panel,
+  html .login-card,
+  html .login-card :is(.form-group, .login-input-wrap, .login-password-wrap) {
+    touch-action: manipulation !important;
+  }
+
+  html .login-card .form-input {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+}
+
 /* TECLADO MÓVIL — COMPOSICIÓN COMPACTA SIN FRANJA NI BOTÓN PEGADO
    El foco conserva una cabecera breve de marca, pero adelanta el formulario
    y reserva aire real bajo la acción principal dentro del viewport visible. */

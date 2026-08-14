@@ -563,4 +563,19 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-btn \{[\s\S]*?min-height: 44px;[\s\S]*?margin-top: 1px;/);
     expect(leer("src/components/PixelGlobe.tsx")).toContain('alto * (tecladoMovilAbierto ? 0.5 : 0.4)');
   });
+
+  it("reserva el gesto táctil del login para abrir y reabrir el teclado móvil", () => {
+    const pantalla = leer("src/components/LoginScreen.tsx");
+    const login = leer("src/styles/login-network.css");
+    const orientacion = leer("src/utils/orientacion-vertical.ts");
+
+    expect(pantalla).toContain("function asegurarTecladoTactil");
+    expect(pantalla.match(/onPointerDown=\{asegurarTecladoTactil\}/g)).toHaveLength(3);
+    expect(pantalla).toContain('document.documentElement.dataset.keyboardOpen !== "true"');
+    expect(pantalla).toContain("campo.focus({ preventScroll: true })");
+    expect(login).toContain("INTERACCIÓN TÁCTIL NATIVA — EL TAP PERTENECE AL CAMPO");
+    expect(login).toMatch(/html \.login-shell,[\s\S]*?touch-action: manipulation !important;/);
+    expect(login).toMatch(/html \.login-card \.form-input \{[\s\S]*?pointer-events: auto !important;[\s\S]*?touch-action: manipulation !important;[\s\S]*?-webkit-user-select: text !important;/);
+    expect(orientacion).toContain("objetivo.closest(\"input, textarea, select, button, label, [contenteditable='true']\")");
+  });
 });

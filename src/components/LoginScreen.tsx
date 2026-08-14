@@ -73,6 +73,22 @@ export default function LoginScreen({ onLoggedIn }: Props) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  function asegurarTecladoTactil(evento: React.PointerEvent<HTMLInputElement>) {
+    if (evento.pointerType === "mouse") return;
+    const campo = evento.currentTarget;
+    // iOS puede conservar el foco después de cerrar el teclado con la barra
+    // inferior. En ese estado, volver a tocar el mismo input no siempre lo
+    // invoca otra vez. Un blur/focus síncrono dentro del nuevo gesto táctil
+    // lo reactiva sin mover el formulario ni recrear el nodo.
+    if (
+      document.activeElement === campo &&
+      document.documentElement.dataset.keyboardOpen !== "true"
+    ) {
+      campo.blur();
+      campo.focus({ preventScroll: true });
+    }
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -183,6 +199,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                       autoFocus
                       maxLength={6}
                       value={codigoMfa}
+                      onPointerDown={asegurarTecladoTactil}
                       onChange={(e) => setCodigoMfa(e.target.value.replace(/\D/g, ""))}
                       placeholder="000000"
                       aria-describedby={error ? "login-error" : undefined}
@@ -224,6 +241,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "login-error" : undefined}
                   value={email}
+                  onPointerDown={asegurarTecladoTactil}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (error) setError("");
@@ -245,6 +263,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                   aria-invalid={Boolean(error)}
                   aria-describedby={error ? "login-error" : undefined}
                   value={password}
+                  onPointerDown={asegurarTecladoTactil}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     if (error) setError("");

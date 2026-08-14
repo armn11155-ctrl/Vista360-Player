@@ -16,7 +16,10 @@ import LoginScreen from "./LoginScreen";
 import { login } from "../config/firebase";
 
 describe("LoginScreen en Safari móvil", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    delete document.documentElement.dataset.keyboardOpen;
+  });
   afterEach(() => cleanup());
 
   it("conserva el mismo input durante el primer toque de Contraseña", () => {
@@ -53,6 +56,21 @@ describe("LoginScreen en Safari móvil", () => {
     expect(document.activeElement).toBe(password);
     expect(screen.getByLabelText("Usuario")).toBe(usuario);
     expect(screen.getByLabelText("Contraseña")).toBe(password);
+  });
+
+  it("reactiva el teclado si iOS dejó el campo enfocado después de ocultarlo", () => {
+    render(<LoginScreen onLoggedIn={() => undefined} />);
+    const password = screen.getByLabelText("Contraseña") as HTMLInputElement;
+
+    act(() => password.focus());
+    const blur = vi.spyOn(password, "blur");
+    const focus = vi.spyOn(password, "focus");
+
+    fireEvent.pointerDown(password, { pointerType: "touch" });
+
+    expect(blur).toHaveBeenCalledTimes(1);
+    expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(document.activeElement).toBe(password);
   });
 
   it("muestra el aviso de credenciales y lo retira al corregir los datos", () => {
