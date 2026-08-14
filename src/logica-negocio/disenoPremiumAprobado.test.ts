@@ -268,10 +268,24 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-stage \{[\s\S]*?display: flex;[\s\S]*?flex-direction: column;/);
     expect(estilos).toMatch(/\.admin-picker-top-left-actions,[\s\S]*?\.admin-picker-perfil-btn \{[\s\S]*?z-index: 20;/);
     expect(estilos).toContain(".admin-picker-stage { z-index: 1; }");
-    expect(estilos).toMatch(/\.admin-picker-editorial \{[\s\S]*?display: flex;[\s\S]*?flex: 0 0 148px;/);
+    expect(estilos).toContain("PARIDAD PREMIUM MÓVIL — INICIO, GESTIÓN Y MÓDULOS OPERATIVOS");
+    expect(estilos).toMatch(/\.admin-picker-editorial \{[\s\S]*?min-height: 76px;[\s\S]*?flex: 0 0 76px;[\s\S]*?background: transparent;/);
     expect(estilos).toMatch(/\.admin-picker-console \{[\s\S]*?border-radius: 23px;[\s\S]*?linear-gradient\(155deg/);
     expect(estilos).toMatch(/\.admin-picker-management-grid \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?border-radius: 23px;/);
     expect(estilos).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-bottom: 1px solid rgba\(191,219,254,\.10\)/);
+  });
+
+  it("iguala en móvil las superficies premium de Usuarios, Campañas e Inventario", () => {
+    const estilos = leer("src/styles/design-system.css");
+
+    expect(estilos).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.accesos-screen \.accesos-internal-card \{[\s\S]*?linear-gradient\(135deg, #111f37, #07101e/);
+    expect(estilos).toMatch(/\.accesos-screen \.accesos-person-grid \{[\s\S]*?grid-auto-flow: column;[\s\S]*?overflow-x: auto;/);
+    expect(estilos).toMatch(/\.accesos-screen \.accesos-users-list \{[\s\S]*?border-radius: 21px;[\s\S]*?background: rgba\(255,255,255,\.78\);/);
+    expect(estilos).toMatch(/\.mis-campanas-month-status \{[\s\S]*?background: #fff !important;/);
+    expect(estilos).toContain(".mis-campanas-month-status-header img { display: none !important; }");
+    expect(estilos).toMatch(/\.paneles-hero \{[\s\S]*?grid-template-columns: 44px minmax\(0, 1fr\);/);
+    expect(estilos).toMatch(/\.ocupacion-screen \.occupancy-hero \{[\s\S]*?border-radius: 21px !important;/);
+    expect(estilos).toMatch(/\.inicio-header \{[\s\S]*?min-height: 174px;[\s\S]*?repeating-linear-gradient/);
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
