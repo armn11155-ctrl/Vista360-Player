@@ -80,7 +80,7 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("let radio = Math.min(ancho * 0.39, alto * 0.31)");
     expect(globo).toContain("let centroX = ancho * 0.506");
     expect(globo).toContain("let centroY = alto * 0.654");
-    expect(globo).toContain("radio = Math.min(ancho * 0.255, alto * 0.38)");
+    expect(globo).toContain("radio = Math.min(ancho * 0.225, alto * 0.36)");
     expect(globo).toContain("centroX = ancho * 0.76");
     expect(globo).toContain("centroY = alto * 0.49");
     expect(globo).toContain("const salto = esMovil ? 2 : 1");
@@ -277,8 +277,11 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-bottom: 1px solid rgba\(191,219,254,\.10\)/);
     expect(estilosLogin).toContain("PULIDA MÓVIL — PROMESA CLARA Y ACCESO MÁS ESBELTO");
     expect(estilosLogin).toMatch(/\.login-network-message > p,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
-    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-card,[\s\S]*?\.login-foot \{[\s\S]*?width: min\(100%, 310px\);/);
-    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo img \{[\s\S]*?width: 116px;/);
+    expect(estilosLogin).toMatch(/\.login-left-panel,[\s\S]*?min-height: 280px;[\s\S]*?flex-basis: 280px;/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-card,[\s\S]*?\.login-foot,[\s\S]*?width: min\(100%, 288px\);/);
+    expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo img \{[\s\S]*?width: 108px;/);
+    expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(esMovil\) \{[\s\S]*?ancho \* 0\.225[\s\S]*?alto \* 0\.36/);
+    expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(!esMovil\) \{[\s\S]*?contexto\.ellipse\(0, 0, radio \* 1\.24/);
     expect(estilos).toContain("SELECTOR MÓVIL — PERFILES MÁS FINOS Y CENTRADOS");
     expect(estilos).toMatch(/\.admin-picker-grid \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 140px\)\);[\s\S]*?justify-content: center;/);
     expect(estilos).toMatch(/\.admin-picker-grid > \.admin-picker-tile:last-child:nth-child\(odd\) \{[\s\S]*?grid-column: 1 \/ -1;[\s\S]*?justify-self: center;/);

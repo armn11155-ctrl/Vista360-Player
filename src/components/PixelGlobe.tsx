@@ -174,7 +174,7 @@ export default function PixelGlobe() {
       // densidad más abajo: mantiene la forma real de los países sin castigar
       // la batería de un teléfono.
       if (esMovil) {
-        radio = Math.min(ancho * 0.255, alto * 0.38);
+        radio = Math.min(ancho * 0.225, alto * 0.36);
         centroX = ancho * 0.76;
         centroY = alto * 0.49;
       }
@@ -207,29 +207,34 @@ export default function PixelGlobe() {
       contexto.stroke();
       contexto.restore();
 
-      contexto.save();
-      contexto.translate(centroX, centroY);
-      contexto.rotate(-0.22);
-      contexto.setLineDash([3, 12]);
-      contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.008;
-      contexto.strokeStyle = "rgba(205, 226, 255, .18)";
-      contexto.lineWidth = 1;
-      contexto.beginPath();
-      contexto.ellipse(0, 0, radio * 1.24, radio * 0.79, 0, 0, Math.PI * 2);
-      contexto.stroke();
-      contexto.restore();
+      // En móvil las órbitas se acercaban al titular y una de sus curvas se
+      // percibía como una raya encima de “Más que visibilidad”. La esfera y
+      // sus rutas siguen animadas; solo se reservan estos aros para escritorio.
+      if (!esMovil) {
+        contexto.save();
+        contexto.translate(centroX, centroY);
+        contexto.rotate(-0.22);
+        contexto.setLineDash([3, 12]);
+        contexto.lineDashOffset = movimientoReducido.matches ? 0 : -tiempo * 0.008;
+        contexto.strokeStyle = "rgba(205, 226, 255, .18)";
+        contexto.lineWidth = 1;
+        contexto.beginPath();
+        contexto.ellipse(0, 0, radio * 1.24, radio * 0.79, 0, 0, Math.PI * 2);
+        contexto.stroke();
+        contexto.restore();
 
-      contexto.save();
-      contexto.translate(centroX, centroY);
-      contexto.rotate(0.48);
-      contexto.setLineDash([1.5, 15]);
-      contexto.lineDashOffset = movimientoReducido.matches ? 0 : tiempo * 0.0055;
-      contexto.strokeStyle = "rgba(147, 197, 253, .08)";
-      contexto.lineWidth = 1;
-      contexto.beginPath();
-      contexto.ellipse(0, 0, radio * 1.12, radio * 0.93, 0, 0, Math.PI * 2);
-      contexto.stroke();
-      contexto.restore();
+        contexto.save();
+        contexto.translate(centroX, centroY);
+        contexto.rotate(0.48);
+        contexto.setLineDash([1.5, 15]);
+        contexto.lineDashOffset = movimientoReducido.matches ? 0 : tiempo * 0.0055;
+        contexto.strokeStyle = "rgba(147, 197, 253, .08)";
+        contexto.lineWidth = 1;
+        contexto.beginPath();
+        contexto.ellipse(0, 0, radio * 1.12, radio * 0.93, 0, 0, Math.PI * 2);
+        contexto.stroke();
+        contexto.restore();
+      }
 
       const esfera = contexto.createRadialGradient(centroX - radio * 0.34, centroY - radio * 0.36, radio * 0.035, centroX + radio * 0.12, centroY + radio * 0.1, radio * 1.06);
       esfera.addColorStop(0, "rgba(130, 188, 255, .18)");
