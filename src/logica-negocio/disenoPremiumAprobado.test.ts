@@ -306,7 +306,7 @@ describe("refinamiento premium aprobado", () => {
 
     expect(app).toContain("const pageBackground = themeColor;");
     expect(perfil).toContain("{!esInterno && <ProfileRow icon=\"lock\" label=\"Cambiar contraseña\"");
-    expect(perfil).toMatch(/\{!esInterno && \([\s\S]*?<ProfileSection title="Seguridad">/);
+    expect(perfil).toMatch(/\{!esInterno && \([\s\S]*?<ProfileSection title="Seguridad" className="profile-section-security">/);
     expect(inicio).toContain("inicio-kpi-card-report");
     expect(campanas).toContain("campaign-config-button");
     expect(campanas).toContain("Configurar</span>");
@@ -316,6 +316,21 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-kpi-card-report \.inicio-kpi-value,[\s\S]*?white-space: normal !important;/);
     expect(sistema).toMatch(/\.campaign-config-button \{[\s\S]*?font-size: 10\.5px;/);
     expect(estilosLogin).toMatch(/\.login-right-panel \{[\s\S]*?width: 100%;[\s\S]*?border-radius: 28px 28px 0 0;/);
+  });
+
+  it("mantiene estable y negro el perfil de laptop", () => {
+    const perfil = leer("src/components/screens/Perfil.tsx");
+    const sistema = leer("src/styles/design-system.css");
+
+    expect(perfil).toContain('className="profile-section-company"');
+    expect(perfil).toContain('label="Nombre de la empresa" value={empresa}');
+    expect(perfil).toContain('className="profile-section-summary"');
+    expect(perfil).toContain('className="profile-section-account"');
+    expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.sidebar-panel \{[\s\S]*?background: #050505 !important;/);
+    expect(sistema).toMatch(/\.profile-content > \.profile-section-company \{[\s\S]*?grid-row: 1;/);
+    expect(sistema).toMatch(/\.profile-content > \.profile-section-summary \{[\s\S]*?grid-row: 1;/);
+    expect(sistema).toMatch(/\.profile-section-company > h2,[\s\S]*?\.profile-section-summary > h2 \{[\s\S]*?color: #080b11 !important;/);
+    expect(sistema).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.profile-company-name-desktop \{ display: none; \}/);
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {

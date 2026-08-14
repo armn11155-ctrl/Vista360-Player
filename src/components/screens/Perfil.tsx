@@ -96,9 +96,9 @@ function ProfileRow({ icon, label, value, danger, onClick }: {
   );
 }
 
-function ProfileSection({ title, children }: { title: string; children: React.ReactNode }) {
+function ProfileSection({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className="profile-section">
+    <section className={`profile-section ${className}`.trim()}>
       <h2>{title}</h2>
       <div className="profile-card-list">{children}</div>
     </section>
@@ -468,7 +468,10 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
       )}
 
       <main className="profile-content">
-        <ProfileSection title="Información de la empresa">
+        <ProfileSection title="Información de la empresa" className="profile-section-company">
+          <div className="profile-company-name-desktop">
+            <ProfileRow icon="company" label="Nombre de la empresa" value={empresa} />
+          </div>
           <ProfileRow icon="company" label="RUC cliente" value={ruc || "Por registrar"} />
           <ProfileRow icon="contacts" label="Contacto principal" value={cliente?.contacto || email || "Por registrar"} />
           {/* Se muestra para el cliente real, y tambien para el admin en
@@ -490,7 +493,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
 
-        <ProfileSection title="Resumen de cuenta">
+        <ProfileSection title="Resumen de cuenta" className="profile-section-summary">
           <div className="profile-metric-card">
             <ProfileMetricRow icon="campaign" label="Campañas activas" value={String(activas)} tone="blue" />
             <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
@@ -499,7 +502,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
         </ProfileSection>
 
         {!esInterno && (
-          <ProfileSection title="Seguridad">
+          <ProfileSection title="Seguridad" className="profile-section-security">
             <ProfileRow
               icon="lock"
               label={cerrandoSesiones ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
@@ -509,7 +512,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
           </ProfileSection>
         )}
 
-        <ProfileSection title="Cuenta">
+        <ProfileSection title="Cuenta" className="profile-section-account">
           <ProfileRow icon="logout" label="Cerrar sesión" danger onClick={() => logout()} />
         </ProfileSection>
       </main>

@@ -8265,9 +8265,44 @@ a {
 
 @media (min-width: 900px) {
   .sidebar-panel {
-    background:
-      radial-gradient(circle at 112% 8%, rgba(96,165,250,.13) 0%, rgba(37,99,235,.045) 29%, transparent 55%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 48px),
-      linear-gradient(180deg, #081426 0%, #050a12 42%, #03070d 100%) !important;
+    background: #050505 !important;
   }
+
+  /* Perfil de laptop: el orden depende del propósito de cada bloque, no de
+     cuántas secciones condicionales existan para el tipo de sesión. */
+  .profile-content > .profile-section-company {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .profile-content > .profile-section-summary {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .profile-content > .profile-section-account {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .profile-content > .profile-section-security {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .profile-section-company > h2,
+  .profile-section-summary > h2 {
+    color: #080b11 !important;
+    font-size: 14px;
+    font-weight: 820;
+    letter-spacing: -.012em;
+  }
+
+  .profile-company-name-desktop {
+    display: block;
+  }
+}
+
+@media (max-width: 899px) {
+  .profile-company-name-desktop { display: none; }
 }
