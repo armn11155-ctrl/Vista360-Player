@@ -168,13 +168,18 @@ export default function PixelGlobe() {
       let centroX = ancho * 0.506;
       let centroY = alto * 0.654;
       const esMovil = !escritorio.matches;
+      const tecladoMovilAbierto = esMovil && document.documentElement.dataset.keyboardOpen === "true";
       // En móvil el mismo planeta ocupa una franja editorial más baja y
       // ancha. Se conserva completo, pero se desplaza hacia la derecha para
       // que el titular tenga aire a la izquierda. La malla se dibuja a media
       // densidad más abajo: mantiene la forma real de los países sin castigar
       // la batería de un teléfono.
       if (esMovil) {
-        radio = Math.min(ancho * 0.235, alto * 0.36);
+        // En la escena normal gana presencia sin invadir el titular. Cuando
+        // aparece el teclado, la cabecera pierde mucha altura: se aumenta la
+        // proporción vertical para que el planeta siga siendo reconocible y
+        // no termine reducido a un pequeño grupo de puntos.
+        radio = Math.min(ancho * 0.27, alto * (tecladoMovilAbierto ? 0.5 : 0.4));
         centroX = ancho * 0.752;
         centroY = alto * 0.5;
       }

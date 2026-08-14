@@ -95,7 +95,7 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("let radio = Math.min(ancho * 0.39, alto * 0.31)");
     expect(globo).toContain("let centroX = ancho * 0.506");
     expect(globo).toContain("let centroY = alto * 0.654");
-    expect(globo).toContain("radio = Math.min(ancho * 0.235, alto * 0.36)");
+    expect(globo).toContain("radio = Math.min(ancho * 0.27, alto * (tecladoMovilAbierto ? 0.5 : 0.4))");
     expect(globo).toContain("centroX = ancho * 0.752");
     expect(globo).toContain("centroY = alto * 0.5");
     expect(globo).toContain("const salto = esMovil ? 2 : 1");
@@ -313,7 +313,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toMatch(/html:not\(\[data-keyboard-open="true"\]\)[\s\S]*?\.login-title \{[\s\S]*?font-size: 28px;/);
     expect(estilosLogin).toMatch(/html:not\(\[data-keyboard-open="true"\]\)[\s\S]*?\.login-access-kicker \{[\s\S]*?min-height: 17px;/);
     expect(estilosLogin).toMatch(/\.login-access-kicker::before \{[\s\S]*?width: 22px;[\s\S]*?height: 1\.5px;[\s\S]*?linear-gradient\(90deg, #2563eb, #60a5fa\)/);
-    expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(esMovil\) \{[\s\S]*?ancho \* 0\.235[\s\S]*?alto \* 0\.36[\s\S]*?ancho \* 0\.752[\s\S]*?alto \* 0\.5/);
+    expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(esMovil\) \{[\s\S]*?ancho \* 0\.27[\s\S]*?tecladoMovilAbierto \? 0\.5 : 0\.4[\s\S]*?ancho \* 0\.752[\s\S]*?alto \* 0\.5/);
     expect(leer("src/components/PixelGlobe.tsx")).toMatch(/if \(!esMovil\) \{[\s\S]*?contexto\.ellipse\(0, 0, radio \* 1\.24/);
     expect(estilos).toContain("SELECTOR MÓVIL — PERFILES MÁS FINOS Y CENTRADOS");
     expect(estilos).toMatch(/\.admin-picker-grid \{[\s\S]*?grid-template-columns: repeat\(2, minmax\(0, 140px\)\);[\s\S]*?justify-content: center;/);
@@ -549,11 +549,18 @@ describe("refinamiento premium aprobado", () => {
 
     expect(inicio).toContain("inicio-kpi-card-${item.tone}");
     expect(sistema).toContain("PULIDA DE INICIO — RESUMEN CON JERARQUÍA Y REPORTE SIN COLISIONES");
+    expect(sistema).toMatch(/\.inicio-kpi-card-campaigns,[\s\S]*?\.inicio-kpi-card-deadline \{[\s\S]*?--kpi-accent: #2563eb;[\s\S]*?--kpi-accent-soft: rgba\(37,99,235,\.14\);/);
+    expect(sistema).not.toContain("--kpi-accent: #1497b8");
+    expect(sistema).not.toContain("--kpi-accent: #7357d9");
+    expect(sistema).not.toContain("--kpi-accent: #d58a22");
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-body \{[\s\S]*?"month action"[\s\S]*?"meta meta";/);
     expect(sistema).toMatch(/\.inicio-screen-client \.inicio-content \{[\s\S]*?padding-top: 12px !important;/);
     expect(login).toContain("TECLADO MÓVIL — COMPOSICIÓN COMPACTA SIN FRANJA NI BOTÓN PEGADO");
     expect(login).toContain('html[data-keyboard-open="true"] .login-shell .login-left-panel');
+    expect(login).toMatch(/html\[data-keyboard-open="true"\] \.login-shell \{[\s\S]*?padding: 0 !important;/);
+    expect(login).toMatch(/html\[data-keyboard-open="true"\] \.login-shell \.login-network-visual-globe \{[\s\S]*?opacity: 1;/);
     expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-left-panel \{[\s\S]*?min-height: 88px;[\s\S]*?flex-basis: 88px;/);
     expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-btn \{[\s\S]*?min-height: 44px;[\s\S]*?margin-top: 1px;/);
+    expect(leer("src/components/PixelGlobe.tsx")).toContain('alto * (tecladoMovilAbierto ? 0.5 : 0.4)');
   });
 });

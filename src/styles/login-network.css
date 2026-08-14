@@ -1444,7 +1444,10 @@
    y reserva aire real bajo la acción principal dentro del viewport visible. */
 @media (max-width: 899px) {
   html[data-keyboard-open="true"] .login-shell {
-    padding: env(safe-area-inset-top) 0 0 !important;
+    /* El hero debe pintar también detrás del status bar. El padding superior
+       dejaba visible el fondo del shell y formaba la franja azul clara que
+       aparece en iPhone justo al abrir el teclado. */
+    padding: 0 !important;
   }
 
   html[data-keyboard-open="true"] .login-shell .login-left-panel {
@@ -1463,7 +1466,7 @@
   }
 
   html[data-keyboard-open="true"] .login-shell .login-network-visual-globe {
-    opacity: .86;
+    opacity: 1;
     transform: none;
   }
 

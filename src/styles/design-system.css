@@ -8725,10 +8725,16 @@ a {
 }
 
 .inicio-kpi-card > * { position: relative; z-index: 1; }
-.inicio-kpi-card-campaigns { --kpi-accent: #3478ef; --kpi-accent-soft: rgba(52,120,239,.18); }
-.inicio-kpi-card-screens { --kpi-accent: #1497b8; --kpi-accent-soft: rgba(20,151,184,.17); }
-.inicio-kpi-card-report { --kpi-accent: #7357d9; --kpi-accent-soft: rgba(115,87,217,.17); }
-.inicio-kpi-card-deadline { --kpi-accent: #d58a22; --kpi-accent-soft: rgba(213,138,34,.17); }
+/* La jerarquía la construyen la profundidad y el espaciado, no una paleta
+   multicolor. Toda la familia usa únicamente el azul de Vista360 sobre
+   superficies blancas y tipografía negra. */
+.inicio-kpi-card-campaigns,
+.inicio-kpi-card-screens,
+.inicio-kpi-card-report,
+.inicio-kpi-card-deadline {
+  --kpi-accent: #2563eb;
+  --kpi-accent-soft: rgba(37,99,235,.14);
+}
 
 .inicio-kpi-card .inicio-kpi-icon {
   border: 1px solid color-mix(in srgb, var(--kpi-accent) 18%, white);
