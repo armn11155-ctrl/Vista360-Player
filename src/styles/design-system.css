@@ -9058,6 +9058,14 @@ a {
     margin-inline: auto !important;
   }
 
+  /* La regla histórica centraba el perfil impar expandiéndolo a todo el
+     renglón. Se conserva centrado, pero con el ancho real de una columna. */
+  .admin-picker-grid > .admin-picker-tile:not(.admin-picker-tile-vermas):last-child:nth-child(odd) {
+    grid-column: 1 / -1 !important;
+    justify-self: center !important;
+    width: min(138px, 48.5%) !important;
+  }
+
   .admin-picker-tile:not(.admin-picker-tile-vermas) {
     border-radius: 18px !important;
   }

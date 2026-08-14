@@ -595,5 +595,6 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("grid-template-columns: repeat(2, minmax(0, 1fr)) !important");
     expect(estilos).toContain("max-width: 460px !important");
     expect(estilos).toContain("width: min(100%, 286px) !important");
+    expect(estilos).toMatch(/\.admin-picker-grid > \.admin-picker-tile:not\(\.admin-picker-tile-vermas\):last-child:nth-child\(odd\) \{[\s\S]*?grid-column: 1 \/ -1 !important;[\s\S]*?width: min\(138px, 48\.5%\) !important;/);
   });
 });
