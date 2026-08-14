@@ -552,6 +552,7 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-body \{[\s\S]*?"month action"[\s\S]*?"meta meta";/);
     expect(sistema).toMatch(/\.inicio-screen-client \.inicio-content \{[\s\S]*?padding-top: 12px !important;/);
     expect(login).toContain("TECLADO MÓVIL — COMPOSICIÓN COMPACTA SIN FRANJA NI BOTÓN PEGADO");
+    expect(login).toContain('html[data-keyboard-open="true"] .login-shell .login-left-panel');
     expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-left-panel \{[\s\S]*?min-height: 88px;[\s\S]*?flex-basis: 88px;/);
     expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-btn \{[\s\S]*?min-height: 44px;[\s\S]*?margin-top: 1px;/);
   });

@@ -1443,58 +1443,58 @@
    El foco conserva una cabecera breve de marca, pero adelanta el formulario
    y reserva aire real bajo la acción principal dentro del viewport visible. */
 @media (max-width: 899px) {
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) {
+  html[data-keyboard-open="true"] .login-shell {
     padding: env(safe-area-inset-top) 0 0 !important;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+  html[data-keyboard-open="true"] .login-shell .login-left-panel {
     min-height: 88px;
     flex-basis: 88px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-copy {
+  html[data-keyboard-open="true"] .login-shell .login-network-copy {
     left: 22px;
     width: 116px;
     transform: none;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-logo {
+  html[data-keyboard-open="true"] .login-shell .login-network-logo {
     width: 108px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-visual-globe {
+  html[data-keyboard-open="true"] .login-shell .login-network-visual-globe {
     opacity: .86;
     transform: none;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+  html[data-keyboard-open="true"] .login-shell .login-right-panel {
     margin-top: -10px;
     padding: 12px 20px 16px;
     border-radius: 24px 24px 0 0;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-card {
+  html[data-keyboard-open="true"] .login-shell .login-card {
     width: min(100%, 288px);
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-access-kicker {
+  html[data-keyboard-open="true"] .login-shell .login-access-kicker {
     margin-bottom: 4px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-message-stack {
+  html[data-keyboard-open="true"] .login-shell .login-message-stack {
     min-height: 29px;
     margin-bottom: 1px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-group {
+  html[data-keyboard-open="true"] .login-shell .login-card .form-group {
     margin-bottom: 7px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-remember {
+  html[data-keyboard-open="true"] .login-shell .login-remember {
     margin: 6px 0 7px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-btn {
+  html[data-keyboard-open="true"] .login-shell .login-btn {
     min-height: 44px;
     margin-top: 1px;
     padding: 10px;
@@ -1502,12 +1502,12 @@
 }
 
 @media (max-width: 899px) and (max-height: 430px) {
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+  html[data-keyboard-open="true"] .login-shell .login-left-panel {
     min-height: 84px;
     flex-basis: 84px;
   }
 
-  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+  html[data-keyboard-open="true"] .login-shell .login-right-panel {
     margin-top: -9px;
     padding-bottom: 14px;
   }
