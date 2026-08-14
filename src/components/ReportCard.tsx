@@ -14,6 +14,9 @@ interface Props {
   informe: InformeCliente;
   cliente: Cliente | null;
   clienteId: string;
+  /** Nombre vigente resuelto desde la campaña actual. El guardado dentro
+   *  del informe queda solo como respaldo para documentos históricos. */
+  nombreCampanaActual?: string;
   isAdmin?: boolean;
   /** Se llama despues de eliminar el reporte con exito, para que el
    *  que lo use (Reportes.tsx, DetalleCampana.tsx) refresque su lista. */
@@ -116,7 +119,7 @@ function nombreArchivoReporte(mesLabel: string) {
  * principal de Reportes y dentro del detalle de cada campaña (pestaña
  * Reportes), para que se vea igual en los dos lados.
  */
-export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }: Props) {
+export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, isAdmin, onEliminado }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const { confirmar } = useDialogos();
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -417,7 +420,7 @@ export function ReportCard({ informe, cliente, clienteId, isAdmin, onEliminado }
           <span>PDF</span>
         </div>
         <div className="report-card-copy">
-          <div className="report-kicker">{informe.contratoNombre || "Reporte mensual"}</div>
+          <div className="report-kicker">{nombreCampanaActual ?? informe.contratoNombre ?? "Reporte mensual"}</div>
           <div className="report-title">{informe.mesLabel}</div>
           <div className="report-meta report-meta-generated">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}

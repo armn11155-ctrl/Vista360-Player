@@ -12,6 +12,7 @@ import { cloudFunctions } from "../../config/firebase";
 import { mensajeDeError } from "../../utils/errores";
 import { descargarRecordatorioCalendario } from "../../utils/calendarioIcs";
 import { useDialogos } from "../DialogosProvider";
+import { nombreCampanaVisibleEnReporte } from "../../utils/reportCampaignName";
 
 interface Props {
   contrato: Contrato;
@@ -532,6 +533,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                           informe={informe}
                           cliente={cliente}
                           clienteId={contrato.cliente_id}
+                          nombreCampanaActual={nombreCampanaVisibleEnReporte(informe, [contrato], paneles)}
                           isAdmin={isAdmin}
                           onEliminado={informesState.recargar}
                         />

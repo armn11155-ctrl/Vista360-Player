@@ -10,6 +10,7 @@ import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 import ClientScreenHeader from "../ClientScreenHeader";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
+import { nombreCampanaVisibleEnReporte } from "../../utils/reportCampaignName";
 
 interface Props {
   cliente: Cliente | null;
@@ -588,6 +589,7 @@ function mensajeErrorReporte(error: unknown) {
                     informe={informe}
                     cliente={cliente}
                     clienteId={clienteId}
+                    nombreCampanaActual={nombreCampanaVisibleEnReporte(informe, contratos, paneles)}
                     isAdmin={isAdmin}
                     onEliminado={informesState.recargar}
                   />
