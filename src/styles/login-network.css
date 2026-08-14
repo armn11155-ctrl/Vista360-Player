@@ -1244,20 +1244,16 @@
 @media (max-width: 899px) {
   .login-left-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
-    min-height: 292px;
-    flex-basis: 292px;
-    /* Los primeros 160px son deliberadamente planos. En Safari, cualquier
-       trama o cambio de tono bajo la barra de estado se percibe como una
-       raya horizontal aunque sea parte del degradado. La transición empieza
-       después y termina en el mismo negro azulado del panel de acceso. */
+    min-height: 312px;
+    flex-basis: 312px;
+    /* La misma profundidad azul de laptop, adaptada a vertical. No usa
+       tramas ni cortes horizontales: las dos luces son radiales y el cambio
+       principal cruza la escena en diagonal, así Safari nunca forma una
+       banda bajo la barra de estado. */
     background:
-      radial-gradient(circle at 78% 78%, rgba(74,145,255,.17), transparent 38%),
-      linear-gradient(180deg,
-        #0e397c 0,
-        #0e397c 160px,
-        #0c326e 205px,
-        #081f48 252px,
-        #07111f 100%);
+      radial-gradient(circle at 76% 62%, rgba(0,96,225,.24), transparent 40%),
+      radial-gradient(circle at 12% 16%, rgba(55,132,255,.13), transparent 42%),
+      linear-gradient(112deg, #01306f 0%, #01265d 48%, #011f4b 100%);
   }
 
   .login-left-panel::before {
@@ -1271,8 +1267,13 @@
   }
 
   .login-network-copy {
-    top: calc(14px + env(safe-area-inset-top));
-    width: 154px;
+    top: env(safe-area-inset-top);
+    bottom: 0;
+    width: 164px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transform: none;
   }
 
   .login-network-copy::after {
@@ -1282,16 +1283,25 @@
 
   .login-network-logo {
     display: block !important;
-    width: 118px;
+    width: 132px;
     height: auto;
-    margin: 0 0 14px;
+    margin: 0 0 15px;
     filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgba(1,8,24,.34));
   }
 
   .login-network-copy h1 {
-    max-width: 154px;
-    font-size: clamp(27px, 7.35vw, 30px);
+    max-width: 164px;
+    font-size: clamp(29px, 7.8vw, 32px);
     line-height: .99;
+  }
+
+  /* El planeta comparte exactamente la misma zona útil que la marca: desde
+     el final de la barra segura hasta el borde inferior del hero. Así ambos
+     quedan centrados con idéntico aire arriba y abajo en iPhone y Android. */
+  .login-network-visual-globe {
+    top: env(safe-area-inset-top);
+    bottom: 0;
+    height: auto;
   }
 
   .login-right-panel,
@@ -1349,23 +1359,24 @@
 @media (max-width: 899px) and (max-height: 740px) {
   .login-left-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
-    min-height: 174px;
-    flex-basis: 174px;
+    min-height: 196px;
+    flex-basis: 196px;
   }
 
   .login-network-copy {
-    top: calc(10px + env(safe-area-inset-top));
-    width: 146px;
+    top: env(safe-area-inset-top);
+    bottom: 0;
+    width: 154px;
   }
 
   .login-network-logo {
-    width: 98px;
-    margin-bottom: 9px;
+    width: 108px;
+    margin-bottom: 10px;
   }
 
   .login-network-copy h1 {
-    max-width: 146px;
-    font-size: 25px;
+    max-width: 154px;
+    font-size: 27px;
   }
 
   .login-right-panel,
