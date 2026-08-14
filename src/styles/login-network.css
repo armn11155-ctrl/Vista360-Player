@@ -1244,8 +1244,20 @@
 @media (max-width: 899px) {
   .login-left-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
-    min-height: 280px;
-    flex-basis: 280px;
+    min-height: 292px;
+    flex-basis: 292px;
+    /* Los primeros 160px son deliberadamente planos. En Safari, cualquier
+       trama o cambio de tono bajo la barra de estado se percibe como una
+       raya horizontal aunque sea parte del degradado. La transición empieza
+       después y termina en el mismo negro azulado del panel de acceso. */
+    background:
+      radial-gradient(circle at 78% 78%, rgba(74,145,255,.17), transparent 38%),
+      linear-gradient(180deg,
+        #0e397c 0,
+        #0e397c 160px,
+        #0c326e 205px,
+        #081f48 252px,
+        #07111f 100%);
   }
 
   .login-left-panel::before {
@@ -1259,20 +1271,32 @@
   }
 
   .login-network-copy {
-    top: calc(10px + env(safe-area-inset-top));
+    top: calc(14px + env(safe-area-inset-top));
+    width: 154px;
+  }
+
+  .login-network-copy::after {
+    content: none !important;
+    display: none !important;
   }
 
   .login-network-logo {
     display: block !important;
-    width: 104px;
+    width: 118px;
     height: auto;
-    margin: 0 0 12px;
+    margin: 0 0 14px;
     filter: brightness(0) invert(1) drop-shadow(0 8px 20px rgba(1,8,24,.34));
+  }
+
+  .login-network-copy h1 {
+    max-width: 154px;
+    font-size: clamp(27px, 7.35vw, 30px);
+    line-height: .99;
   }
 
   .login-right-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
-    padding-top: 11px;
+    padding-top: 28px;
   }
 
   .login-right-panel .login-logo,
@@ -1286,9 +1310,11 @@
     width: min(100%, 288px);
   }
 
-  .login-access-kicker {
+  .login-access-kicker,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-access-kicker {
+    min-height: 17px;
     gap: 10px;
-    margin-bottom: 7px;
+    margin-bottom: 9px;
   }
 
   .login-access-kicker::before {
@@ -1301,26 +1327,49 @@
     background: linear-gradient(90deg, #2563eb, #60a5fa);
     box-shadow: 0 0 10px rgba(96,165,250,.28);
   }
+
+  .login-title,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-title {
+    margin-bottom: 5px;
+    font-size: 28px;
+  }
+
+  .login-card .form-group,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-group { margin-bottom: 12px; }
+  .login-card .form-input,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-input { min-height: 52px; }
+  .login-remember,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-remember { margin: 12px 0 15px; }
+  .login-btn,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-btn { min-height: 52px; }
+  .login-foot,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-foot { margin: 16px auto 0; }
 }
 
 @media (max-width: 899px) and (max-height: 740px) {
   .login-left-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
-    min-height: 154px;
-    flex-basis: 154px;
+    min-height: 174px;
+    flex-basis: 174px;
   }
 
   .login-network-copy {
-    top: calc(8px + env(safe-area-inset-top));
+    top: calc(10px + env(safe-area-inset-top));
+    width: 146px;
   }
 
   .login-network-logo {
-    width: 88px;
-    margin-bottom: 7px;
+    width: 98px;
+    margin-bottom: 9px;
+  }
+
+  .login-network-copy h1 {
+    max-width: 146px;
+    font-size: 25px;
   }
 
   .login-right-panel,
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
-    padding-top: 10px;
+    padding-top: 22px;
   }
 }
