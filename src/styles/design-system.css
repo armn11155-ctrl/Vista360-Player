@@ -2878,6 +2878,179 @@ a {
 }
 
 /* =====================================================================
+   CIERRE MÓVIL OPERATIVO — MÁS INFORMACIÓN, MENOS DESPLAZAMIENTO
+   ---------------------------------------------------------------------
+   Inicio prioriza cuenta, resumen, accesos y último reporte dentro de
+   la primera vista. “Continúa aquí” repetía esos mismos destinos y se
+   conserva únicamente en laptop, donde sí aporta sin forzar scroll.
+   ===================================================================== */
+@media (max-width: 899px) {
+  .inicio-header {
+    min-height: 150px;
+    padding: calc(15px + env(safe-area-inset-top)) 20px 42px !important;
+  }
+
+  .inicio-header > div:first-child { margin-bottom: 20px !important; }
+  .inicio-logo { height: 28px !important; }
+  .inicio-greeting-title { font-size: 19px !important; }
+  .inicio-greeting-sub { font-size: 11px !important; }
+
+  .inicio-content {
+    margin-top: -25px !important;
+    padding: 14px 14px calc(10px + env(safe-area-inset-bottom)) !important;
+    border-radius: 25px 25px 0 0 !important;
+  }
+
+  .inicio-admin-actions { margin-bottom: 10px !important; }
+  .inicio-current-client {
+    min-height: 64px;
+    padding: 9px 11px !important;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 9px;
+    border-radius: 15px !important;
+  }
+  .inicio-current-client-mark { width: 38px !important; height: 38px !important; border-radius: 11px !important; }
+  .inicio-current-client-copy strong { font-size: 14px !important; }
+  .inicio-current-client-action { font-size: 10px !important; }
+
+  .inicio-section-title {
+    margin: 12px 0 8px !important;
+    font-size: 15px !important;
+  }
+
+  .inicio-summary-title { margin-top: 0 !important; }
+  .inicio-summary-grid { gap: 7px !important; margin-bottom: 12px !important; }
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 66px !important;
+    padding: 9px 10px !important;
+    gap: 8px !important;
+    border-radius: 14px !important;
+  }
+  .inicio-kpi-icon { width: 32px !important; height: 32px !important; border-radius: 9px !important; }
+  .inicio-kpi-icon svg { width: 18px; height: 18px; }
+  .inicio-kpi-label { margin-bottom: 2px !important; font-size: 9.5px !important; }
+  .inicio-kpi-value { font-size: 14px !important; letter-spacing: -.018em; }
+  .inicio-kpi-card-report .inicio-kpi-value,
+  .inicio-kpi-card-date .inicio-kpi-value {
+    overflow: visible !important;
+    font-size: clamp(11px, 3.15vw, 13px) !important;
+    line-height: 1.12 !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
+
+  .inicio-quick-grid { gap: 7px !important; margin-bottom: 12px !important; }
+  .inicio-quick-grid > button {
+    min-height: 58px !important;
+    gap: 4px !important;
+    border-radius: 13px !important;
+  }
+  .inicio-quick-grid > button svg { width: 21px; height: 21px; }
+  .inicio-quick-copy span { font-size: 9.5px !important; }
+  .inicio-quick-copy small { display: none !important; }
+
+  .inicio-side-col .inicio-evidence-card {
+    min-height: 0 !important;
+    margin-top: 0 !important;
+    padding: 13px !important;
+    border-radius: 15px !important;
+  }
+  .inicio-side-col .inicio-report-title {
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+  }
+  .inicio-report-row { gap: 10px !important; }
+  .inicio-side-col .inicio-report-icon { width: 42px !important; height: 48px !important; border-radius: 10px !important; }
+  .inicio-report-icon svg { width: 21px; height: 21px; }
+  .inicio-report-month { margin-bottom: 4px !important; font-size: 14px !important; line-height: 1.12 !important; }
+  .inicio-report-meta { margin-bottom: 7px !important; gap: 5px !important; font-size: 10.5px !important; }
+  .inicio-report-link { font-size: 12px !important; }
+
+  .inicio-account-status { display: none !important; }
+
+  /* Sobre azul oscuro, un filo cian-gris de un píxel separa mejor que
+     otra barra azul saturada. También se retira el barrido blanco que
+     podía parecer un destello al cambiar de pestaña. */
+  :is(.reports-header, .coverage-header-compact, .campanas-header)::before {
+    left: 18px;
+    right: 18px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(178,210,255,.34) 20%, rgba(178,210,255,.34) 80%, transparent);
+  }
+  :is(.reports-header, .coverage-header-compact, .campanas-header)::after {
+    content: none !important;
+    display: none !important;
+  }
+}
+
+/* La administración de campañas deja de depender de descubrir tres
+   puntos. El botón sigue siendo discreto, pero nombra la acción y el
+   menú conserva edición y eliminación con sus permisos existentes. */
+.campaign-card-actions {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 6;
+}
+
+.campaign-config-button {
+  min-height: 34px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(191,219,254,.22);
+  border-radius: 10px;
+  color: #eef6ff;
+  background: rgba(4,13,29,.68);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 10px 24px -17px rgba(0,0,0,.9);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 780;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.campaign-config-button[aria-expanded="true"] {
+  border-color: rgba(147,197,253,.46);
+  background: rgba(16,45,87,.88);
+}
+
+.campaign-config-button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.campaign-config-menu {
+  top: 41px !important;
+  min-width: 190px !important;
+  z-index: 8;
+}
+
+.campaign-config-menu .report-card-menu-item {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12.5px;
+}
+
+.premium-campaign-card:has(.campaign-card-actions) > div:first-child {
+  padding-right: 94px;
+}
+
+@media (max-width: 370px) {
+  .inicio-header { min-height: 144px; }
+  .inicio-current-client-action { font-size: 0 !important; }
+  .inicio-current-client-action svg { width: 16px; height: 16px; }
+  .campaign-config-button span { display: none; }
+  .campaign-config-button { width: 34px; padding: 0; }
+  .premium-campaign-card:has(.campaign-card-actions) > div:first-child { padding-right: 40px; }
+}
+
+/* =====================================================================
    ESCRITORIO EDITORIAL — MENOS CAPAS, MÁS JERARQUÍA
    El carril lateral ya establece una identidad fuerte. En laptop, el
    contenido lo acompaña con una sola superficie protagonista, tarjetas

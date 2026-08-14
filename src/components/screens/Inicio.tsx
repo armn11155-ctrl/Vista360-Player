@@ -286,7 +286,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
           ].map((item) => (
             <div
               key={item.label}
-              className="inicio-kpi-card"
+              className={`inicio-kpi-card${item.label === "Último reporte" ? " inicio-kpi-card-report" : item.label === "Próximo vencimiento" ? " inicio-kpi-card-date" : ""}`}
               onClick={item.onClick}
               style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor:item.onClick ? "pointer" : "default" }}
             >

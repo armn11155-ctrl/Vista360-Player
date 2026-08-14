@@ -942,8 +942,8 @@
    el formulario ni recargar el canvas cartográfico. */
 @media (max-width: 899px) {
   .login-left-panel {
-    min-height: 304px;
-    flex-basis: 304px;
+    min-height: 350px;
+    flex-basis: 350px;
     border-bottom: 1px solid rgba(147,197,253,.10);
     background:
       radial-gradient(circle at 78% 74%, rgba(74,145,255,.20), transparent 40%),
@@ -991,24 +991,51 @@
   }
 
   .login-right-panel {
-    margin-top: -34px;
+    width: 100%;
+    max-width: 440px;
+    margin: -20px auto 0;
+    padding: 22px 22px calc(18px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 28px 28px 0 0;
     border-color: rgba(191,219,254,.18);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.09), transparent 32%),
+      linear-gradient(155deg, #07111f 0%, #030811 62%, #02060d 100%);
     box-shadow: 0 -24px 68px -35px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.065);
   }
 
   .login-network-copy {
-    top: calc(34px + env(safe-area-inset-top));
+    top: calc(38px + env(safe-area-inset-top));
     left: 22px;
-    width: min(224px, 58%);
+    width: 150px;
   }
 
   .login-network-copy h1 {
-    max-width: 218px;
+    max-width: 150px;
+    font-size: clamp(28px, 7.5vw, 31px);
+    line-height: 1;
+    letter-spacing: -.047em;
   }
 
   .login-network-message > p {
-    max-width: 182px;
+    max-width: 148px;
+    font-size: 9.5px;
+    line-height: 1.38;
   }
+
+  .login-network-live { margin-top: 10px; font-size: 6.3px; }
+
+  .login-right-panel .login-logo,
+  .login-card,
+  .login-foot {
+    width: min(100%, 330px);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .login-right-panel .login-logo { margin: 0 auto 17px; }
 
   .login-foot {
     margin-top: auto;
@@ -1031,5 +1058,12 @@
   .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
     min-height: 86px;
     flex-basis: 86px;
+  }
+
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+    border-radius: 24px 24px 0 0;
   }
 }

@@ -478,43 +478,50 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                   )
                 )}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                {isAdmin && (
+              {isAdmin && (
+                <div className="campaign-card-actions">
                   <div style={{ position: "relative" }} onClick={(event) => event.stopPropagation()}>
                     <button
                       type="button"
-                      className="report-card-menu-btn"
-                      aria-label="Opciones de la campaña"
+                      className="campaign-config-button"
+                      aria-label={`Configurar campaña ${tituloCampana}`}
+                      aria-haspopup="menu"
+                      aria-expanded={menuAbiertoId === c.id}
+                      aria-controls={`campaign-actions-${c.id}`}
                       onClick={() => setMenuAbiertoId((actual) => (actual === c.id ? null : c.id))}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="5" r="1.9" />
-                        <circle cx="12" cy="12" r="1.9" />
-                        <circle cx="12" cy="19" r="1.9" />
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.86 2.86-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.4v-.1A1.7 1.7 0 0 0 8 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.86-2.86.06-.06A1.7 1.7 0 0 0 3.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H1.8V9.4h.1A1.7 1.7 0 0 0 3.6 8a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.06 3.2l.06.06A1.7 1.7 0 0 0 8 3.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V1.8h4.2v.1A1.7 1.7 0 0 0 15 3.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.86 2.86-.06.06A1.7 1.7 0 0 0 19.4 8c.12.4.34.75.65 1 .3.25.68.4 1.05.4h.1v4.2h-.1A1.7 1.7 0 0 0 19.4 15Z" />
                       </svg>
+                      <span>Configurar</span>
                     </button>
                     {menuAbiertoId === c.id && (
-                      <div className="report-card-menu-dropdown">
+                      <div id={`campaign-actions-${c.id}`} className="report-card-menu-dropdown campaign-config-menu" role="menu">
                         <button
                           type="button"
                           className="report-card-menu-item neutral"
+                          role="menuitem"
                           onClick={() => abrirEdicion(c, panelNombre)}
                         >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                           Editar campaña
                         </button>
                         <button
                           type="button"
                           className="report-card-menu-item"
+                          role="menuitem"
                           onClick={() => void eliminarCampana(c, panelNombre)}
                           disabled={eliminandoId === c.id}
                         >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/></svg>
                           {eliminandoId === c.id ? "Eliminando..." : "Eliminar campaña"}
                         </button>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
               </div>
               </div>
             </div>

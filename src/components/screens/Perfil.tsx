@@ -482,7 +482,11 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
               detecta ese modo aunque isAdmin diga false; isAdmin
               true dentro de esInterno es justamente "admin viendo su
               propio perfil", asi que ahi si se muestra. */}
-          {(!esInterno || isAdmin) && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
+          {/* Si la sesión real es del equipo interno, esta pantalla sigue
+              describiendo a la EMPRESA seleccionada. La contraseña y las
+              sesiones del Gerente/Trabajador se administran en “Mi perfil”;
+              mostrarlas aquí hacía creer que se modificaría al cliente. */}
+          {!esInterno && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
         </ProfileSection>
 
@@ -494,14 +498,16 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
           </div>
         </ProfileSection>
 
-        <ProfileSection title="Seguridad">
-          <ProfileRow
-            icon="lock"
-            label={cerrandoSesiones ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
-            danger
-            onClick={() => void cerrarSesionesDeTodosLosDispositivos()}
-          />
-        </ProfileSection>
+        {!esInterno && (
+          <ProfileSection title="Seguridad">
+            <ProfileRow
+              icon="lock"
+              label={cerrandoSesiones ? "Cerrando sesiones…" : "Cerrar todas mis sesiones"}
+              danger
+              onClick={() => void cerrarSesionesDeTodosLosDispositivos()}
+            />
+          </ProfileSection>
+        )}
 
         <ProfileSection title="Cuenta">
           <ProfileRow icon="logout" label="Cerrar sesión" danger onClick={() => logout()} />

@@ -349,10 +349,11 @@ export default function App() {
           : (auth.role === "admin" || auth.role === "trabajador") && !adminClienteId
             ? "#050A12"
             : VIEW_COLORS[view] ?? "#0B1220";
-  const pageBackground =
-    auth.status === "in" && !((auth.role === "admin" || auth.role === "trabajador") && !adminClienteId)
-      ? "#FFFFFF"
-      : themeColor;
+  // El lienzo que queda DETRÁS de las pantallas siempre conserva el color
+  // del header. Cada módulo sigue pintando su contenido claro por encima,
+  // pero iOS ya no alcanza a enseñar un fondo blanco en el safe-area o
+  // durante el instante en que React cambia un chunk por otro.
+  const pageBackground = themeColor;
   useThemeColor(themeColor, pageBackground);
 
   if (envMissing.length > 0) {

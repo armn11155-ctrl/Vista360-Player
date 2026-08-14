@@ -22,5 +22,6 @@ export function useThemeColor(color: string, pageBackground = color) {
     meta.setAttribute("content", color);
     document.documentElement.style.background = pageBackground;
     document.body.style.background = pageBackground;
+    document.getElementById("root")?.style.setProperty("background", pageBackground);
   }, [color, pageBackground]);
 }
