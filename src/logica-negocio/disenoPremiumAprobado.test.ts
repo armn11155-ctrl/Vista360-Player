@@ -80,9 +80,9 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("let radio = Math.min(ancho * 0.39, alto * 0.31)");
     expect(globo).toContain("let centroX = ancho * 0.506");
     expect(globo).toContain("let centroY = alto * 0.654");
-    expect(globo).toContain("radio = Math.min(ancho * 0.27, alto * 0.43)");
+    expect(globo).toContain("radio = Math.min(ancho * 0.255, alto * 0.38)");
     expect(globo).toContain("centroX = ancho * 0.76");
-    expect(globo).toContain("centroY = alto * 0.53");
+    expect(globo).toContain("centroY = alto * 0.49");
     expect(globo).toContain("const salto = esMovil ? 2 : 1");
     expect(globo).toContain("const intervalo = escritorio.matches ? INTERVALO_CUADRO : 1000 / 24");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
@@ -293,7 +293,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("ESCENA NOCTURNA COMPARTIDA — NAVEGACIÓN Y CABECERAS");
     expect(estilos).toMatch(/:is\([\s\S]*?\.client-screen-header,[\s\S]*?\.reports-header,[\s\S]*?\.coverage-header-compact,[\s\S]*?\.campanas-header,[\s\S]*?\.profile-top[\s\S]*?radial-gradient\(circle at 92% -24%/);
     expect(estilos).toMatch(/\.sidebar-panel \{[\s\S]*?radial-gradient\(circle at 112% 9%/);
-    expect(estilosLogin).toMatch(/\.login-left-panel \{[\s\S]*?min-height: 350px;[\s\S]*?flex-basis: 350px;/);
+    expect(estilosLogin).toContain("Autoridad final del login móvil");
+    expect(estilosLogin).toMatch(/\.login-left-panel \{[\s\S]*?min-height: 310px;[\s\S]*?flex-basis: 310px;/);
   });
 
   it("cierra la experiencia móvil sin destellos ni controles escondidos", () => {
@@ -316,6 +317,9 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-kpi-card-report \.inicio-kpi-value,[\s\S]*?white-space: normal !important;/);
     expect(sistema).toMatch(/\.campaign-config-button \{[\s\S]*?font-size: 10\.5px;/);
     expect(estilosLogin).toMatch(/\.login-right-panel \{[\s\S]*?width: 100%;[\s\S]*?border-radius: 28px 28px 0 0;/);
+    expect(estilosLogin).toContain('html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus)');
+    expect(estilosLogin).toContain('html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus)');
+    expect(leer("src/utils/viewport-height.ts")).toContain('document.documentElement.dataset.keyboardOpen = "true"');
   });
 
   it("mantiene estable y negro el perfil de laptop", () => {

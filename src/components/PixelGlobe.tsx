@@ -174,9 +174,9 @@ export default function PixelGlobe() {
       // densidad más abajo: mantiene la forma real de los países sin castigar
       // la batería de un teléfono.
       if (esMovil) {
-        radio = Math.min(ancho * 0.27, alto * 0.43);
+        radio = Math.min(ancho * 0.255, alto * 0.38);
         centroX = ancho * 0.76;
-        centroY = alto * 0.53;
+        centroY = alto * 0.49;
       }
       // La longitud avanza en sentido positivo para que el volumen visual
       // gire hacia la derecha. Es deliberadamente lento: se percibe vivo sin

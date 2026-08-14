@@ -937,7 +937,6 @@
     border-radius: 22px 22px 0 0;
   }
 }
-
 /* Pulida final móvil: añade señales de red y profundidad sin competir con
    el formulario ni recargar el canvas cartográfico. */
 @media (max-width: 899px) {
@@ -1066,4 +1065,156 @@
     margin-left: 0;
     border-radius: 24px 24px 0 0;
   }
+}
+
+/* Autoridad final del login móvil. Este bloque debe permanecer al cierre
+   del archivo para que ninguna pulida histórica vuelva a agrandar la escena. */
+@media (max-width: 899px) {
+  .login-left-panel {
+    min-height: 310px;
+    flex-basis: 310px;
+    border-bottom: 0;
+    background:
+      radial-gradient(circle at 76% 60%, rgba(74,145,255,.19), transparent 37%),
+      radial-gradient(circle at 8% 5%, rgba(96,165,250,.085), transparent 28%),
+      linear-gradient(180deg, #103a80 0%, #0b2d65 47%, #071d42 74%, #07111f 100%);
+  }
+
+  .login-left-panel::before {
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,.014) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.010) 0 1px, transparent 1px 48px),
+      linear-gradient(180deg, transparent 44%, rgba(7,17,31,.14) 66%, #07111f 100%);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .login-network-copy { top: calc(26px + env(safe-area-inset-top)); left: 20px; width: 142px; }
+  .login-network-copy::after {
+    inset: -22px -50px -28px -24px;
+    background: radial-gradient(ellipse at 24% 40%, rgba(5,30,67,.60), rgba(5,30,67,.22) 58%, transparent 78%);
+  }
+  .login-network-copy h1 { max-width: 142px; font-size: clamp(25px, 6.9vw, 28px); line-height: 1.01; }
+  .login-network-message > p { max-width: 138px; margin-top: 9px; font-size: 8.8px; line-height: 1.38; }
+  .login-network-live { min-height: 19px; margin-top: 8px; padding-inline: 7px; font-size: 5.7px; }
+
+  .login-right-panel {
+    margin-top: -18px;
+    padding: 18px 22px calc(15px + env(safe-area-inset-bottom));
+    border-top-color: rgba(191,219,254,.11);
+    border-radius: 25px 25px 0 0;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(37,99,235,.065), transparent 31%),
+      linear-gradient(180deg, #07111f 0%, #040a14 35%, #02060d 100%);
+    box-shadow: 0 -22px 58px -39px rgba(0,0,0,.86), inset 0 1px 0 rgba(255,255,255,.045);
+  }
+
+  .login-right-panel .login-logo { margin: 0 auto 10px; }
+  .login-right-panel .login-logo img { width: 142px; }
+  .login-access-kicker { min-height: 17px; margin-bottom: 9px; font-size: 7.4px; letter-spacing: .15em; }
+  .login-access-kicker strong { font-size: 7.1px; }
+  .login-title { margin-bottom: 4px; font-size: 26px; }
+  .login-message-stack { min-height: 38px; margin-bottom: 5px; }
+  .login-sub { font-size: 11px; }
+  .login-card .form-group { margin-bottom: 11px; }
+  .login-card .form-input { min-height: 50px; }
+  .login-remember { margin: 10px 0 13px; }
+  .login-btn { min-height: 50px; }
+  .login-foot { margin-top: 12px; padding-top: 8px; }
+}
+
+@media (max-width: 899px) and (max-height: 740px) {
+  .login-left-panel { min-height: 170px; flex-basis: 170px; }
+  .login-network-copy { top: calc(16px + env(safe-area-inset-top)); }
+  .login-network-copy h1 { font-size: 23px; }
+  .login-network-message > p,
+  .login-network-live { display: none !important; }
+  .login-right-panel { margin-top: -16px; padding-top: 14px; }
+}
+
+@media (max-width: 899px) {
+  /* En navegadores sin teclado visible, enfocar un campo no debe reconstruir
+     la pantalla ni ocultar la identidad del login. */
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
+    max-height: none;
+    padding: 0;
+    overflow: hidden !important;
+    touch-action: auto;
+  }
+
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-experience { min-height: 100dvh; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel { min-height: 310px; flex-basis: 310px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-network-copy, .login-network-visual-globe) { opacity: 1; pointer-events: none; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    width: 100%;
+    min-height: 0;
+    margin: -18px 0 0;
+    padding: 18px 22px calc(15px + env(safe-area-inset-bottom));
+    border-radius: 25px 25px 0 0;
+  }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-logo, .login-foot) {
+    max-height: none;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-logo { margin: 0 auto 10px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-foot { margin-top: 12px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-access-kicker { margin-bottom: 9px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-title { margin-bottom: 4px; font-size: 26px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-message-stack { min-height: 38px; margin-bottom: 5px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-group { margin-bottom: 11px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-input { min-height: 50px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-remember { margin: 10px 0 13px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-btn { min-height: 50px; margin-top: 3px; padding: 13px; }
+
+  /* Solo el teclado real activa la versión compacta. La escena se reduce,
+     pero planeta, promesa y logo siguen presentes. */
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) { padding: calc(4px + env(safe-area-inset-top)) 0 4px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel { min-height: 124px; flex-basis: 124px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-copy {
+    top: calc(13px + env(safe-area-inset-top));
+    left: 16px;
+    width: 104px;
+    opacity: 1;
+    pointer-events: none;
+  }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-copy h1 { max-width: 104px; font-size: 18px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-network-message > p, .login-network-live) { display: none !important; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-visual-globe { opacity: .78; pointer-events: none; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    width: 100%;
+    margin: -14px 0 0;
+    padding: 11px 20px calc(9px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+  }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-logo {
+    width: min(100%, 330px);
+    max-height: 30px;
+    margin: 0 auto 7px;
+    overflow: visible;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-logo img { width: 108px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-foot { display: none; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-access-kicker { min-height: 15px; margin-bottom: 5px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-title { margin-bottom: 2px; font-size: 21px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-message-stack { min-height: 31px; margin-bottom: 2px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-group { margin-bottom: 8px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-card .form-input { min-height: 44px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-remember { margin: 7px 0 8px; }
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-btn { min-height: 46px; margin-top: 2px; padding: 11px; }
+}
+
+@media (max-width: 899px) and (max-height: 740px) {
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel { min-height: 170px; flex-basis: 170px; }
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel { margin-top: -16px; padding-top: 14px; }
 }

@@ -30,6 +30,12 @@ export function setupRealViewportHeight() {
     const currentHeight = readViewportHeight();
     const keyboardLikelyOpen = isTextInputFocused() && visualHeight > 0 && visualHeight < stableHeight * 0.82;
 
+    if (keyboardLikelyOpen) {
+      document.documentElement.dataset.keyboardOpen = "true";
+    } else {
+      delete document.documentElement.dataset.keyboardOpen;
+    }
+
     if (!keyboardLikelyOpen) {
       stableHeight = currentHeight;
     }
