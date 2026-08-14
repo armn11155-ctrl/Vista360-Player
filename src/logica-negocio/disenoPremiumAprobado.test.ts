@@ -5,6 +5,21 @@ import { resolve } from "node:path";
 const leer = (ruta: string) => readFileSync(resolve(__dirname, "../..", ruta), "utf8");
 
 describe("refinamiento premium aprobado", () => {
+  it("conserva avatares nítidos y compacta el selector sin achicar la foto", () => {
+    const imagenes = leer("src/utils/comprimirImagen.ts");
+    const estilos = leer("src/styles/app.css");
+
+    expect(imagenes).toContain("const AVATAR_SIZE = 512");
+    expect(imagenes).toContain("const AVATAR_WEBP_QUALITY = 0.88");
+    expect(imagenes).toContain('codificar(canvas, "image/jpeg", 0.92)');
+    expect(imagenes).toContain('ctx.imageSmoothingQuality = "high"');
+    expect(estilos).toContain("PERFILES NÍTIDOS Y COMPACTOS");
+    expect(estilos).toMatch(/\.admin-picker-tile \{[\s\S]*?gap: 6px;[\s\S]*?padding: 8px 8px 9px;/);
+    expect(estilos).toMatch(/\.admin-picker-tile-avatar \{[\s\S]*?width: 100%;[\s\S]*?margin: 0;/);
+    expect(estilos).toMatch(/\.admin-picker-tile-avatar img \{[\s\S]*?object-fit: cover;[\s\S]*?filter: none;[\s\S]*?transform: none;/);
+    expect(estilos).toContain("repeat(auto-fit, minmax(128px, 144px))");
+  });
+
   it("integra marca y acceso en una sola arquitectura de login", () => {
     const login = leer("src/components/LoginScreen.tsx");
     expect(login).toContain('className="login-experience"');
