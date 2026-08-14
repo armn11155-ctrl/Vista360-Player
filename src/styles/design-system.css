@@ -7837,6 +7837,7 @@ a {
   .accesos-screen .accesos-create-btn-row {
     margin: 14px 0 16px !important;
     padding: 5px;
+    display: flex !important;
     gap: 6px !important;
     overflow-x: auto;
     flex-direction: row !important;
