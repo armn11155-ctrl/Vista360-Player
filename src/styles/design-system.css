@@ -8662,3 +8662,28 @@ a {
   .admin-picker-tile:not(.archived),
   .admin-picker-tile-vermas { width: 132px; }
 }
+
+/* DESPLAZAMIENTO DE INICIO SEGÚN ROL
+   El personal interno dispone de más bloques operativos y necesita recorrerlos.
+   La portada del cliente cabe completa y permanece como una escena estable. */
+@media (max-width: 899px) {
+  .inicio-screen-admin {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  .inicio-screen-admin .inicio-content {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y;
+  }
+
+  .inicio-screen-client,
+  .inicio-screen-client .inicio-content {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: pan-x pinch-zoom;
+  }
+}

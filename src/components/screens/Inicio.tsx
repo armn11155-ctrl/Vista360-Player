@@ -102,7 +102,10 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
   const headerBg = "#050A12";
 
   return (
-    <div className="inicio-screen" style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}>
+    <div
+      className={`inicio-screen ${isAdmin ? "inicio-screen-admin" : "inicio-screen-client"}`}
+      style={{ display:"flex", flexDirection:"column", height:"100%", background: HEADER }}
+    >
 
       {/* ── HEADER ── */}
       <div className="inicio-header" style={{ padding:"calc(14px + env(safe-area-inset-top)) 22px 42px", flexShrink:0, background:headerBg }}>

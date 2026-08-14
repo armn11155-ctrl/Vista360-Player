@@ -531,4 +531,14 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.report-action-download \{[\s\S]*?color: #fff !important;[\s\S]*?background: #0b1220 !important;/);
     expect(sistema).toContain("Cobertura conserva el mapa protagonista");
   });
+
+  it("permite desplazar Inicio interno y mantiene estable Inicio cliente en móvil", () => {
+    const inicio = leer("src/components/screens/Inicio.tsx");
+    const sistema = leer("src/styles/design-system.css");
+
+    expect(inicio).toContain('className={`inicio-screen ${isAdmin ? "inicio-screen-admin" : "inicio-screen-client"}`}');
+    expect(sistema).toContain("DESPLAZAMIENTO DE INICIO SEGÚN ROL");
+    expect(sistema).toMatch(/\.inicio-screen-admin \.inicio-content \{[\s\S]*?overflow-y: auto !important;[\s\S]*?overscroll-behavior-y: contain !important;[\s\S]*?touch-action: pan-y;/);
+    expect(sistema).toMatch(/\.inicio-screen-client,[\s\S]*?\.inicio-screen-client \.inicio-content \{[\s\S]*?overflow: hidden !important;[\s\S]*?touch-action: pan-x pinch-zoom;/);
+  });
 });
