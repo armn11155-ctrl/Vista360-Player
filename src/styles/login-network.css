@@ -942,8 +942,8 @@
    el formulario ni recargar el canvas cartográfico. */
 @media (max-width: 899px) {
   .login-left-panel {
-    min-height: 248px;
-    flex-basis: 248px;
+    min-height: 304px;
+    flex-basis: 304px;
     border-bottom: 1px solid rgba(147,197,253,.10);
     background:
       radial-gradient(circle at 78% 74%, rgba(74,145,255,.20), transparent 40%),
@@ -991,9 +991,28 @@
   }
 
   .login-right-panel {
-    margin-top: -28px;
+    margin-top: -34px;
     border-color: rgba(191,219,254,.18);
     box-shadow: 0 -24px 68px -35px rgba(0,0,0,.94), inset 0 1px 0 rgba(255,255,255,.065);
+  }
+
+  .login-network-copy {
+    top: calc(34px + env(safe-area-inset-top));
+    left: 22px;
+    width: min(224px, 58%);
+  }
+
+  .login-network-copy h1 {
+    max-width: 218px;
+  }
+
+  .login-network-message > p {
+    max-width: 182px;
+  }
+
+  .login-foot {
+    margin-top: auto;
+    padding-top: 15px;
   }
 
   .login-right-panel .login-logo img {
@@ -1005,6 +1024,7 @@
   .login-left-panel { min-height: 184px; flex-basis: 184px; }
   .login-network-live { display: none !important; }
   .login-right-panel { margin-top: -19px; }
+  .login-foot { margin-top: 10px; padding-top: 0; }
 }
 
 @media (max-width: 899px) {

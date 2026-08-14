@@ -7605,9 +7605,15 @@ a {
     bottom: -116px;
     width: 230px;
     height: 230px;
-    border: 1px solid rgba(147,197,253,.10);
+    border: 0;
     border-radius: 50%;
-    box-shadow: 0 0 0 26px rgba(96,165,250,.022), 0 0 0 58px rgba(96,165,250,.012);
+    background: radial-gradient(circle,
+      rgba(126,177,255,.14) 0%,
+      rgba(73,132,225,.085) 25%,
+      rgba(45,100,190,.032) 48%,
+      transparent 72%);
+    box-shadow: none;
+    filter: blur(.4px);
     pointer-events: none;
   }
 
@@ -8029,4 +8035,66 @@ a {
   .admin-picker-editorial h1 { font-size: 16px; }
   .inicio-header { min-height: 162px; }
   .accesos-screen .accesos-person-grid { grid-auto-columns: minmax(176px, 84%); }
+}
+
+/* =====================================================================
+   ESCENA NOCTURNA COMPARTIDA — NAVEGACIÓN Y CABECERAS
+   ---------------------------------------------------------------------
+   La atmósfera de Inicio se extiende a los módulos principales. El orbe
+   se construye como luz difusa dentro del propio fondo: conserva volumen
+   sin dibujar un aro o una línea blanca alrededor.
+   ===================================================================== */
+@media (max-width: 899px) {
+  :is(
+    .client-screen-header,
+    .reports-header,
+    .coverage-header-compact,
+    .campanas-header,
+    .profile-top
+  ) {
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 92% -24%, rgba(111,169,255,.17) 0%, rgba(58,118,215,.075) 28%, transparent 63%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.017) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 48px),
+      linear-gradient(145deg, #09162a 0%, #050a12 66%, #03070d 100%) !important;
+  }
+
+  :is(
+    .client-screen-header,
+    .reports-header,
+    .coverage-header-compact,
+    .campanas-header
+  ) > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .profile-top > :not(.profile-top-curve) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar-panel {
+    background:
+      radial-gradient(circle at 112% 9%, rgba(111,169,255,.15) 0%, rgba(58,118,215,.065) 24%, transparent 48%),
+      radial-gradient(circle at -22% 82%, rgba(37,99,235,.085) 0%, transparent 38%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.014) 0 1px, transparent 1px 48px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.010) 0 1px, transparent 1px 48px),
+      linear-gradient(155deg, #09162a 0%, #050a12 55%, #03070d 100%) !important;
+  }
+
+  .sidebar-panel .sidebar-head {
+    background: transparent !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .sidebar-panel {
+    background:
+      radial-gradient(circle at 112% 8%, rgba(96,165,250,.13) 0%, rgba(37,99,235,.045) 29%, transparent 55%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 48px),
+      linear-gradient(180deg, #081426 0%, #050a12 42%, #03070d 100%) !important;
+  }
 }

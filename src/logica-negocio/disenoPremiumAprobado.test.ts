@@ -80,7 +80,7 @@ describe("refinamiento premium aprobado", () => {
     expect(globo).toContain("let radio = Math.min(ancho * 0.39, alto * 0.31)");
     expect(globo).toContain("let centroX = ancho * 0.506");
     expect(globo).toContain("let centroY = alto * 0.654");
-    expect(globo).toContain("radio = Math.min(ancho * 0.28, alto * 0.46)");
+    expect(globo).toContain("radio = Math.min(ancho * 0.29, alto * 0.46)");
     expect(globo).toContain("const salto = esMovil ? 2 : 1");
     expect(globo).toContain("const intervalo = escritorio.matches ? INTERVALO_CUADRO : 1000 / 24");
     expect(globo).toContain('matchMedia("(min-width: 900px)")');
@@ -277,6 +277,7 @@ describe("refinamiento premium aprobado", () => {
 
   it("iguala en móvil las superficies premium de Usuarios, Campañas e Inventario", () => {
     const estilos = leer("src/styles/design-system.css");
+    const estilosLogin = leer("src/styles/login-network.css");
 
     expect(estilos).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.accesos-screen \.accesos-internal-card \{[\s\S]*?linear-gradient\(135deg, #111f37, #07101e/);
     expect(estilos).toMatch(/\.accesos-screen \.accesos-person-grid \{[\s\S]*?grid-auto-flow: column;[\s\S]*?overflow-x: auto;/);
@@ -286,6 +287,11 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.paneles-hero \{[\s\S]*?grid-template-columns: 44px minmax\(0, 1fr\);/);
     expect(estilos).toMatch(/\.ocupacion-screen \.occupancy-hero \{[\s\S]*?border-radius: 21px !important;/);
     expect(estilos).toMatch(/\.inicio-header \{[\s\S]*?min-height: 174px;[\s\S]*?repeating-linear-gradient/);
+    expect(estilos).toMatch(/\.inicio-header::after \{[\s\S]*?border: 0;[\s\S]*?box-shadow: none;/);
+    expect(estilos).toContain("ESCENA NOCTURNA COMPARTIDA — NAVEGACIÓN Y CABECERAS");
+    expect(estilos).toMatch(/:is\([\s\S]*?\.client-screen-header,[\s\S]*?\.reports-header,[\s\S]*?\.coverage-header-compact,[\s\S]*?\.campanas-header,[\s\S]*?\.profile-top[\s\S]*?radial-gradient\(circle at 92% -24%/);
+    expect(estilos).toMatch(/\.sidebar-panel \{[\s\S]*?radial-gradient\(circle at 112% 9%/);
+    expect(estilosLogin).toMatch(/\.login-left-panel \{[\s\S]*?min-height: 304px;[\s\S]*?flex-basis: 304px;/);
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
