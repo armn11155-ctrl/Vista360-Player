@@ -271,25 +271,25 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
         <div className="inicio-summary-grid" style={{ display:"grid", gridTemplateColumns:"minmax(0,1fr) minmax(0,1fr)", gap:10, marginBottom:18 }}>
           {[
             {
-              bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
+              tone:"campaigns", bg:"#EEF4FF", label:"Campañas activas", val:String(activas.length),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-5"/></svg>,
             },
             {
-              bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick:() => onGoTo("campanas"),
+              tone:"screens", bg:"#EAF3FF", label:"Publicidades activas", val:String(pantallasActivas), onClick:() => onGoTo("campanas"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,
             },
             {
-              bg:"#F1F5F9", label:"Último reporte", val:ultimoInforme ? ultimoInforme.mesLabel : "—", onClick:() => onGoTo("reportes"),
+              tone:"report", bg:"#F1F5F9", label:"Último reporte", val:ultimoInforme ? ultimoInforme.mesLabel : "—", onClick:() => onGoTo("reportes"),
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
             },
             {
-              bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
+              tone:"deadline", bg:"#FFFFFF", label:"Próximo vencimiento", val:proxVenc ? fechaCorta(proxVenc.fin) : "—",
               icon:<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#111B2D" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>,
             },
           ].map((item) => (
             <div
               key={item.label}
-              className={`inicio-kpi-card${item.label === "Último reporte" ? " inicio-kpi-card-report" : item.label === "Próximo vencimiento" ? " inicio-kpi-card-date" : ""}`}
+              className={`inicio-kpi-card inicio-kpi-card-${item.tone}${item.label === "Último reporte" ? " inicio-kpi-card-report" : item.label === "Próximo vencimiento" ? " inicio-kpi-card-date" : ""}`}
               onClick={item.onClick}
               style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor:item.onClick ? "pointer" : "default" }}
             >

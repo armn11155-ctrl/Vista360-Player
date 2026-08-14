@@ -541,4 +541,18 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-screen-admin \.inicio-content \{[\s\S]*?overflow-y: auto !important;[\s\S]*?overscroll-behavior-y: contain !important;[\s\S]*?touch-action: pan-y;/);
     expect(sistema).toMatch(/\.inicio-screen-client,[\s\S]*?\.inicio-screen-client \.inicio-content \{[\s\S]*?overflow: hidden !important;[\s\S]*?touch-action: pan-x pinch-zoom;/);
   });
+
+  it("da jerarquía al resumen y evita colisiones en el reporte y el teclado móvil", () => {
+    const inicio = leer("src/components/screens/Inicio.tsx");
+    const sistema = leer("src/styles/design-system.css");
+    const login = leer("src/styles/login-network.css");
+
+    expect(inicio).toContain("inicio-kpi-card-${item.tone}");
+    expect(sistema).toContain("PULIDA DE INICIO — RESUMEN CON JERARQUÍA Y REPORTE SIN COLISIONES");
+    expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-body \{[\s\S]*?"month action"[\s\S]*?"meta meta";/);
+    expect(sistema).toMatch(/\.inicio-screen-client \.inicio-content \{[\s\S]*?padding-top: 12px !important;/);
+    expect(login).toContain("TECLADO MÓVIL — COMPOSICIÓN COMPACTA SIN FRANJA NI BOTÓN PEGADO");
+    expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-left-panel \{[\s\S]*?min-height: 88px;[\s\S]*?flex-basis: 88px;/);
+    expect(login).toMatch(/data-keyboard-open="true"[\s\S]*?\.login-btn \{[\s\S]*?min-height: 44px;[\s\S]*?margin-top: 1px;/);
+  });
 });

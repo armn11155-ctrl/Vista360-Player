@@ -8687,3 +8687,140 @@ a {
     touch-action: pan-x pinch-zoom;
   }
 }
+
+/* PULIDA DE INICIO — RESUMEN CON JERARQUÍA Y REPORTE SIN COLISIONES
+   Los cuatro indicadores comparten una familia, pero cada uno tiene un
+   acento funcional. El reporte móvil reserva una fila completa a la fecha
+   de generación para que nunca compita con la acción. */
+.inicio-kpi-card {
+  --kpi-accent: #377cf0;
+  --kpi-accent-soft: rgba(55,124,240,.14);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.inicio-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--kpi-accent), color-mix(in srgb, var(--kpi-accent) 28%, transparent));
+  opacity: .94;
+  pointer-events: none;
+}
+
+.inicio-kpi-card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: -44px;
+  right: -38px;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--kpi-accent-soft), transparent 68%);
+  pointer-events: none;
+}
+
+.inicio-kpi-card > * { position: relative; z-index: 1; }
+.inicio-kpi-card-campaigns { --kpi-accent: #3478ef; --kpi-accent-soft: rgba(52,120,239,.18); }
+.inicio-kpi-card-screens { --kpi-accent: #1497b8; --kpi-accent-soft: rgba(20,151,184,.17); }
+.inicio-kpi-card-report { --kpi-accent: #7357d9; --kpi-accent-soft: rgba(115,87,217,.17); }
+.inicio-kpi-card-deadline { --kpi-accent: #d58a22; --kpi-accent-soft: rgba(213,138,34,.17); }
+
+.inicio-kpi-card .inicio-kpi-icon {
+  border: 1px solid color-mix(in srgb, var(--kpi-accent) 18%, white);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--kpi-accent) 13%, white), #fff) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 10px 20px -15px var(--kpi-accent);
+}
+
+.inicio-kpi-card .inicio-kpi-icon svg { stroke: var(--kpi-accent) !important; }
+
+@media (min-width: 900px) {
+  .inicio-summary-grid {
+    gap: 10px !important;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 88px !important;
+    padding: 14px 16px !important;
+    border: 1px solid #dce4ed !important;
+    border-radius: 16px !important;
+    background:
+      radial-gradient(circle at 96% 0%, var(--kpi-accent-soft), transparent 47%),
+      linear-gradient(145deg, #fff, #fbfcfe) !important;
+    box-shadow: 0 20px 40px -32px rgba(15,23,42,.62), inset 0 1px 0 #fff !important;
+  }
+
+  .inicio-summary-grid > .inicio-kpi-card:last-child { border-right: 1px solid #dce4ed !important; }
+  .inicio-summary-grid > .inicio-kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--kpi-accent) 30%, #dce4ed) !important;
+    box-shadow: 0 24px 44px -31px rgba(15,23,42,.66), inset 0 1px 0 #fff !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .inicio-summary-grid > .inicio-kpi-card {
+    background:
+      radial-gradient(circle at 96% 0%, var(--kpi-accent-soft), transparent 48%),
+      linear-gradient(145deg, #fff, #f9fbfd) !important;
+  }
+
+  .inicio-screen-client .inicio-content {
+    padding-top: 12px !important;
+  }
+
+  .inicio-screen-client .inicio-summary-title {
+    margin-top: 0 !important;
+  }
+
+  .inicio-screen-client .inicio-summary-grid {
+    margin-bottom: 14px !important;
+  }
+
+  .inicio-screen-client .inicio-section-title:not(.inicio-summary-title) {
+    margin-top: 13px !important;
+  }
+
+  .inicio-side-col .inicio-report-body {
+    grid-template-areas:
+      "month action"
+      "meta meta";
+    row-gap: 7px;
+  }
+
+  .inicio-side-col .inicio-report-meta {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 370px) {
+  .inicio-side-col .inicio-report-body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "month"
+      "meta"
+      "action";
+  }
+
+  .inicio-side-col .inicio-report-link {
+    justify-self: start;
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 899px) and (max-height: 740px) {
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 66px !important;
+    padding: 9px 10px !important;
+  }
+
+  .inicio-kpi-card::before { height: 2px; }
+}
