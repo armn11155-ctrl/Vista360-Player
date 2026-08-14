@@ -292,7 +292,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-management-group \{[\s\S]*?border-bottom: 1px solid rgba\(191,219,254,\.10\)/);
     expect(estilosLogin).toContain("PULIDA MÓVIL — PROMESA CLARA Y ACCESO MÁS ESBELTO");
     expect(estilosLogin).toMatch(/\.login-network-message > p,[\s\S]*?\.login-network-live \{[\s\S]*?display: none !important;/);
-    expect(estilosLogin).toMatch(/\.login-left-panel,[\s\S]*?min-height: 312px;[\s\S]*?flex-basis: 312px;/);
+    expect(estilosLogin).toMatch(/\.login-left-panel,[\s\S]*?min-height: 300px;[\s\S]*?flex-basis: 300px;/);
     expect(estilosLogin).toMatch(/radial-gradient\(circle at 76% 62%, rgba\(0,96,225,\.24\)[\s\S]*?linear-gradient\(112deg, #01306f 0%, #01265d 48%, #011f4b 100%\)/);
     expect(estilosLogin).toMatch(/\.login-left-panel::before \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/\.login-network-copy::after \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
@@ -302,6 +302,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-logo \{[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/\.login-card,[\s\S]*?\.login-foot,[\s\S]*?width: min\(100%, 288px\);/);
     expect(estilosLogin).toMatch(/\.login-right-panel,[\s\S]*?padding-top: 28px;/);
+    expect(estilosLogin).toMatch(/@media \(max-width: 899px\) and \(max-height: 740px\) \{[\s\S]*?min-height: 186px;[\s\S]*?flex-basis: 186px;/);
     expect(estilosLogin).toMatch(/html:not\(\[data-keyboard-open="true"\]\)[\s\S]*?\.login-title \{[\s\S]*?font-size: 28px;/);
     expect(estilosLogin).toMatch(/html:not\(\[data-keyboard-open="true"\]\)[\s\S]*?\.login-access-kicker \{[\s\S]*?min-height: 17px;/);
     expect(estilosLogin).toMatch(/\.login-access-kicker::before \{[\s\S]*?width: 22px;[\s\S]*?height: 1\.5px;[\s\S]*?linear-gradient\(90deg, #2563eb, #60a5fa\)/);
