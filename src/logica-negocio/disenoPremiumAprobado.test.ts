@@ -296,9 +296,9 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toMatch(/radial-gradient\(circle at 76% 62%, rgba\(0,96,225,\.24\)[\s\S]*?linear-gradient\(112deg, #01306f 0%, #01265d 48%, #011f4b 100%\)/);
     expect(estilosLogin).toMatch(/\.login-left-panel::before \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/\.login-network-copy::after \{[\s\S]*?content: none !important;[\s\S]*?display: none !important;/);
-    expect(estilosLogin).toMatch(/\.login-network-copy \{[\s\S]*?top: env\(safe-area-inset-top\);[\s\S]*?bottom: 0;[\s\S]*?justify-content: center;/);
+    expect(estilosLogin).toMatch(/\.login-network-copy \{[\s\S]*?top: env\(safe-area-inset-top\);[\s\S]*?bottom: 0;[\s\S]*?justify-content: center;[\s\S]*?transform: translateY\(-4px\);/);
     expect(estilosLogin).toMatch(/\.login-network-logo \{[\s\S]*?display: block !important;[\s\S]*?width: 132px;[\s\S]*?margin: 0 0 15px;/);
-    expect(estilosLogin).toMatch(/\.login-network-visual-globe \{[\s\S]*?top: env\(safe-area-inset-top\);[\s\S]*?bottom: 0;[\s\S]*?height: auto;/);
+    expect(estilosLogin).toMatch(/\.login-network-visual-globe \{[\s\S]*?top: env\(safe-area-inset-top\);[\s\S]*?bottom: 0;[\s\S]*?height: auto;[\s\S]*?transform: translateY\(-4px\);/);
     expect(estilosLogin).toMatch(/\.login-right-panel \.login-logo,[\s\S]*?\.login-logo \{[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/\.login-card,[\s\S]*?\.login-foot,[\s\S]*?width: min\(100%, 288px\);/);
     expect(estilosLogin).toMatch(/\.login-right-panel,[\s\S]*?padding-top: 28px;/);

@@ -1273,7 +1273,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    transform: none;
+    transform: translateY(-4px);
   }
 
   .login-network-copy::after {
@@ -1302,6 +1302,7 @@
     top: env(safe-area-inset-top);
     bottom: 0;
     height: auto;
+    transform: translateY(-4px);
   }
 
   .login-right-panel,
