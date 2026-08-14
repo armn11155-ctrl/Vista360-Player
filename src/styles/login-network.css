@@ -1279,7 +1279,19 @@
   }
 
   .login-access-kicker {
+    gap: 10px;
     margin-bottom: 7px;
+  }
+
+  .login-access-kicker::before {
+    content: "" !important;
+    display: block !important;
+    width: 22px;
+    height: 1.5px;
+    flex: 0 0 22px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb, #60a5fa);
+    box-shadow: 0 0 10px rgba(96,165,250,.28);
   }
 }
 
