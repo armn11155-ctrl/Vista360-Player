@@ -1385,3 +1385,44 @@
     padding-top: 22px;
   }
 }
+
+/* FOCO MÓVIL — TECLADO SIN DEFORMAR LA IDENTIDAD
+   Autoridad de cierre: con el teclado real visible queda una cabecera breve
+   de marca, no una versión encogida del hero completo. Logo y planeta
+   conservan proporción; el formulario mantiene sus ejes y controles. */
+@media (max-width: 899px) {
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+    min-height: 104px;
+    flex-basis: 104px;
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-copy {
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 122px;
+    justify-content: center;
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-logo {
+    width: 112px;
+    margin: 0;
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-message {
+    display: none !important;
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-network-visual-globe {
+    opacity: .9;
+    transform: translateY(-2px);
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    margin-top: -10px;
+    padding: 12px 20px 10px;
+    border-radius: 20px 20px 0 0;
+  }
+}

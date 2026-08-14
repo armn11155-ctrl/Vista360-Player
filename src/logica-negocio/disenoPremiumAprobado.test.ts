@@ -220,6 +220,7 @@ describe("refinamiento premium aprobado", () => {
   it("mantiene fijo el login móvil cuando aparece el teclado", () => {
     const login = leer("src/components/LoginScreen.tsx");
     const estilos = leer("src/styles/design-system.css");
+    const estilosLogin = leer("src/styles/login-network.css");
     const viewport = leer("src/utils/viewport-height.ts");
     expect(login).not.toContain("campoEnFoco");
     expect(login).not.toContain("login-keyboard-open");
@@ -238,6 +239,11 @@ describe("refinamiento premium aprobado", () => {
     expect(viewport).toContain("visualHeight || window.innerHeight || currentHeight");
     expect(viewport).toContain('setProperty("--visual-offset-top"');
     expect(viewport).toContain('addEventListener("scroll", set)');
+    expect(estilosLogin).toContain("FOCO MÓVIL — TECLADO SIN DEFORMAR LA IDENTIDAD");
+    expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-left-panel \{[\s\S]*?min-height: 104px;[\s\S]*?flex-basis: 104px;/);
+    expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-network-logo \{[\s\S]*?width: 112px;[\s\S]*?margin: 0;/);
+    expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-network-message \{[\s\S]*?display: none !important;/);
+    expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-right-panel \{[\s\S]*?margin-top: -10px;[\s\S]*?padding: 12px 20px 10px;/);
     expect(login).not.toContain("window.scrollTo(0, 0)");
   });
 
