@@ -8830,3 +8830,267 @@ a {
 
   .inicio-kpi-card::before { height: 2px; }
 }
+
+/* ========================================================================== */
+/* CUENTAS EDITORIALES — FOTOGRAFÍA, NOMBRE Y CONTROL                         */
+/* ========================================================================== */
+
+/* La tarjeta es una sola pieza: evita el aspecto de avatar genérico y deja
+   que cada cliente tenga identidad propia cuando se cargue su fotografía. */
+.admin-picker-grid {
+  align-items: start !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) {
+  position: relative;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0;
+  padding: 0 !important;
+  gap: 0 !important;
+  border: 1px solid rgba(148, 163, 184, .18) !important;
+  border-radius: 19px !important;
+  background: #030914 !important;
+  box-shadow:
+    0 18px 34px -24px rgba(0, 0, 0, .92),
+    inset 0 1px 0 rgba(255, 255, 255, .07) !important;
+  overflow: visible;
+  isolation: isolate;
+  transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar-wrap,
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
+  border: 0 !important;
+  border-radius: inherit !important;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 5 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  background-color: #07111f !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar > img {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  image-rendering: auto !important;
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Oscurece solo la zona de lectura. La fotografía conserva contraste y color
+   en el resto de la tarjeta y no depende de que la imagen sea clara u oscura. */
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-shine {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2 !important;
+  display: block !important;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 1 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 15, .02) 38%, rgba(2, 7, 17, .18) 57%, rgba(1, 5, 13, .95) 100%),
+    linear-gradient(135deg, rgba(255, 255, 255, .10), transparent 24%, transparent 78%, rgba(37, 99, 235, .08)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035);
+  transform: none !important;
+}
+
+.admin-picker-tile-copy {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  z-index: 3;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: #fff;
+  text-align: left;
+  pointer-events: none;
+}
+
+.admin-picker-tile-copy strong {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: #fff !important;
+  font-size: clamp(13px, 1.15vw, 15px);
+  font-weight: 750;
+  line-height: 1.14;
+  letter-spacing: -.025em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .48);
+}
+
+.admin-picker-tile-copy small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(226, 232, 240, .72) !important;
+  font-size: 9.5px;
+  font-weight: 560;
+  line-height: 1.2;
+  letter-spacing: .015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Menú discreto, sin el antiguo círculo/engranaje protagonista. */
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-gear {
+  position: absolute !important;
+  top: 9px !important;
+  right: 9px !important;
+  z-index: 5 !important;
+  display: grid !important;
+  place-items: center;
+  width: 29px !important;
+  height: 29px !important;
+  min-width: 29px !important;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, .14) !important;
+  border-radius: 9px !important;
+  background: rgba(2, 8, 19, .64) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 18px -10px rgba(0, 0, 0, .9) !important;
+  opacity: .86;
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+  transform: none !important;
+  transition: opacity .18s ease, border-color .18s ease, background-color .18s ease !important;
+}
+
+.admin-picker-tile-menu-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+}
+
+.admin-picker-tile-menu-dots i {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 7px rgba(255, 255, 255, .2);
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas):hover,
+.admin-picker-tile:not(.admin-picker-tile-vermas):focus-visible,
+.admin-picker-tile:not(.admin-picker-tile-vermas):focus-within {
+  border-color: rgba(59, 130, 246, .58) !important;
+  box-shadow:
+    0 22px 42px -25px rgba(0, 0, 0, .96),
+    0 0 0 1px rgba(37, 99, 235, .12),
+    0 13px 32px -28px rgba(37, 99, 235, .95) !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas):hover {
+  transform: translateY(-2px) !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas):hover .admin-picker-tile-gear,
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-gear:focus-visible {
+  border-color: rgba(96, 165, 250, .42) !important;
+  background: rgba(3, 13, 30, .82) !important;
+  opacity: 1;
+}
+
+.admin-picker-tile.archived .admin-picker-tile-avatar > img {
+  filter: grayscale(1) contrast(.9) brightness(.8) !important;
+}
+
+.admin-picker-tile.archived .admin-picker-tile-copy small {
+  color: rgba(226, 232, 240, .58) !important;
+}
+
+.admin-picker-tile.archived .admin-picker-archive-actions {
+  width: 100%;
+  margin: 0 !important;
+  padding: 8px 9px 9px;
+}
+
+@media (min-width: 900px) {
+  .admin-picker-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+  }
+}
+
+@media (max-width: 899px) {
+  .admin-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: min(100%, 310px) !important;
+    margin-inline: auto !important;
+  }
+
+  .admin-picker-tile:not(.admin-picker-tile-vermas) {
+    border-radius: 18px !important;
+  }
+
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+    border-radius: 17px !important;
+  }
+
+  .admin-picker-tile-copy {
+    right: 11px;
+    bottom: 11px;
+    left: 11px;
+  }
+
+  .admin-picker-tile-copy strong {
+    font-size: 13px;
+  }
+
+  .admin-picker-tile:not(.admin-picker-tile-vermas):hover {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-picker-grid {
+    gap: 10px !important;
+    width: min(100%, 286px) !important;
+  }
+
+  .admin-picker-tile-copy strong { font-size: 12px; }
+  .admin-picker-tile-copy small { font-size: 8.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-picker-tile:not(.admin-picker-tile-vermas),
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-gear {
+    transition: none !important;
+  }
+}

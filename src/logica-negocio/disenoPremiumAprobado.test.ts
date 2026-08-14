@@ -578,4 +578,20 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toMatch(/html \.login-card \.form-input \{[\s\S]*?pointer-events: auto !important;[\s\S]*?touch-action: manipulation !important;[\s\S]*?-webkit-user-select: text !important;/);
     expect(orientacion).toContain("objetivo.closest(\"input, textarea, select, button, label, [contenteditable='true']\")");
   });
+
+  it("convierte las cuentas gestionadas en perfiles editoriales nítidos", () => {
+    const selector = leer("src/components/AdminClientPicker.tsx");
+    const estilos = leer("src/styles/design-system.css");
+
+    expect(selector).toContain('className="admin-picker-tile-copy"');
+    expect(selector).toContain('className="admin-picker-tile-menu-dots"');
+    expect(selector).toContain('loading={indice < 4 ? "eager" : "lazy"}');
+    expect(selector).toContain('fetchPriority={indice < 4 ? "high" : "auto"}');
+    expect(selector).not.toContain('src="/setting-2-svgrepo-com.svg"');
+    expect(estilos).toContain("CUENTAS EDITORIALES — FOTOGRAFÍA, NOMBRE Y CONTROL");
+    expect(estilos).toMatch(/\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-avatar \{[\s\S]*?aspect-ratio: 4 \/ 5 !important;/);
+    expect(estilos).toMatch(/\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-avatar > img \{[\s\S]*?object-fit: cover !important;[\s\S]*?filter: none !important;[\s\S]*?transform: none !important;/);
+    expect(estilos).toContain("grid-template-columns: repeat(3, minmax(0, 1fr)) !important");
+    expect(estilos).toContain("grid-template-columns: repeat(2, minmax(0, 1fr)) !important");
+  });
 });

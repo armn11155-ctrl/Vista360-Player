@@ -46,10 +46,9 @@ interface Props {
 }
 
 /**
- * Selector de cuenta del admin — estilo "perfiles" (como Netflix):
- * tiles cuadrados con color + iniciales de marca, sobre un fondo
- * fotográfico. Grid responsivo: pocas columnas en móvil, más en
- * escritorio, siempre centrado y ocupando toda la pantalla.
+ * Selector de cuenta del admin — perfiles editoriales: la fotografía es
+ * la superficie principal y el nombre vive sobre un degradado legible.
+ * Grid responsivo: dos columnas en móvil y tres en escritorio.
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   const { confirmar, avisar, pedirContrasena } = useDialogos();
@@ -416,9 +415,15 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         {errorAccion && <div className="admin-picker-empty admin-picker-empty-error">{errorAccion}</div>}
 
         <div className="admin-picker-grid">
-          {clientesMostrados.map((c) => {
+          {clientesMostrados.map((c, indice) => {
             const { bg } = brandColor(c.empresa ?? "?");
             const busy = accionandoId === c.id;
+            const campanasActivas = campanasActivasPorCliente[c.id] ?? 0;
+            const detalleCuenta = c.archived
+              ? "Perfil archivado"
+              : campanasActivas > 0
+                ? `${campanasActivas} ${campanasActivas === 1 ? "campaña activa" : "campañas activas"}`
+                : c.sector || c.ciudad || "Cuenta cliente";
             return (
               <div
                 key={c.id}
@@ -446,8 +451,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                         <img
                           src={avatarSrc(c)}
                           alt=""
-                          loading="eager"
-                          fetchPriority="high"
+                          loading={indice < 4 ? "eager" : "lazy"}
+                          fetchPriority={indice < 4 ? "high" : "auto"}
                           decoding="async"
                           onError={() => setAvataresFallidos((prev) => {
                             const siguiente = new Map(prev);
@@ -460,6 +465,10 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                         <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
                       )}
                       <span className="admin-picker-tile-shine" aria-hidden="true" />
+                      <span className="admin-picker-tile-copy">
+                        <strong>{c.empresa}</strong>
+                        <small>{detalleCuenta}</small>
+                      </span>
                     </span>
                   </button>
                   {tab === "activos" && (
@@ -471,15 +480,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                         setMenuCliente(c);
                       }}
                       disabled={busy}
-                      aria-label="Configuración"
+                      aria-label={`Opciones de ${c.empresa}`}
                       aria-haspopup="dialog"
-                      title="Configuración"
+                      title="Opciones de cuenta"
                     >
-                      <img src="/setting-2-svgrepo-com.svg" decoding="async" alt="" draggable={false} />
+                      <span className="admin-picker-tile-menu-dots" aria-hidden="true">
+                        <i /><i /><i />
+                      </span>
                     </button>
                   )}
                 </div>
-                <span className="admin-picker-tile-name">{c.empresa}</span>
                 {tab !== "activos" && (
                   <div className="admin-picker-archive-actions">
                     <button type="button" onClick={() => restaurarCliente(c)} disabled={busy} title="Recuperar perfil">
