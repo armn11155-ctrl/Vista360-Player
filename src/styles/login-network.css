@@ -1426,3 +1426,15 @@
     border-radius: 20px 20px 0 0;
   }
 }
+
+@media (max-width: 899px) and (max-height: 430px) {
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+    min-height: 92px;
+    flex-basis: 92px;
+  }
+
+  html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    margin-top: -8px;
+    padding: 10px 20px 8px;
+  }
+}

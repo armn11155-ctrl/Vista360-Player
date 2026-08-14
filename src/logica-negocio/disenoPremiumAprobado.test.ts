@@ -244,6 +244,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-network-logo \{[\s\S]*?width: 112px;[\s\S]*?margin: 0;/);
     expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-network-message \{[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-right-panel \{[\s\S]*?margin-top: -10px;[\s\S]*?padding: 12px 20px 10px;/);
+    expect(estilosLogin).toMatch(/@media \(max-width: 899px\) and \(max-height: 430px\) \{[\s\S]*?min-height: 92px;[\s\S]*?flex-basis: 92px;/);
     expect(login).not.toContain("window.scrollTo(0, 0)");
   });
 
