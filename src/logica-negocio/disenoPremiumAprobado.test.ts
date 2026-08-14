@@ -593,5 +593,7 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-avatar > img \{[\s\S]*?object-fit: cover !important;[\s\S]*?filter: none !important;[\s\S]*?transform: none !important;/);
     expect(estilos).toContain("grid-template-columns: repeat(3, minmax(0, 1fr)) !important");
     expect(estilos).toContain("grid-template-columns: repeat(2, minmax(0, 1fr)) !important");
+    expect(estilos).toContain("max-width: 460px !important");
+    expect(estilos).toContain("width: min(100%, 286px) !important");
   });
 });

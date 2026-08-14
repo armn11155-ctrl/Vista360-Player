@@ -9044,14 +9044,17 @@ a {
   .admin-picker-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 14px !important;
+    width: 100% !important;
+    max-width: 460px !important;
+    margin-inline: auto !important;
   }
 }
 
 @media (max-width: 899px) {
   .admin-picker-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px !important;
-    width: min(100%, 310px) !important;
+    gap: 10px !important;
+    width: min(100%, 286px) !important;
     margin-inline: auto !important;
   }
 
@@ -9080,8 +9083,8 @@ a {
 
 @media (max-width: 360px) {
   .admin-picker-grid {
-    gap: 10px !important;
-    width: min(100%, 286px) !important;
+    gap: 9px !important;
+    width: min(100%, 276px) !important;
   }
 
   .admin-picker-tile-copy strong { font-size: 12px; }
