@@ -760,6 +760,9 @@ function AuthenticatedApp({
             clienteNombre={cliente?.empresa ?? ""}
             cliente={cliente}
             onBack={() => setView("campanas")}
+            onUpdated={(cambios) => {
+              setContratoAbierto({ ...contratoAbierto, ...cambios });
+            }}
             isAdmin={isAdmin}
           />
         ) : null;

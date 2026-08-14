@@ -1218,3 +1218,22 @@
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel { min-height: 170px; flex-basis: 170px; }
   html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel { margin-top: -16px; padding-top: 14px; }
 }
+
+/* El acceso móvil es una composición de una sola pantalla, no una página
+   desplazable. Safari conservaba el paneo vertical porque una regla anterior
+   dejaba overflow-y:auto aun cuando todo el contenido ya cabía. */
+@media (max-width: 899px) {
+  .login-shell {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: pan-x pinch-zoom;
+  }
+
+  .login-experience {
+    height: var(--app-height, 100dvh);
+    min-height: var(--app-height, 100dvh);
+    max-height: var(--app-height, 100dvh);
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+}

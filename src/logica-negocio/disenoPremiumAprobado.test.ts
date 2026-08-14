@@ -291,8 +291,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.inicio-header \{[\s\S]*?min-height: 174px;[\s\S]*?repeating-linear-gradient/);
     expect(estilos).toMatch(/\.inicio-header::after \{[\s\S]*?border: 0;[\s\S]*?box-shadow: none;/);
     expect(estilos).toContain("ESCENA NOCTURNA COMPARTIDA — NAVEGACIÓN Y CABECERAS");
-    expect(estilos).toMatch(/:is\([\s\S]*?\.client-screen-header,[\s\S]*?\.reports-header,[\s\S]*?\.coverage-header-compact,[\s\S]*?\.campanas-header,[\s\S]*?\.profile-top[\s\S]*?radial-gradient\(circle at 92% -24%/);
-    expect(estilos).toMatch(/\.sidebar-panel \{[\s\S]*?radial-gradient\(circle at 112% 9%/);
+    expect(estilos).toMatch(/:is\([\s\S]*?\.client-screen-header,[\s\S]*?\.reports-header,[\s\S]*?\.coverage-header-compact,[\s\S]*?\.campanas-header,[\s\S]*?\.profile-top[\s\S]*?radial-gradient\(circle at 84% 2%/);
+    expect(estilos).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.sidebar-panel \{[\s\S]*?background: #050505 !important;/);
     expect(estilosLogin).toContain("Autoridad final del login móvil");
     expect(estilosLogin).toMatch(/\.login-left-panel \{[\s\S]*?min-height: 310px;[\s\S]*?flex-basis: 310px;/);
   });
@@ -312,7 +312,12 @@ describe("refinamiento premium aprobado", () => {
     expect(campanas).toContain("campaign-config-button");
     expect(campanas).toContain("Configurar</span>");
     expect(campanas).toContain('role="menuitem"');
+    expect(leer("src/components/screens/DetalleCampana.tsx")).toContain('aria-label="Opciones de campaña"');
+    expect(leer("src/components/screens/DetalleCampana.tsx")).toContain('cloudFunctions, "actualizarContrato"');
+    expect(leer("src/components/screens/DetalleCampana.tsx")).toContain('cloudFunctions, "eliminarContrato"');
     expect(sistema).toContain("CIERRE MÓVIL OPERATIVO — MÁS INFORMACIÓN, MENOS DESPLAZAMIENTO");
+    expect(sistema).toContain(".app-shell.has-bottom-nav .screens:has(.inicio-screen)");
+    expect(sistema).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;[\s\S]*?opacity: 1 !important;/);
     expect(sistema).toMatch(/\.inicio-account-status \{ display: none !important; \}/);
     expect(sistema).toMatch(/\.inicio-kpi-card-report \.inicio-kpi-value,[\s\S]*?white-space: normal !important;/);
     expect(sistema).toMatch(/\.campaign-config-button \{[\s\S]*?font-size: 10\.5px;/);

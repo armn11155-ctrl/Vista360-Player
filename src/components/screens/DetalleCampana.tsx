@@ -23,6 +23,7 @@ interface Props {
   clienteNombre: string;
   cliente: Cliente | null;
   onBack: () => void;
+  onUpdated: (cambios: Pick<Contrato, "nombre" | "inicio" | "fin">) => void;
   isAdmin: boolean;
 }
 
@@ -98,9 +99,18 @@ function CampaignLocationMap({ panel }: { panel: Panel }) {
   );
 }
 
-export default function DetalleCampana({ contrato, paneles, clienteNombre: _clienteNombre, cliente, onBack, isAdmin }: Props) {
-  const { confirmar } = useDialogos();
+export default function DetalleCampana({ contrato, paneles, clienteNombre: _clienteNombre, cliente, onBack, onUpdated, isAdmin }: Props) {
+  const { confirmar, avisar } = useDialogos();
   const [tab, setTab] = useState<TabId>("resumen");
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
+  const [editando, setEditando] = useState<{
+    nombre: string;
+    inicio: string;
+    fin: string;
+    guardando: boolean;
+    error: string;
+  } | null>(null);
 
   const estado = estadoCampana(contrato);
   const diasParaVencer = diasHasta(contrato.fin);
@@ -185,6 +195,79 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
       nombreArchivo: `vencimiento-${contrato.id}`,
     });
   }
+
+  function abrirEdicion() {
+    setMenuAbierto(false);
+    setEditando({
+      nombre: contrato.nombre || nombrePaneles,
+      inicio: contrato.inicio,
+      fin: contrato.fin,
+      guardando: false,
+      error: "",
+    });
+  }
+
+  async function guardarEdicion() {
+    if (!editando || !cloudFunctions) return;
+    const nombre = formatCampaignName(editando.nombre);
+    if (!nombre) {
+      setEditando({ ...editando, error: "Escribe el nombre de la campaña." });
+      return;
+    }
+    if (!editando.inicio || !editando.fin) {
+      setEditando({ ...editando, error: "Completa las dos fechas." });
+      return;
+    }
+    if (editando.fin < editando.inicio) {
+      setEditando({ ...editando, error: "La fecha de fin no puede ser anterior al inicio." });
+      return;
+    }
+    setEditando({ ...editando, guardando: true, error: "" });
+    try {
+      const fn = httpsCallable<
+        { contratoId: string; nombre: string; inicio: string; fin: string },
+        { ok: boolean }
+      >(cloudFunctions, "actualizarContrato");
+      await fn({ contratoId: contrato.id, nombre, inicio: editando.inicio, fin: editando.fin });
+      onUpdated({ nombre, inicio: editando.inicio, fin: editando.fin });
+      setEditando(null);
+    } catch (error) {
+      setEditando({ ...editando, guardando: false, error: mensajeDeError(error, "No se pudo actualizar la campaña.") });
+    }
+  }
+
+  async function eliminarCampana() {
+    if (!cloudFunctions || eliminando) return;
+    setMenuAbierto(false);
+    const confirmado = await confirmar({
+      titulo: "¿Eliminar esta campaña?",
+      mensaje: `Se borrará el contrato de "${tituloCampana}". No se puede deshacer.`,
+      textoConfirmar: "Eliminar",
+      destructivo: true,
+    });
+    if (!confirmado) return;
+    setEliminando(true);
+    try {
+      const fn = httpsCallable<{ contratoId: string }, { ok: boolean; pendiente?: boolean }>(cloudFunctions, "eliminarContrato");
+      const res = await fn({ contratoId: contrato.id });
+      if (res.data.pendiente) {
+        await avisar({
+          titulo: "Enviado para aprobación",
+          mensaje: `Tu Gerente debe aprobar la eliminación de "${tituloCampana}".`,
+        });
+        setEliminando(false);
+        return;
+      }
+      onBack();
+    } catch (error) {
+      await avisar({
+        titulo: "No se pudo eliminar la campaña",
+        mensaje: mensajeDeError(error, "Vuelve a intentarlo en un momento."),
+        esError: true,
+      });
+      setEliminando(false);
+    }
+  }
   // PDF del reporte mensual del cliente (el mismo que se ve en la
   // pantalla de Reportes) — se muestra tambien aca para no tener que
   // salir de la campaña a buscarlo.
@@ -212,12 +295,40 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
 
       {/* Header */}
       <div className="campaign-detail-hero" style={{ ...cityStyle, padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div className="campaign-detail-toolbar">
           <button type="button" onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Detalle de campaña</div>
-          <div style={{ width: 22 }} />
+          {isAdmin ? (
+            <div className="campaign-detail-actions">
+              <button
+                type="button"
+                className="campaign-detail-menu-button"
+                aria-label="Opciones de campaña"
+                aria-haspopup="menu"
+                aria-expanded={menuAbierto}
+                aria-controls="campaign-detail-actions-menu"
+                onClick={() => setMenuAbierto((abierto) => !abierto)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />
+                </svg>
+              </button>
+              {menuAbierto && (
+                <div id="campaign-detail-actions-menu" className="report-card-menu-dropdown campaign-detail-actions-menu" role="menu">
+                  <button type="button" className="report-card-menu-item neutral" role="menuitem" onClick={abrirEdicion}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    Editar campaña
+                  </button>
+                  <button type="button" className="report-card-menu-item" role="menuitem" onClick={() => void eliminarCampana()} disabled={eliminando}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m19 6-1 14H6L5 6"/></svg>
+                    {eliminando ? "Eliminando…" : "Eliminar campaña"}
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : <div style={{ width: 34 }} />}
         </div>
 
         {/* Nombre / estado / fechas — arriba, ancho completo */}
@@ -433,6 +544,63 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
           </div>
         )}
       </div>
+
+      {editando && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Editar campaña"
+          className="campaign-edit-backdrop"
+          onClick={() => !editando.guardando && setEditando(null)}
+        >
+          <div className="campaign-edit-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="campaign-edit-title">Editar campaña</div>
+            <div className="campaign-edit-subtitle">Actualiza el nombre y la vigencia de la campaña.</div>
+
+            <label htmlFor="detalle-editar-nombre-campana" className="campaign-edit-label">Nombre de la campaña</label>
+            <input
+              id="detalle-editar-nombre-campana"
+              autoFocus
+              className="campaign-edit-input"
+              value={editando.nombre}
+              onChange={(event) => setEditando({ ...editando, nombre: event.target.value, error: "" })}
+              disabled={editando.guardando}
+            />
+
+            <div className="campaign-edit-dates">
+              <label className="campaign-edit-label">
+                Fecha de inicio
+                <input
+                  type="date"
+                  className="campaign-edit-input"
+                  value={editando.inicio}
+                  onChange={(event) => setEditando({ ...editando, inicio: event.target.value, error: "" })}
+                  disabled={editando.guardando}
+                />
+              </label>
+              <label className="campaign-edit-label">
+                Fecha de fin
+                <input
+                  type="date"
+                  className="campaign-edit-input"
+                  value={editando.fin}
+                  onChange={(event) => setEditando({ ...editando, fin: event.target.value, error: "" })}
+                  disabled={editando.guardando}
+                />
+              </label>
+            </div>
+
+            {editando.error && <div className="campaign-edit-error">{editando.error}</div>}
+
+            <div className="campaign-edit-footer">
+              <button type="button" className="campaign-edit-cancel" onClick={() => setEditando(null)} disabled={editando.guardando}>Cancelar</button>
+              <button type="button" className="campaign-edit-save" onClick={() => void guardarEdicion()} disabled={editando.guardando}>
+                {editando.guardando ? "Guardando…" : "Guardar cambios"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
