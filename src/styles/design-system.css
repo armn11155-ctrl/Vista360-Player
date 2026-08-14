@@ -8438,3 +8438,101 @@ a {
 @media (max-width: 899px) {
   .profile-company-name-desktop { display: none; }
 }
+
+/* Último reporte móvil: la tarjeta aprovecha su ancho completo. La fecha y
+   la información quedan a la izquierda, mientras la acción celeste ocupa un
+   lugar propio a la derecha en vez de quedar flotando debajo del texto. */
+@media (max-width: 899px) {
+  .inicio-kpi-card-report .inicio-kpi-value {
+    font-size: clamp(13px, 3.55vw, 14px) !important;
+    line-height: 1.08 !important;
+  }
+
+  .inicio-side-col .inicio-evidence-card {
+    min-height: 124px !important;
+    padding: 16px !important;
+    border-radius: 18px !important;
+  }
+
+  .inicio-side-col .inicio-report-title {
+    margin-bottom: 13px !important;
+    font-size: 17px !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.018em;
+  }
+
+  .inicio-side-col .inicio-report-row {
+    display: grid !important;
+    grid-template-columns: 52px minmax(0, 1fr);
+    align-items: center !important;
+    gap: 13px !important;
+  }
+
+  .inicio-side-col .inicio-report-icon {
+    width: 52px !important;
+    height: 58px !important;
+    border-radius: 13px !important;
+    background: linear-gradient(145deg, rgba(50,119,230,.46), rgba(20,57,120,.82)) !important;
+  }
+
+  .inicio-side-col .inicio-report-icon svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .inicio-side-col .inicio-report-body {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "month action"
+      "meta action";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 4px;
+  }
+
+  .inicio-side-col .inicio-report-month {
+    grid-area: month;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1.08 !important;
+    letter-spacing: -.02em;
+  }
+
+  .inicio-side-col .inicio-report-meta {
+    grid-area: meta;
+    min-width: 0;
+    margin: 0 !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+    line-height: 1.18;
+    white-space: nowrap;
+  }
+
+  .inicio-side-col .inicio-report-meta svg {
+    width: 13px;
+    height: 13px;
+    flex: 0 0 13px;
+  }
+
+  .inicio-side-col .inicio-report-link {
+    grid-area: action;
+    min-height: 34px;
+    padding: 0 10px !important;
+    border: 1px solid rgba(134,185,255,.23) !important;
+    border-radius: 11px;
+    background: rgba(121,182,255,.10) !important;
+    color: #9bc9ff !important;
+    font-size: 12px !important;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.045);
+  }
+
+  .inicio-side-col .inicio-report-link svg {
+    width: 15px;
+    height: 15px;
+    stroke: #9bc9ff !important;
+  }
+}
