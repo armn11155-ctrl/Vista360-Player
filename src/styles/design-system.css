@@ -8562,17 +8562,17 @@ a {
 
   .inicio-section-title { margin: 12px 0 8px !important; font-size: 15px !important; }
   .inicio-summary-grid { margin-bottom: 12px !important; gap: 7px !important; }
-  .inicio-summary-grid > .inicio-kpi-card { min-height: 66px !important; padding: 9px 10px !important; }
+  .inicio-summary-grid > .inicio-kpi-card { min-height: 64px !important; padding: 9px 10px !important; }
   .inicio-kpi-icon { width: 32px !important; height: 32px !important; }
 
-  .inicio-quick-grid { margin-bottom: 12px !important; gap: 7px !important; }
-  .inicio-quick-grid > button { min-height: 58px !important; gap: 4px !important; }
+  .inicio-quick-grid { margin-bottom: 8px !important; gap: 7px !important; }
+  .inicio-quick-grid > button { min-height: 54px !important; gap: 3px !important; }
 
   .inicio-side-col .inicio-evidence-card {
-    min-height: 108px !important;
-    padding: 13px !important;
+    min-height: 98px !important;
+    padding: 10px !important;
   }
-  .inicio-side-col .inicio-report-title { margin-bottom: 9px !important; font-size: 16px !important; }
+  .inicio-side-col .inicio-report-title { margin-bottom: 6px !important; font-size: 16px !important; }
   .inicio-side-col .inicio-report-row { grid-template-columns: 46px minmax(0, 1fr); gap: 11px !important; }
   .inicio-side-col .inicio-report-icon { width: 46px !important; height: 52px !important; }
   .inicio-side-col .inicio-report-month { font-size: 16px !important; }

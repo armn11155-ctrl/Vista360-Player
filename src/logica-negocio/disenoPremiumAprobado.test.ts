@@ -323,7 +323,7 @@ describe("refinamiento premium aprobado", () => {
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-body \{[\s\S]*?grid-template-areas:[\s\S]*?"month action"[\s\S]*?"meta action"/);
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-month \{[\s\S]*?font-size: 18px !important;/);
     expect(sistema).toMatch(/\.inicio-side-col \.inicio-report-link \{[\s\S]*?background: rgba\(121,182,255,\.10\) !important;/);
-    expect(sistema).toMatch(/@media \(max-width: 899px\) and \(max-height: 740px\) \{[\s\S]*?\.inicio-side-col \.inicio-evidence-card \{[\s\S]*?min-height: 108px !important;/);
+    expect(sistema).toMatch(/@media \(max-width: 899px\) and \(max-height: 740px\) \{[\s\S]*?\.inicio-side-col \.inicio-evidence-card \{[\s\S]*?min-height: 98px !important;/);
     expect(sistema).toMatch(/\.campaign-config-button \{[\s\S]*?font-size: 10\.5px;/);
     expect(estilosLogin).toMatch(/\.login-right-panel \{[\s\S]*?width: 100%;[\s\S]*?border-radius: 28px 28px 0 0;/);
     expect(estilosLogin).toContain('html[data-keyboard-open="true"] .login-shell:has(#login-email:focus, #login-password:focus)');
