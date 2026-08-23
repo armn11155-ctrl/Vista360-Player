@@ -581,6 +581,7 @@ describe("refinamiento premium aprobado", () => {
 
   it("convierte las cuentas gestionadas en perfiles editoriales nítidos", () => {
     const selector = leer("src/components/AdminClientPicker.tsx");
+    const navegacion = leer("src/components/BottomNav.tsx");
     const estilos = leer("src/styles/design-system.css");
     const movimiento = leer("src/styles/navigation-motion.css");
 
@@ -599,7 +600,11 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toMatch(/\.admin-picker-grid > \.admin-picker-tile:not\(\.admin-picker-tile-vermas\):last-child:nth-child\(odd\) \{[\s\S]*?grid-column: 1 \/ -1 !important;[\s\S]*?width: min\(138px, 48\.5%\) !important;/);
     expect(movimiento).toMatch(/\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-avatar \{[\s\S]*?position: absolute !important;[\s\S]*?inset: 0 !important;[\s\S]*?width: auto !important;/);
     expect(movimiento).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-main \{[\s\S]*?height: 180px !important;/);
-    expect(movimiento).toMatch(/@media \(min-width: 361px\) and \(max-width: 899px\) \{[\s\S]*?\.admin-picker-tile-main \{[\s\S]*?height: 172\.5px !important;/);
+    expect(movimiento).toMatch(/@media \(min-width: 361px\) and \(max-width: 899px\) \{[\s\S]*?\.admin-picker-tile-main \{[\s\S]*?height: 128px !important;/);
+    expect(movimiento).toMatch(/@media \(max-width: 360px\) \{[\s\S]*?\.admin-picker-tile-main \{[\s\S]*?height: 124px !important;/);
+    expect(navegacion).toContain('className="nav-item-icon"');
+    expect(navegacion).toContain('className="nav-item-label"');
+    expect(movimiento).toMatch(/\.app-shell\.has-bottom-nav \.bottom-nav \.nav-item \{[\s\S]*?grid-template-rows: 24px 13px;[\s\S]*?transform: none !important;/);
     expect(movimiento).toContain("-webkit-tap-highlight-color: rgba(0,0,0,0) !important");
     expect(movimiento).toMatch(/\.login-card \.form-input:-webkit-autofill,[\s\S]*?#F5F7FB inset !important;/);
   });
