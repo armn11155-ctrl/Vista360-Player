@@ -598,6 +598,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilos).toContain("width: min(100%, 286px) !important");
     expect(estilos).toMatch(/\.admin-picker-grid > \.admin-picker-tile:not\(\.admin-picker-tile-vermas\):last-child:nth-child\(odd\) \{[\s\S]*?grid-column: 1 \/ -1 !important;[\s\S]*?width: min\(138px, 48\.5%\) !important;/);
     expect(movimiento).toMatch(/\.admin-picker-tile:not\(\.admin-picker-tile-vermas\) \.admin-picker-tile-avatar::before \{[\s\S]*?padding-bottom: 125%;/);
+    expect(movimiento).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?height: 180px !important;[\s\S]*?aspect-ratio: auto !important;/);
+    expect(movimiento).toMatch(/@media \(min-width: 361px\) and \(max-width: 899px\) \{[\s\S]*?height: 172\.5px !important;/);
     expect(movimiento).toContain("-webkit-tap-highlight-color: rgba(0,0,0,0) !important");
     expect(movimiento).toMatch(/\.login-card \.form-input:-webkit-autofill,[\s\S]*?#F5F7FB inset !important;/);
   });
