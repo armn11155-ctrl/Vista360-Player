@@ -93,14 +93,22 @@ html[data-v360-page-transition="revealing"] #root {
   box-shadow: none !important;
 }
 
-/* Safari no siempre calcula aspect-ratio cuando el único hijo en flujo es un
-   SVG o cuando la foto absoluta falla. Este espaciador mantiene el 4:5 aun si
-   una URL firmada vence; por eso las tarjetas ya no colapsan a una raya. */
-.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar::before {
-  content: "";
-  display: block;
-  width: 100%;
-  padding-bottom: 125%;
+/* Safari resuelve a cero el ancho porcentual de un span dentro de este button,
+   aunque el button ya mida toda la columna. El contenedor fija el lienzo y el
+   avatar se ancla a sus cuatro lados: foto, degradado y texto comparten así el
+   ancho real de la tarjeta, sin depender de aspect-ratio ni de porcentajes. */
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar-wrap,
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
+  position: relative !important;
+}
+
+.admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
 }
 
 .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar > svg {
@@ -114,31 +122,27 @@ html[data-v360-page-transition="revealing"] #root {
   transform: translate(-50%, -50%) !important;
 }
 
-/* Safari 17/18 puede resolver a cero tanto aspect-ratio como el porcentaje
-   del espaciador cuando el botón participa en esta grilla. Las columnas del
-   selector tienen anchos deliberadamente fijos, así que declarar su alto
-   exacto elimina el ciclo de tamaño sin estirar ni recortar la fotografía. */
+/* La altura vive en el button (el elemento en flujo) y no en la foto absoluta.
+   Esto conserva la proporción editorial y evita el colapso observado en
+   Safari 17/18, incluso cuando una URL firmada falla o aún está cargando. */
 @media (min-width: 900px) {
-  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
     height: 180px !important;
     min-height: 180px !important;
-    aspect-ratio: auto !important;
   }
 }
 
 @media (min-width: 361px) and (max-width: 899px) {
-  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
     height: 172.5px !important;
     min-height: 172.5px !important;
-    aspect-ratio: auto !important;
   }
 }
 
 @media (max-width: 360px) {
-  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
     height: 166.875px !important;
     min-height: 166.875px !important;
-    aspect-ratio: auto !important;
   }
 }
 
