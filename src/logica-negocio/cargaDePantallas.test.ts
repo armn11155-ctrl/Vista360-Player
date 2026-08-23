@@ -169,7 +169,9 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).toContain('data-v360-page-transition="revealing"');
     expect(movimiento).toContain("v360-page-settle");
     expect(movimiento).toContain("translate3d(-105%, 0, 0)");
-    expect(movimiento).toContain('content: "V360"');
+    expect(movimiento).toContain('url("/icon-192.png")');
+    expect(movimiento).toContain("background-blend-mode: screen");
+    expect(movimiento).toContain("mix-blend-mode: screen");
     expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
   });
 });

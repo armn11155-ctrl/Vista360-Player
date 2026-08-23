@@ -33,18 +33,24 @@ body::before {
 }
 
 body::after {
-  content: "V360";
+  content: "";
   z-index: 2147483001;
-  color: rgba(255,255,255,.82);
-  font: 800 clamp(12px, 1.4vw, 18px)/1 Inter, ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: .46em;
-  text-indent: .46em;
-  text-shadow: 0 0 28px rgba(147,197,253,.42);
   background:
+    url("/icon-192.png") center / clamp(116px, 12vw, 154px) clamp(116px, 12vw, 154px) no-repeat,
+    radial-gradient(circle at center, rgba(147,197,253,.2), transparent 14%),
     linear-gradient(rgba(147,197,253,.07) 1px, transparent 1px),
     linear-gradient(90deg, rgba(147,197,253,.07) 1px, transparent 1px),
     linear-gradient(105deg, transparent 38%, rgba(255,255,255,.13) 49%, transparent 60%);
-  background-size: 72px 72px, 72px 72px, 100% 100%;
+  background-size:
+    clamp(116px, 12vw, 154px) clamp(116px, 12vw, 154px),
+    100% 100%,
+    72px 72px,
+    72px 72px,
+    100% 100%;
+  /* El favicon tiene fondo negro. Screen conserva el azul de la cortina en
+     esos píxeles y deja visible únicamente su marca blanca, sin cuadrado. */
+  background-blend-mode: screen, normal, normal, normal, normal;
+  mix-blend-mode: screen;
 }
 
 html[data-v360-page-transition="covering"] body::before,
