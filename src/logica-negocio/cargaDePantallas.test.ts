@@ -1,2 +1,165 @@
-m´ÎàßΩ©bu™‡∫gß∂ ‹˛Z â∆ßz
-äè‹j∏„⁄û÷•ï´-zÀm±KÅÊ⁄±Ó∏ÿ[ûÈ¢äw‚ïÍ(∫◊‚ïÊ€≠Ê§n∑öëÈ‹°◊ù≤⁄‚ûß∂âÓô»Z≠ß-zπbùÎu◊ú°◊ùy z»ß¶ÎaÖÈiv+)ï¨≠Ü+&zÀÅË¢ûõ≠äznµ¯•y◊üjÈm~äÏµÿß¢ã≠¶Îh∫⁄nµ¯•y◊üjÈm~äÏµ⁄.
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+/**
+ * LA NAVEGACI√ìN NO PUEDE MORIR EN SILENCIO.
+ *
+ * setView() cambia de pantalla dentro de un startTransition, y React no
+ * cambia nada hasta tener el c√≥digo de la pantalla nueva. Cada pantalla
+ * es un .js aparte cuyo nombre cambia con cada despliegue. Si ese c√≥digo
+ * no llega -- una pesta√±a abierta desde antes del despliegue, una copia
+ * envenenada en la cach√© del Service Worker -- React se queda mostrando
+ * la pantalla anterior: sin error, sin aviso, sin nada en la consola.
+ *
+ * Se pulsa "Campa√±as" y no pasa absolutamente nada. Pas√≥ de verdad, y
+ * cost√≥ horas encontrarlo justamente porque no deja rastro.
+ */
+
+const raiz = resolve(__dirname, "../..");
+const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf-8");
+const helper = readFileSync(resolve(__dirname, "../utils/pantallaLazy.ts"), "utf-8");
+const main = readFileSync(resolve(__dirname, "../main.tsx"), "utf-8");
+const sw = readFileSync(resolve(raiz, "public/sw.js"), "utf-8");
+
+describe("todas las pantallas se cargan con recuperaci√≥n", () => {
+  it("NINGUNA usa lazy() pelado", () => {
+    // Un lazy() sin recuperaci√≥n es una pantalla que puede volverse
+    // inalcanzable para siempre tras un despliegue.
+    expect(app).not.toMatch(/[^a-zA-Z]lazy\(\(\) => import\(/);
+  });
+
+  it("todas usan pantallaLazy", () => {
+    const cuantas = (app.match(/pantallaLazy\(\(\) => import\(/g) ?? []).length;
+    expect(cuantas).toBeGreaterThanOrEqual(15);
+  });
+});
+
+describe("qu√© hace pantallaLazy cuando la carga falla", () => {
+  it("limpia la cach√© del Service Worker antes de reintentar", () => {
+    // Reintentar sin limpiar vuelve a leer la misma copia envenenada.
+    // Se mira SOLO el trozo entre el primer fallo y el reintento: la
+    // definicion de la funcion tambien contiene ese nombre y colarse ahi
+    // haria pasar el test sin que se llamara a nada.
+    const desde = helper.indexOf("catch (primerFallo)");
+    const hasta = helper.lastIndexOf("return await cargar()");
+    expect(desde).toBeGreaterThan(-1);
+    expect(hasta).toBeGreaterThan(desde);
+    expect(helper.slice(desde, hasta)).toContain("await limpiarCacheDelServiceWorker();");
+  });
+
+  it("reintenta UNA vez y luego recarga la p√°gina", () => {
+    expect((helper.match(/await cargar\(\)/g) ?? []).length).toBe(2);
+    expect(helper).toContain("recargarPorVersionDesactualizada()");
+  });
+
+  it("espera a que el Service Worker confirme, pero no para siempre", () => {
+    expect(helper).toContain("canal.port1.onmessage");
+    expect(helper).toMatch(/setTimeout\(resolver, \d+\)/);
+  });
+});
+
+describe("el guard de recarga no puede dejar la app atascada", () => {
+  it("es por TIEMPO, no de una sola vez", () => {
+    // Antes era una marca en sessionStorage que no se borraba nunca: si
+    // la primera recarga no bastaba, quedaba puesta para toda la sesi√≥n
+    // y no se reintentaba NUNCA. As√≠ se llega a una app que solo
+    // funciona en la pantalla que ya ten√≠a cargada.
+    expect(helper).toContain("VENTANA_MS");
+    expect(helper).toMatch(/Date\.now\(\) - ultima < VENTANA_MS/);
+    expect(helper).not.toMatch(/if \(sessionStorage\.getItem\([A-Z_]+\)\) return;/);
+  });
+
+  it("main.tsx usa ese mismo guard, no uno propio", () => {
+    expect(main).toContain('from "./utils/pantallaLazy"');
+    expect(main).not.toContain("function recargarPorVersionDesactualizada()");
+  });
+
+  it("sigue enganchado a los dos eventos que detectan chunks viejos", () => {
+    expect(main).toContain('"vite:preloadError"');
+    expect(main).toContain('el.tagName !== "SCRIPT" && el.tagName !== "LINK"');
+  });
+});
+
+describe("el Service Worker confirma cuando termin√≥ de limpiar", () => {
+  it("contesta por el puerto que le mandan", () => {
+    // Sin respuesta, quien limpia no sabe cu√°ndo termin√≥ y reintenta
+    // sobre la cach√© vieja.
+    expect(sw).toContain("event.ports[0].postMessage");
+  });
+
+  it("la versi√≥n de la cach√© cambia autom√°ticamente en cada build", () => {
+    expect(sw).toContain('const BUILD = "__VISTA360_BUILD__"');
+    expect(sw).toContain("v360player-shell-${BUILD}");
+    const vite = readFileSync(resolve(__dirname, "../../vite.config.ts"), "utf-8");
+    expect(vite).toContain('replace("__VISTA360_BUILD__", buildId)');
+  });
+});
+
+describe("una pesta√±a abierta desde antes del despliegue se entera sola", () => {
+  it("el Service Worker avisa a las pesta√±as ya abiertas al activarse", () => {
+    // Es lo √öNICO que alcanza a una pesta√±a que sigue ejecutando el
+    // JavaScript viejo: ese c√≥digo no puede arreglarse a s√≠ mismo.
+    expect(sw).toContain('self.clients.matchAll({ type: "window" })');
+    expect(sw).toContain('cliente.postMessage({ tipo: "version-nueva" })');
+  });
+
+  it("reclama las pesta√±as ANTES de avisarles", () => {
+    // Sin claim(), el Service Worker nuevo no controla las pesta√±as
+    // viejas y el aviso no sirve de nada.
+    const act = sw.slice(sw.indexOf('addEventListener("activate"'));
+    expect(act.indexOf("clients.claim()")).toBeLessThan(act.indexOf("postMessage"));
+  });
+
+  it("un fallo al avisar a una pesta√±a no frena a las dem√°s", () => {
+    const act = sw.slice(sw.indexOf('addEventListener("activate"'));
+    expect(act.slice(0, 1600)).toContain("try {");
+  });
+
+  it("la app escucha ese aviso y recarga", () => {
+    expect(main).toContain('evento.data?.tipo === "version-nueva"');
+    expect(main).toContain("recargarPorVersionDesactualizada()");
+  });
+});
+
+describe("un cambio de pantalla que no termina se detecta y se recupera", () => {
+  it("setView usa useTransition, no el startTransition suelto", () => {
+    // Con el suelto no hay forma de saber si el cambio qued√≥ a medias.
+    expect(app).toContain("const [cambioEnCurso, comenzarCambioDePantalla] = useTransition()");
+    expect(app).toContain("programarCambioDePantalla(() => setViewInmediato(v))");
+  });
+
+  it("si el cambio tarda demasiado, la app se recarga sola", () => {
+    // Es EL modo de fallo que cost√≥ todo un d√≠a: React se queda
+    // mostrando la pantalla anterior sin error, sin aviso y sin nada en
+    // la consola. La persona pulsa un bot√≥n y no pasa absolutamente
+    // nada. Ahora, si no se completa, se recarga.
+    expect(app).toContain("if (!cambioEnCurso) return;");
+    expect(app).toContain("recargarPorVersionDesactualizada()");
+    expect(app).toMatch(/ESPERA_MAXIMA_CAMBIO_MS = \d+/);
+  });
+
+  it("el reloj se cancela cuando el cambio S√ç termina", () => {
+    // Sin esto recargar√≠a la app cada vez que se navega.
+    const bloque = app.slice(app.indexOf("if (!cambioEnCurso) return;"));
+    expect(bloque.slice(0, 400)).toContain("clearTimeout(reloj)");
+  });
+
+  it("los cambios que acompa√±an a la pantalla usan la misma transici√≥n", () => {
+    // contratoAbierto, adminClienteId y dem√°s cambian en el mismo clic;
+    // si fueran por otra v√≠a, React 18 lanza el error #426.
+    expect(app).toContain("programarCambioDePantalla(() => setContratoAbiertoInmediato(c))");
+    expect(app).toContain("programarCambioDePantalla(() => setAdminClienteIdInmediato(id))");
+  });
+
+  it("cubre el √°rbol anterior y abre la vista solo despu√©s del commit", () => {
+    const movimiento = readFileSync(resolve(raiz, "src/styles/navigation-motion.css"), "utf-8");
+    expect(app).toContain('dataset.v360PageTransition = "covering"');
+    expect(app).toContain('dataset.v360PageTransition = "revealing"');
+    expect(app).toContain("actualizaciones.forEach((cambiar) => cambiar())");
+    expect(app).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(movimiento).toContain('data-v360-page-transition="covering"');
+    expect(movimiento).toContain('data-v360-page-transition="revealing"');
+    expect(movimiento).toContain("v360-page-settle");
+  });
+});
