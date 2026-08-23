@@ -55,8 +55,8 @@ export default function BottomNav({ active, onChange }: Props) {
             onClick={() => onChange(tab.id)}
             aria-current={a ? "page" : undefined}
           >
-            {tab.getIcon(a)}
-            <span>{tab.label}</span>
+            <span className="nav-item-icon" aria-hidden="true">{tab.getIcon(a)}</span>
+            <span className="nav-item-label">{tab.label}</span>
           </button>
         );
       })}
