@@ -114,6 +114,34 @@ html[data-v360-page-transition="revealing"] #root {
   transform: translate(-50%, -50%) !important;
 }
 
+/* Safari 17/18 puede resolver a cero tanto aspect-ratio como el porcentaje
+   del espaciador cuando el botón participa en esta grilla. Las columnas del
+   selector tienen anchos deliberadamente fijos, así que declarar su alto
+   exacto elimina el ciclo de tamaño sin estirar ni recortar la fotografía. */
+@media (min-width: 900px) {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+    height: 180px !important;
+    min-height: 180px !important;
+    aspect-ratio: auto !important;
+  }
+}
+
+@media (min-width: 361px) and (max-width: 899px) {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+    height: 172.5px !important;
+    min-height: 172.5px !important;
+    aspect-ratio: auto !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+    height: 166.875px !important;
+    min-height: 166.875px !important;
+    aspect-ratio: auto !important;
+  }
+}
+
 /* La regla es deliberadamente global para laptop y móvil. La anterior vivía
    dentro de un breakpoint y Safari volvía a teñir el usuario de amarillo o a
    reemplazar el gris perla por blanco en escritorio. */
