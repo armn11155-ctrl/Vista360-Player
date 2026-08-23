@@ -5,6 +5,7 @@ import type { MultiFactorResolver } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
 import { completarLoginConCodigo, pideSegundoFactor, resolverDeSegundoFactor } from "../config/mfa";
 import PixelGlobe from "./PixelGlobe";
+import { prepararSonidosInterfaz } from "../utils/sonidosInterfaz";
 
 const LOGO = "/logo-player.webp";
 const SAVED_EMAIL_KEY = "v360_saved_email";
@@ -44,6 +45,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
   async function enviarCodigoMfa(e: React.FormEvent) {
     e.preventDefault();
+    prepararSonidosInterfaz();
     if (!resolverMfa || busy) return;
     setBusy(true);
     setError("");
@@ -91,6 +93,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    prepararSonidosInterfaz();
     setError("");
     if (!email.trim() || !password) {
       setError("Ingresa tu usuario y contraseña.");

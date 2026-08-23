@@ -1,4 +1,5 @@
 import { PersonIcon } from "./PersonIcon";
+import { reproducirSonidoInterfaz } from "../utils/sonidosInterfaz";
 
 export type Tab = "inicio" | "campanas" | "cobertura" | "reportes" | "perfil";
 
@@ -52,7 +53,11 @@ export default function BottomNav({ active, onChange }: Props) {
             type="button"
             key={tab.id}
             className={`nav-item${a ? " active" : ""}`}
-            onClick={() => onChange(tab.id)}
+            onClick={() => {
+              if (a) return;
+              reproducirSonidoInterfaz("navegacion");
+              onChange(tab.id);
+            }}
             aria-current={a ? "page" : undefined}
           >
             <span className="nav-item-icon" aria-hidden="true">{tab.getIcon(a)}</span>

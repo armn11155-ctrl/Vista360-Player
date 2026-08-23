@@ -11,11 +11,11 @@ const SIN_SOLICITUDES: SolicitudCampana[] = [];
 
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
-/** Tiempo que tarda la cortina en cubrir la vista antes de sustituirla. */
-const CIERRE_VISUAL_MS = 105;
-/** La apertura es más pausada que el cierre para que la nueva vista respire. */
-const APERTURA_VISUAL_MS = 460;
-import { usePortalAuth } from "./hooks/usePortalAuth";
+/** Tiempo que tarda la cortina azul en cubrir por completo el contexto anterior. */
+const CIERRE_VISUAL_MS = 440;
+/** La salida hacia la izquierda revela el contexto nuevo ya renderizado. */
+const APERTURA_VISUAL_MS = 540;
+import { usePortalAuth, type AuthState } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
 import { usePaneles } from "./hooks/usePaneles";
@@ -48,6 +48,7 @@ import type { Contrato, SolicitudCampana } from "./types";
 import { panelesDeContrato, rucCliente } from "./types";
 import { cargarLeaflet } from "./utils/leaflet";
 import { precargarPaneles } from "./hooks/usePanelesDisponibles";
+import { reproducirSonidoInterfaz } from "./utils/sonidosInterfaz";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -227,7 +228,11 @@ export default function App() {
   // renders. Los detectores estáticos solo ven los patrones conocidos y
   // dentro de un archivo; un bucle puede formarse entre varios.
   useDetectorDeBucles("App");
-  const auth = usePortalAuth();
+  const authActual = usePortalAuth();
+  // La autenticación real puede resolver antes que la cortina visual. Mantener
+  // una copia presentada permite cerrar primero el login, sustituirlo mientras
+  // está cubierto y revelar recién entonces la aplicación ya cargada.
+  const [auth, setAuthPresentada] = useState<AuthState>(authActual);
   const online = useOnlineStatus();
   const uid = auth.status === "in" ? auth.user.uid : undefined;
   useRegistrarAcceso(uid);
@@ -287,6 +292,7 @@ export default function App() {
   const relojCierreVisualRef = useRef<number | null>(null);
   const relojLimpiezaVisualRef = useRef<number | null>(null);
   const revelarAlCompletarRef = useRef(false);
+  const authEnTransicionRef = useRef<AuthState | null>(null);
 
   cambioEnCursoRef.current = cambioEnCurso;
 
@@ -303,9 +309,9 @@ export default function App() {
   }
 
   /**
-   * Agrupa todos los estados del mismo toque (vista, cliente, contrato, etc.)
-   * detrás de una única cortina. Así React conserva startTransition para los
-   * chunks lazy, pero Safari nunca alcanza a enseñar el corte entre árboles.
+   * Reserva la cortina para cambios de contexto reales: iniciar/cerrar sesión
+   * y entrar/salir de una cuenta. Las pestañas internas conservan la navegación
+   * rápida de React y no pasan por esta animación de producto.
    */
   function programarCambioDePantalla(actualizar: () => void) {
     if (
@@ -341,6 +347,33 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (authActual === auth) return;
+
+    const cambiaContextoDeSesion =
+      (auth.status === "out" && authActual.status === "in") ||
+      (auth.status === "in" && authActual.status === "out");
+
+    if (!cambiaContextoDeSesion) {
+      setAuthPresentada(authActual);
+      return;
+    }
+
+    // React StrictMode puede ejecutar el efecto dos veces en desarrollo; esta
+    // referencia impide apilar dos cortinas para el mismo cambio de sesión.
+    if (authEnTransicionRef.current === authActual) return;
+    authEnTransicionRef.current = authActual;
+    if (auth.status === "out" && authActual.status === "in") {
+      reproducirSonidoInterfaz("acceso");
+    }
+    programarCambioDePantalla(() => {
+      setAuthPresentada(authActual);
+      authEnTransicionRef.current = null;
+    });
+    // programarCambioDePantalla opera únicamente sobre refs estables y el DOM.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authActual, auth.status]);
+
+  useEffect(() => {
     if (!cambioEnCurso) return;
     const reloj = setTimeout(() => {
       console.error("El cambio de pantalla no se completa; se recarga la aplicacion.");
@@ -362,7 +395,7 @@ export default function App() {
   }, []);
 
   function setView(v: View) {
-    programarCambioDePantalla(() => setViewInmediato(v));
+    comenzarCambioDePantalla(() => setViewInmediato(v));
   }
   // Solo el NOMBRE de la pantalla, para que el aviso de bucle diga dónde
   // pasó. Nada de identificadores de cliente ni contenido.
@@ -386,7 +419,7 @@ export default function App() {
   // estos datos) se trate como una sola transición.
   const [contratoAbierto, setContratoAbiertoInmediato] = useState<Contrato | null>(null);
   function setContratoAbierto(c: Contrato | null) {
-    programarCambioDePantalla(() => setContratoAbiertoInmediato(c));
+    comenzarCambioDePantalla(() => setContratoAbiertoInmediato(c));
   }
   // Solo lo usa el admin: a qué cliente está viendo ahora. null = todavía
   // no eligió ninguno -> se le muestra el selector.
@@ -406,7 +439,7 @@ export default function App() {
   }
   const [adminVistaCliente, setAdminVistaClienteInmediato] = useState(false);
   function setAdminVistaCliente(v: boolean | ((activa: boolean) => boolean)) {
-    programarCambioDePantalla(() => setAdminVistaClienteInmediato(v));
+    comenzarCambioDePantalla(() => setAdminVistaClienteInmediato(v));
   }
 
   // Color de la pantalla que se está mostrando AHORA MISMO, sin importar
@@ -449,7 +482,7 @@ export default function App() {
     return (
       <div className="app-shell">
         <OfflineBanner online={online} />
-        <LoginScreen onLoggedIn={() => setView("inicio")} />
+        <LoginScreen onLoggedIn={() => setViewInmediato("inicio")} />
       </div>
     );
   }
@@ -534,7 +567,11 @@ export default function App() {
               suspenderse. */}
           <Suspense fallback={<BrandLoader />}>
           <AdminClientPicker
-            onSelect={(id) => { setAdminClienteId(id); setView("inicio"); }}
+            onSelect={(id) => {
+              reproducirSonidoInterfaz("cuenta");
+              setAdminClienteId(id);
+              setView("inicio");
+            }}
             onOpenUsuarios={() => setView("accesos")}
             onOpenSolicitudes={() => setView("solicitudes")}
             onOpenAnalitica={() => setView("analitica")}

@@ -4,6 +4,7 @@ import {
   IconFacturas, IconAnalitica, IconPerfil, IconCerrar, IconCambiarCliente, IconCerrarSesion,
 } from "./SidebarIcons";
 import { BrandThumb } from "./BrandThumb";
+import { reproducirSonidoInterfaz } from "../utils/sonidosInterfaz";
 
 type SidebarView =
   | "inicio"
@@ -244,12 +245,14 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               role="button"
               tabIndex={0}
               onClick={() => {
+                if (it.id !== active) reproducirSonidoInterfaz("navegacion");
                 onNavigate(it.id);
                 onClose();
               }}
               onKeyDown={(event) => {
                 if (event.key !== "Enter" && event.key !== " ") return;
                 event.preventDefault();
+                if (it.id !== active) reproducirSonidoInterfaz("navegacion");
                 onNavigate(it.id);
                 onClose();
               }}

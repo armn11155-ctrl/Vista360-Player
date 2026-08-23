@@ -1,71 +1,88 @@
 /* ========================================================================== */
-/* TRANSICIÓN DE PRODUCTO — CAMBIO DE VISTA SIN CORTES                         */
+/* TRANSICIÓN DE PRODUCTO — CAMBIO DE CONTEXTO SIN CORTES                      */
 /* ========================================================================== */
 
 :root {
   /* Marcador estable para confirmar desde producción que esta capa cargó. */
-  --v360-navigation-motion-version: 1;
+  --v360-navigation-motion-version: 2;
 }
 
-/* Dos paneles azul noche cubren el árbol anterior y se retiran hacia los
-   bordes cuando React ya pintó el destino. Se hace sobre body para que cubra
-   login, selector, Centro de gestión y todos los módulos sin duplicar DOM. */
+/* Una cortina azul entra desde la derecha, cubre por completo el contexto
+   anterior y continúa hacia la izquierda cuando React ya pintó el destino.
+   Solo se activa para login/logout y entrada/salida de una cuenta; las
+   pestañas internas no escriben este dataset y cambian de inmediato. */
 body::before,
 body::after {
-  content: "";
   position: fixed;
-  top: 0;
-  bottom: 0;
+  inset: 0 -5vw;
   z-index: 2147483000;
-  width: calc(50vw + 1px);
+  display: grid;
+  place-items: center;
   pointer-events: none;
   opacity: 0;
-  background:
-    radial-gradient(circle at 100% 48%, rgba(37,99,235,.15), transparent 42%),
-    linear-gradient(155deg, #071426 0%, #030811 72%);
+  transform: translate3d(105%, 0, 0);
   will-change: transform, opacity;
 }
 
 body::before {
-  left: 0;
-  transform: scaleX(0);
-  transform-origin: left center;
+  content: "";
+  background:
+    radial-gradient(circle at 18% 24%, rgba(96,165,250,.34), transparent 28%),
+    radial-gradient(circle at 78% 72%, rgba(0,63,180,.5), transparent 38%),
+    linear-gradient(118deg, #031a45 0%, #063c91 46%, #075ee0 100%);
 }
 
 body::after {
-  right: 0;
-  transform: scaleX(0);
-  transform-origin: right center;
+  content: "V360";
+  z-index: 2147483001;
+  color: rgba(255,255,255,.82);
+  font: 800 clamp(12px, 1.4vw, 18px)/1 Inter, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .46em;
+  text-indent: .46em;
+  text-shadow: 0 0 28px rgba(147,197,253,.42);
   background:
-    radial-gradient(circle at 0 48%, rgba(37,99,235,.15), transparent 42%),
-    linear-gradient(205deg, #071426 0%, #030811 72%);
+    linear-gradient(rgba(147,197,253,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147,197,253,.07) 1px, transparent 1px),
+    linear-gradient(105deg, transparent 38%, rgba(255,255,255,.13) 49%, transparent 60%);
+  background-size: 72px 72px, 72px 72px, 100% 100%;
 }
 
 html[data-v360-page-transition="covering"] body::before,
 html[data-v360-page-transition="covering"] body::after {
   opacity: 1;
-  transform: scaleX(1);
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
   transition:
-    transform 105ms cubic-bezier(.65, 0, .35, 1),
-    opacity 30ms linear;
+    transform 440ms cubic-bezier(.76, 0, .24, 1),
+    opacity 80ms linear;
 }
 
 html[data-v360-page-transition="revealing"] body::before,
 html[data-v360-page-transition="revealing"] body::after {
-  opacity: 0;
-  transform: scaleX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate3d(-105%, 0, 0);
   transition:
-    transform 420ms cubic-bezier(.16, 1, .3, 1),
-    opacity 400ms cubic-bezier(.16, 1, .3, 1);
+    transform 540ms cubic-bezier(.76, 0, .24, 1),
+    opacity 120ms linear 420ms;
 }
 
 html[data-v360-page-transition="revealing"] #root {
-  animation: v360-page-settle 440ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: v360-page-settle 540ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 @keyframes v360-page-settle {
-  from { opacity: .88; transform: scale(.992); }
+  from { opacity: .82; transform: translate3d(18px, 0, 0); }
   to { opacity: 1; transform: none; }
+}
+
+/* Inicio, Campañas, Cobertura, Reportes y Perfil ya están precargados. Su
+   contenido cambia sin barrido ni entrada vertical; el movimiento pequeño del
+   indicador de navegación basta para conservar orientación. */
+.screen.active > * {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
 
 /* ========================================================================== */

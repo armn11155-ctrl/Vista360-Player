@@ -126,7 +126,7 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
   it("setView usa useTransition, no el startTransition suelto", () => {
     // Con el suelto no hay forma de saber si el cambio quedó a medias.
     expect(app).toContain("const [cambioEnCurso, comenzarCambioDePantalla] = useTransition()");
-    expect(app).toContain("programarCambioDePantalla(() => setViewInmediato(v))");
+    expect(app).toContain("comenzarCambioDePantalla(() => setViewInmediato(v))");
   });
 
   it("si el cambio tarda demasiado, la app se recarga sola", () => {
@@ -145,11 +145,18 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(bloque.slice(0, 400)).toContain("clearTimeout(reloj)");
   });
 
-  it("los cambios que acompañan a la pantalla usan la misma transición", () => {
+  it("las pestañas y detalles usan React sin desplegar la cortina de contexto", () => {
     // contratoAbierto, adminClienteId y demás cambian en el mismo clic;
     // si fueran por otra vía, React 18 lanza el error #426.
-    expect(app).toContain("programarCambioDePantalla(() => setContratoAbiertoInmediato(c))");
+    expect(app).toContain("comenzarCambioDePantalla(() => setContratoAbiertoInmediato(c))");
+    expect(app).toContain("comenzarCambioDePantalla(() => setAdminVistaClienteInmediato(v))");
+    expect(app).not.toContain("programarCambioDePantalla(() => setViewInmediato(v))");
+  });
+
+  it("reserva la cortina para sesión y entrada o salida de una cuenta", () => {
     expect(app).toContain("programarCambioDePantalla(() => setAdminClienteIdInmediato(id))");
+    expect(app).toContain("setAuthPresentada(authActual)");
+    expect(app).toContain('auth.status === "out" && authActual.status === "in"');
   });
 
   it("cubre el árbol anterior y abre la vista solo después del commit", () => {
@@ -161,5 +168,28 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).toContain('data-v360-page-transition="covering"');
     expect(movimiento).toContain('data-v360-page-transition="revealing"');
     expect(movimiento).toContain("v360-page-settle");
+    expect(movimiento).toContain("translate3d(-105%, 0, 0)");
+    expect(movimiento).toContain('content: "V360"');
+    expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
+  });
+});
+
+describe("sonido de interfaz deliberado", () => {
+  const login = readFileSync(resolve(raiz, "src/components/LoginScreen.tsx"), "utf-8");
+  const navegacion = readFileSync(resolve(raiz, "src/components/BottomNav.tsx"), "utf-8");
+  const sidebar = readFileSync(resolve(raiz, "src/components/Sidebar.tsx"), "utf-8");
+  const sonidos = readFileSync(resolve(raiz, "src/utils/sonidosInterfaz.ts"), "utf-8");
+
+  it("suena solo en acceso exitoso, selección de cuenta y cambio de pestaña", () => {
+    expect(app).toContain('reproducirSonidoInterfaz("acceso")');
+    expect(app).toContain('reproducirSonidoInterfaz("cuenta")');
+    expect(navegacion).toContain('reproducirSonidoInterfaz("navegacion")');
+    expect(sidebar).toContain('reproducirSonidoInterfaz("navegacion")');
+  });
+
+  it("Safari prepara Web Audio durante el gesto y el audio nunca bloquea", () => {
+    expect(login).toContain("prepararSonidosInterfaz()");
+    expect(sonidos).toContain("webkitAudioContext");
+    expect(sonidos).toContain("El audio es una mejora sensorial");
   });
 });
