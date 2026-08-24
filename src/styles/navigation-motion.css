@@ -4,7 +4,7 @@
 
 :root {
   /* Marcador estable para confirmar desde producción que esta capa cargó. */
-  --v360-navigation-motion-version: 4;
+  --v360-navigation-motion-version: 5;
 }
 
 /* Una cortina azul entra desde la derecha, cubre por completo el contexto
@@ -43,12 +43,10 @@ body::after {
     url("/logo-player.webp") center / clamp(225px, 28vw, 360px) auto no-repeat,
     radial-gradient(ellipse at center, rgba(112,174,255,.20) 0%, rgba(51,118,218,.10) 34%, transparent 68%),
     radial-gradient(circle at 20% 22%, rgba(151,196,255,.12), transparent 24%),
-    radial-gradient(circle at 82% 78%, rgba(34,104,214,.17), transparent 30%),
-    linear-gradient(104deg, transparent 30%, rgba(147,197,253,.035) 42%, rgba(255,255,255,.13) 50%, rgba(147,197,253,.035) 58%, transparent 70%);
+    radial-gradient(circle at 82% 78%, rgba(34,104,214,.17), transparent 30%);
   background-size:
     clamp(225px, 28vw, 360px) auto,
     72% 56%,
-    100% 100%,
     100% 100%,
     100% 100%;
   background-repeat: no-repeat;
@@ -83,8 +81,8 @@ html[data-v360-page-transition="revealing"] #root {
 }
 
 @keyframes v360-transition-atmosphere {
-  from { filter: brightness(.88) saturate(.90); background-position: center, center, 22% 19%, 80% 82%, -18vw 0; }
-  to { filter: brightness(1.06) saturate(1.02); background-position: center, center, 18% 23%, 84% 76%, 18vw 0; }
+  from { filter: brightness(.88) saturate(.90); background-position: center, center, 22% 19%, 80% 82%; }
+  to { filter: brightness(1.06) saturate(1.02); background-position: center, center, 18% 23%, 84% 76%; }
 }
 
 @keyframes v360-page-settle {
