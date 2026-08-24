@@ -73,7 +73,13 @@ function nombreFechaCorta(mes: string, dia?: string) {
  * campos que solo existen en Firestore se leen desde un agregado anual,
  * no desde un documento por reporte.
  */
-export const listarReportesCliente = onCall({ secrets: R2_SECRETS }, async (request) => {
+export const listarReportesCliente = onCall({
+  secrets: R2_SECRETS,
+  minInstances: 0,
+  maxInstances: 20,
+  cpu: 1,
+  concurrency: 80,
+}, async (request) => {
   try {
     const cuenta = await exigirCuentaActiva(request);
     const { uid } = cuenta;

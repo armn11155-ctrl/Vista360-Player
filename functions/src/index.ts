@@ -29,7 +29,7 @@ import { setGlobalOptions } from "firebase-functions/v2/options";
  * NO SUSTITUYE a las comprobaciones de permisos de cada funcion: es la
  * capa de abajo, la que limita el dano cuando algo se escapa.
  */
-setGlobalOptions({ maxInstances: 20 });
+setGlobalOptions({ region: "us-central1", maxInstances: 20 });
 
 export { crearSubidaR2 } from "./crearSubidaR2.js";
 export { actualizarAvatarPropio } from "./actualizarAvatarPropio.js";

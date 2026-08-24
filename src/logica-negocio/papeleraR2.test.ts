@@ -27,6 +27,7 @@ import { resolve } from "node:path";
 
 const FUNCIONES = resolve(__dirname, "../../functions/src");
 const codigo = readFileSync(resolve(FUNCIONES, "r2Storage.ts"), "utf-8");
+const limpieza = readFileSync(resolve(FUNCIONES, "limpiarArchivosHuerfanos.ts"), "utf-8");
 
 describe("borrarObjetoR2 copia a la papelera antes de borrar", () => {
   it("importa CopyObjectCommand junto con DeleteObjectCommand", () => {
@@ -57,6 +58,11 @@ describe("borrarObjetoR2 copia a la papelera antes de borrar", () => {
   it("_papelera/ no es una carpeta permitida (nada del resto de la app puede leer ni firmar URLs hacia ahí)", () => {
     const carpetas = codigo.match(/CARPETAS_PERMITIDAS = \[([^\]]*)\]/)?.[1] ?? "";
     expect(carpetas).not.toContain("_papelera");
+  });
+
+  it("la limpieza de huérfanos no borra la papelera antes de sus 30 días", () => {
+    expect(limpieza).toContain("PAPELERA_PREFIJO");
+    expect(limpieza).toContain("if (key.startsWith(PAPELERA_PREFIJO)) continue;");
   });
 });
 

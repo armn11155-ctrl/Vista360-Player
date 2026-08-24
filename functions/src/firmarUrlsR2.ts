@@ -38,7 +38,13 @@ const EXPIRACION_AVATAR_SEGUNDOS = 7 * 24 * 60 * 60;
  * por cliente, así que se firman con la validación de carpeta de
  * siempre.
  */
-export const firmarUrlsR2 = onCall({ secrets: R2_SECRETS }, async (request) => {
+export const firmarUrlsR2 = onCall({
+  secrets: R2_SECRETS,
+  minInstances: 0,
+  maxInstances: 20,
+  cpu: 1,
+  concurrency: 80,
+}, async (request) => {
   const cuenta = await exigirCuentaActiva(request);
   const { uid } = cuenta;
   // Hasta 60 firmas de R2 + hasta 2 consultas a Firestore por llamada

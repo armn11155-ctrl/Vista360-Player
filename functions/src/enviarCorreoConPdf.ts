@@ -283,11 +283,6 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
       throw new HttpsError("failed-precondition", "El envío de correo no está configurado todavía (falta RESEND_API_KEY).");
     }
 
-    // Se arma en una variable (no inline en el fetch) para poder loguear
-    // el tamaño EXACTO de lo que se manda -- sin esto, si Resend acepta
-    // el pedido (200) pero el correo llega sin adjunto, no hay forma de
-    // saber si el problema es que nunca se mandó bien el archivo desde
-    // acá, o si es solo cómo Resend lo muestra en su propio dashboard.
     const cuerpo = {
       from: REMITENTE,
       to: destinatario,
@@ -296,9 +291,12 @@ export const enviarCorreoConPdf = onCall<EnviarCorreoConPdfData>(
       html: construirHtmlCorreo(mensaje),
       attachments: [{ filename: nombreArchivo, content: archivoBase64 }],
     };
-    console.log(
-      `enviarCorreoConPdf: mandando a Resend -- destinatario=${destinatario}, archivo=${nombreArchivo}, bytesAdjunto=${bufferBytes}, largoBase64=${archivoBase64.length}, largoBodyJSON=${JSON.stringify(cuerpo).length}`
-    );
+    // Solo métricas operativas, sin correo ni nombre de archivo. Esos dos
+    // campos son datos personales y no deben persistir en Cloud Logging.
+    console.log("enviarCorreoConPdf: enviando adjunto", {
+      bytesAdjunto: bufferBytes,
+      largoBase64: archivoBase64.length,
+    });
 
     try {
       const respuesta = await fetch("https://api.resend.com/emails", {

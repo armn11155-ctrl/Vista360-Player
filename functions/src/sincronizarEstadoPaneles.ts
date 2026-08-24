@@ -170,7 +170,16 @@ export const sincronizarEstadoPaneles = onRequest(
   // revisa abajo, no el que la funcion sea publica.
   // timeoutSeconds alto porque con ?reconstruirResumenes=1 puede tardar:
   // recorre todos los clientes.
-  { secrets: ["CRON_SYNC_SECRET"], invoker: "public", timeoutSeconds: 540, memory: "512MiB" },
+  {
+    secrets: ["CRON_SYNC_SECRET"],
+    invoker: "public",
+    timeoutSeconds: 540,
+    memory: "512MiB",
+    minInstances: 0,
+    maxInstances: 2,
+    concurrency: 10,
+    cpu: 1,
+  },
   async (req, res) => {
     if (req.method !== "POST") {
       res.status(405).send("Method Not Allowed");

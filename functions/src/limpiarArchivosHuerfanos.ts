@@ -3,7 +3,7 @@ import { exigirRitmo } from "./limitador.js";
 import { exigirGerente, exigirAutenticacionReciente } from "./cuentaPortal.js";
 import { getApps, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import { R2_SECRETS, borrarObjetoR2, listarObjetosR2 } from "./r2Storage.js";
+import { PAPELERA_PREFIJO, R2_SECRETS, borrarObjetoR2, listarObjetosR2 } from "./r2Storage.js";
 import { auditar } from "./registro.js";
 
 if (getApps().length === 0) {
@@ -133,6 +133,12 @@ export const limpiarArchivosHuerfanos = onCall<LimpiarData>(
       // huérfanos, esta limpieza borraría justamente el historial de
       // reportes de los clientes. Se excluyen enteros.
       if (key.startsWith("clientes/")) continue;
+
+      // La papelera es recuperación deliberada, no basura. Su retención
+      // es de 30 días mediante una regla de ciclo de vida de R2. Antes,
+      // este barrido la consideraba huérfana y podía borrarla a las 24 h,
+      // contradiciendo la garantía de recuperación de la propia interfaz.
+      if (key.startsWith(PAPELERA_PREFIJO)) continue;
 
       if (enUso.has(key)) continue;
 

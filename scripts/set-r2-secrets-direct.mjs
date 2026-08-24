@@ -20,23 +20,11 @@ import { GoogleAuth } from 'google-auth-library';
 const PROJECT_ID = 'base-de-datos-vista360';
 const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-/**
- * Cuántas versiones de cada secreto se conservan.
- *
- * DOS, Y NO UNA, A PROPÓSITO. Una Cloud Function fija la versión del
- * secreto en el momento de desplegarse. Este script corre ANTES de que
- * las funciones se redesplieguen en el mismo workflow: si se destruyera
- * la versión que las funciones ya desplegadas están usando, quedarían
- * rotas hasta que su redespliegue terminara -- y ese paso tolera fallos.
- * La segunda versión cubre exactamente esa ventana.
- *
- * LO QUE CUESTA ESA SEGURIDAD: el plan gratuito cubre 6 versiones
- * activas al mes. Con 6 secretos, quedarse en una sola versión saldría
- * exactamente gratis; con dos son 12, o sea 6 de más a $0.06 = unos
- * $0.36 al mes. Se paga a propósito: 36 centavos por no arriesgar que
- * las funciones se queden sin secretos.
- */
-const VERSIONES_A_CONSERVAR = 2;
+// La poda destructiva solo se activa de forma explícita desde el workflow.
+// Aun activada, jamás decide por antigüedad a ciegas: conserva `latest` y
+// cada versión fijada por una Cloud Function actualmente desplegada.
+const DESTRUIR_VERSIONES_OBSOLETAS =
+  process.env.DESTRUIR_VERSIONES_OBSOLETAS === 'true';
 
 const SECRETS = {
   R2_ACCOUNT_ID: process.env.VAL_R2_ACCOUNT_ID,
@@ -69,6 +57,52 @@ async function call(url, method, body) {
   });
   const json = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, json };
+}
+
+async function listarTodas(urlBase, propiedad) {
+  const todos = [];
+  let pageToken = '';
+  do {
+    const separador = urlBase.includes('?') ? '&' : '?';
+    const url = `${urlBase}${pageToken ? `${separador}pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+    const pagina = await call(url, 'GET');
+    if (!pagina.ok) return { ok: false, status: pagina.status, items: [] };
+    todos.push(...(pagina.json?.[propiedad] ?? []));
+    pageToken = pagina.json?.nextPageToken ?? '';
+  } while (pageToken);
+  return { ok: true, status: 200, items: todos };
+}
+
+/** Versiones que usa el tráfico de producción AHORA MISMO. */
+async function versionesReferenciadasPorProduccion() {
+  const funciones = await listarTodas(
+    `https://cloudfunctions.googleapis.com/v2/projects/${PROJECT_ID}/locations/-/functions?pageSize=1000`,
+    'functions'
+  );
+  if (!funciones.ok) return { ok: false, status: funciones.status, porSecreto: new Map() };
+
+  const porSecreto = new Map();
+  for (const funcion of funciones.items) {
+    for (const variable of funcion.serviceConfig?.secretEnvironmentVariables ?? []) {
+      const nombre = variable.secret;
+      const version = String(variable.version ?? '');
+      if (!nombre || !version || version === 'latest') continue;
+      const versiones = porSecreto.get(nombre) ?? new Set();
+      versiones.add(version);
+      porSecreto.set(nombre, versiones);
+    }
+  }
+  return { ok: true, status: 200, porSecreto };
+}
+
+// Se consulta una sola vez. Si no se puede demostrar qué usa producción,
+// se falla CERRADO: se pueden crear/actualizar valores, pero no se destruye
+// ninguna versión.
+const referenciasProduccion = await versionesReferenciadasPorProduccion();
+if (!referenciasProduccion.ok) {
+  console.warn(
+    `⚠️  No se pudieron leer las referencias de Cloud Functions (HTTP ${referenciasProduccion.status}); no se destruirá ninguna versión.`
+  );
 }
 
 let failed = false;
@@ -113,7 +147,12 @@ for (const [name, value] of Object.entries(SECRETS)) {
     `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}/versions/latest:access`,
     'GET'
   );
-  const yaEstaba = actual.ok && actual.json?.payload?.data === b64;
+  // Compara bytes, no la representación textual base64: padding o alfabeto
+  // URL-safe distintos pueden representar exactamente el mismo valor.
+  const valorActual = actual.ok && actual.json?.payload?.data
+    ? Buffer.from(actual.json.payload.data, 'base64')
+    : null;
+  const yaEstaba = valorActual?.equals(Buffer.from(value, 'utf-8')) === true;
 
   if (yaEstaba) {
     console.log('  ⏭️  El valor no cambió: no se crea versión nueva');
@@ -132,33 +171,42 @@ for (const [name, value] of Object.entries(SECRETS)) {
     }
   }
 
-  // 3) DESTRUIR LAS VERSIONES VIEJAS.
+  // 3) INVENTARIAR (Y, SI SE AUTORIZÓ, DESTRUIR) VERSIONES OBSOLETAS.
   //
-  // Se conservan las VERSIONES_A_CONSERVAR más recientes para poder
-  // volver atrás si un valor nuevo estuviera mal. El resto se destruyen:
-  // una versión destruida deja de cobrarse.
-  //
-  // Esto es lo que limpia además todo lo acumulado hasta hoy.
-  const lista = await call(
+  // El primer arreglo de esta lógica pedía solo pageSize=100. Un secreto
+  // llegó a la versión 178: se destruyeron las versiones intermedias que
+  // aparecían en esa primera página, pero 1..78 jamás se examinaron y
+  // siguieron ENABLED y facturando. Por eso esta lectura recorre TODOS los
+  // nextPageToken hasta el final.
+  const lista = await listarTodas(
     `https://secretmanager.googleapis.com/v1/projects/${PROJECT_ID}/secrets/${name}/versions?pageSize=100`,
-    'GET'
+    'versions'
   );
   if (!lista.ok) {
     console.warn(`  ⚠️  No se pudieron listar las versiones de ${name}; se deja como está`);
     continue;
   }
-  // Vienen de más nueva a más vieja.
-  //
-  // OJO CON QUÉ CUENTA COMO "ACTIVA". Google factura las versiones en
-  // estado ENABLED **y también las DISABLED**: deshabilitar una NO deja
-  // de cobrarla, solo destruirla. Filtrar solo por ENABLED --como hacía
-  // la primera versión de este script-- habría dejado las deshabilitadas
-  // pagando para siempre, que es justo el problema que se venía a
-  // arreglar.
-  //
-  // Solo DESTROYED deja de costar.
-  const facturables = (lista.json.versions ?? []).filter((v) => v.state !== 'DESTROYED');
-  const sobran = facturables.slice(VERSIONES_A_CONSERVAR);
+
+  const facturables = lista.items.filter((v) => v.state !== 'DESTROYED');
+  const versionId = (v) => String(v.name?.split('/').pop() ?? '');
+  const latest = facturables
+    .map(versionId)
+    .filter(Boolean)
+    .sort((a, b) => Number(b) - Number(a))[0];
+  const protegidas = new Set(referenciasProduccion.porSecreto.get(name) ?? []);
+  if (latest) protegidas.add(latest);
+  const sobran = referenciasProduccion.ok
+    ? facturables.filter((v) => !protegidas.has(versionId(v)))
+    : [];
+
+  console.log(
+    `  ℹ️  Facturables=${facturables.length}; protegidas=${[...protegidas].sort((a, b) => Number(a) - Number(b)).join(',') || 'ninguna'}; candidatas=${sobran.length}`
+  );
+  if (!DESTRUIR_VERSIONES_OBSOLETAS && sobran.length > 0) {
+    console.log('  🔎 Solo auditoría: define DESTRUIR_VERSIONES_OBSOLETAS=true para destruir las candidatas verificadas');
+    continue;
+  }
+
   for (const v of sobran) {
     const r = await call(`https://secretmanager.googleapis.com/v1/${v.name}:destroy`, 'POST', {});
     if (r.ok) console.log(`  🧹 Versión antigua destruida (${v.name.split('/').pop()})`);

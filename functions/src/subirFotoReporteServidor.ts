@@ -17,7 +17,13 @@ const EXTENSION_POR_TIPO: Record<string, string> = {
 // margen de sobra bajo el límite de payload de Cloud Functions.
 const MAX_BYTES = 4 * 1024 * 1024;
 
-export const subirFotoReporteServidor = onCall({ secrets: R2_SECRETS }, async (request) => {
+export const subirFotoReporteServidor = onCall({
+  secrets: R2_SECRETS,
+  minInstances: 0,
+  maxInstances: 20,
+  cpu: 1,
+  concurrency: 80,
+}, async (request) => {
   const { uid } = await exigirPersonalInterno(
     request,
     "Solo el equipo interno puede subir fotos de reportes."

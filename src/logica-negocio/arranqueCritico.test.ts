@@ -6,9 +6,12 @@ const leer = (ruta: string) => readFileSync(resolve(__dirname, "../..", ruta), "
 
 describe("las funciones críticas no mantienen instancias con costo fijo", () => {
   for (const archivo of ["firmarUrlsR2.ts", "listarReportesCliente.ts"]) {
-    it(`${archivo} escala a cero cuando no se usa`, () => {
+    it(`${archivo} resetea explícitamente la configuración cara heredada`, () => {
       const codigo = leer(`functions/src/${archivo}`);
-      expect(codigo).not.toContain("minInstances");
+      expect(codigo).toContain("minInstances: 0");
+      expect(codigo).toContain("maxInstances: 20");
+      expect(codigo).toContain("cpu: 1");
+      expect(codigo).toContain("concurrency: 80");
       expect(codigo).not.toContain('cpu: "gcf_gen1"');
     });
   }

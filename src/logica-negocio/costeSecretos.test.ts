@@ -16,20 +16,35 @@ import { resolve } from "node:path";
  * aplicación funciona igual de bien. Se descubrió mirando la factura,
  * no por ningún error.
  *
- * Estos tests fijan las dos defensas: no crear versiones que no hacen
- * falta, y destruir las viejas.
+ * Estos tests fijan las defensas: un deploy normal no toca secretos,
+ * una rotación no duplica valores y la poda examina TODAS las páginas
+ * sin destruir una versión que producción tenga fijada.
  */
 
 const script = readFileSync(
   resolve(__dirname, "../../scripts/set-r2-secrets-direct.mjs"),
   "utf-8",
 );
+const workflow = readFileSync(
+  resolve(__dirname, "../../.github/workflows/setup-r2-secrets-and-deploy.yml"),
+  "utf-8",
+);
 
 describe("no se crean versiones de secreto innecesarias", () => {
+  it("un deploy normal no sincroniza ni rota secretos", () => {
+    expect(workflow).toContain("actualizar_secretos:");
+    const paso = workflow.slice(
+      workflow.indexOf("- name: Configurar secrets"),
+      workflow.indexOf("- name:", workflow.indexOf("- name: Configurar secrets") + 10),
+    );
+    expect(paso).toContain("if: ${{ inputs.actualizar_secretos }}");
+  });
+
   it("se compara con el valor actual antes de añadir una versión", () => {
     // Casi siempre se redespliega por el código, no por los secretos.
     expect(script).toContain("versions/latest:access");
-    expect(script).toContain("actual.json?.payload?.data === b64");
+    expect(script).toContain("Buffer.from(actual.json.payload.data, 'base64')");
+    expect(script).toContain("valorActual?.equals(Buffer.from(value, 'utf-8'))");
   });
 
   it("si el valor no cambió, NO se crea versión", () => {
@@ -44,9 +59,10 @@ describe("no se crean versiones de secreto innecesarias", () => {
 });
 
 describe("las versiones viejas se destruyen", () => {
-  it("se listan y se destruyen las que sobran", () => {
+  it("se listan y se destruyen solo con autorización explícita", () => {
     expect(script).toContain("/versions?pageSize=");
     expect(script).toContain(":destroy");
+    expect(script).toContain("DESTRUIR_VERSIONES_OBSOLETAS === 'true'");
   });
 
   it("se destruyen también las DISABLED, que TAMBIÉN se cobran", () => {
@@ -58,34 +74,22 @@ describe("las versiones viejas se destruyen", () => {
     expect(script).not.toContain("v.state === 'ENABLED'");
   });
 
-  it("se conservan DOS, y el motivo está escrito", () => {
-    // Una función fija la versión del secreto al desplegarse, y este
-    // script corre ANTES del redespliegue: con una sola versión, las
-    // funciones ya desplegadas se quedarían sin secreto en esa ventana.
-    expect(script).toContain("VERSIONES_A_CONSERVAR = 2");
-    // El comentario va partido en varias líneas con `*` delante, así que
-    // se normalizan los espacios antes de buscar la frase.
-    const doc = script
-      .slice(0, script.indexOf("const VERSIONES_A_CONSERVAR"))
-      .replace(/\n\s*\*\s*/g, " ")
-      .replace(/\s+/g, " ");
-    expect(doc).toContain("fija la versión del secreto");
-    expect(doc).toContain("plan gratuito cubre 6 versiones");
+  it("recorre todas las páginas, no solo las primeras 100 versiones", () => {
+    expect(script).toContain("nextPageToken");
+    expect(script).toContain("do {");
+    expect(script).toContain("} while (pageToken)");
   });
 
-  it("se conservan algunas para poder volver atrás", () => {
-    const n = Number(/VERSIONES_A_CONSERVAR = (\d+)/.exec(script)![1]);
-    // Con 0 se destruiría la que está en uso; con muchas vuelve el cargo.
-    expect(n).toBeGreaterThanOrEqual(1);
-    expect(n).toBeLessThanOrEqual(5);
-    expect(script).toContain("facturables.slice(VERSIONES_A_CONSERVAR)");
+  it("protege latest y todas las versiones fijadas por Functions", () => {
+    expect(script).toContain("secretEnvironmentVariables");
+    expect(script).toContain("versiones.add(version)");
+    expect(script).toContain("protegidas.add(latest)");
+    expect(script).toContain("!protegidas.has(versionId(v))");
   });
 
-  it("un fallo al limpiar NO tumba el despliegue", () => {
-    // Es higiene de coste, no despliegue. Si Secret Manager responde
-    // mal, los secretos ya están puestos y las funciones deben subir.
-    const bloque = script.slice(script.indexOf("const lista = await call"));
-    expect(bloque).toContain("console.warn");
-    expect(bloque.slice(0, 600)).toContain("continue;");
+  it("si no puede comprobar las referencias de producción, no destruye nada", () => {
+    expect(script).toContain("if (!referenciasProduccion.ok)");
+    expect(script).toContain("referenciasProduccion.ok\n    ? facturables.filter");
+    expect(script).toContain(": [];");
   });
 });

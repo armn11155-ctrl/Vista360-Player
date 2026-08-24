@@ -222,7 +222,7 @@ async function nombreDeCliente(db: FirebaseFirestore.Firestore, clienteId: strin
  * la empresa) -- más fácil de actuar sobre cada uno por separado.
  */
 export const recordatorioReportesMensuales = onSchedule(
-  { schedule: "30 11 * * *", timeZone: "America/Lima" },
+  { schedule: "30 11 * * *", timeZone: "America/Lima", minInstances: 0, maxInstances: 1 },
   async () => {
     const db = getFirestore();
     // El latido va al PRINCIPIO, no al final: lo que se vigila es que la
@@ -300,7 +300,7 @@ export const recordatorioReportesMensuales = onSchedule(
  * notificadas con el sistema viejo.
  */
 export const recordatorioVencimientoCampanas = onSchedule(
-  { schedule: "0 15 * * *", timeZone: "America/Lima" },
+  { schedule: "0 15 * * *", timeZone: "America/Lima", minInstances: 0, maxInstances: 1 },
   async () => {
     const db = getFirestore();
     await latir(db, "recordatorioVencimientoCampanas");
