@@ -177,6 +177,8 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).not.toContain("64px 64px");
     expect(movimiento).not.toContain("mix-blend-mode: screen");
     expect(movimiento).not.toContain("linear-gradient(104deg");
+    expect(movimiento).not.toContain("at 84% 86%");
+    expect(movimiento).not.toContain("at 82% 78%");
     expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
   });
 });
