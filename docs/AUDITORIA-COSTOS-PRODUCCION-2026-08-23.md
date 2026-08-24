@@ -238,10 +238,12 @@ Límites técnicos ya presentes: `maxInstances` global 20, límites más bajos e
 - `npm test`: **78 archivos, 1,207 tests aprobados**;
 - `npm run build`: typecheck + build Vite aprobados;
 - `functions/npm run build`: TypeScript backend aprobado;
+- reglas Firestore: **4 archivos, 107 ataques/pruebas contra el emulador aprobados**;
 - smoke productivo: Functions HTTP/callable arrancan y rechazan correctamente tráfico no autenticado;
 - configuración productiva: ocho Functions `ACTIVE`, todo el tráfico en la última revisión;
 - Secret Manager post-limpieza: cero candidatas no referenciadas;
-- reglas Firestore: la ejecución directa sin emulador falló por ausencia de Java/puerto 8080; el workflow de CI ejecuta `firebase emulators:exec` y debe ser la validación definitiva tras el push.
+
+La primera ejecución de CI descubrió un defecto preexistente del propio test: sembraba cuentas en `vista360-cuentaportal-test`, mientras Firebase Admin respetaba `FIREBASE_CONFIG` del runner y leía `demo-vista360-reglas`. Se unificó el project ID y la suite completa pasó con Java 21 y el emulador real.
 
 No se hicieron pruebas de acciones autenticadas que escriben datos (generar/eliminar reportes, facturas, solicitudes) porque usar cuentas reales sin credenciales de prueba y sin fixtures aislados sí tendría riesgo productivo. La suite cubre autorización, aislamiento y lógica; los smoke tests verificaron el despliegue sin mutar información.
 
@@ -263,8 +265,7 @@ No se hicieron pruebas de acciones autenticadas que escriben datos (generar/elim
 1. **Function huérfana `exportarReportesCombinados`**: no existe en el código actual, no apareció en logs recientes y es la única dependencia de R2 versión 75. Su eliminación fue bloqueada por ser destructiva sin una aprobación específica. Costo directo aproximado: las cuatro versiones extra de R2, **USD 0.24/mes**, más una revisión/servicio residual normalmente sin costo si no recibe tráfico. Procedimiento seguro: confirmar que ningún consumidor externo conserva su URL, exportar configuración, eliminar la Function, inventariar nuevamente referencias y destruir las cuatro versiones 75.
 2. **Tres objetos huérfanos R2**: 7,435 bytes; no compensa borrarlos sin confirmar historial.
 3. **Lifecycle R2**: verificar visualmente en Cloudflare que `_papelera` expire a 30 días; el token de objetos no puede leer administración.
-4. **Reglas Firestore en emulador**: confirmar el workflow verde después del push; localmente falta Java.
-5. **Escala futura**: particionar agregados antes de 250–300 campañas pesadas por cliente; paginar reportes/facturas sobre 200–300 tarjetas; convertir reconciliación y Analítica a agregados incrementales antes de miles de clientes.
+4. **Escala futura**: particionar agregados antes de 250–300 campañas pesadas por cliente; paginar reportes/facturas sobre 200–300 tarjetas; convertir reconciliación y Analítica a agregados incrementales antes de miles de clientes.
 
 ## COSTO MENSUAL ESPERADO
 

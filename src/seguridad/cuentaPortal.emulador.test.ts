@@ -51,8 +51,15 @@ import { resolve } from "node:path";
  * documento.
  */
 
+const PROJECT_ID = process.env.GCLOUD_PROJECT || "demo-vista360-reglas";
 process.env.FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080";
-process.env.GCLOUD_PROJECT = "vista360-cuentaportal-test";
+process.env.GCLOUD_PROJECT = PROJECT_ID;
+// `firebase emulators:exec --project ...` también define FIREBASE_CONFIG.
+// Antes, el cliente sembraba `vista360-cuentaportal-test` mientras Admin
+// respetaba ese FIREBASE_CONFIG y leía `demo-vista360-reglas`: dos namespaces
+// distintos dentro del mismo emulador. Por eso CI decía que todas las fichas
+// recién sembradas "no existían". Una sola fuente de verdad evita el drift.
+process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: PROJECT_ID });
 
 let entorno: RulesTestEnvironment;
 
@@ -75,7 +82,7 @@ function pedidoDe(uid: string | undefined) {
 
 beforeAll(async () => {
   entorno = await initializeTestEnvironment({
-    projectId: "vista360-cuentaportal-test",
+    projectId: PROJECT_ID,
     firestore: {
       rules: readFileSync(resolve(__dirname, "../../firestore.rules"), "utf-8"),
       host: "127.0.0.1",
