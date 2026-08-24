@@ -60,6 +60,14 @@
     <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
 
+    <!-- El permiso de notificaciones pertenece al ORIGEN exacto. Safari
+         puede tener vista360player.pe en "Permitir" y el dominio técnico
+         de Cloudflare en "No permitir". Este script bloqueante redirige el
+         dominio técnico antes de arrancar React/Firebase, para que sesión,
+         Service Worker y campana vivan siempre en el dominio oficial. -->
+    <link rel="canonical" href="https://vista360player.pe/" />
+    <script src="/canonical-host.js"></script>
+
     <title>Vista360 Player</title>
   </head>
   <body>

@@ -32,6 +32,12 @@
 /sw.js
   Cache-Control: public, max-age=0, must-revalidate
 
+# Redirección temprana del dominio técnico al dominio oficial. No debe
+# quedar una versión vieja en caché porque controla el origen donde viven
+# la sesión, el Service Worker y el permiso de notificaciones.
+/canonical-host.js
+  Cache-Control: public, max-age=0, must-revalidate
+
 # Iconos/imagenes estaticas sueltas (no llevan hash de contenido, a
 # diferencia de /assets/*) -- antes esto cacheaba 24h fijas, y cada vez
 # que se reemplazaba un PNG (icono, logo, pin del mapa) la gente seguia

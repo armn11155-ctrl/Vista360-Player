@@ -59,7 +59,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // ese componente y se repetía el registro. Ahora es un solo lugar
   // fijo, ligado a la cuenta del admin, sin importar qué cliente esté
   // viendo (o si no está viendo ninguno).
-  const { estado: estadoPush, activar: activarPush } = usePushEstado(uid);
+  const { estado: estadoPush, error: errorPush, activar: activarPush } = usePushEstado(uid);
   // Una sola fuente para la lista Y el contador de campañas activas:
   // los dos salen del mismo documento agregado, así que no hay dos
   // consultas ni pueden desincronizarse entre sí.
@@ -297,20 +297,23 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </button>
         )}
       </div>
-      {(estadoPush === "ofrecer" || estadoPush === "activando" || estadoPush === "bloqueado") && (
+      {(estadoPush === "ofrecer" || estadoPush === "activando" || estadoPush === "bloqueado" || estadoPush === "error") && (
         <button
           type="button"
           className="admin-picker-push-btn"
           onClick={() => activarPush(uid)}
           disabled={estadoPush === "activando"}
           aria-label="Activar notificaciones"
+          title={estadoPush === "bloqueado"
+            ? "Permite las notificaciones para el dominio oficial desde los ajustes del navegador."
+            : errorPush || "Activar notificaciones"}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
           <span>
-            {estadoPush === "activando" ? "Activando…" : estadoPush === "bloqueado" ? "Bloqueado" : "Activar"}
+            {estadoPush === "activando" ? "Comprobando…" : estadoPush === "bloqueado" ? "Desbloquear" : estadoPush === "error" ? "Reintentar" : "Activar"}
           </span>
         </button>
       )}

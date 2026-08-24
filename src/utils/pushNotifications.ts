@@ -4,6 +4,13 @@ import { env } from "../config/env";
 
 export type ActivarPushResultado = { ok: true } | { ok: false; error: string };
 
+interface ActivarPushOpciones {
+  /** La confirmación se manda únicamente cuando la persona acaba de
+   *  activar el permiso. Las renovaciones silenciosas del token no deben
+   *  generar una notificación nueva cada semana. */
+  confirmar?: boolean;
+}
+
 /**
  * Notificaciones push (Firebase Cloud Messaging) -- avisan al cliente
  * aunque no tenga la app abierta (campaña por vencer, reporte nuevo,
@@ -33,19 +40,21 @@ export function pushDisponible(): Promise<boolean> {
 }
 
 const CLAVE_TOKEN_REGISTRADO = "vista360_push_token_registrado";
+const VIGENCIA_REGISTRO_MS = 7 * 24 * 60 * 60 * 1000;
+const activacionesEnCurso = new Map<string, Promise<ActivarPushResultado>>();
 
-/** true si YA se registró el token de push para esta cuenta en este
- *  mismo navegador -- evita repetir el registro (y el push de
- *  confirmación "Notificaciones activadas") en cada re-montaje del
- *  componente. Esto pasaba, por ejemplo, en modo administrador: cada
- *  vez que se entraba a ver un cliente distinto, el árbol de
- *  componentes se volvía a montar, así que el registro "silencioso"
- *  (permiso ya concedido de antes) se repetía de cero y mandaba el
- *  push de bienvenida una y otra vez, aunque ya estuviera todo
- *  activado hace rato. */
+/** true si el token se confirmó recientemente para esta cuenta en este
+ *  navegador. Antes se guardaba el texto "1" para siempre: si Firebase
+ *  rotaba el token o el servidor retiraba uno inválido, la app nunca lo
+ *  registraba de nuevo y aun así mostraba la campana como activa. */
 export function yaRegistradoEnEsteNavegador(uid: string): boolean {
   try {
-    return localStorage.getItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`) === "1";
+    const registradoEn = Number(localStorage.getItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`));
+    const ahora = Date.now();
+    return Number.isFinite(registradoEn)
+      && registradoEn > 0
+      && registradoEn <= ahora + 5 * 60 * 1000
+      && ahora - registradoEn < VIGENCIA_REGISTRO_MS;
   } catch {
     return false;
   }
@@ -53,14 +62,33 @@ export function yaRegistradoEnEsteNavegador(uid: string): boolean {
 
 function marcarRegistradoEnEsteNavegador(uid: string) {
   try {
-    localStorage.setItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`, "1");
+    localStorage.setItem(`${CLAVE_TOKEN_REGISTRADO}:${uid}`, String(Date.now()));
   } catch {
     // sin problema si no se pudo guardar -- en el peor caso se repite
   }
 }
 
-export async function activarNotificacionesPush(uid: string): Promise<ActivarPushResultado> {
+function esperarServiceWorker(): Promise<ServiceWorkerRegistration> {
+  return new Promise((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      reject(new Error("El servicio de notificaciones no terminó de iniciar. Recarga la página e inténtalo otra vez."));
+    }, 12_000);
+    navigator.serviceWorker.ready.then(
+      (registro) => {
+        window.clearTimeout(timeout);
+        resolve(registro);
+      },
+      (error) => {
+        window.clearTimeout(timeout);
+        reject(error);
+      },
+    );
+  });
+}
+
+async function activarNotificacionesPushInterno(uid: string, opciones: ActivarPushOpciones): Promise<ActivarPushResultado> {
   if (!app) return { ok: false, error: "Firebase no está configurado." };
+  if (!cloudFunctions) return { ok: false, error: "El servicio de notificaciones no está disponible." };
   if (!env.vapidKey) return { ok: false, error: "Las notificaciones push aún no están configuradas." };
 
   try {
@@ -83,7 +111,7 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
     const soportado = await pushDisponible();
     if (!soportado) return { ok: false, error: "Tu navegador no soporta notificaciones push." };
 
-    const registro = await navigator.serviceWorker.ready;
+    const registro = await esperarServiceWorker();
     const { getMessaging, getToken } = await import("firebase/messaging");
     const messaging = getMessaging(app);
     const token = await getToken(messaging, { vapidKey: env.vapidKey, serviceWorkerRegistration: registro });
@@ -98,17 +126,15 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
     // dejan a una cuenta de portal escribir su propio documento. Mismo
     // problema ya documentado y resuelto igual en otras partes de este
     // proyecto (ver administrarClienteAdmin.ts).
-    if (cloudFunctions) {
-      const guardarToken = httpsCallable<{ token: string }, { ok: boolean }>(cloudFunctions, "guardarTokenPush");
-      await guardarToken({ token });
-    }
+    const guardarToken = httpsCallable<{ token: string }, { ok: boolean }>(cloudFunctions, "guardarTokenPush");
+    await guardarToken({ token });
 
     // Confirmación de que quedó activado, mandada como push de verdad
     // (no solo texto en pantalla) -- prueba que todo el camino
     // funciona de punta a punta. Si falla (red, etc.) no revierte la
     // activación -- el token ya quedó guardado, solo no llegó el
     // aviso de bienvenida esta vez.
-    if (cloudFunctions) {
+    if (opciones.confirmar) {
       // Le pasa el token de ESTE dispositivo -- sin esto, la Cloud
       // Function no sabe cuál es "el que se acaba de activar" y termina
       // mandando la confirmación a TODOS los dispositivos de la cuenta
@@ -120,8 +146,26 @@ export async function activarNotificacionesPush(uid: string): Promise<ActivarPus
     marcarRegistradoEnEsteNavegador(uid);
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "No se pudo activar las notificaciones." };
+    const mensaje = err instanceof Error ? err.message : "";
+    if (/permission[-_ ]?blocked|permission[-_ ]?denied|notifications?.*blocked/i.test(mensaje)) {
+      return { ok: false, error: "El navegador todavía tiene bloqueadas las notificaciones para este sitio." };
+    }
+    return { ok: false, error: mensaje || "No se pudo activar las notificaciones." };
   }
+}
+
+/** Activa o renueva el registro push. Las dos instancias del hook que
+ *  conviven en Inicio y App comparten la misma promesa: así nunca hacen
+ *  dos escrituras ni dos solicitudes de token al mismo tiempo. */
+export function activarNotificacionesPush(uid: string, opciones: ActivarPushOpciones = {}): Promise<ActivarPushResultado> {
+  const existente = activacionesEnCurso.get(uid);
+  if (existente) return existente;
+
+  const tarea = activarNotificacionesPushInterno(uid, opciones).finally(() => {
+    if (activacionesEnCurso.get(uid) === tarea) activacionesEnCurso.delete(uid);
+  });
+  activacionesEnCurso.set(uid, tarea);
+  return tarea;
 }
 
 /** true si el navegador ya bloqueó/dio permiso antes -- para no

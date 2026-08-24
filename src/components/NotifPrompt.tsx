@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import type { EstadoPush } from "../hooks/usePushEstado";
-import { esMovil, navegadorEscritorio } from "../utils/dispositivo";
+import { esMovil, pasosDesbloqueoNotificacionesEscritorio } from "../utils/dispositivo";
 
 interface Rect {
   top: number;
@@ -39,32 +39,6 @@ interface Props {
  *  cambia desde la configuración del propio navegador (candado/ícono
  *  junto a la dirección de la página). Varía un poco el nombre exacto
  *  según el navegador, así que se ajusta el texto al detectado. */
-function pasosDesbloqueoEscritorio(): string[] {
-  const navegador = navegadorEscritorio();
-  if (navegador === "safari") {
-    return [
-      "Abre el menú Safari (arriba a la izquierda) y entra a \"Ajustes\" (o \"Preferencias\").",
-      "Ve a la pestaña \"Sitios web\" y elige \"Notificaciones\" en la lista de la izquierda.",
-      "Busca este sitio en la lista de la derecha y cambia su menú a \"Permitir\".",
-      "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
-    ];
-  }
-  if (navegador === "firefox") {
-    return [
-      "Haz clic en el candado junto a la dirección de esta página.",
-      "Abre \"Más información\" > \"Permisos\" y cambia Notificaciones a \"Permitir\".",
-      "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
-    ];
-  }
-  // Chrome, Edge y el resto de navegadores basados en Chromium usan el
-  // mismo ícono y flujo -- se deja como caso general.
-  return [
-    "Haz clic en el candado (o el ícono junto a la dirección) de esta página.",
-    "Busca \"Notificaciones\" y cámbialo a \"Permitir\".",
-    "Vuelve a esta pestaña -- se detecta solo, sin recargar.",
-  ];
-}
-
 export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, activarPush, onClose }: Props) {
   const [intentado, setIntentado] = useState(false);
   const [rect, setRect] = useState<Rect | null>(null);
@@ -100,15 +74,12 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
 
   // Una vez que se activó de verdad, se cierra solo (con una pequeña
   // pausa para que se alcance a leer el "Notificaciones activadas").
-  // Si hubo un error técnico también se cierra -- el permiso ya quedó
-  // concedido en el navegador aunque haya fallado el guardado del
-  // token, así que la próxima vez que entre ya se detecta como
-  // "activado" (ver usePushEstado). Pero si el navegador BLOQUEÓ el
-  // permiso (le dieron "No permitir"), a propósito NO se cierra solo
-  // -- pedido explícito: mientras no esté realmente activado, la app
-  // se queda en el foco de luz. Recién se libera solo cuando vuelva a
-  // entrar habiendo cambiado el permiso a mano en los ajustes del
-  // teléfono (ahí sí se detecta "granted" y ya ni se monta este aviso).
+  // Si el intento explícito tuvo un error técnico se alcanza a mostrar
+  // el mensaje y se cierra; la campana NO se pinta como activa hasta que
+  // el token quede confirmado (ver usePushEstado). Si el navegador
+  // bloqueó el permiso, el aviso permanece con las instrucciones. En
+  // laptop se puede cerrarlo con "configurarlo después" para no impedir
+  // el resto del trabajo; en móvil continúa siendo obligatorio.
   useEffect(() => {
     // "activado" se cierra solo SIN importar si el tap pasó en esta
     // sesión ("intentado") -- antes esto exigía "intentado", pero
@@ -129,16 +100,6 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
     // "intentado" siempre va a ser true de todos modos.
     if (intentado && estadoPush === "error") {
       const t = window.setTimeout(onClose, 1800);
-      return () => window.clearTimeout(t);
-    }
-    // "bloqueado" en COMPUTADORA ya no es obligatorio (pedido
-    // explícito) -- si el bloqueo pasa a mitad de esta misma sesión
-    // (tocó el botón y le dio "No permitir"), igual se deja seguir
-    // usando la app después de leer el mensaje. En celular NO se
-    // cierra -- ahí sigue siendo obligatorio hasta activarlo de
-    // verdad.
-    if (estadoPush === "bloqueado" && !esMovil()) {
-      const t = window.setTimeout(onClose, intentado ? 2500 : 300);
       return () => window.clearTimeout(t);
     }
   }, [intentado, estadoPush, onClose]);
@@ -271,7 +232,7 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
               </ol>
             ) : (
               <ol style={{ margin: 0, padding: "0 0 0 18px", fontSize: 12, color: "rgba(226,232,240,.85)", lineHeight: 1.6 }}>
-                {pasosDesbloqueoEscritorio().map((paso) => (
+                {pasosDesbloqueoNotificacionesEscritorio().map((paso) => (
                   <li key={paso}>{paso}</li>
                 ))}
               </ol>
@@ -279,6 +240,19 @@ export default function NotifPrompt({ uid, targetRef, estadoPush, errorPush, act
             <div style={{ fontSize: 11, color: "rgba(226,232,240,.6)", marginTop: 8, lineHeight: 1.4 }}>
               Apenas lo actives, se detecta solo (no hace falta recargar más de una vez) y te llega un aviso confirmando que quedó listo.
             </div>
+            {!esMovil() && (
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  marginTop: 12, width: "100%", border: "1px solid rgba(147,197,253,.28)",
+                  borderRadius: 10, padding: "8px 10px", background: "rgba(255,255,255,.06)",
+                  color: "#fff", fontSize: 11, fontWeight: 800, cursor: "pointer",
+                }}
+              >
+                Continuar y configurarlo después
+              </button>
+            )}
           </div>
         )}
       </div>

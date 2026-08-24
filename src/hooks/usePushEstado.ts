@@ -30,31 +30,53 @@ export function usePushEstado(uid?: string) {
   const [estado, setEstado] = useState<EstadoPush>("oculto");
   const [error, setError] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
+  const [revisionPermiso, setRevisionPermiso] = useState(0);
 
   useEffect(() => {
+    let cancelado = false;
     const permiso = estadoPermisoNotificaciones();
     if (permiso === "granted") {
-      setEstado("activado");
-      // Solo se registra/reconfirma UNA vez por cuenta+navegador -- si
-      // no, cada vez que este componente se vuelve a montar (por
-      // ejemplo, admin entrando a ver un cliente distinto) se repetía
-      // el registro silencioso y el push de "Notificaciones activadas"
-      // se mandaba de nuevo cada vez, aunque ya estuviera todo activo.
-      if (uid && !yaRegistradoEnEsteNavegador(uid)) void activarNotificacionesPush(uid);
-      return;
+      if (!uid || yaRegistradoEnEsteNavegador(uid)) {
+        setError("");
+        setEstado("activado");
+        return () => { cancelado = true; };
+      }
+
+      // El permiso por sí solo no garantiza que exista un token válido.
+      // Primero se reconfirma silenciosamente con Firebase y recién
+      // después se pinta la campana como activa.
+      setError("");
+      setEstado("activando");
+      void activarNotificacionesPush(uid, { confirmar: false }).then((res) => {
+        if (cancelado) return;
+        if (res.ok) {
+          setEstado("activado");
+        } else if (estadoPermisoNotificaciones() === "denied") {
+          setError(res.error);
+          setEstado("bloqueado");
+        } else {
+          setError(res.error);
+          setEstado("error");
+        }
+      });
+      return () => { cancelado = true; };
     }
-    if (permiso === "denied") { setEstado("bloqueado"); return; }
-    let cancelado = false;
+    if (permiso === "denied") {
+      setEstado("bloqueado");
+      setError("El navegador bloqueó las notificaciones para este sitio.");
+      return () => { cancelado = true; };
+    }
     pushDisponible().then((disponible) => {
       if (cancelado) return;
       if (disponible) {
+        setError("");
         setEstado("ofrecer");
       } else {
         void diagnosticoPush().then((d) => { if (!cancelado) setDiagnostico(d); });
       }
     });
     return () => { cancelado = true; };
-  }, [uid]);
+  }, [uid, revisionPermiso]);
 
   // El permiso de Notification es por SITIO, así que si la persona lo
   // cambia desde AFUERA de la app (ajustes del navegador o del
@@ -67,22 +89,7 @@ export function usePushEstado(uid?: string) {
   useEffect(() => {
     function revisarAlVolver() {
       if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
-      setEstado((anterior) => {
-        if (anterior === "activando") return anterior; // no pisar un intento en curso
-        const permiso = estadoPermisoNotificaciones();
-        if (permiso === "granted") {
-          if (anterior !== "activado" && uid && !yaRegistradoEnEsteNavegador(uid)) {
-            void activarNotificacionesPush(uid);
-          }
-          return "activado";
-        }
-        if (permiso === "denied") return "bloqueado";
-        // "default" de nuevo -- si antes estaba bloqueado y lo
-        // reiniciaron a mano, se vuelve a ofrecer el botón de activar
-        // en vez de quedar pegado en "bloqueado" para siempre.
-        if (anterior === "bloqueado") return "ofrecer";
-        return anterior;
-      });
+      setRevisionPermiso((n) => n + 1);
     }
     document.addEventListener("visibilitychange", revisarAlVolver);
     window.addEventListener("focus", revisarAlVolver);
@@ -90,13 +97,28 @@ export function usePushEstado(uid?: string) {
       document.removeEventListener("visibilitychange", revisarAlVolver);
       window.removeEventListener("focus", revisarAlVolver);
     };
-  }, [uid]);
+  }, []);
+
+  // El menú de permisos del candado/ícono de Safari o Chrome puede
+  // abrirse sin que la pestaña pierda el foco. En ese caso no llega
+  // ningún evento al volver y el antiguo estado "bloqueado" quedaba
+  // pegado hasta recargar. Mientras esté bloqueado se consulta la
+  // propiedad local (sin red) y se reevalúa apenas cambie.
+  useEffect(() => {
+    if (estado !== "bloqueado") return;
+    const id = window.setInterval(() => {
+      if (estadoPermisoNotificaciones() !== "denied") {
+        setRevisionPermiso((n) => n + 1);
+      }
+    }, 1_200);
+    return () => window.clearInterval(id);
+  }, [estado]);
 
   async function activar(uidParam?: string) {
     if (!uidParam) return;
     setEstado("activando");
     setError("");
-    const res = await activarNotificacionesPush(uidParam);
+    const res = await activarNotificacionesPush(uidParam, { confirmar: true });
     if (res.ok) {
       setEstado("activado");
     } else if (estadoPermisoNotificaciones() === "denied") {

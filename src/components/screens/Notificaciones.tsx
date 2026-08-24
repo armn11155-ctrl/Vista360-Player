@@ -4,6 +4,7 @@ import BackChevron from "../BackChevron";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
 import { usePushEstado } from "../../hooks/usePushEstado";
 import { useSolicitudesDelCliente } from "../../hooks/useContratos";
+import { esMovil, pasosDesbloqueoNotificacionesEscritorio } from "../../utils/dispositivo";
 
 interface Props {
   clienteId: string;
@@ -144,6 +145,25 @@ export default function Notificaciones({ clienteId, contratos, uid, onBack }: Pr
           }}>
             Notificaciones push no disponibles en este dispositivo.<br />
             Info para soporte: {diagnostico}
+          </div>
+        )}
+
+        {estadoPush === "bloqueado" && (
+          <div className="card" style={{ marginBottom: 12, border: "1px solid #BFDBFE", background: "#F8FBFF" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#0D1629" }}>Permiso bloqueado</div>
+            <div style={{ fontSize: 12, color: "#475569", marginTop: 4, lineHeight: 1.45 }}>
+              Vista360 no puede cambiar este permiso por seguridad del navegador. {esMovil()
+                ? "Ábrelo en Ajustes > Notificaciones > Vista360 Player y activa Permitir notificaciones."
+                : "Para recuperarlo en esta laptop:"}
+            </div>
+            {!esMovil() && (
+              <ol style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12, color: "#334155", lineHeight: 1.55 }}>
+                {pasosDesbloqueoNotificacionesEscritorio().map((paso) => <li key={paso}>{paso}</li>)}
+              </ol>
+            )}
+            <div style={{ marginTop: 8, fontSize: 11, color: "#0877FF", fontWeight: 700 }}>
+              No necesitas recargar: la campana se habilitará al detectar “Permitir”.
+            </div>
           </div>
         )}
 

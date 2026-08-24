@@ -38,7 +38,6 @@ import Inicio from "./components/screens/Inicio";
 
 import { debeVerOnboarding } from "./utils/onboarding";
 import { usePushEstado } from "./hooks/usePushEstado";
-import { esMovil } from "./utils/dispositivo";
 import { useRegistrarAcceso } from "./hooks/useRegistrarAcceso";
 import { useRegistrarVisita } from "./hooks/useRegistrarVisita";
 import { useNotificaciones } from "./hooks/useNotificaciones";
@@ -753,9 +752,9 @@ function AuthenticatedApp({
   // flag persistido -- se prende cuando el push pasa a "ofrecer" (se
   // puede ofrecer y todavía no se decidió) O "bloqueado" (el navegador
   // ya lo tiene rechazado) -- en ambos casos hay que seguir mostrando
-  // el aviso; solo se apaga cuando el propio NotifPrompt llama a
-  // onClose (esto ahora solo pasa si de verdad quedó "activado", ver
-  // NotifPrompt.tsx). Se mantiene "enganchado" (abierto) una vez que se
+  // el aviso; se apaga cuando quedó activado o, solo en laptop, cuando
+  // la persona decide configurarlo después. Se mantiene "enganchado"
+  // (abierto) una vez que se
   // prende para que no desaparezca de golpe apenas se toca el botón y
   // el estado pasa de "ofrecer" a "activando" a mitad de camino.
   //
@@ -766,19 +765,15 @@ function AuthenticatedApp({
   // entrar a la app sin haber aceptado nunca; y si volvía a entrar más
   // tarde (celular ya bloqueado desde antes), tampoco se volvía a
   // mostrar nada porque el efecto de abajo solo miraba "ofrecer".
-  // "bloqueado" en COMPUTADORA ya no es obligatorio -- pedido
-  // explícito: los pasos para desbloquear varían mucho entre
-  // navegadores/versiones de escritorio (ya hubo un caso real con
-  // instrucciones de Safari que no aplicaban), y si salen mal la
-  // persona se queda sin poder ni entrar a la app. En celular sí
-  // sigue siendo obligatorio -- ahí los pasos son siempre los mismos
-  // (Ajustes del sistema) y son confiables.
+  // En computadora también se explica el desbloqueo, pero el aviso trae
+  // una salida explícita para continuar sin activarlo. En celular sigue
+  // siendo obligatorio y se dirige a Ajustes del sistema.
   const [notifPromptAbierto, setNotifPromptAbierto] = useState(false);
   useEffect(() => {
     if (mostrarOnboarding) return;
     if (pushEstadoGlobal.estado === "ofrecer") {
       setNotifPromptAbierto(true);
-    } else if (pushEstadoGlobal.estado === "bloqueado" && esMovil()) {
+    } else if (pushEstadoGlobal.estado === "bloqueado") {
       setNotifPromptAbierto(true);
     }
   }, [mostrarOnboarding, pushEstadoGlobal.estado]);

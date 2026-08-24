@@ -23,3 +23,27 @@ export function navegadorEscritorio(): NavegadorEscritorio {
   if (/Safari\//.test(ua)) return "safari";
   return "otro";
 }
+
+/** Pasos breves para recuperar un permiso bloqueado en una laptop. */
+export function pasosDesbloqueoNotificacionesEscritorio(): string[] {
+  const navegador = navegadorEscritorio();
+  if (navegador === "safari") {
+    return [
+      "Abre Safari > Ajustes > Sitios web.",
+      "Entra a Notificaciones, busca este sitio y elige Permitir.",
+      "Vuelve a esta pestaña; Vista360 lo detectará automáticamente.",
+    ];
+  }
+  if (navegador === "firefox") {
+    return [
+      "Haz clic en el candado junto a la dirección.",
+      "Abre Más información > Permisos y permite Notificaciones.",
+      "Vuelve a esta pestaña; Vista360 lo detectará automáticamente.",
+    ];
+  }
+  return [
+    "Haz clic en el candado o ícono junto a la dirección.",
+    "Cambia Notificaciones a Permitir.",
+    "Vuelve a esta pestaña; Vista360 lo detectará automáticamente.",
+  ];
+}

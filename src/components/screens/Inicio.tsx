@@ -157,13 +157,16 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                 disabled={estadoPush === "activando"}
                 className="inicio-activar-push-btn"
                 aria-label="Activar notificaciones"
+                title={estadoPush === "bloqueado"
+                  ? "Permite las notificaciones para el dominio oficial desde los ajustes del navegador."
+                  : errorPush || "Activar notificaciones"}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
                 <span>
-                  {estadoPush === "activando" ? "Activando…" : estadoPush === "bloqueado" ? "Bloqueado" : "Activar"}
+                  {estadoPush === "activando" ? "Comprobando…" : estadoPush === "bloqueado" ? "Desbloquear" : estadoPush === "error" ? "Reintentar" : "Activar"}
                 </span>
               </button>
             ) : (
