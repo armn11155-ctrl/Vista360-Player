@@ -173,7 +173,9 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).toContain("v360-transition-atmosphere");
     expect(movimiento).toContain("translate3d(-105%, 0, 0)");
     expect(movimiento).not.toContain('url("/icon-192.png")');
-    expect(movimiento).toContain("mix-blend-mode: screen");
+    expect(movimiento).toContain('url("/logo-player.webp")');
+    expect(movimiento).not.toContain("64px 64px");
+    expect(movimiento).not.toContain("mix-blend-mode: screen");
     expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
   });
 });
