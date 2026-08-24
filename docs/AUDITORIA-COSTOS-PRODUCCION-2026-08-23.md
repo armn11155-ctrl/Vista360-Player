@@ -8,7 +8,7 @@ Proyecto: `base-de-datos-vista360`
 
 El cargo de Secret Manager no era una consecuencia normal del uso de la aplicación. El workflow de backend añadía una versión de cada secreto en cada ejecución y su primera corrección solo examinaba la primera página de 100 versiones. Cuatro secretos R2 llegaron a 178 versiones y quedaron 324 versiones facturables en total.
 
-Se desplegó la corrección acotada, se inventariaron las 59 Functions antes de destruir nada y se destruyeron 314 versiones que ninguna Function activa referenciaba. Quedan 10 versiones activas: las seis actuales y cuatro copias de R2 en la versión 75 que todavía necesita una Function huérfana. El costo futuro de Secret Manager baja de unos USD 19.08/mes a USD 0.24/mes. Eliminar de forma segura esa Function y luego las cuatro versiones 75 llevaría el servicio a USD 0.
+Se desplegó la corrección acotada y se inventariaron las 59 Functions antes de destruir nada. Primero se destruyeron 314 versiones que ninguna Function activa referenciaba. Después se respaldó toda la configuración e IAM de `exportarReportesCombinados`, se demostró que el código había sido revertido y que no tenía solicitudes HTTP en 90 días, y se retiró esa Function huérfana. Solo entonces se destruyeron sus cuatro versiones R2 `75`. Quedan exactamente seis versiones activas —una actual por secreto— y ninguna versión facturable sin referencia. En total se retiraron 318 versiones antiguas y Secret Manager queda dentro de su cuota gratuita.
 
 El segundo cargo era Cloud Run Functions. `firmarUrlsR2` conservaba CPU/configuración heredada y concurrencia 1 después de un experimento revertido en el código, por lo que solicitudes simultáneas levantaban varias instancias. En agosto acumuló aproximadamente 38,961 segundos de tiempo facturable. Se restableció producción a `minInstances=0`, CPU 1, concurrencia 80 y todo el tráfico en la última revisión.
 
@@ -18,7 +18,7 @@ Con el volumen actual, Firestore, R2, Artifact Registry, Logging, Cloud Storage,
 
 | Servicio | Costo actual aproximado | Causa verificada | Cambio realizado | Costo esperado después |
 | --- | ---: | --- | --- | ---: |
-| Secret Manager | USD 15–16 observado en agosto; ritmo completo ~USD 19.08/mes | 324 versiones `ENABLED`; creación en cada workflow y paginación incompleta | Rotación opt-in, comparación de valor, paginación total, protección de referencias y destrucción de 314 versiones | **USD 0.24/mes** hasta retirar la Function huérfana; luego **USD 0** |
+| Secret Manager | USD 15–16 observado en agosto; ritmo completo ~USD 19.08/mes | 324 versiones `ENABLED`; creación en cada workflow y paginación incompleta | Rotación opt-in, comparación de valor, paginación total, protección de referencias, retiro de una Function huérfana y destrucción de 318 versiones | **USD 0** dentro de las seis versiones gratuitas |
 | Firestore | ~USD 0 | 47,392 lecturas, 2,384 escrituras y 102 borrados del 1 al 24 de agosto; todo dentro de cuota | Auditoría de listeners, límites, cachés y agregados; se mantienen pruebas de regresión | **USD 0** con uso actual |
 | Firestore PITR/backups | < USD 0.01 | PITR de 7 días sobre ~333,616 bytes; 0 backups y 0 schedules | PITR conservado; no se inventaron backups duplicados | **< USD 0.01** |
 | Cloud Run Functions | ~USD 1 en agosto | Concurrencia 1/configuración heredada y despliegues repetidos; `firmarUrlsR2` dominó el tiempo facturable | `minInstances=0`, concurrencia 80, topes por función y deploy acotado | **USD 0** dentro de cuota gratuita; dependiente de tráfico real |
@@ -43,10 +43,10 @@ Estado antes de la limpieza:
 | Secreto | Versiones facturables antes | Versiones protegidas actuales | Versiones destruidas ahora |
 | --- | ---: | --- | ---: |
 | `CRON_SYNC_SECRET` | 2 | 60 | 1 |
-| `R2_ACCESS_KEY_ID` | 80 | 75, 178 | 78 |
-| `R2_ACCOUNT_ID` | 80 | 75, 178 | 78 |
-| `R2_BUCKET` | 80 | 75, 178 | 78 |
-| `R2_SECRET_ACCESS_KEY` | 80 | 75, 178 | 78 |
+| `R2_ACCESS_KEY_ID` | 80 | 178 | 79 |
+| `R2_ACCOUNT_ID` | 80 | 178 | 79 |
+| `R2_BUCKET` | 80 | 178 | 79 |
+| `R2_SECRET_ACCESS_KEY` | 80 | 178 | 79 |
 | `RESEND_API_KEY` | 2 | 45 | 1 |
 
 Defensas nuevas:
@@ -59,7 +59,7 @@ Defensas nuevas:
 - si no se puede leer producción, la poda falla cerrada y no destruye nada;
 - una prueba automática fija cada una de estas garantías.
 
-Según [Secret Manager Pricing](https://cloud.google.com/secret-manager/pricing), se cobran las versiones activas y las primeras seis están incluidas. Diez activas dejan cuatro sobre la cuota: `4 × USD 0.06 = USD 0.24/mes`.
+Según [Secret Manager Pricing](https://cloud.google.com/secret-manager/pricing), se cobran las versiones activas y las primeras seis están incluidas. El inventario final tiene exactamente seis versiones `ENABLED`, todas referenciadas por producción, por lo que el almacenamiento de versiones queda en **USD 0/mes** dentro de la cuota actual.
 
 ## 2. Firestore
 
@@ -235,13 +235,16 @@ Límites técnicos ya presentes: `maxInstances` global 20, límites más bajos e
 
 ## 10. Verificaciones ejecutadas
 
-- `npm test`: **78 archivos, 1,207 tests aprobados**;
+- `npm test`: **81 archivos, 1,215 tests aprobados**;
 - `npm run build`: typecheck + build Vite aprobados;
 - `functions/npm run build`: TypeScript backend aprobado;
 - reglas Firestore: **4 archivos, 107 ataques/pruebas contra el emulador aprobados**;
 - smoke productivo: Functions HTTP/callable arrancan y rechazan correctamente tráfico no autenticado;
-- configuración productiva: ocho Functions `ACTIVE`, todo el tráfico en la última revisión;
-- Secret Manager post-limpieza: cero candidatas no referenciadas;
+- configuración productiva: **58 de 58 Functions `ACTIVE`** después de retirar la huérfana;
+- `exportarReportesCombinados`: `404 NOT_FOUND` tanto en inventario como en su endpoint;
+- smoke productivo final: frontend `200`; rutas de reportes/R2 `401` sin autenticación y sincronización `405` por GET, respuestas de seguridad esperadas;
+- Secret Manager post-limpieza: seis versiones facturables, las seis referenciadas y cero candidatas antiguas;
+- logs post-eliminación: cero errores nuevos de Cloud Run;
 
 La primera ejecución de CI descubrió un defecto preexistente del propio test: sembraba cuentas en `vista360-cuentaportal-test`, mientras Firebase Admin respetaba `FIREBASE_CONFIG` del runner y leía `demo-vista360-reglas`. Se unificó el project ID y la suite completa pasó con Java 21 y el emulador real.
 
@@ -250,7 +253,9 @@ No se hicieron pruebas de acciones autenticadas que escriben datos (generar/elim
 ## CORREGIDO
 
 - causa raíz y paginación de Secret Manager;
-- 314 versiones facturables destruidas de forma protegida;
+- 318 versiones facturables destruidas de forma protegida;
+- configuración e IAM de `exportarReportesCombinados` respaldados antes de retirarla;
+- Function huérfana eliminada y sus cuatro versiones R2 `75` destruidas solo después de comprobar cero referencias;
 - deploy normal separado de rotación de secretos;
 - concurrencia/escalado de las rutas R2 de mayor uso;
 - topes de cron y sincronización;
@@ -262,13 +267,10 @@ No se hicieron pruebas de acciones autenticadas que escriben datos (generar/elim
 
 ## PENDIENTE
 
-1. **Function huérfana `exportarReportesCombinados`**: no existe en el código actual, no apareció en logs recientes y es la única dependencia de R2 versión 75. Su eliminación fue bloqueada por ser destructiva sin una aprobación específica. Costo directo aproximado: las cuatro versiones extra de R2, **USD 0.24/mes**, más una revisión/servicio residual normalmente sin costo si no recibe tráfico. Procedimiento seguro: confirmar que ningún consumidor externo conserva su URL, exportar configuración, eliminar la Function, inventariar nuevamente referencias y destruir las cuatro versiones 75.
-2. **Tres objetos huérfanos R2**: 7,435 bytes; no compensa borrarlos sin confirmar historial.
-3. **Lifecycle R2**: verificar visualmente en Cloudflare que `_papelera` expire a 30 días; el token de objetos no puede leer administración.
-4. **Escala futura**: particionar agregados antes de 250–300 campañas pesadas por cliente; paginar reportes/facturas sobre 200–300 tarjetas; convertir reconciliación y Analítica a agregados incrementales antes de miles de clientes.
+1. **Tres objetos huérfanos R2**: 7,435 bytes; no compensa borrarlos sin confirmar historial.
+2. **Lifecycle R2**: verificar visualmente en Cloudflare que `_papelera` expire a 30 días; el token de objetos no puede leer administración.
+3. **Escala futura**: particionar agregados antes de 250–300 campañas pesadas por cliente; paginar reportes/facturas sobre 200–300 tarjetas; convertir reconciliación y Analítica a agregados incrementales antes de miles de clientes.
 
 ## COSTO MENSUAL ESPERADO
 
-Con el uso real actual: **USD 0.24–0.30/mes** en Google Cloud, compuesto casi enteramente por las cuatro versiones R2 que protege la Function huérfana y una fracción de centavo de PITR. Cloud Run, Firestore operativo, Scheduler, Logging, Artifact Registry y Storage deberían permanecer en USD 0 mientras se mantengan dentro de sus cuotas.
-
-Después de retirar de forma aprobada la Function huérfana y las cuatro versiones 75: **USD 0.00–0.01/mes** esperado, conservando PITR, seguridad y toda la funcionalidad activa.
+Con el uso real actual, después de retirar la Function huérfana y las cuatro versiones `75`: **USD 0.00–0.01/mes** esperado, conservando PITR, seguridad y toda la funcionalidad activa. Secret Manager queda en USD 0 dentro de sus seis versiones incluidas; la única fracción estimada corresponde principalmente a PITR.

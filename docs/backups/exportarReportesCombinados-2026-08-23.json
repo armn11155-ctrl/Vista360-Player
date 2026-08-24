@@ -1,0 +1,106 @@
+{
+  "exportedAt": "2026-08-24T03:41:09.323Z",
+  "timezone": "America/Lima",
+  "project": "base-de-datos-vista360",
+  "function": {
+    "name": "projects/base-de-datos-vista360/locations/us-central1/functions/exportarReportesCombinados",
+    "stateAtExport": "ACTIVE",
+    "generation": "GEN_2",
+    "region": "us-central1",
+    "createTime": "2026-07-26T15:40:22.951134508Z",
+    "updateTime": "2026-07-26T16:23:48.860661164Z",
+    "runtime": "nodejs20",
+    "entryPoint": "exportarReportesCombinados",
+    "trigger": "callable HTTP",
+    "ingressSettings": "ALLOW_ALL",
+    "timeoutSeconds": 180,
+    "availableMemory": "512Mi",
+    "availableCpu": "1",
+    "minInstanceCount": 0,
+    "maxInstanceCount": 20,
+    "maxInstanceRequestConcurrency": 80,
+    "allTrafficOnLatestRevision": true,
+    "revision": "exportarreportescombinados-00002-kuf",
+    "serviceAccountEmail": "421479773461-compute@developer.gserviceaccount.com",
+    "urls": {
+      "cloudFunctions": "https://us-central1-base-de-datos-vista360.cloudfunctions.net/exportarReportesCombinados",
+      "cloudRun": "https://exportarreportescombinados-xkank75cdq-uc.a.run.app"
+    },
+    "source": {
+      "bucket": "gcf-v2-sources-421479773461-us-central1",
+      "object": "exportarReportesCombinados/function-source.zip",
+      "generation": "1785082999502589",
+      "originalGitCommit": "3466f88d910c6b67040c82656e151c56c670dffd",
+      "revertedByGitCommit": "5cea7a106713a715940dd17d14ae59cf45ffd2a4"
+    },
+    "build": {
+      "name": "projects/421479773461/locations/us-central1/builds/f97c65dd-1151-40fd-8ff1-f30009b8a273",
+      "dockerRepository": "projects/base-de-datos-vista360/locations/us-central1/repositories/gcf-artifacts",
+      "serviceAccount": "projects/base-de-datos-vista360/serviceAccounts/421479773461-compute@developer.gserviceaccount.com",
+      "automaticUpdatePolicy": true
+    },
+    "labels": {
+      "deployment-tool": "cli-firebase",
+      "deployment-callable": "true",
+      "firebase-functions-hash": "175779ad29e5e011a8d89a37083de8d794f5f757"
+    },
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"base-de-datos-vista360\",\"storageBucket\":\"base-de-datos-vista360.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "base-de-datos-vista360",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/base-de-datos-vista360/locations/us-central1/services/exportarReportesCombinados",
+      "FUNCTION_TARGET": "exportarReportesCombinados",
+      "LOG_EXECUTION_ID": "true",
+      "FUNCTION_SIGNATURE_TYPE": "http",
+      "GOOGLE_NODE_RUN_SCRIPTS": ""
+    },
+    "secretEnvironmentVariables": [
+      {
+        "key": "R2_ACCOUNT_ID",
+        "secret": "R2_ACCOUNT_ID",
+        "version": "75"
+      },
+      {
+        "key": "R2_ACCESS_KEY_ID",
+        "secret": "R2_ACCESS_KEY_ID",
+        "version": "75"
+      },
+      {
+        "key": "R2_SECRET_ACCESS_KEY",
+        "secret": "R2_SECRET_ACCESS_KEY",
+        "version": "75"
+      },
+      {
+        "key": "R2_BUCKET",
+        "secret": "R2_BUCKET",
+        "version": "75"
+      }
+    ]
+  },
+  "iam": {
+    "cloudFunction": {
+      "etag": "ACAB",
+      "bindings": []
+    },
+    "cloudRunService": {
+      "version": 1,
+      "etag": "BwZXhXB4TzM=",
+      "bindings": [
+        {
+          "role": "roles/run.invoker",
+          "members": [
+            "allUsers"
+          ]
+        }
+      ]
+    }
+  },
+  "activityAtExport": {
+    "httpRequestsLast30Days": 0,
+    "httpRequestsLast90Days": 0
+  },
+  "notes": [
+    "Este respaldo no contiene valores secretos; solo nombres y versiones asociadas.",
+    "El código fuente original es recuperable desde el commit indicado y fue revertido una hora después.",
+    "La ausencia de minInstanceCount en la API equivale a cero instancias mínimas."
+  ]
+}
