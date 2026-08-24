@@ -4,7 +4,7 @@
 
 :root {
   /* Marcador estable para confirmar desde producción que esta capa cargó. */
-  --v360-navigation-motion-version: 2;
+  --v360-navigation-motion-version: 3;
 }
 
 /* Una cortina azul entra desde la derecha, cubre por completo el contexto
@@ -14,7 +14,7 @@
 body::before,
 body::after {
   position: fixed;
-  inset: 0 -5vw;
+  inset: 0 -7vw;
   z-index: 2147483000;
   display: grid;
   place-items: center;
@@ -27,29 +27,37 @@ body::after {
 body::before {
   content: "";
   background:
-    radial-gradient(circle at 18% 24%, rgba(96,165,250,.34), transparent 28%),
-    radial-gradient(circle at 78% 72%, rgba(0,63,180,.5), transparent 38%),
-    linear-gradient(118deg, #031a45 0%, #063c91 46%, #075ee0 100%);
+    radial-gradient(circle at 16% 18%, rgba(116,185,255,.28), transparent 26%),
+    radial-gradient(circle at 84% 78%, rgba(0,85,220,.42), transparent 36%),
+    radial-gradient(ellipse at 50% 50%, rgba(57,143,255,.22), transparent 42%),
+    linear-gradient(118deg, #020A18 0%, #052355 38%, #0752BC 72%, #0877FF 100%);
+  box-shadow:
+    inset 0 0 160px rgba(0, 6, 22, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 
 body::after {
   content: "";
   z-index: 2147483001;
   background:
-    url("/icon-192.png") center / clamp(116px, 12vw, 154px) clamp(116px, 12vw, 154px) no-repeat,
-    radial-gradient(circle at center, rgba(147,197,253,.2), transparent 14%),
-    linear-gradient(rgba(147,197,253,.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(147,197,253,.07) 1px, transparent 1px),
-    linear-gradient(105deg, transparent 38%, rgba(255,255,255,.13) 49%, transparent 60%);
+    radial-gradient(circle at center,
+      rgba(219,234,254,.86) 0 2px,
+      rgba(96,165,250,.22) 3px 18px,
+      transparent 19px 72px,
+      rgba(191,219,254,.34) 73px 74px,
+      transparent 75px 112px,
+      rgba(125,183,255,.18) 113px 114px,
+      transparent 115px),
+    radial-gradient(ellipse at center, rgba(96,165,250,.2), transparent 28%),
+    linear-gradient(rgba(147,197,253,.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(147,197,253,.065) 1px, transparent 1px),
+    linear-gradient(104deg, transparent 34%, rgba(147,197,253,.05) 42%, rgba(255,255,255,.2) 50%, rgba(147,197,253,.05) 58%, transparent 66%);
   background-size:
-    clamp(116px, 12vw, 154px) clamp(116px, 12vw, 154px),
     100% 100%,
-    72px 72px,
-    72px 72px,
+    100% 100%,
+    64px 64px,
+    64px 64px,
     100% 100%;
-  /* El favicon tiene fondo negro. Screen conserva el azul de la cortina en
-     esos píxeles y deja visible únicamente su marca blanca, sin cuadrado. */
-  background-blend-mode: screen, normal, normal, normal, normal;
   mix-blend-mode: screen;
 }
 
@@ -59,8 +67,12 @@ html[data-v360-page-transition="covering"] body::after {
   pointer-events: auto;
   transform: translate3d(0, 0, 0);
   transition:
-    transform 440ms cubic-bezier(.76, 0, .24, 1),
-    opacity 80ms linear;
+    transform 560ms cubic-bezier(.72, 0, .18, 1),
+    opacity 100ms linear;
+}
+
+html[data-v360-page-transition="covering"] body::after {
+  animation: v360-transition-atmosphere 920ms cubic-bezier(.2,.72,.2,1) both;
 }
 
 html[data-v360-page-transition="revealing"] body::before,
@@ -69,16 +81,21 @@ html[data-v360-page-transition="revealing"] body::after {
   pointer-events: auto;
   transform: translate3d(-105%, 0, 0);
   transition:
-    transform 540ms cubic-bezier(.76, 0, .24, 1),
-    opacity 120ms linear 420ms;
+    transform 680ms cubic-bezier(.76, 0, .16, 1),
+    opacity 150ms linear 510ms;
 }
 
 html[data-v360-page-transition="revealing"] #root {
-  animation: v360-page-settle 540ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: v360-page-settle 680ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+@keyframes v360-transition-atmosphere {
+  from { filter: brightness(.86) saturate(.88); background-position: center, center, 0 0, 0 0, -18vw 0; }
+  to { filter: brightness(1.08) saturate(1.04); background-position: center, center, 20px 12px, 20px 12px, 18vw 0; }
 }
 
 @keyframes v360-page-settle {
-  from { opacity: .82; transform: translate3d(18px, 0, 0); }
+  from { opacity: .74; transform: translate3d(26px, 0, 0); filter: saturate(.9); }
   to { opacity: 1; transform: none; }
 }
 
@@ -248,6 +265,7 @@ html[data-v360-page-transition="revealing"] #root {
   body::after {
     display: none !important;
     transition: none !important;
+    animation: none !important;
   }
 
   html[data-v360-page-transition] #root {

@@ -12,9 +12,11 @@ const SIN_SOLICITUDES: SolicitudCampana[] = [];
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
 /** Tiempo que tarda la cortina azul en cubrir por completo el contexto anterior. */
-const CIERRE_VISUAL_MS = 440;
+const CIERRE_VISUAL_MS = 560;
+/** Pausa mínima que permite leer la composición antes de revelar el destino. */
+const PAUSA_VISUAL_MS = 180;
 /** La salida hacia la izquierda revela el contexto nuevo ya renderizado. */
-const APERTURA_VISUAL_MS = 540;
+const APERTURA_VISUAL_MS = 680;
 import { usePortalAuth, type AuthState } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
@@ -289,6 +291,7 @@ export default function App() {
   const cambioEnCursoRef = useRef(cambioEnCurso);
   const cambiosVisualesPendientesRef = useRef<Array<() => void>>([]);
   const relojCierreVisualRef = useRef<number | null>(null);
+  const relojPausaVisualRef = useRef<number | null>(null);
   const relojLimpiezaVisualRef = useRef<number | null>(null);
   const revelarAlCompletarRef = useRef(false);
   const authEnTransicionRef = useRef<AuthState | null>(null);
@@ -299,12 +302,16 @@ export default function App() {
     if (!revelarAlCompletarRef.current || typeof document === "undefined") return;
     revelarAlCompletarRef.current = false;
     const raiz = document.documentElement;
-    raiz.dataset.v360PageTransition = "revealing";
-    if (relojLimpiezaVisualRef.current !== null) window.clearTimeout(relojLimpiezaVisualRef.current);
-    relojLimpiezaVisualRef.current = window.setTimeout(() => {
-      delete raiz.dataset.v360PageTransition;
-      relojLimpiezaVisualRef.current = null;
-    }, APERTURA_VISUAL_MS);
+    if (relojPausaVisualRef.current !== null) window.clearTimeout(relojPausaVisualRef.current);
+    relojPausaVisualRef.current = window.setTimeout(() => {
+      relojPausaVisualRef.current = null;
+      raiz.dataset.v360PageTransition = "revealing";
+      if (relojLimpiezaVisualRef.current !== null) window.clearTimeout(relojLimpiezaVisualRef.current);
+      relojLimpiezaVisualRef.current = window.setTimeout(() => {
+        delete raiz.dataset.v360PageTransition;
+        relojLimpiezaVisualRef.current = null;
+      }, APERTURA_VISUAL_MS);
+    }, PAUSA_VISUAL_MS);
   }
 
   /**
@@ -327,6 +334,10 @@ export default function App() {
     if (relojLimpiezaVisualRef.current !== null) {
       window.clearTimeout(relojLimpiezaVisualRef.current);
       relojLimpiezaVisualRef.current = null;
+    }
+    if (relojPausaVisualRef.current !== null) {
+      window.clearTimeout(relojPausaVisualRef.current);
+      relojPausaVisualRef.current = null;
     }
     document.documentElement.dataset.v360PageTransition = "covering";
 
@@ -389,6 +400,7 @@ export default function App() {
 
   useEffect(() => () => {
     if (relojCierreVisualRef.current !== null) window.clearTimeout(relojCierreVisualRef.current);
+    if (relojPausaVisualRef.current !== null) window.clearTimeout(relojPausaVisualRef.current);
     if (relojLimpiezaVisualRef.current !== null) window.clearTimeout(relojLimpiezaVisualRef.current);
     delete document.documentElement.dataset.v360PageTransition;
   }, []);

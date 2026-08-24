@@ -165,12 +165,14 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(app).toContain('dataset.v360PageTransition = "revealing"');
     expect(app).toContain("actualizaciones.forEach((cambiar) => cambiar())");
     expect(app).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
+    expect(app).toContain("PAUSA_VISUAL_MS = 180");
+    expect(app).toContain("relojPausaVisualRef");
     expect(movimiento).toContain('data-v360-page-transition="covering"');
     expect(movimiento).toContain('data-v360-page-transition="revealing"');
     expect(movimiento).toContain("v360-page-settle");
+    expect(movimiento).toContain("v360-transition-atmosphere");
     expect(movimiento).toContain("translate3d(-105%, 0, 0)");
-    expect(movimiento).toContain('url("/icon-192.png")');
-    expect(movimiento).toContain("background-blend-mode: screen");
+    expect(movimiento).not.toContain('url("/icon-192.png")');
     expect(movimiento).toContain("mix-blend-mode: screen");
     expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
   });
