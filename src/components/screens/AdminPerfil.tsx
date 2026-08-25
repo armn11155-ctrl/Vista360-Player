@@ -8,7 +8,7 @@ import { MfaSetupModal } from "../MfaSetupModal";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp, type PosicionRecorte } from "../../utils/comprimirImagen";
 import { publicarAvatarPropio, useAvatarPropio } from "../../hooks/useAvatarPropio";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { BrandThumb } from "../BrandThumb";
 import { AvatarUploadModal } from "../AvatarUploadModal";
 import { useDialogos } from "../DialogosProvider";
@@ -328,9 +328,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
   return (
     <div className="admin-tool-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Mi perfil</div>
         <div style={{ width: 32 }} />
       </div>

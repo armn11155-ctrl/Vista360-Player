@@ -1,4 +1,4 @@
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import type { Panel } from "../../types";
 import MobileSidebarButton from "../MobileSidebarButton";
 
@@ -21,9 +21,7 @@ export default function MisPantallas({ paneles, onBack, onMenuClick }: Props) {
     <div>
       <div className="detail-header">
         <MobileSidebarButton onClick={onMenuClick} />
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Mis Publicidades</div>
         <div style={{ width: 32 }} />
       </div>

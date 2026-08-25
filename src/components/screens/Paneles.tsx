@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { campoBase } from "../../styles/campos";
 import { httpsCallable } from "firebase/functions";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import CampoBusqueda from "../CampoBusqueda";
 import MobileSidebarButton from "../MobileSidebarButton";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
@@ -401,9 +401,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
     <div className="admin-tool-screen paneles-screen">
       <div className="detail-header">
         <MobileSidebarButton onClick={onMenuClick} />
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Paneles</div>
         <div style={{ width: 32 }} />
       </div>
@@ -605,6 +603,14 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                 className="card panel-inventory-card"
                 key={p.id}
                 onClick={() => abrirEdicion(p)}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+                  event.preventDefault();
+                  abrirEdicion(p);
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Editar panel ${p.nombre}`}
                 style={{ padding: 14, cursor: "pointer", position: "relative" }}
               >
                 <div className="panel-inventory-main" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>

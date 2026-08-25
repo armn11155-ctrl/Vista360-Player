@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { fechaCorta } from "../../utils/fechas";
 import { useOcupacion, type FacturaPendiente, type PanelOcupacion, type PorVencer } from "../../hooks/useOcupacion";
 
@@ -265,9 +265,7 @@ export default function Ocupacion({ onBack }: Props) {
   return (
     <div className="admin-tool-screen ocupacion-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Ocupación</div>
         <div style={{ width: 32 }} />
       </div>

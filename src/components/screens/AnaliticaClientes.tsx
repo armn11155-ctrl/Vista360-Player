@@ -1,4 +1,4 @@
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { useMemo, useState } from "react";
 import { useAccesosClientes } from "../../hooks/useAccesosClientes";
 import type { AccesoCliente } from "../../hooks/useAccesosClientes";
@@ -85,9 +85,7 @@ export default function AnaliticaClientes({ onBack }: Props) {
   return (
     <div className="admin-tool-screen analitica-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Analítica de acceso</div>
         <div style={{ width: 32 }} />
       </div>

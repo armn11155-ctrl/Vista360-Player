@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { httpsCallable } from "firebase/functions";
 import { doc, getDoc } from "firebase/firestore";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import CampoBusqueda from "../CampoBusqueda";
 import { useInvitaciones } from "../../hooks/useInvitaciones";
 import { useClientesAdmin } from "../../hooks/useClientesAdmin";
@@ -668,9 +668,7 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
   return (
     <div className="admin-tool-screen accesos-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Usuarios</div>
         <div style={{ width: 32 }} />
       </div>
@@ -1020,6 +1018,14 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
                 className="card access-user-card"
                 key={inv.id}
                 onClick={() => void abrirEdicionUsuario(inv)}
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+                  event.preventDefault();
+                  void abrirEdicionUsuario(inv);
+                }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Editar usuario ${nombreDeUsuario(inv)}`}
                 style={{ padding: 12, position: "relative", cursor: inv.clienteId ? "pointer" : "default" }}
               >
                 <div style={{ display: "flex", gap: 12, alignItems: "center" }}>

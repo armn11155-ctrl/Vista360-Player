@@ -3,7 +3,7 @@ import { campoBase } from "../../styles/campos";
 import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../../config/firebase";
 import type { Cliente } from "../../types";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { ClientAvatarPicker } from "../ClientAvatarPicker";
 import { subirAvatarR2 } from "../../config/r2";
 import { comprimirAvatarWebp } from "../../utils/comprimirImagen";
@@ -112,9 +112,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
   return (
     <div className="create-client-screen" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8FAFD" }}>
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Crear usuario</div>
         <div style={{ width: 32 }} />
       </div>

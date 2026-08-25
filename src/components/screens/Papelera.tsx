@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { httpsCallable } from "firebase/functions";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { cloudFunctions } from "../../config/firebase";
 import { fechaCorta } from "../../utils/fechas";
 import { mensajeDeError } from "../../utils/errores";
@@ -117,9 +117,7 @@ export default function Papelera({ onBack }: Props) {
   return (
     <div className="admin-tool-screen solicitudes-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Papelera</div>
         <div style={{ width: 32 }} />
       </div>

@@ -12,11 +12,11 @@ const SIN_SOLICITUDES: SolicitudCampana[] = [];
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
 /** Tiempo que tarda la cortina azul en cubrir por completo el contexto anterior. */
-const CIERRE_VISUAL_MS = 560;
-/** Pausa mínima que permite leer la composición antes de revelar el destino. */
-const PAUSA_VISUAL_MS = 180;
+const CIERRE_VISUAL_MS = 360;
+/** Dos cuadros dan tiempo al commit sin convertir la animación en espera. */
+const PAUSA_VISUAL_MS = 40;
 /** La salida hacia la izquierda revela el contexto nuevo ya renderizado. */
-const APERTURA_VISUAL_MS = 680;
+const APERTURA_VISUAL_MS = 440;
 import { usePortalAuth, type AuthState } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";

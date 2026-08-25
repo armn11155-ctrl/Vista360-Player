@@ -1,6 +1,6 @@
 import type { Contrato, SolicitudCampana } from "../../types";
 import { useEffect, useMemo } from "react";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { eliminarNotificacion, marcarNotificacionesLeidas, useNotificaciones } from "../../hooks/useNotificaciones";
 import { usePushEstado } from "../../hooks/usePushEstado";
 import { useSolicitudesDelCliente } from "../../hooks/useContratos";
@@ -97,9 +97,7 @@ export default function Notificaciones({ clienteId, contratos, uid, onBack }: Pr
   return (
     <div>
       <div className="detail-header notif-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Notificaciones</div>
         <div style={{ width: 32 }} />
       </div>

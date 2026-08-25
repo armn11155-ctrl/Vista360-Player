@@ -1,7 +1,7 @@
 import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import { useState } from "react";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 import { diasHasta, fechaCorta, fechaLarga } from "../../utils/fechas";
 import { useRecordatorioDominio } from "../../hooks/useRecordatorioDominio";
 import { cloudFunctions } from "../../config/firebase";
@@ -159,9 +159,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
   return (
     <div className="admin-tool-screen solicitudes-screen">
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Solicitudes de campaña</div>
         <div style={{ width: 32 }} />
       </div>
@@ -279,7 +277,19 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
               const diasPendiente = creada ? Math.max(0, Math.floor((ahora - creada) / 86_400_000)) : 0;
               const urgencia = diasPendiente >= 7 ? "is-critical" : diasPendiente >= 3 ? "is-attention" : "is-new";
               return (
-                <div className={`card solicitudes-card ${urgencia}`} key={s.id} onClick={() => setSeleccionada(s)}>
+                <div
+                  className={`card solicitudes-card ${urgencia}`}
+                  key={s.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Abrir solicitud ${s.nombre} de ${nombreCliente(s.cliente_id)}`}
+                  onClick={() => setSeleccionada(s)}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+                    event.preventDefault();
+                    setSeleccionada(s);
+                  }}
+                >
                 <div className="request-priority-row">
                   <span className="request-status-chip">Pendiente</span>
                   <small>{diasPendiente === 0 ? "Reciente" : `${diasPendiente} día${diasPendiente === 1 ? "" : "s"} en espera`}</small>
@@ -366,6 +376,14 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                   key={s.id}
                   className="card"
                   onClick={() => setSeleccionada(s)}
+                  onKeyDown={(event) => {
+                    if (event.target !== event.currentTarget || (event.key !== "Enter" && event.key !== " ")) return;
+                    event.preventDefault();
+                    setSeleccionada(s);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Abrir solicitud ${s.nombre} de ${nombreCliente(s.cliente_id)}`}
                   style={{
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                     gap: 8, padding: "12px 14px", cursor: "pointer",

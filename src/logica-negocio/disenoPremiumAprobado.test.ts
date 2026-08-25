@@ -245,6 +245,8 @@ describe("refinamiento premium aprobado", () => {
     expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-network-message \{[\s\S]*?display: none !important;/);
     expect(estilosLogin).toMatch(/html\[data-keyboard-open="true"\][\s\S]*?\.login-right-panel \{[\s\S]*?margin-top: -10px;[\s\S]*?padding: 12px 20px 10px;/);
     expect(estilosLogin).toMatch(/@media \(max-width: 899px\) and \(max-height: 430px\) \{[\s\S]*?min-height: 92px;[\s\S]*?flex-basis: 92px;/);
+    expect(estilosLogin).toContain("TABLET — conserva la narrativa vertical del móvil");
+    expect(estilosLogin).toMatch(/@media \(min-width: 650px\) and \(max-width: 899px\) \{[\s\S]*?max-width: 720px;[\s\S]*?width: min\(100%, 380px\);/);
     expect(login).not.toContain("window.scrollTo(0, 0)");
   });
 
@@ -325,7 +327,7 @@ describe("refinamiento premium aprobado", () => {
     const estilosLogin = leer("src/styles/login-network.css");
 
     expect(estilos).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.accesos-screen \.accesos-internal-card \{[\s\S]*?linear-gradient\(135deg, #111f37, #07101e/);
-    expect(estilos).toMatch(/\.accesos-screen \.accesos-person-grid \{[\s\S]*?grid-auto-flow: column;[\s\S]*?overflow-x: auto;/);
+    expect(estilos).toMatch(/\.accesos-screen \.accesos-person-grid \{[\s\S]*?grid-auto-flow: row;[\s\S]*?grid-template-columns: repeat\(auto-fit, minmax\(210px, 1fr\)\);[\s\S]*?overflow: visible;/);
     expect(estilos).toMatch(/\.accesos-screen \.accesos-users-list \{[\s\S]*?border-radius: 21px;[\s\S]*?background: rgba\(255,255,255,\.78\);/);
     expect(estilos).toMatch(/\.mis-campanas-month-status \{[\s\S]*?background: #fff !important;/);
     expect(estilos).toContain(".mis-campanas-month-status-header img { display: none !important; }");

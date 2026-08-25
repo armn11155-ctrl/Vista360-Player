@@ -165,7 +165,9 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(app).toContain('dataset.v360PageTransition = "revealing"');
     expect(app).toContain("actualizaciones.forEach((cambiar) => cambiar())");
     expect(app).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
-    expect(app).toContain("PAUSA_VISUAL_MS = 180");
+    expect(app).toContain("CIERRE_VISUAL_MS = 360");
+    expect(app).toContain("PAUSA_VISUAL_MS = 40");
+    expect(app).toContain("APERTURA_VISUAL_MS = 440");
     expect(app).toContain("relojPausaVisualRef");
     expect(movimiento).toContain('data-v360-page-transition="covering"');
     expect(movimiento).toContain('data-v360-page-transition="revealing"');

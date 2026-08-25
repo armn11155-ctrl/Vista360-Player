@@ -58,12 +58,12 @@ html[data-v360-page-transition="covering"] body::after {
   pointer-events: auto;
   transform: translate3d(0, 0, 0);
   transition:
-    transform 560ms cubic-bezier(.72, 0, .18, 1),
+    transform 360ms cubic-bezier(.72, 0, .18, 1),
     opacity 100ms linear;
 }
 
 html[data-v360-page-transition="covering"] body::after {
-  animation: v360-transition-atmosphere 920ms cubic-bezier(.2,.72,.2,1) both;
+  animation: v360-transition-atmosphere 440ms cubic-bezier(.2,.72,.2,1) both;
 }
 
 html[data-v360-page-transition="revealing"] body::before,
@@ -72,12 +72,12 @@ html[data-v360-page-transition="revealing"] body::after {
   pointer-events: auto;
   transform: translate3d(-105%, 0, 0);
   transition:
-    transform 680ms cubic-bezier(.76, 0, .16, 1),
-    opacity 150ms linear 510ms;
+    transform 440ms cubic-bezier(.76, 0, .16, 1),
+    opacity 120ms linear 300ms;
 }
 
 html[data-v360-page-transition="revealing"] #root {
-  animation: v360-page-settle 680ms cubic-bezier(.16, 1, .3, 1) both;
+  animation: v360-page-settle 440ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 @keyframes v360-transition-atmosphere {

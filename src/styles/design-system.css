@@ -160,7 +160,16 @@ a {
   min-height: 40px;
   border-radius: var(--v360-radius-control);
   transition: background var(--v360-motion-fast) ease, border-color var(--v360-motion-fast) ease,
-    transform var(--v360-motion-fast) ease;
+  transform var(--v360-motion-fast) ease;
+}
+
+.back-btn {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 @media (hover: hover) {
@@ -7990,14 +7999,11 @@ a {
   .accesos-screen .accesos-person-grid {
     position: relative;
     z-index: 1;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(190px, 78%);
-    grid-template-columns: none;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 9px;
-    overflow-x: auto;
-    padding: 1px 1px 5px;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
+    overflow: visible;
+    padding: 1px;
   }
 
   .accesos-screen .accesos-person-grid::-webkit-scrollbar,
@@ -8005,7 +8011,6 @@ a {
 
   .accesos-screen .accesos-internal-card .access-person-row {
     min-height: 60px;
-    scroll-snap-align: start;
     border-color: rgba(191,219,254,.10);
     color: #fff;
     background: rgba(255,255,255,.04);
@@ -8207,7 +8212,7 @@ a {
   .admin-picker-editorial-brand img { width: 94px; }
   .admin-picker-editorial h1 { font-size: 16px; }
   .inicio-header { min-height: 162px; }
-  .accesos-screen .accesos-person-grid { grid-auto-columns: minmax(176px, 84%); }
+  .accesos-screen .accesos-person-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* =====================================================================

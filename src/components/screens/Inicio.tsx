@@ -294,6 +294,14 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
               key={item.label}
               className={`inicio-kpi-card inicio-kpi-card-${item.tone}${item.label === "Último reporte" ? " inicio-kpi-card-report" : item.label === "Próximo vencimiento" ? " inicio-kpi-card-date" : ""}`}
               onClick={item.onClick}
+              onKeyDown={item.onClick ? (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                item.onClick?.();
+              } : undefined}
+              role={item.onClick ? "button" : undefined}
+              tabIndex={item.onClick ? 0 : undefined}
+              aria-label={item.onClick ? `Abrir ${item.label.toLowerCase()}` : undefined}
               style={{ background:"#fff", border:"1px solid #E2E8F0", borderRadius:8, padding:"12px 11px", minHeight:78, minWidth:0, display:"flex", alignItems:"center", gap:9, boxShadow:"0 14px 30px rgba(15,23,42,0.06)", cursor:item.onClick ? "pointer" : "default" }}
             >
               <div className="inicio-kpi-icon" style={{ width:38, height:38, borderRadius:20, background:item.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>

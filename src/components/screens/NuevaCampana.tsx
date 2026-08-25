@@ -6,7 +6,7 @@ import { cloudFunctions } from "../../config/firebase";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { formatCampaignName } from "../../utils/campaignName";
 import { sumarMeses } from "../../utils/fechas";
-import BackChevron from "../BackChevron";
+import BackButton from "../BackButton";
 
 interface Props {
   clienteId: string;
@@ -227,9 +227,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
         <div className="detail-header">
-          <div className="back-btn" onClick={onBack}>
-            <BackChevron />
-          </div>
+          <BackButton onClick={onBack} />
           <div className="simple-title">Nueva campaña</div>
           <div style={{ width: 32 }} />
         </div>
@@ -327,9 +325,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     return (
       <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
         <div className="detail-header">
-          <div className="back-btn" onClick={onEnviada}>
-            <BackChevron />
-          </div>
+          <BackButton onClick={onEnviada} />
           <div className="simple-title">Nueva campaña</div>
           <div style={{ width: 32 }} />
         </div>
@@ -372,9 +368,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
       {/* Header */}
       <div className="detail-header">
-        <div className="back-btn" onClick={onBack}>
-          <BackChevron />
-        </div>
+        <BackButton onClick={onBack} />
         <div className="simple-title">Nueva campaña</div>
         <div style={{ width: 32 }} />
       </div>

@@ -360,16 +360,17 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
       <div className="detalle-campana-line" style={{ height: 3, flexShrink: 0 }} />
 
       {/* Tabs */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
+      <div role="tablist" aria-label="Detalle de campaña" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {TABS.map((t) => (
-          <div key={t.id} onClick={() => setTab(t.id)} style={{
+          <button type="button" role="tab" aria-selected={tab === t.id} key={t.id} onClick={() => setTab(t.id)} style={{
             padding: "16px 0 14px", fontSize: 14, fontWeight: tab === t.id ? 800 : 500,
             color: tab === t.id ? "#0877FF" : "#64748B",
             borderBottom: tab === t.id ? "3px solid #0877FF" : "3px solid transparent",
+            borderTop: 0, borderLeft: 0, borderRight: 0, background: "transparent",
             cursor: "pointer", textAlign: "center",
           }}>
             {t.label}
-          </div>
+          </button>
         ))}
       </div>
 

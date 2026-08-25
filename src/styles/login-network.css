@@ -1538,3 +1538,60 @@
     padding-bottom: 14px;
   }
 }
+
+/* TABLET — conserva la narrativa vertical del móvil sin encajonarla en una
+   columna de teléfono. A 650–899 px el hero y la consola aprovechan el ancho
+   disponible, mientras el formulario mantiene una medida cómoda de lectura. */
+@media (min-width: 650px) and (max-width: 899px) {
+  .login-experience {
+    width: min(100%, 720px);
+    max-width: 720px;
+  }
+
+  .login-right-panel,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    width: calc(100% - 24px);
+    max-width: none;
+    padding-inline: 48px;
+  }
+
+  .login-card,
+  .login-foot,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) :is(.login-card, .login-foot),
+  html[data-keyboard-open="true"] .login-shell .login-card {
+    width: min(100%, 380px);
+  }
+}
+
+@media (min-width: 650px) and (max-width: 899px) and (min-height: 741px) {
+  .login-right-panel,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-right-panel {
+    justify-content: center;
+  }
+
+  .login-left-panel,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+    min-height: 330px;
+    flex-basis: 330px;
+  }
+
+  .login-network-copy {
+    left: 44px;
+    width: 220px;
+  }
+
+  .login-network-logo {
+    width: 158px;
+    margin-bottom: 18px;
+  }
+
+  .login-network-copy h1 {
+    max-width: 220px;
+    font-size: 36px;
+  }
+
+  .login-title,
+  html:not([data-keyboard-open="true"]) .login-shell:has(#login-email:focus, #login-password:focus) .login-title {
+    font-size: 30px;
+  }
+}

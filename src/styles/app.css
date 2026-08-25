@@ -6314,7 +6314,7 @@
     min-width: 0;
   }
   .sidebar-close {
-    width: 30px; height: 30px; border-radius: 50%;
+    width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%;
     background: rgba(255,255,255,0.12);
     color: #fff; display: flex; align-items: center; justify-content: center;
     font-size: 14px; cursor: pointer;
@@ -9734,7 +9734,7 @@ details.report-admin-panel {
   text-transform: uppercase;
 }
 .access-role-chip.is-gerente { color: #0B4E9D; border-color: #C9E0FF; background: #EAF3FF; }
-.access-role-chip.is-trabajador { color: #6D28D9; border-color: #DDD0FF; background: #F2EDFF; }
+.access-role-chip.is-trabajador { color: #315D8F; border-color: #CEDDF0; background: #EDF3FA; }
 .access-user-card { border-left: 3px solid #CFE3FF; }
 
 /* Solicitudes y aprobaciones: prioridad, antigüedad y resolución usan

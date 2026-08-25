@@ -184,8 +184,14 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
 
   return (
     <div className="avatar-modal-backdrop">
-      <div className="avatar-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="avatar-modal-title">{titulo}</div>
+      <div
+        className="avatar-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="avatar-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="avatar-modal-title" id="avatar-modal-title">{titulo}</div>
 
         <div className="avatar-modal-frames">
           <div
@@ -198,6 +204,15 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerLeave={onPointerUp}
+            role="button"
+            tabIndex={subiendo ? -1 : 0}
+            aria-label={previewUrl ? "Vista previa del recorte de la foto" : "Seleccionar una foto"}
+            onKeyDown={(e) => {
+              if (!previewUrl && !subiendo && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                inputRef.current?.click();
+              }
+            }}
           >
             {previewUrl ? (
               <>
@@ -263,6 +278,7 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
               disabled={subiendo}
               onChange={(e) => setPosicion((p) => ({ ...p, zoom: Number(e.target.value) }))}
               className="avatar-modal-zoom-slider"
+              aria-label="Zoom de la foto"
             />
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2.2" strokeLinecap="round"><circle cx="10" cy="10" r="7" /><path d="M21 21l-4.35-4.35" /><path d="M10 7v6M7 10h6" /></svg>
           </div>
@@ -289,7 +305,7 @@ export function AvatarUploadModal({ onSubir, onCerrar, titulo = "Cambiar foto de
           }}
         />
 
-        {error && <div className="avatar-modal-error">{error}</div>}
+        {error && <div className="avatar-modal-error" role="alert">{error}</div>}
 
         <div className="avatar-modal-actions">
           <button type="button" className="avatar-modal-btn secondary" onClick={onCerrar} disabled={subiendo}>

@@ -209,9 +209,9 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               </span>
             </span>
           </button>
-          <div className="sidebar-close" onClick={onClose}>
+          <button type="button" className="sidebar-close" onClick={onClose} aria-label="Cerrar menú">
             <IconCerrar size={13} />
-          </div>
+          </button>
         </div>
         <div className="sidebar-list" ref={listRef} data-active={active || ""}>
           {pill && (
