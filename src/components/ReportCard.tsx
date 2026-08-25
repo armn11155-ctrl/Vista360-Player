@@ -121,7 +121,7 @@ function nombreArchivoReporte(mesLabel: string) {
  */
 export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, isAdmin, onEliminado }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { confirmar } = useDialogos();
+  const { confirmar, notificar } = useDialogos();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [eliminando, setEliminando] = useState(false);
   // El botón muestra "Descargando…" mientras trae el archivo: en el
@@ -298,10 +298,14 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
         nombreArchivo: archivoCompartir.name,
       });
       const bytesTexto = formatoBytes(resultado.data?.bytesAdjunto);
-      setCorreoEnviadoOk(`Correo enviado a ${emailTo}${bytesTexto ? ` con el PDF adjunto (${bytesTexto})` : ""}.`);
+      const mensajeOk = `Correo enviado a ${emailTo}${bytesTexto ? ` con el PDF adjunto (${bytesTexto})` : ""}.`;
+      setCorreoEnviadoOk(mensajeOk);
+      notificar({ tipo: "exito", mensaje: mensajeOk });
       setPreviaCorreo(false);
     } catch (err) {
-      setError(mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento."));
+      const mensaje = mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento.");
+      setError(mensaje);
+      notificar({ tipo: "error", mensaje });
     }
     setEnviando(null);
   }

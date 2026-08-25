@@ -61,6 +61,13 @@ export interface OpcionesAvisar {
   esError?: boolean;
 }
 
+export interface OpcionesFeedback {
+  mensaje: string;
+  tipo?: "exito" | "error" | "info";
+  duracionMs?: number;
+  accion?: { etiqueta: string; ejecutar: () => void };
+}
+
 interface ContextoDialogos {
   confirmar: (opciones: OpcionesConfirmar) => Promise<boolean>;
   avisar: (opciones: OpcionesAvisar) => Promise<void>;
@@ -72,6 +79,8 @@ interface ContextoDialogos {
    *  backend quien comprueba, en el ID token, que la reautenticación
    *  ocurrió de verdad. Este diálogo es solo la forma de pedirla. */
   pedirContrasena: (opciones: OpcionesPedirContrasena) => Promise<string | null>;
+  /** Confirmación no bloqueante para guardados, envíos y errores recuperables. */
+  notificar: (opciones: OpcionesFeedback) => void;
 }
 
 const Contexto = createContext<ContextoDialogos | null>(null);
@@ -83,6 +92,9 @@ type EstadoDialogo =
 
 export function DialogosProvider({ children }: { children: ReactNode }) {
   const [dialogo, setDialogo] = useState<EstadoDialogo | null>(null);
+  const [feedbacks, setFeedbacks] = useState<Array<OpcionesFeedback & { id: number }>>([]);
+  const siguienteFeedbackRef = useRef(0);
+  const relojesFeedbackRef = useRef(new Map<number, number>());
   // El resolver de la promesa vive en un ref (no en el estado) para
   // poder resolverlo desde el efecto de limpieza: si el provider se
   // desmonta con un diálogo abierto (cierre de sesión, recarga de
@@ -102,8 +114,27 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
     return () => {
       pendienteRef.current?.(false);
       pendienteRef.current = null;
+      relojesFeedbackRef.current.forEach((reloj) => window.clearTimeout(reloj));
+      relojesFeedbackRef.current.clear();
     };
   }, []);
+
+  const cerrarFeedback = useCallback((id: number) => {
+    const reloj = relojesFeedbackRef.current.get(id);
+    if (reloj !== undefined) window.clearTimeout(reloj);
+    relojesFeedbackRef.current.delete(id);
+    setFeedbacks((actuales) => actuales.filter((feedback) => feedback.id !== id));
+  }, []);
+
+  const notificar = useCallback((opciones: OpcionesFeedback) => {
+    const id = ++siguienteFeedbackRef.current;
+    setFeedbacks((actuales) => [...actuales.slice(-2), { ...opciones, id }]);
+    const reloj = window.setTimeout(
+      () => cerrarFeedback(id),
+      opciones.duracionMs ?? (opciones.tipo === "error" ? 6500 : 3800),
+    );
+    relojesFeedbackRef.current.set(id, reloj);
+  }, [cerrarFeedback]);
 
   // Escape = cancelar, igual que un diálogo nativo. Se engancha solo
   // mientras hay uno abierto, para no dejar un listener global vivo
@@ -147,14 +178,31 @@ export function DialogosProvider({ children }: { children: ReactNode }) {
           pendienteRef.current = (v) => resolve(typeof v === "string" ? v : null);
           setDialogo({ tipo: "contrasena", opciones });
         }),
+      notificar,
     }),
-    []
+    [notificar]
   );
 
   return (
     <Contexto.Provider value={api}>
       {children}
       {dialogo && <Dialogo estado={dialogo} onCerrar={cerrar} />}
+      <div className="feedback-stack" role="region" aria-label="Estado de las acciones">
+        {feedbacks.map((feedback) => (
+          <div key={feedback.id} className={`feedback-toast is-${feedback.tipo ?? "info"}`} role={feedback.tipo === "error" ? "alert" : "status"}>
+            <span className="feedback-toast-icon" aria-hidden="true">
+              {feedback.tipo === "error" ? "!" : feedback.tipo === "exito" ? "✓" : "i"}
+            </span>
+            <span className="feedback-toast-message">{feedback.mensaje}</span>
+            {feedback.accion && (
+              <button type="button" onClick={() => { cerrarFeedback(feedback.id); feedback.accion?.ejecutar(); }}>
+                {feedback.accion.etiqueta}
+              </button>
+            )}
+            <button type="button" className="feedback-toast-close" onClick={() => cerrarFeedback(feedback.id)} aria-label="Cerrar aviso">×</button>
+          </div>
+        ))}
+      </div>
     </Contexto.Provider>
   );
 }

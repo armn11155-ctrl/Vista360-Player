@@ -50,6 +50,8 @@ import { panelesDeContrato, rucCliente } from "./types";
 import { cargarLeaflet } from "./utils/leaflet";
 import { precargarPaneles } from "./hooks/usePanelesDisponibles";
 import { reproducirSonidoInterfaz } from "./utils/sonidosInterfaz";
+import CommandPalette, { type CommandItem } from "./components/CommandPalette";
+import { clientesAdminEnMemoria } from "./hooks/useClientesAdmin";
 
 // Pantallas que NO se necesitan de entrada — se piden al navegador solo
 // cuando el cliente realmente entra a esa sección (tocar una campaña,
@@ -438,6 +440,16 @@ export default function App() {
   function setAdminClienteId(id: string | null) {
     programarCambioDePantalla(() => setAdminClienteIdInmediato(id));
   }
+  // El selector ya tiene los clientes en memoria y las pantallas de uso
+  // frecuente están precargadas. Para cambiar entre cuentas no se necesita la
+  // cortina de 840 ms reservada al login/logout: se actualizan cuenta y vista
+  // en la misma transición de React y el listener revalida detrás.
+  function cambiarClienteSinEspera(id: string | null, destino: View = "inicio") {
+    comenzarCambioDePantalla(() => {
+      setAdminClienteIdInmediato(id);
+      setViewInmediato(destino);
+    });
+  }
   // Cuando se vuelve con "atrás" desde Usuarios/Solicitudes/Analítica/
   // Paneles, hay que reabrir Centro de gestión (de donde salió esta
   // navegación), no la Selección de clientes de cero -- ver
@@ -580,8 +592,7 @@ export default function App() {
           <AdminClientPicker
             onSelect={(id) => {
               reproducirSonidoInterfaz("cuenta");
-              setAdminClienteId(id);
-              setView("inicio");
+              cambiarClienteSinEspera(id);
             }}
             onOpenUsuarios={() => setView("accesos")}
             onOpenSolicitudes={() => setView("solicitudes")}
@@ -627,10 +638,10 @@ export default function App() {
           setView("nueva");
         }}
         onCambiarCliente={() => {
-          setAdminClienteId(null);
+          cambiarClienteSinEspera(null);
           setAdminVistaCliente(false);
-          setView("inicio");
         }}
+        onAbrirCliente={(id) => cambiarClienteSinEspera(id)}
         onOpenAdminPerfil={() => {
           setAdminClienteId(null);
           setAdminVistaCliente(false);
@@ -669,6 +680,7 @@ interface AuthenticatedProps {
   onCambiarCliente?: () => void;
   onOpenAdminPerfil?: () => void;
   onSeleccionarCliente?: (clienteId: string) => void;
+  onAbrirCliente?: (clienteId: string) => void;
   online: boolean;
 }
 
@@ -686,6 +698,7 @@ function AuthenticatedApp({
   onCambiarCliente,
   onOpenAdminPerfil,
   onSeleccionarCliente,
+  onAbrirCliente,
   online,
 }: AuthenticatedProps) {
   useDetectorDeBucles("AuthenticatedApp");
@@ -714,7 +727,11 @@ function AuthenticatedApp({
   const solCampPendientes = solCampState.status === "ready"
     ? solCampState.solicitudes.length
     : 0;
-  const paneles = usePaneles(contratos.flatMap((c) => panelesDeContrato(c)));
+  const panelIdsContratados = useMemo(
+    () => contratos.flatMap((contrato) => panelesDeContrato(contrato)),
+    [contratos],
+  );
+  const paneles = usePaneles(panelIdsContratados);
   // "esInterno" identifica una sesión REAL de Gerente/Trabajador, sin
   // importar si en este momento está en modo "ver como cliente"
   // (adminVistaCliente). A diferencia de "isAdmin" -- que sí cambia con
@@ -728,6 +745,62 @@ function AuthenticatedApp({
   // Antes se enviaba avatarUrl=undefined de forma explícita, por eso
   // siempre aparecía el ícono genérico aunque la cuenta sí tuviera foto.
   const adminAvatarUrl = useAvatarPropio(esInterno ? uid : undefined);
+  const [buscadorGlobalAbierto, setBuscadorGlobalAbierto] = useState(false);
+  const [panelObjetivoId, setPanelObjetivoId] = useState<string | undefined>();
+
+  const comandosGlobales = useMemo<CommandItem[]>(() => {
+    const navegar = (id: string, label: string, detail: string, destino: View): CommandItem => ({
+      id: `modulo-${id}`,
+      kind: "modulo",
+      label,
+      detail,
+      onSelect: () => setView(destino),
+    });
+    const items: CommandItem[] = [
+      navegar("inicio", "Inicio", "Resumen y acciones recomendadas", "inicio"),
+      navegar("campanas", "Campañas", "Campañas activas y finalizadas", "campanas"),
+      navegar("cobertura", "Cobertura", "Mapa e inventario disponible", "cobertura"),
+      navegar("reportes", "Reportes", "Ver y descargar reportes", "reportes"),
+      navegar("facturas", "Facturas", "Documentos de facturación", "facturas"),
+      navegar("perfil", "Perfil", "Información de la cuenta", "perfil"),
+    ];
+
+    contratos.forEach((contrato) => items.push({
+      id: `campana-${contrato.id}`,
+      kind: "campana",
+      label: contrato.nombre || paneles[contrato.panel_id]?.nombre || "Campaña",
+      detail: `${contrato.inicio} — ${contrato.fin}`,
+      keywords: [contrato.panel_id, ...panelesDeContrato(contrato)],
+      onSelect: () => { setContratoAbierto(contrato); setView("detalle"); },
+    }));
+
+    Object.values(paneles).forEach((panel) => items.push({
+      id: `panel-${panel.id}`,
+      kind: "panel",
+      label: panel.nombre,
+      detail: [panel.ciudad, panel.direccion].filter(Boolean).join(" · ") || "Ver en Cobertura",
+      keywords: [panel.tipo, panel.estado, panel.ciudad, panel.direccion ?? ""],
+      onSelect: () => { setPanelObjetivoId(panel.id); setView("cobertura"); },
+    }));
+
+    if (esInterno && onAbrirCliente) {
+      (clientesAdminEnMemoria() ?? [])
+        .filter((cuenta) => !cuenta.archived && cuenta.id !== clienteId)
+        .forEach((cuenta) => items.push({
+          id: `cliente-${cuenta.id}`,
+          kind: "cliente",
+          label: cuenta.empresa || cuenta.contacto || "Cliente",
+          detail: "Cambiar a esta cuenta",
+          keywords: [cuenta.contacto ?? "", cuenta.email ?? "", cuenta.ciudad ?? ""],
+          onSelect: () => onAbrirCliente(cuenta.id),
+        }));
+    }
+
+    if (isAdmin && esGerente) {
+      items.push(navegar("usuarios", "Usuarios", "Gestionar accesos", "accesos"));
+    }
+    return items;
+  }, [clienteId, contratos, esGerente, esInterno, isAdmin, onAbrirCliente, paneles, setContratoAbierto, setView]);
 
   useEffect(() => {
     // No competir con la autenticación. En cuanto ya existe una sesión,
@@ -943,6 +1016,7 @@ function AuthenticatedApp({
             onMenuClick={() => setSidebarOpen(true)}
             onNotifClick={() => setView("notificaciones")}
             totalNotifs={totalNotifs}
+            initialPanelId={panelObjetivoId}
             onSolicitarPanel={(panel, tipo) => {
               setPrefillNueva({
                 nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : `Consulta - ${panel.nombre}`,
@@ -1036,6 +1110,13 @@ function AuthenticatedApp({
           else setView("perfil");
           setSidebarOpen(false);
         }}
+        onOpenSearch={() => setBuscadorGlobalAbierto(true)}
+      />
+      <CommandPalette
+        open={buscadorGlobalAbierto}
+        onOpenChange={setBuscadorGlobalAbierto}
+        items={comandosGlobales}
+        contexto={cliente?.empresa || "la cuenta seleccionada"}
       />
       <div className="main-area">
         <div className="screens">

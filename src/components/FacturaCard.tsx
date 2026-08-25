@@ -170,7 +170,7 @@ function nombreArchivoFactura(f: Factura) {
  */
 export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { confirmar } = useDialogos();
+  const { confirmar, notificar } = useDialogos();
   const esKeyR2 = Boolean(f.pdfUrl) && !f.pdfUrl!.startsWith("http");
   const keysAFirmar = esKeyR2 ? [f.pdfUrl!] : [];
   const urlsFirmadas = useSignedUrls(keysAFirmar);
@@ -437,10 +437,14 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         nombreArchivo: archivoCompartir.name,
       });
       const bytesTexto = formatoBytes(resultado.data?.bytesAdjunto);
-      setCorreoEnviadoOk(`Correo enviado a ${emailTo}${bytesTexto ? ` con el PDF adjunto (${bytesTexto})` : ""}.`);
+      const mensajeOk = `Correo enviado a ${emailTo}${bytesTexto ? ` con el PDF adjunto (${bytesTexto})` : ""}.`;
+      setCorreoEnviadoOk(mensajeOk);
+      notificar({ tipo: "exito", mensaje: mensajeOk });
       setPreviaCorreo(false);
     } catch (err) {
-      setErrorCorreo(mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento."));
+      const mensaje = mensajeDeError(err, "No se pudo enviar el correo. Intenta de nuevo en un momento.");
+      setErrorCorreo(mensaje);
+      notificar({ tipo: "error", mensaje });
     }
     setEnviando(null);
   }

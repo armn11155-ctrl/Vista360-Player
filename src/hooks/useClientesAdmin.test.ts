@@ -14,7 +14,7 @@ vi.mock("firebase/firestore", () => ({
   }),
 }));
 
-vi.mock("../config/firebase", () => ({ db: {} }));
+vi.mock("../config/firebase", () => ({ db: {}, registrarLimpiezaDeSesion: vi.fn() }));
 
 import { useSelectorDeClientes } from "./useClientesAdmin";
 

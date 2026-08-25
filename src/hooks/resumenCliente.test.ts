@@ -13,7 +13,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 const listeners: Array<{ tipo: string; onNext: Function; onError: Function; cortado: boolean }> = [];
 
-vi.mock("../config/firebase", () => ({ db: {} }));
+vi.mock("../config/firebase", () => ({ db: {}, registrarLimpiezaDeSesion: vi.fn() }));
 vi.mock("firebase/firestore", () => ({
   collection: (_d: unknown, n: string) => ({ __col: n }),
   doc: (_d: unknown, p: string) => ({ __doc: p }),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import { useSelectorDeClientes } from "../hooks/useClientesAdmin";
 import { useSignedUrls } from "../hooks/useSignedUrls";
@@ -12,6 +12,9 @@ import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/cli
 import { ClientAvatar } from "./ClientAvatar";
 import { useDialogos } from "./DialogosProvider";
 import { conReautenticacion } from "../config/reautenticacion";
+import CommandPalette, { type CommandItem } from "./CommandPalette";
+
+const SIN_CLIENTES: Cliente[] = [];
 
 interface Props {
   onSelect: (clienteId: string) => void;
@@ -51,7 +54,7 @@ interface Props {
  * Grid responsivo: dos columnas en móvil y tres en escritorio.
  */
 export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
-  const { confirmar, avisar, pedirContrasena } = useDialogos();
+  const { confirmar, avisar, pedirContrasena, notificar } = useDialogos();
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
   // como esto solo se manejaba adentro de AuthenticatedApp, cada vez
@@ -75,6 +78,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [avataresFallidos, setAvataresFallidos] = useState<Map<string, string>>(new Map());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
   const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
+  const [buscadorGlobalAbierto, setBuscadorGlobalAbierto] = useState(false);
+  const [soloSinCampana, setSoloSinCampana] = useState(false);
   // Se consume una sola vez al montar -- el valor ya quedó capturado
   // arriba como estado inicial, así que esto solo le avisa al padre
   // que ya lo puede volver a poner en false (si no, la próxima vez
@@ -91,14 +96,45 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const solicitudesPendientes = solicitudesState.status === "ready"
     ? solicitudesState.solicitudes.length
     : 0;
-  const clientes: Cliente[] = state.status === "ready" ? state.clientes : [];
-  const activos = ordenarClientesPorCampanasActivas(
-    clientes.filter((c) => !c.archived),
-    campanasActivasPorCliente
+  const clientes: Cliente[] = state.status === "ready" ? state.clientes : SIN_CLIENTES;
+  const activos = useMemo(
+    () => ordenarClientesPorCampanasActivas(
+      clientes.filter((cliente) => !cliente.archived),
+      campanasActivasPorCliente,
+    ),
+    [campanasActivasPorCliente, clientes],
   );
-  const archivados = clientes.filter((c) => !!c.archived);
+  const archivados = useMemo(() => clientes.filter((cliente) => !!cliente.archived), [clientes]);
   const visibles = tab === "activos" ? activos : archivados;
-  const filtrados = filtrarClientes(visibles, busqueda);
+  const filtradosPorTexto = filtrarClientes(visibles, busqueda);
+  const filtrados = soloSinCampana && tab === "activos"
+    ? filtradosPorTexto.filter((cliente) => (campanasActivasPorCliente[cliente.id] ?? 0) === 0)
+    : filtradosPorTexto;
+  const cuentasSinCampana = activos.filter((cliente) => (campanasActivasPorCliente[cliente.id] ?? 0) === 0);
+
+  const comandos = useMemo<CommandItem[]>(() => {
+    const items: CommandItem[] = activos.map((cliente) => ({
+      id: `cliente-${cliente.id}`,
+      kind: "cliente",
+      label: cliente.empresa || cliente.contacto || "Cliente",
+      detail: (campanasActivasPorCliente[cliente.id] ?? 0) > 0
+        ? `${campanasActivasPorCliente[cliente.id]} ${(campanasActivasPorCliente[cliente.id] ?? 0) === 1 ? "campaña activa" : "campañas activas"}`
+        : "Sin campaña activa",
+      keywords: [cliente.contacto ?? "", cliente.email ?? "", cliente.ciudad ?? "", cliente.sector ?? ""],
+      onSelect: () => onSelect(cliente.id),
+    }));
+    const agregar = (id: string, label: string, detail: string, callback?: () => void) => {
+      if (callback) items.push({ id, kind: "modulo", label, detail, onSelect: callback });
+    };
+    agregar("gestion", "Centro de gestión", "Herramientas de toda la operación", () => setGestionAbierta(true));
+    agregar("usuarios", "Usuarios", "Gestionar accesos", esGerente ? onOpenUsuarios : undefined);
+    agregar("solicitudes", "Solicitudes", "Revisar campañas pendientes", onOpenSolicitudes);
+    agregar("paneles", "Paneles", "Inventario digital", esGerente ? onOpenPaneles : undefined);
+    agregar("ocupacion", "Ocupación", "Disponibilidad operativa", onOpenOcupacion);
+    agregar("cotizaciones", "Cotizaciones", "Propuestas comerciales", onOpenCotizaciones);
+    agregar("analitica", "Analítica", "Actividad y accesos", esGerente ? onOpenAnalitica : undefined);
+    return items;
+  }, [activos, campanasActivasPorCliente, esGerente, onOpenAnalitica, onOpenCotizaciones, onOpenOcupacion, onOpenPaneles, onOpenSolicitudes, onOpenUsuarios, onSelect]);
 
   // Con muchos clientes la grilla se hacía interminable -- ahora se
   // muestran de a 8 tiles a la vez (pedido explícito) y el último
@@ -148,6 +184,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   function cambiarTab(siguiente: "activos" | "archivados") {
     setErrorAccion("");
+    if (siguiente === "archivados") setSoloSinCampana(false);
     setTab(siguiente);
   }
 
@@ -188,8 +225,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       await llamarAdministrarCliente(cliente.id, "archivar");
       setMenuCliente(null);
       cambiarTab("archivados");
+      notificar({ tipo: "exito", mensaje: `${cliente.empresa} se movió a Archivados.` });
     } catch (err) {
-      setErrorAccion(err instanceof Error ? err.message : "No se pudo archivar el perfil.");
+      const mensaje = err instanceof Error ? err.message : "No se pudo archivar el perfil.";
+      setErrorAccion(mensaje);
+      notificar({ tipo: "error", mensaje });
     } finally {
       setAccionandoId(null);
     }
@@ -202,8 +242,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       await llamarAdministrarCliente(cliente.id, "restaurar");
       setMenuCliente(null);
       cambiarTab("activos");
+      notificar({ tipo: "exito", mensaje: `${cliente.empresa} volvió a perfiles activos.` });
     } catch (err) {
-      setErrorAccion(err instanceof Error ? err.message : "No se pudo recuperar el perfil.");
+      const mensaje = err instanceof Error ? err.message : "No se pudo recuperar el perfil.";
+      setErrorAccion(mensaje);
+      notificar({ tipo: "error", mensaje });
     } finally {
       setAccionandoId(null);
     }
@@ -236,6 +279,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           titulo: "Enviado para aprobación",
           mensaje: `Tu Gerente debe aprobar la eliminación definitiva de ${cliente.empresa}.`,
         });
+      } else {
+        notificar({ tipo: "exito", mensaje: `${cliente.empresa} se eliminó definitivamente.` });
       }
     } catch (err) {
       // La tarjeta puede seguir visible unas milésimas después de que
@@ -247,7 +292,9 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         setErrorAccion("");
         return;
       }
-      setErrorAccion(err instanceof Error ? err.message : "No se pudo eliminar definitivamente.");
+      const mensaje = err instanceof Error ? err.message : "No se pudo eliminar definitivamente.";
+      setErrorAccion(mensaje);
+      notificar({ tipo: "error", mensaje });
     } finally {
       setAccionandoId(null);
     }
@@ -296,6 +343,17 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <span>Vista cliente</span>
           </button>
         )}
+        <button
+          type="button"
+          className="v360-search-trigger admin-picker-command-trigger"
+          onClick={() => setBuscadorGlobalAbierto(true)}
+          aria-label="Buscar clientes y módulos"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" />
+          </svg>
+          <span>Buscar</span><kbd>⌘ K</kbd>
+        </button>
       </div>
       {(estadoPush === "ofrecer" || estadoPush === "activando" || estadoPush === "bloqueado" || estadoPush === "error") && (
         <button
@@ -354,6 +412,37 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         <div className="admin-picker-sub">
           {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
         </div>
+
+        <section className="admin-picker-attention" aria-label="Atención ahora">
+          <div className="admin-picker-attention-label"><i aria-hidden="true" />Atención ahora</div>
+          <div className="admin-picker-attention-actions">
+            {solicitudesPendientes > 0 && (
+              <button type="button" onClick={onOpenSolicitudes}>
+                <strong>{solicitudesPendientes}</strong>
+                <span>{solicitudesPendientes === 1 ? "solicitud pendiente" : "solicitudes pendientes"}</span>
+                <b>Revisar</b>
+              </button>
+            )}
+            {cuentasSinCampana.length > 0 && (
+              <button
+                type="button"
+                className={soloSinCampana ? "is-active" : ""}
+                aria-pressed={soloSinCampana}
+                onClick={() => { setTab("activos"); setBusqueda(""); setSoloSinCampana((actual) => !actual); }}
+              >
+                <strong>{cuentasSinCampana.length}</strong>
+                <span>{cuentasSinCampana.length === 1 ? "cuenta sin campaña" : "cuentas sin campaña"}</span>
+                <b>{soloSinCampana ? "Ver todas" : "Revisar"}</b>
+              </button>
+            )}
+            {solicitudesPendientes === 0 && cuentasSinCampana.length === 0 && (
+              <div className="admin-picker-attention-clear">
+                <strong>Operación al día</strong>
+                <span>No hay acciones pendientes con los datos disponibles.</span>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* SOLO GERENTE: Usuarios, Analitica y Paneles. El Trabajador
             opera con Solicitudes, Ocupacion y Cotizaciones. El backend ya
@@ -673,6 +762,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           Cerrar sesión
         </button>
       </div>
+      <CommandPalette
+        open={buscadorGlobalAbierto}
+        onOpenChange={setBuscadorGlobalAbierto}
+        items={comandos}
+        contexto="tu operación"
+      />
         </>
       )}
     </div>

@@ -32,6 +32,9 @@ interface Props {
    *  para precargar y abrir el formulario de Nueva campaña con el
    *  panel ya mencionado, en vez de hacer que lo escriba de cero. */
   onSolicitarPanel?: (panel: PanelConUso, tipo: "disponibilidad" | "renovacion") => void;
+  /** Permite que la búsqueda global abra el recurso exacto sin una consulta
+   * nueva. El inventario ya está cargado por esta pantalla. */
+  initialPanelId?: string;
 }
 
 export type PanelConUso = Panel & {
@@ -418,7 +421,7 @@ export function aplicarEstilosPopup(el: HTMLElement | undefined | null): void {
 /** Vacio compartido: un `[]` en el render es un objeto nuevo cada vez. */
 const SIN_PANELES: Panel[] = [];
 
-export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onNotifClick, totalNotifs, onSolicitarPanel }: Props) {
+export default function Cobertura({ contratos, contratosListos, onBack, onMenuClick, onNotifClick, totalNotifs, onSolicitarPanel, initialPanelId }: Props) {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any>(null);
@@ -520,8 +523,12 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
     () => conCoordenadas.filter((panel) => estadoPinPanel(panel) === "ocupado").length,
     [conCoordenadas]
   );
-  const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
+  const [seleccionadoId, setSeleccionadoId] = useState<string | null>(initialPanelId ?? null);
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
+
+  useEffect(() => {
+    if (initialPanelId) setSeleccionadoId(initialPanelId);
+  }, [initialPanelId]);
 
   useEffect(() => {
     let cancelado = false;

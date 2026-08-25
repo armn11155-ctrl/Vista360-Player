@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { collection, doc, onSnapshot, orderBy, query } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db, registrarLimpiezaDeSesion } from "../config/firebase";
 import type { Cliente } from "../types";
 
 export type ClientesAdminState =
@@ -30,6 +30,18 @@ let CAMPANAS_EN_MEMORIA: ConteoCampanasActivas = {};
 export function clientesAdminEnMemoria(): Cliente[] | null {
   return CLIENTES_EN_MEMORIA;
 }
+
+/** El conteo ya llegó en el mismo agregado que los clientes. Exponer la
+ * copia permite construir ayudas locales (buscador/atención) sin abrir otra
+ * consulta ni repetir trabajo en cada componente. */
+export function campanasActivasAdminEnMemoria(): ConteoCampanasActivas {
+  return CAMPANAS_EN_MEMORIA;
+}
+
+registrarLimpiezaDeSesion(() => {
+  CLIENTES_EN_MEMORIA = null;
+  CAMPANAS_EN_MEMORIA = {};
+});
 
 /**
  * Lista de clientes para el selector del administrador.

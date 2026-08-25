@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { db, registrarLimpiezaDeSesion } from "../config/firebase";
 import { hoyEnPeru } from "../utils/fechas";
 import type { Contrato, SolicitudCampana } from "../types";
 
@@ -53,9 +53,33 @@ let clienteActual = "";
 let estadoActual: ResumenState = { status: "loading" };
 let suscriptores = new Set<Suscriptor>();
 let cortar: (() => void) | null = null;
+// Solo conserva las últimas cuentas visitadas durante ESTA sesión. La escucha
+// sigue siendo una sola y revalida de inmediato; la copia evita un loader al
+// volver a una cuenta ya vista. El límite impide crecimiento sin control.
+const RESUMENES_EN_MEMORIA = new Map<string, Resumen>();
+const MAX_RESUMENES_EN_MEMORIA = 4;
+
+registrarLimpiezaDeSesion(() => {
+  detener();
+  clienteActual = "";
+  estadoActual = { status: "loading" };
+  suscriptores.clear();
+  RESUMENES_EN_MEMORIA.clear();
+});
+
+function guardarResumen(clienteId: string, resumen: Resumen) {
+  RESUMENES_EN_MEMORIA.delete(clienteId);
+  RESUMENES_EN_MEMORIA.set(clienteId, resumen);
+  while (RESUMENES_EN_MEMORIA.size > MAX_RESUMENES_EN_MEMORIA) {
+    const idMasAntiguo = RESUMENES_EN_MEMORIA.keys().next().value as string | undefined;
+    if (!idMasAntiguo) break;
+    RESUMENES_EN_MEMORIA.delete(idMasAntiguo);
+  }
+}
 
 function publicar(estado: ResumenState) {
   estadoActual = estado;
+  if (estado.status === "ready" && clienteActual) guardarResumen(clienteActual, estado.datos);
   suscriptores.forEach((s) => s(estado));
 }
 
@@ -183,7 +207,10 @@ function suscribir(clienteId: string, fn: Suscriptor): () => void {
   if (clienteId !== clienteActual) {
     detener();
     clienteActual = clienteId;
-    estadoActual = { status: "loading" };
+    const resumenCacheado = RESUMENES_EN_MEMORIA.get(clienteId);
+    estadoActual = resumenCacheado
+      ? { status: "ready", datos: resumenCacheado }
+      : { status: "loading" };
     if (clienteId) arrancar(clienteId);
     else estadoActual = { status: "ready", datos: { contratos: [], solicitudes: [] } };
   }
@@ -199,7 +226,10 @@ function suscribir(clienteId: string, fn: Suscriptor): () => void {
 }
 
 function useResumen(clienteId: string): ResumenState {
-  const [state, setState] = useState<ResumenState>({ status: "loading" });
+  const [state, setState] = useState<ResumenState>(() => {
+    const cacheado = RESUMENES_EN_MEMORIA.get(clienteId);
+    return cacheado ? { status: "ready", datos: cacheado } : { status: "loading" };
+  });
   useEffect(() => {
     if (!clienteId) { setState({ status: "ready", datos: { contratos: [], solicitudes: [] } }); return; }
     return suscribir(clienteId, setState);
