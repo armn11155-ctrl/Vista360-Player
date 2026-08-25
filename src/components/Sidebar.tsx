@@ -51,8 +51,6 @@ interface Props {
    *  ve pero no hace nada -- así el sidebar no rompe si algún llamador
    *  todavía no lo conecta. */
   onOpenPerfil?: () => void;
-  /** Abre la búsqueda local global (Cmd/Ctrl+K en laptop). */
-  onOpenSearch?: () => void;
 }
 
 const ITEMS: {
@@ -77,7 +75,7 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = false, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil, onOpenSearch }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = false, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   // useMemo OBLIGATORIO: `items` es dependencia del useLayoutEffect de
   // abajo, y ese efecto llama a setPill con un OBJETO nuevo. Sin
   // memoizar: efecto -> setPill -> render -> filter() da otro array ->
@@ -216,19 +214,6 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
           </button>
         </div>
         <div className="sidebar-list" ref={listRef} data-active={active || ""}>
-          {onOpenSearch && (
-            <button
-              type="button"
-              className="v360-search-trigger sidebar-command-trigger"
-              onClick={() => { onOpenSearch(); onClose(); }}
-              aria-label="Buscar en Vista360"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
-                <circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" />
-              </svg>
-              <span>Buscar</span><kbd>⌘ K</kbd>
-            </button>
-          )}
           {pill && (
             <div
               className="sidebar-pill"
