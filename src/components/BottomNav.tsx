@@ -6,6 +6,7 @@ export type Tab = "inicio" | "campanas" | "cobertura" | "reportes" | "perfil";
 interface Props {
   active: Tab;
   onChange: (tab: Tab) => void;
+  onIntent?: (tab: Tab) => void;
   isAdmin?: boolean;
   onCambiarCliente?: () => void;
 }
@@ -43,7 +44,7 @@ const TABS: { id: Tab; label: string; getIcon: (a: boolean) => React.ReactNode }
   },
 ];
 
-export default function BottomNav({ active, onChange }: Props) {
+export default function BottomNav({ active, onChange, onIntent }: Props) {
   return (
     <nav className="bottom-nav" aria-label="Navegación principal">
       {TABS.map(tab => {
@@ -53,6 +54,9 @@ export default function BottomNav({ active, onChange }: Props) {
             type="button"
             key={tab.id}
             className={`nav-item${a ? " active" : ""}`}
+            onPointerEnter={() => onIntent?.(tab.id)}
+            onPointerDown={() => onIntent?.(tab.id)}
+            onFocus={() => onIntent?.(tab.id)}
             onClick={() => {
               if (a) return;
               reproducirSonidoInterfaz("navegacion");

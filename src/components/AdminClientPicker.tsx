@@ -10,6 +10,7 @@ import type { Cliente } from "../types";
 import { brandColor } from "../utils/brandColor";
 import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
+import BrandLoader from "./BrandLoader";
 import { useDialogos } from "./DialogosProvider";
 import { conReautenticacion } from "../config/reautenticacion";
 
@@ -277,9 +278,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   return (
     <div className="admin-picker-shell">
       {state.status === "loading" ? (
-        <div className="admin-picker-loading">
-          <div className="admin-picker-loading-spinner" />
-        </div>
+        <BrandLoader label="Preparando el selector de clientes" />
       ) : (
         <>
       {/* Antes "Gestión" y "Vista cliente" eran dos botones cada uno

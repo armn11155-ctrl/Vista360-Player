@@ -9167,6 +9167,47 @@ a {
   .admin-picker-tile-copy small { font-size: 8.5px; }
 }
 
+/* El wordmark del selector conserva siempre el lienzo completo del archivo.
+   Había quedado sometido a columnas rígidas y reglas sucesivas de ancho que,
+   según el tamaño efectivo de Chrome, podían recortar sus remates laterales. */
+.admin-picker-editorial,
+.admin-picker-editorial-brand {
+  overflow: visible !important;
+}
+
+.admin-picker-editorial-brand img {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(154px, 12vw, 178px);
+  max-width: min(46vw, 178px);
+  height: auto !important;
+  padding: 2px 0;
+  box-sizing: content-box;
+  object-fit: contain;
+  object-position: left center;
+  clip-path: none;
+}
+
+.admin-picker-editorial-brand span {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 899px) {
+  .admin-picker-editorial-brand img {
+    width: min(100%, 112px);
+    max-width: 112px;
+  }
+}
+
+@media (max-width: 370px) {
+  .admin-picker-editorial-brand img {
+    width: min(100%, 96px);
+    max-width: 96px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .admin-picker-tile:not(.admin-picker-tile-vermas),
   .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-gear {

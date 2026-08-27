@@ -6,6 +6,8 @@ interface Props {
   /** Se conserva por compatibilidad con las llamadas existentes. Todas
    *  las variantes usan ahora el mismo fondo blanco. */
   dark?: boolean;
+  /** Permite revelar la pantalla ya pintada sin cortar el logo de golpe. */
+  leaving?: boolean;
 }
 
 // Todas las etapas de carga comparten este instante. Si React sustituye
@@ -13,14 +15,14 @@ interface Props {
 // donde iba en vez de volver a empezar desde abajo.
 const loaderInicio = Date.now();
 
-export default function BrandLoader({ label = "Cargando", dark = false }: Props) {
+export default function BrandLoader({ label = "Cargando", dark = false, leaving = false }: Props) {
   const segundosTranscurridos = Math.min((Date.now() - loaderInicio) / 1000, 2.8);
   const estilo = {
     "--brand-loader-delay": `${-segundosTranscurridos}s`,
   } as CSSProperties;
 
   return createPortal(
-    <div className={`brand-loader${dark ? " brand-loader-dark" : ""}`} role="status" aria-label={label} style={estilo}>
+    <div className={`brand-loader${dark ? " brand-loader-dark" : ""}${leaving ? " brand-loader-leaving" : ""}`} role="status" aria-label={label} style={estilo}>
       <div className="brand-loader-mark">
         <img className="brand-loader-logo brand-loader-logo-base" src="/logo-player.webp" alt="" draggable={false} />
         <span className="brand-loader-liquid" aria-hidden="true">

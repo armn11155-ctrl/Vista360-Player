@@ -23,6 +23,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onNavigate: (view: SidebarView) => void;
+  onIntentNavigate?: (view: SidebarView) => void;
   onLogout: () => void;
   onCambiarCliente?: () => void;
   isAdmin?: boolean;
@@ -75,7 +76,7 @@ const ITEMS: {
   // cliente del admin (AdminClientPicker), a pedido explícito.
 ];
 
-export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = false, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
+export default function Sidebar({ open, onClose, onNavigate, onIntentNavigate, onLogout, onCambiarCliente, isAdmin, esGerente = false, esInterno, solicitudesPendientes, active, perfilNombre, perfilAvatarKey, perfilAvatarUrl, onOpenPerfil }: Props) {
   // useMemo OBLIGATORIO: `items` es dependencia del useLayoutEffect de
   // abajo, y ese efecto llama a setPill con un OBJETO nuevo. Sin
   // memoizar: efecto -> setPill -> render -> filter() da otro array ->
@@ -244,6 +245,9 @@ export default function Sidebar({ open, onClose, onNavigate, onLogout, onCambiar
               data-tooltip={it.label}
               role="button"
               tabIndex={0}
+              onPointerEnter={() => onIntentNavigate?.(it.id)}
+              onPointerDown={() => onIntentNavigate?.(it.id)}
+              onFocus={() => onIntentNavigate?.(it.id)}
               onClick={() => {
                 if (it.id !== active) reproducirSonidoInterfaz("navegacion");
                 onNavigate(it.id);

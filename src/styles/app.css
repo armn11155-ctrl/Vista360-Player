@@ -238,6 +238,11 @@
     justify-content: center;
     overflow: hidden;
     background: #01040B;
+    opacity: 1;
+    transition: opacity .3s cubic-bezier(.4, 0, .2, 1);
+  }
+  .brand-loader.brand-loader-leaving {
+    opacity: 0;
   }
   .brand-loader.brand-loader-dark {
     background: #01040B;
@@ -9891,6 +9896,149 @@ details.report-admin-panel {
 @media (prefers-reduced-motion: reduce) {
   .coverage-leaflet-marker img,
   .screen-card { transition: none; }
+}
+
+/* ================================================================
+   NAVEGACIÓN Y CARGA CONTINUA
+   La respuesta al gesto es inmediata; el progreso aparece únicamente
+   cuando la espera supera 140 ms y nunca bloquea la pantalla anterior.
+   ================================================================ */
+.navigation-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 290;
+  height: 3px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition: opacity .12s ease, transform .16s ease;
+}
+.navigation-progress.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.navigation-progress > span {
+  display: block;
+  width: 38%;
+  height: 100%;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(90deg, #0877FF, #75B8FF, #0877FF);
+  box-shadow: 0 3px 14px rgba(8,119,255,.44);
+  animation: navigation-progress-travel 1.05s cubic-bezier(.45,0,.2,1) infinite;
+}
+@keyframes navigation-progress-travel {
+  from { transform: translateX(-110%); }
+  to { transform: translateX(275%); }
+}
+
+.route-loader {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #F7F9FC;
+}
+.route-loader-header {
+  min-height: 72px;
+  padding: calc(15px + env(safe-area-inset-top)) 20px 13px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 38px minmax(90px, 170px) 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: #050A12;
+}
+.route-loader-header > span,
+.route-loader-header > i {
+  display: block;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.075);
+}
+.route-loader-header > i {
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+}
+.route-loader-body {
+  flex: 1;
+  min-height: 0;
+  padding: clamp(22px, 4vw, 42px);
+  overflow: hidden;
+}
+.route-loader-copy {
+  margin-bottom: 22px;
+  display: grid;
+  gap: 5px;
+}
+.route-loader-copy small {
+  color: #0877FF;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.route-loader-copy strong { color: #0B1220; font-size: 20px; font-weight: 880; }
+.route-loader-copy span { color: #718096; font-size: 12px; font-weight: 620; }
+.route-loader-grid {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.route-loader-skeleton {
+  position: relative;
+  min-height: 126px;
+  overflow: hidden;
+  border: 1px solid #E3EAF3;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #FFFFFF, #F1F5FA);
+  box-shadow: 0 20px 42px -34px rgba(15,23,42,.38);
+}
+.route-loader-skeleton-wide { min-height: clamp(150px, 25vh, 240px); }
+.route-loader-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 22%, rgba(255,255,255,.82) 43%, transparent 64%);
+  transform: translateX(-110%);
+  animation: route-loader-shimmer 1.35s ease-in-out infinite;
+}
+@keyframes route-loader-shimmer { to { transform: translateX(110%); } }
+
+@media (max-width: 899px) {
+  .brand-loader-mark { width: min(280px, 70vw); margin-top: -20px; }
+  .app-shell.has-bottom-nav .bottom-nav {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .app-shell.has-bottom-nav :where(.content-area, .campaign-list, .reports-screen-body) {
+    scroll-padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  }
+  .coverage-premium-area {
+    padding-bottom: calc(34px + env(safe-area-inset-bottom)) !important;
+    scroll-padding-bottom: calc(34px + env(safe-area-inset-bottom));
+  }
+  .route-loader-header { min-height: 66px; }
+  .route-loader-body { padding: 22px 16px calc(28px + env(safe-area-inset-bottom)); }
+  .route-loader-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .route-loader-grid > :last-child { display: none; }
+  .route-loader-skeleton { min-height: 104px; border-radius: 16px; }
+  .route-loader-skeleton-wide { min-height: 180px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-progress,
+  .navigation-progress > span,
+  .route-loader-skeleton::after { transition: none; animation: none; }
+  .navigation-progress > span { width: 100%; opacity: .78; }
+  .route-loader-skeleton::after { display: none; }
 }
 
 /* ================================================================

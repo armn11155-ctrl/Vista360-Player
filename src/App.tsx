@@ -12,11 +12,11 @@ const SIN_SOLICITUDES: SolicitudCampana[] = [];
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
 /** Tiempo que tarda la cortina azul en cubrir por completo el contexto anterior. */
-const CIERRE_VISUAL_MS = 360;
+const CIERRE_VISUAL_MS = 260;
 /** Dos cuadros dan tiempo al commit sin convertir la animación en espera. */
-const PAUSA_VISUAL_MS = 40;
+const PAUSA_VISUAL_MS = 20;
 /** La salida hacia la izquierda revela el contexto nuevo ya renderizado. */
-const APERTURA_VISUAL_MS = 440;
+const APERTURA_VISUAL_MS = 300;
 import { usePortalAuth, type AuthState } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
@@ -29,6 +29,7 @@ import ConfigMissing from "./components/ConfigMissing";
 import OfflineBanner from "./components/OfflineBanner";
 import LoginScreen from "./components/LoginScreen";
 import BrandLoader from "./components/BrandLoader";
+import RouteLoader from "./components/RouteLoader";
 
 
 import BottomNav, { type Tab } from "./components/BottomNav";
@@ -180,6 +181,50 @@ type View =
   | "aprobaciones"
   | "papelera";
 
+const CARGADORES_POR_VISTA: Partial<Record<View, CargaPantalla>> = {
+  campanas: () => import("./components/screens/MisCampanas"),
+  detalle: () => import("./components/screens/DetalleCampana"),
+  nueva: () => import("./components/screens/NuevaCampana"),
+  cobertura: () => import("./components/screens/Cobertura"),
+  mispantallas: () => import("./components/screens/MisPantallas"),
+  reportes: () => import("./components/screens/Reportes"),
+  facturas: () => import("./components/screens/Facturas"),
+  perfil: () => import("./components/screens/Perfil"),
+  analitica: () => import("./components/screens/AnaliticaClientes"),
+  solicitudes: () => import("./components/screens/SolicitudesCampana"),
+  accesos: () => import("./components/screens/Accesos"),
+  notificaciones: () => import("./components/screens/Notificaciones"),
+  nuevoCliente: () => import("./components/screens/CrearCliente"),
+  miPerfil: () => import("./components/screens/AdminPerfil"),
+  paneles: () => import("./components/screens/Paneles"),
+  ocupacion: () => import("./components/screens/Ocupacion"),
+  cotizaciones: () => import("./components/screens/Cotizaciones"),
+  aprobaciones: () => import("./components/screens/AprobacionesGerente"),
+  papelera: () => import("./components/screens/Papelera"),
+};
+
+function precargarVista(vista: View) {
+  const cargar = CARGADORES_POR_VISTA[vista];
+  if (cargar) void cargar().catch(() => undefined);
+  if (vista === "cobertura") {
+    void cargarLeaflet().catch(() => undefined);
+    precargarPaneles();
+  }
+}
+
+function NavigationProgress({ visible }: { visible: boolean }) {
+  return (
+    <div
+      className={`navigation-progress${visible ? " is-visible" : ""}`}
+      role="status"
+      aria-label="Preparando la sección"
+      aria-hidden={visible ? undefined : true}
+    >
+      <span />
+    </div>
+  );
+}
+
 // Color real del header de cada pantalla — debe coincidir exactamente con
 // el background de su header (.header-dark, .header-light, etc). Se usa
 // para sincronizar la barra de estado (ver useThemeColor).
@@ -257,6 +302,8 @@ export default function App() {
     });
   }, [auth]);
   const [view, setViewInmediato] = useState<View>("inicio");
+  const [vistaSolicitada, setVistaSolicitada] = useState<View | null>(null);
+  const [mostrarIndicadorNavegacion, setMostrarIndicadorNavegacion] = useState(false);
   // Las pantallas se cargan bajo demanda (lazy) para no descargar toda la
   // app de una -- eso significa que cambiar de pantalla a veces implica
   // esperar a que React termine de traer el código de la pantalla nueva.
@@ -398,6 +445,15 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cambioEnCurso]);
 
+  useEffect(() => {
+    if (!cambioEnCurso) {
+      setMostrarIndicadorNavegacion(false);
+      return;
+    }
+    const reloj = window.setTimeout(() => setMostrarIndicadorNavegacion(true), 140);
+    return () => window.clearTimeout(reloj);
+  }, [cambioEnCurso]);
+
   useEffect(() => () => {
     if (relojCierreVisualRef.current !== null) window.clearTimeout(relojCierreVisualRef.current);
     if (relojPausaVisualRef.current !== null) window.clearTimeout(relojPausaVisualRef.current);
@@ -406,6 +462,9 @@ export default function App() {
   }, []);
 
   function setView(v: View) {
+    if (v === view && !cambioEnCurso) return;
+    setVistaSolicitada(v);
+    precargarVista(v);
     comenzarCambioDePantalla(() => setViewInmediato(v));
   }
   // Solo el NOMBRE de la pantalla, para que el aviso de bucle diga dónde
@@ -440,9 +499,11 @@ export default function App() {
   }
   // El selector ya tiene los clientes en memoria y las pantallas de uso
   // frecuente están precargadas. Para cambiar entre cuentas no se necesita la
-  // cortina de 840 ms reservada al login/logout: se actualizan cuenta y vista
+  // cortina breve reservada al login/logout: se actualizan cuenta y vista
   // en la misma transición de React y el listener revalida detrás.
   function cambiarClienteSinEspera(id: string | null, destino: View = "inicio") {
+    setVistaSolicitada(destino);
+    precargarVista(destino);
     comenzarCambioDePantalla(() => {
       setAdminClienteIdInmediato(id);
       setViewInmediato(destino);
@@ -548,9 +609,10 @@ export default function App() {
           // lateral) nunca le habían puesto la clase.
           <div className="app-shell no-bottom-nav">
             <OfflineBanner online={online} />
+            <NavigationProgress visible={mostrarIndicadorNavegacion} />
             <Suspense
               fallback={
-                <BrandLoader />
+                <RouteLoader />
               }
             >
               {view === "solicitudes"
@@ -583,6 +645,7 @@ export default function App() {
       return (
         <div className="app-shell">
           <OfflineBanner online={online} />
+          <NavigationProgress visible={mostrarIndicadorNavegacion} />
           {/* Suspense porque AdminClientPicker ahora se carga bajo demanda
               (antes venía en el bundle inicial). Sin esto, React lanza al
               suspenderse. */}
@@ -619,6 +682,8 @@ export default function App() {
         uid={uid}
         email={auth.user.email ?? ""}
         view={view}
+        vistaPendiente={vistaSolicitada}
+        mostrarIndicadorNavegacion={mostrarIndicadorNavegacion}
         setView={setView}
         contratoAbierto={contratoAbierto}
         setContratoAbierto={setContratoAbierto}
@@ -654,6 +719,8 @@ export default function App() {
       uid={uid}
       email={auth.user.email ?? ""}
       view={view}
+      vistaPendiente={vistaSolicitada}
+      mostrarIndicadorNavegacion={mostrarIndicadorNavegacion}
       setView={setView}
       contratoAbierto={contratoAbierto}
       setContratoAbierto={setContratoAbierto}
@@ -668,6 +735,8 @@ interface AuthenticatedProps {
   uid?: string;
   email: string;
   view: View;
+  vistaPendiente: View | null;
+  mostrarIndicadorNavegacion: boolean;
   setView: (v: View) => void;
   contratoAbierto: Contrato | null;
   setContratoAbierto: (c: Contrato | null) => void;
@@ -685,6 +754,8 @@ function AuthenticatedApp({
   uid,
   email,
   view,
+  vistaPendiente,
+  mostrarIndicadorNavegacion,
   setView,
   contratoAbierto,
   setContratoAbierto,
@@ -699,6 +770,42 @@ function AuthenticatedApp({
   useDetectorDeBucles("AuthenticatedApp");
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
+  // Tras el login (y al entrar a otra cuenta), el logo de marca permanece
+  // encima hasta que la primera pantalla ya tiene sus campañas. Cuando los
+  // datos están listos se esperan dos frames para que React pinte el destino
+  // detrás y recién entonces se desvanece el logo: nunca se revela un
+  // esqueleto intermedio por culpa de una conexión lenta.
+  const [clienteLoaderId, setClienteLoaderId] = useState(clienteId);
+  const [loaderInicialVisible, setLoaderInicialVisible] = useState(true);
+  const [loaderInicialSaliendo, setLoaderInicialSaliendo] = useState(false);
+  useEffect(() => {
+    setClienteLoaderId(clienteId);
+    setLoaderInicialVisible(true);
+    setLoaderInicialSaliendo(false);
+  }, [clienteId]);
+  useEffect(() => {
+    if (clienteLoaderId !== clienteId || contratosState.status === "loading") return;
+    if (contratosState.status === "error") {
+      setLoaderInicialSaliendo(false);
+      setLoaderInicialVisible(false);
+      return;
+    }
+
+    let segundoFrame = 0;
+    let relojSalida = 0;
+    const primerFrame = window.requestAnimationFrame(() => {
+      segundoFrame = window.requestAnimationFrame(() => {
+        setLoaderInicialSaliendo(true);
+        relojSalida = window.setTimeout(() => setLoaderInicialVisible(false), 300);
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(primerFrame);
+      if (segundoFrame) window.cancelAnimationFrame(segundoFrame);
+      if (relojSalida) window.clearTimeout(relojSalida);
+    };
+  }, [clienteId, clienteLoaderId, contratosState.status]);
+  const mostrarLoaderInicial = clienteLoaderId !== clienteId || loaderInicialVisible;
   // VACIO ESTABLE. `? x : []` crea un array nuevo en CADA render, y ese
   // array es dependencia del efecto de useNotificaciones: efecto ->
   // setState -> render -> array nuevo -> efecto... Un bucle infinito sin
@@ -803,8 +910,11 @@ function AuthenticatedApp({
   const mostrarNotifPrompt = notifPromptAbierto;
 
   const showBottomNav = view !== "detalle" && view !== "nueva" && !SIDEBAR_VIEWS.has(view);
+  const rutaNavegacion = vistaPendiente ?? view;
   const activeTab: Tab =
-    view === "detalle" || view === "nueva" || SIDEBAR_VIEWS.has(view) ? "inicio" : (view as Tab);
+    rutaNavegacion === "detalle" || rutaNavegacion === "nueva" || SIDEBAR_VIEWS.has(rutaNavegacion)
+      ? "inicio"
+      : (rutaNavegacion as Tab);
 
   function abrirContrato(c: Contrato) {
     setContratoAbierto(c);
@@ -831,7 +941,7 @@ function AuthenticatedApp({
 
   if (esperandoCampanas && contratosState.status === "loading") {
     content = (
-      <BrandLoader label="Cargando campañas" />
+      <RouteLoader label="Actualizando campañas" />
     );
   } else if (esperandoCampanas && contratosState.status === "error") {
     content = (
@@ -1015,13 +1125,21 @@ function AuthenticatedApp({
   }
 
   return (
-    <div className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}`}>
+    <div
+      className={`app-shell ${showBottomNav ? "has-bottom-nav" : "no-bottom-nav"}${vistaPendiente && vistaPendiente !== view ? " navigation-is-pending" : ""}`}
+      aria-busy={vistaPendiente && vistaPendiente !== view ? true : undefined}
+    >
       <OfflineBanner online={online} />
+      <NavigationProgress visible={mostrarIndicadorNavegacion} />
+      {mostrarLoaderInicial && contratosState.status !== "error" && (
+        <BrandLoader label="Preparando tu cuenta" leaving={loaderInicialSaliendo} />
+      )}
       {mostrarOnboarding && <OnboardingTour uid={uid} onClose={() => setMostrarOnboarding(false)} />}
       <Sidebar
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onNavigate={(v) => setView(v)}
+        onIntentNavigate={(v) => precargarVista(v)}
         onLogout={() => logout()}
         onCambiarCliente={onCambiarCliente}
         isAdmin={isAdmin}
@@ -1053,7 +1171,7 @@ function AuthenticatedApp({
           <div className="screen active">
             <Suspense
               fallback={
-                <BrandLoader />
+                <RouteLoader />
               }
             >
               {content}
@@ -1064,6 +1182,7 @@ function AuthenticatedApp({
           <BottomNav
             active={activeTab}
             onChange={(tab) => setView(tab)}
+            onIntent={(tab) => precargarVista(tab)}
             isAdmin={isAdmin}
             onCambiarCliente={onCambiarCliente}
           />

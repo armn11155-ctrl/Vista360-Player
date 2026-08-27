@@ -21,6 +21,8 @@ const app = readFileSync(resolve(__dirname, "../App.tsx"), "utf-8");
 const helper = readFileSync(resolve(__dirname, "../utils/pantallaLazy.ts"), "utf-8");
 const main = readFileSync(resolve(__dirname, "../main.tsx"), "utf-8");
 const sw = readFileSync(resolve(raiz, "public/sw.js"), "utf-8");
+const selectorClientes = readFileSync(resolve(__dirname, "../components/AdminClientPicker.tsx"), "utf-8");
+const diseno = readFileSync(resolve(__dirname, "../styles/design-system.css"), "utf-8");
 
 describe("todas las pantallas se cargan con recuperación", () => {
   it("NINGUNA usa lazy() pelado", () => {
@@ -165,9 +167,9 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(app).toContain('dataset.v360PageTransition = "revealing"');
     expect(app).toContain("actualizaciones.forEach((cambiar) => cambiar())");
     expect(app).toContain('matchMedia("(prefers-reduced-motion: reduce)")');
-    expect(app).toContain("CIERRE_VISUAL_MS = 360");
-    expect(app).toContain("PAUSA_VISUAL_MS = 40");
-    expect(app).toContain("APERTURA_VISUAL_MS = 440");
+    expect(app).toContain("CIERRE_VISUAL_MS = 260");
+    expect(app).toContain("PAUSA_VISUAL_MS = 20");
+    expect(app).toContain("APERTURA_VISUAL_MS = 300");
     expect(app).toContain("relojPausaVisualRef");
     expect(movimiento).toContain('data-v360-page-transition="covering"');
     expect(movimiento).toContain('data-v360-page-transition="revealing"');
@@ -182,6 +184,23 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).not.toContain("at 84% 86%");
     expect(movimiento).not.toContain("at 82% 78%");
     expect(movimiento).toMatch(/\.screen\.active > \* \{[\s\S]*?animation: none !important;/);
+  });
+});
+
+describe("la carga inicial conserva la marca hasta que la cuenta está lista", () => {
+  it("el selector mantiene el logo animado mientras consulta los clientes", () => {
+    expect(selectorClientes).toContain('<BrandLoader label="Preparando el selector de clientes" />');
+  });
+
+  it("la aplicación espera los contratos y deja pintar la vista antes de retirar el logo", () => {
+    expect(app).toContain('contratosState.status === "loading"');
+    expect(app).toContain("requestAnimationFrame(() => {");
+    expect(app).toContain('<BrandLoader label="Preparando tu cuenta" leaving={loaderInicialSaliendo} />');
+  });
+
+  it("el logo del selector se contiene completo en escritorio y celular", () => {
+    expect(diseno).toMatch(/\.admin-picker-editorial-brand img \{[\s\S]*?object-fit: contain;[\s\S]*?clip-path: none;/);
+    expect(diseno).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.admin-picker-editorial-brand img \{[\s\S]*?max-width: 112px;/);
   });
 });
 
