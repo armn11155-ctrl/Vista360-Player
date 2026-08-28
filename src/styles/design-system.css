@@ -9269,6 +9269,25 @@ a {
 .admin-picker-attention-clear strong { color: #e9f2ff; font-size: 12px; }
 .admin-picker-attention-clear span { color: #8090a6; font-size: 10px; }
 
+/* El signo de apertura y los remates superiores ocupan más que la caja de
+   una línea con line-height:1.02. Chrome informaba 42px de contenido dentro
+   de una caja de 37px, de ahí el recorte real del título. */
+.admin-picker-title {
+  overflow: visible !important;
+  line-height: 1.18 !important;
+  padding-block: .07em .11em;
+  text-wrap: balance;
+}
+
+/* Atención ahora queda reservada para solicitudes que requieren una acción.
+   Ya no compite con el selector mostrando métricas informativas de campañas. */
+.admin-picker-attention-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+.admin-picker-attention-actions > button {
+  width: 100%;
+}
+
 @media (max-width: 899px) {
   .admin-picker-top-left-actions { flex-wrap: wrap; }
   .admin-picker-attention { margin-top: 14px; padding: 10px; }

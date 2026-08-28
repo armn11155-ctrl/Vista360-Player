@@ -220,85 +220,50 @@
   }
   .retry-btn:active { opacity: 0.7; }
 
-  /* position:fixed a toda la pantalla (en vez de solo llenar su
-     contenedor con flex) para que todas las cargas cubran el viewport
-     completo con el mismo fondo blanco, sin importar dónde se usen. */
-  /* Pantalla de carga: fondo negro, solo el wordmark VISTA360 PLAYER
-     (logo-player.webp, blanco y transparente) con el efecto de "agua
-     llenando" aplicado directo a las letras -- ya no hay una marca
-     "V" aparte de eso. */
+  /* Una sola cortina de continuidad para arranque, autenticación y carga
+     de cuenta. No muestra una segunda pantalla negra ni vuelve a enseñar
+     el logo: el plano azul entra desde la izquierda y permanece hasta que
+     la vista final está realmente pintada detrás. */
   .brand-loader {
     position: fixed;
     inset: 0;
-    z-index: 300;
+    z-index: 2102;
     width: 100%;
     height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    background: #01040B;
+    background:
+      radial-gradient(ellipse at 18% 42%, rgba(78,148,246,.24), transparent 48%),
+      linear-gradient(112deg, #06152D 0%, #0A3476 52%, #071D48 100%);
     opacity: 1;
-    transition: opacity .3s cubic-bezier(.4, 0, .2, 1);
+    transform: translate3d(0, 0, 0);
+    animation: brandLoaderEnter .32s cubic-bezier(.72, 0, .18, 1) both;
+    transition: opacity .18s linear, transform .3s cubic-bezier(.76, 0, .16, 1);
+    will-change: transform, opacity;
   }
   .brand-loader.brand-loader-leaving {
     opacity: 0;
+    transform: translate3d(105%, 0, 0);
   }
   .brand-loader.brand-loader-dark {
-    background: #01040B;
+    background:
+      radial-gradient(ellipse at 18% 42%, rgba(78,148,246,.24), transparent 48%),
+      linear-gradient(112deg, #06152D 0%, #0A3476 52%, #071D48 100%);
   }
-  .brand-loader-mark {
-    width: min(320px, 78vw);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: -52px;
-    transform: translateY(0) scale(.995);
-    will-change: transform;
-    animation: brandLoaderFloat 4.2s cubic-bezier(.45,.05,.55,.95) calc(2.8s + var(--brand-loader-delay, 0s)) infinite;
-  }
-  .brand-loader-logo {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    display: block;
-  }
-  .brand-loader-logo-base {
-    position: relative;
-    z-index: 1;
-    opacity: .16;
-  }
-  .brand-loader-dark .brand-loader-logo-base {
-    opacity: .16;
-  }
-  .brand-loader-liquid {
+  .brand-loader-sweep {
     position: absolute;
     inset: 0;
-    z-index: 2;
-    overflow: hidden;
-    clip-path: inset(100% 0 0 0);
-    will-change: clip-path;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    transform: translateZ(0);
-    animation: brandLoaderLiquidRise 2.8s cubic-bezier(.22,.61,.36,1) var(--brand-loader-delay, 0s) 1 forwards;
+    background: linear-gradient(102deg, transparent 30%, rgba(164,207,255,.14) 48%, transparent 66%);
+    transform: translate3d(-55%, 0, 0);
+    animation: brandLoaderSweep 1.55s ease-in-out infinite;
   }
-  .brand-loader-logo-fill {
-    filter: none;
+  @keyframes brandLoaderEnter {
+    from { transform: translate3d(-105%, 0, 0); }
+    to { transform: translate3d(0, 0, 0); }
   }
-  /* Antes habia una linea blanca (::after) pensada como el "borde del
-   * agua" del relleno, pero al estar fija en top:0 del contenedor
-   * clip-path, se quedaba pegada arriba del logo en vez de moverse
-   * con el llenado — se veia como un defecto. Se quito. */
-  @keyframes brandLoaderGlow {
-    0%, 100% { opacity: .35; transform: scale(.82); }
-    50% { opacity: .8; transform: scale(1.08); }
-  }
-  @keyframes brandLoaderLiquidRise {
-    0% { clip-path: inset(100% 0 0 0); opacity: .75; }
-    50% { clip-path: inset(48% 0 0 0); opacity: .94; }
-    100% { clip-path: inset(0 0 0 0); opacity: 1; }
+  @keyframes brandLoaderSweep {
+    0%, 16% { transform: translate3d(-55%, 0, 0); opacity: 0; }
+    42% { opacity: .8; }
+    78%, 100% { transform: translate3d(55%, 0, 0); opacity: 0; }
   }
   /* Se usa en .screens y .login-shell para que la transicion desde la
      pantalla de carga (fondo negro) no se sienta como un corte/flash
@@ -312,10 +277,6 @@
   }
   @keyframes spin {
     to { transform: rotate(360deg); }
-  }
-  @keyframes brandLoaderFloat {
-    0%, 100% { transform: translateY(0) rotate(-.25deg) scale(.995); }
-    50% { transform: translateY(-7px) rotate(.25deg) scale(1); }
   }
 
   /* En mobile, el shell completo queda fijo a la pantalla (como el
@@ -10013,7 +9974,6 @@ details.report-admin-panel {
 @keyframes route-loader-shimmer { to { transform: translateX(110%); } }
 
 @media (max-width: 899px) {
-  .brand-loader-mark { width: min(280px, 70vw); margin-top: -20px; }
   .app-shell.has-bottom-nav .bottom-nav {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;

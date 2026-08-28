@@ -770,10 +770,10 @@ function AuthenticatedApp({
   useDetectorDeBucles("AuthenticatedApp");
   const cliente = useCliente(clienteId);
   const contratosState = useContratos(clienteId);
-  // Tras el login (y al entrar a otra cuenta), el logo de marca permanece
-  // encima hasta que la primera pantalla ya tiene sus campañas. Cuando los
+  // Tras el login (y al entrar a otra cuenta), la cortina de continuidad
+  // permanece encima hasta que la primera pantalla ya tiene sus campañas. Cuando los
   // datos están listos se esperan dos frames para que React pinte el destino
-  // detrás y recién entonces se desvanece el logo: nunca se revela un
+  // detrás y recién entonces se retira la cortina: nunca se revela un
   // esqueleto intermedio por culpa de una conexión lenta.
   const [clienteLoaderId, setClienteLoaderId] = useState(clienteId);
   const [loaderInicialVisible, setLoaderInicialVisible] = useState(true);

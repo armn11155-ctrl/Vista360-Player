@@ -4,11 +4,11 @@
 
 :root {
   /* Marcador estable para confirmar desde producción que esta capa cargó. */
-  --v360-navigation-motion-version: 7;
+  --v360-navigation-motion-version: 8;
 }
 
-/* Una cortina azul entra desde la derecha, cubre por completo el contexto
-   anterior y continúa hacia la izquierda cuando React ya pintó el destino.
+/* Una cortina azul entra desde la izquierda, cubre por completo el contexto
+   anterior y continúa hacia la derecha cuando React ya pintó el destino.
    Solo se activa para login/logout y entrada/salida de una cuenta; las
    pestañas internas no escriben este dataset y cambian de inmediato. */
 body::before,
@@ -20,7 +20,7 @@ body::after {
   place-items: center;
   pointer-events: none;
   opacity: 0;
-  transform: translate3d(105%, 0, 0);
+  transform: translate3d(-105%, 0, 0);
 }
 
 body::before {
@@ -36,13 +36,7 @@ body::before {
 body::after {
   content: "";
   z-index: 2101;
-  background:
-    url("/logo-player.webp") center / clamp(225px, 28vw, 360px) auto no-repeat,
-    radial-gradient(ellipse at 50% 44%, rgba(112,174,255,.15) 0%, rgba(51,118,218,.06) 36%, transparent 68%);
-  background-size:
-    clamp(225px, 28vw, 360px) auto,
-    72% 56%;
-  background-repeat: no-repeat;
+  background: linear-gradient(102deg, transparent 26%, rgba(164,207,255,.14) 48%, transparent 70%);
 }
 
 html[data-v360-page-transition="covering"] body::before,
@@ -64,7 +58,7 @@ html[data-v360-page-transition="revealing"] body::before,
 html[data-v360-page-transition="revealing"] body::after {
   opacity: 1;
   pointer-events: auto;
-  transform: translate3d(-105%, 0, 0);
+  transform: translate3d(105%, 0, 0);
   will-change: transform, opacity;
   transition:
     transform 300ms cubic-bezier(.76, 0, .16, 1),
@@ -81,7 +75,7 @@ html[data-v360-page-transition="revealing"] #root {
 }
 
 @keyframes v360-page-settle {
-  from { opacity: .82; transform: translate3d(12px, 0, 0); }
+  from { opacity: .82; transform: translate3d(-12px, 0, 0); }
   to { opacity: 1; transform: none; }
 }
 

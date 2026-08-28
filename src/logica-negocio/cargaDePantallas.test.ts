@@ -22,7 +22,10 @@ const helper = readFileSync(resolve(__dirname, "../utils/pantallaLazy.ts"), "utf
 const main = readFileSync(resolve(__dirname, "../main.tsx"), "utf-8");
 const sw = readFileSync(resolve(raiz, "public/sw.js"), "utf-8");
 const selectorClientes = readFileSync(resolve(__dirname, "../components/AdminClientPicker.tsx"), "utf-8");
+const brandLoader = readFileSync(resolve(__dirname, "../components/BrandLoader.tsx"), "utf-8");
 const diseno = readFileSync(resolve(__dirname, "../styles/design-system.css"), "utf-8");
+const indexHtml = readFileSync(resolve(raiz, "index.html"), "utf-8");
+const manifest = readFileSync(resolve(raiz, "public/manifest.json"), "utf-8");
 
 describe("todas las pantallas se cargan con recuperación", () => {
   it("NINGUNA usa lazy() pelado", () => {
@@ -176,8 +179,9 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).toContain("v360-page-settle");
     expect(movimiento).toContain("v360-transition-atmosphere");
     expect(movimiento).toContain("translate3d(-105%, 0, 0)");
+    expect(movimiento).toContain("translate3d(105%, 0, 0)");
     expect(movimiento).not.toContain('url("/icon-192.png")');
-    expect(movimiento).toContain('url("/logo-player.webp")');
+    expect(movimiento).not.toContain('url("/logo-player.webp")');
     expect(movimiento).not.toContain("64px 64px");
     expect(movimiento).not.toContain("mix-blend-mode: screen");
     expect(movimiento).not.toContain("linear-gradient(104deg");
@@ -187,20 +191,34 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
   });
 });
 
-describe("la carga inicial conserva la marca hasta que la cuenta está lista", () => {
-  it("el selector mantiene el logo animado mientras consulta los clientes", () => {
+describe("la carga inicial conserva la cortina hasta que la cuenta está lista", () => {
+  it("el selector mantiene la cortina mientras consulta los clientes", () => {
     expect(selectorClientes).toContain('<BrandLoader label="Preparando el selector de clientes" />');
   });
 
-  it("la aplicación espera los contratos y deja pintar la vista antes de retirar el logo", () => {
+  it("la aplicación espera los contratos y deja pintar la vista antes de retirar la cortina", () => {
     expect(app).toContain('contratosState.status === "loading"');
     expect(app).toContain("requestAnimationFrame(() => {");
     expect(app).toContain('<BrandLoader label="Preparando tu cuenta" leaving={loaderInicialSaliendo} />');
   });
 
+  it("no vuelve a mostrar el logo en ninguna pantalla de espera", () => {
+    expect(brandLoader).not.toContain("logo-player.webp");
+    expect(indexHtml).not.toMatch(/class="v360-boot"[\s\S]*?<img/);
+    expect(brandLoader).toContain("brand-loader-sweep");
+    expect(indexHtml).toContain('<meta name="theme-color" content="#071D48" />');
+    expect(manifest).toContain('"background_color": "#071D48"');
+  });
+
   it("el logo del selector se contiene completo en escritorio y celular", () => {
     expect(diseno).toMatch(/\.admin-picker-editorial-brand img \{[\s\S]*?object-fit: contain;[\s\S]*?clip-path: none;/);
     expect(diseno).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.admin-picker-editorial-brand img \{[\s\S]*?max-width: 112px;/);
+  });
+
+  it("el título no recorta sus signos y se elimina la métrica de cuentas con campaña", () => {
+    expect(diseno).toMatch(/\.admin-picker-title \{[\s\S]*?overflow: visible !important;[\s\S]*?line-height: 1\.18 !important;/);
+    expect(selectorClientes).not.toContain("cuenta con campaña");
+    expect(selectorClientes).not.toContain("cuentas con campaña");
   });
 });
 

@@ -78,7 +78,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [avataresFallidos, setAvataresFallidos] = useState<Map<string, string>>(new Map());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
   const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
-  const [soloConCampana, setSoloConCampana] = useState(false);
   // Se consume una sola vez al montar -- el valor ya quedó capturado
   // arriba como estado inicial, así que esto solo le avisa al padre
   // que ya lo puede volver a poner en false (si no, la próxima vez
@@ -105,11 +104,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   );
   const archivados = useMemo(() => clientes.filter((cliente) => !!cliente.archived), [clientes]);
   const visibles = tab === "activos" ? activos : archivados;
-  const filtradosPorTexto = filtrarClientes(visibles, busqueda);
-  const filtrados = soloConCampana && tab === "activos"
-    ? filtradosPorTexto.filter((cliente) => (campanasActivasPorCliente[cliente.id] ?? 0) > 0)
-    : filtradosPorTexto;
-  const cuentasConCampana = activos.filter((cliente) => (campanasActivasPorCliente[cliente.id] ?? 0) > 0);
+  const filtrados = filtrarClientes(visibles, busqueda);
 
   // Con muchos clientes la grilla se hacía interminable -- ahora se
   // muestran de a 8 tiles a la vez (pedido explícito) y el último
@@ -159,7 +154,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
 
   function cambiarTab(siguiente: "activos" | "archivados") {
     setErrorAccion("");
-    if (siguiente === "archivados") setSoloConCampana(false);
     setTab(siguiente);
   }
 
@@ -349,7 +343,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
       <div className="admin-picker-stage">
         <section className="admin-picker-editorial" aria-hidden="true">
           <div className="admin-picker-editorial-brand">
-            <img src="/logo-player.webp" decoding="async" alt="" draggable={false} />
+            <img src="/logo-player.webp" width="640" height="140" decoding="async" fetchPriority="high" alt="" draggable={false} />
             <span>PORTAL DE GESTIÓN</span>
           </div>
           <div className="admin-picker-editorial-copy">
@@ -365,7 +359,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         </section>
         <div className="admin-picker-console">
           <div className="admin-picker-header">
-        <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
+        <img src="/logo-player.webp" width="640" height="140" decoding="async" fetchPriority="high" alt="Vista360 Player" className="admin-picker-logo" draggable={false} />
         <div className="admin-picker-badge">
           <span className="admin-picker-badge-dot" />
           {esGerente ? "Modo Gerente" : "Modo Trabajador"}
@@ -375,36 +369,18 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
         </div>
 
-        <section className="admin-picker-attention" aria-label="Atención ahora">
-          <div className="admin-picker-attention-label"><i aria-hidden="true" />Atención ahora</div>
-          <div className="admin-picker-attention-actions">
-            {solicitudesPendientes > 0 && (
+        {solicitudesPendientes > 0 && (
+          <section className="admin-picker-attention" aria-label="Atención ahora">
+            <div className="admin-picker-attention-label"><i aria-hidden="true" />Atención ahora</div>
+            <div className="admin-picker-attention-actions">
               <button type="button" onClick={onOpenSolicitudes}>
                 <strong>{solicitudesPendientes}</strong>
                 <span>{solicitudesPendientes === 1 ? "solicitud pendiente" : "solicitudes pendientes"}</span>
                 <b>Revisar</b>
               </button>
-            )}
-            {cuentasConCampana.length > 0 && (
-              <button
-                type="button"
-                className={soloConCampana ? "is-active" : ""}
-                aria-pressed={soloConCampana}
-                onClick={() => { setTab("activos"); setBusqueda(""); setSoloConCampana((actual) => !actual); }}
-              >
-                <strong>{cuentasConCampana.length}</strong>
-                <span>{cuentasConCampana.length === 1 ? "cuenta con campaña" : "cuentas con campaña"}</span>
-                <b>{soloConCampana ? "Ver todas" : "Revisar"}</b>
-              </button>
-            )}
-            {solicitudesPendientes === 0 && cuentasConCampana.length === 0 && (
-              <div className="admin-picker-attention-clear">
-                <strong>Operación al día</strong>
-                <span>No hay acciones pendientes con los datos disponibles.</span>
-              </div>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
 
         {/* SOLO GERENTE: Usuarios, Analitica y Paneles. El Trabajador
             opera con Solicitudes, Ocupacion y Cotizaciones. El backend ya
@@ -508,6 +484,8 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                           loading={indice < 4 ? "eager" : "lazy"}
                           fetchPriority={indice < 4 ? "high" : "auto"}
                           decoding="async"
+                          width="640"
+                          height="420"
                           onError={() => setAvataresFallidos((prev) => {
                             const siguiente = new Map(prev);
                             const url = avatarSrc(c);
