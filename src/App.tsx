@@ -532,13 +532,13 @@ export default function App() {
     envMissing.length > 0
       ? "#1a0707"
       : auth.status === "loading"
-        ? "#050A12"
+        ? "#071D48"
         : auth.status === "error"
           ? "#0B1220"
         : auth.status === "out"
           ? "#050A12"
           : (auth.role === "admin" || auth.role === "trabajador") && !adminClienteId
-            ? "#050A12"
+            ? "#071D48"
             : VIEW_COLORS[view] ?? "#0B1220";
   // El lienzo que queda DETRÁS de las pantallas siempre conserva el color
   // del header. Cada módulo sigue pintando su contenido claro por encima,

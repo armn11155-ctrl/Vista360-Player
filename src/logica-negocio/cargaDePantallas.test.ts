@@ -208,6 +208,8 @@ describe("la carga inicial conserva la cortina hasta que la cuenta está lista",
     expect(brandLoader).toContain("brand-loader-sweep");
     expect(indexHtml).toContain('<meta name="theme-color" content="#071D48" />');
     expect(manifest).toContain('"background_color": "#071D48"');
+    expect(app).toMatch(/auth\.status === "loading"[\s\S]*?\? "#071D48"/);
+    expect(app).toMatch(/!adminClienteId[\s\S]*?\? "#071D48"/);
   });
 
   it("el logo del selector se contiene completo en escritorio y celular", () => {
