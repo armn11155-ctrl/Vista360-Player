@@ -12,6 +12,16 @@ interface Props {
 export default function BrandLoader({ label = "Cargando", dark = false, leaving = false }: Props) {
   return createPortal(
     <div className={`brand-loader${dark ? " brand-loader-dark" : ""}${leaving ? " brand-loader-leaving" : ""}`} role="status" aria-label={label}>
+      <img
+        className="brand-loader-logo"
+        src="/vista360-quote-logo.png"
+        width="640"
+        height="140"
+        decoding="async"
+        fetchPriority="high"
+        alt="VISTA360"
+        draggable={false}
+      />
       <span className="brand-loader-sweep" aria-hidden="true" />
     </div>,
     document.body

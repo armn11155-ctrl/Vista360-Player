@@ -221,9 +221,8 @@
   .retry-btn:active { opacity: 0.7; }
 
   /* Una sola cortina de continuidad para arranque, autenticación y carga
-     de cuenta. No muestra una segunda pantalla negra ni vuelve a enseñar
-     el logo: el plano azul entra desde la izquierda y permanece hasta que
-     la vista final está realmente pintada detrás. */
+     de cuenta. El plano azul entra desde la izquierda, mantiene visible la
+     marca VISTA360 y permanece hasta que la vista final está pintada detrás. */
   .brand-loader {
     position: fixed;
     inset: 0;
@@ -239,6 +238,18 @@
     animation: brandLoaderEnter .32s cubic-bezier(.72, 0, .18, 1) both;
     transition: opacity .18s linear, transform .3s cubic-bezier(.76, 0, .16, 1);
     will-change: transform, opacity;
+  }
+  .brand-loader-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+    width: clamp(210px, 27vw, 360px);
+    height: auto;
+    object-fit: contain;
+    transform: translate3d(-50%, -50%, 0);
+    filter: drop-shadow(0 16px 30px rgba(0, 5, 18, .28));
+    animation: brandLoaderLogoReveal .38s cubic-bezier(.16, 1, .3, 1) .12s both;
   }
   .brand-loader.brand-loader-leaving {
     opacity: 0;
@@ -256,6 +267,10 @@
     transform: translate3d(-55%, 0, 0);
     animation: brandLoaderSweep 1.55s ease-in-out infinite;
   }
+  @keyframes brandLoaderLogoReveal {
+    from { opacity: 0; transform: translate3d(-50%, -47%, 0) scale(.96); }
+    to { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1); }
+  }
   @keyframes brandLoaderEnter {
     from { transform: translate3d(-105%, 0, 0); }
     to { transform: translate3d(0, 0, 0); }
@@ -264,6 +279,11 @@
     0%, 16% { transform: translate3d(-55%, 0, 0); opacity: 0; }
     42% { opacity: .8; }
     78%, 100% { transform: translate3d(55%, 0, 0); opacity: 0; }
+  }
+  @media (max-width: 599px) {
+    .brand-loader-logo {
+      width: clamp(190px, 58vw, 270px);
+    }
   }
   /* Se usa en .screens y .login-shell para que la transicion desde la
      pantalla de carga (fondo negro) no se sienta como un corte/flash

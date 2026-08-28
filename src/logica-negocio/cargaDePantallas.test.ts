@@ -182,6 +182,7 @@ describe("un cambio de pantalla que no termina se detecta y se recupera", () => 
     expect(movimiento).toContain("translate3d(105%, 0, 0)");
     expect(movimiento).not.toContain('url("/icon-192.png")');
     expect(movimiento).not.toContain('url("/logo-player.webp")');
+    expect(movimiento).toContain('url("/vista360-quote-logo.png")');
     expect(movimiento).not.toContain("64px 64px");
     expect(movimiento).not.toContain("mix-blend-mode: screen");
     expect(movimiento).not.toContain("linear-gradient(104deg");
@@ -202,8 +203,10 @@ describe("la carga inicial conserva la cortina hasta que la cuenta está lista",
     expect(app).toContain('<BrandLoader label="Preparando tu cuenta" leaving={loaderInicialSaliendo} />');
   });
 
-  it("no vuelve a mostrar el logo en ninguna pantalla de espera", () => {
+  it("mantiene la marca VISTA360 en las pantallas de espera", () => {
     expect(brandLoader).not.toContain("logo-player.webp");
+    expect(brandLoader).toContain("vista360-quote-logo.png");
+    expect(brandLoader).toContain('alt="VISTA360"');
     expect(indexHtml).not.toMatch(/class="v360-boot"[\s\S]*?<img/);
     expect(brandLoader).toContain("brand-loader-sweep");
     expect(indexHtml).toContain('<meta name="theme-color" content="#071D48" />');

@@ -4,7 +4,7 @@
 
 :root {
   /* Marcador estable para confirmar desde producción que esta capa cargó. */
-  --v360-navigation-motion-version: 8;
+  --v360-navigation-motion-version: 9;
 }
 
 /* Una cortina azul entra desde la izquierda, cubre por completo el contexto
@@ -25,12 +25,22 @@ body::after {
 
 body::before {
   content: "";
-  background:
+  background-image:
+    url("/vista360-quote-logo.png"),
     radial-gradient(ellipse at 50% 40%, rgba(70,132,224,.20), transparent 52%),
     linear-gradient(135deg, #02060C 0%, #06152D 34%, #0A2C66 67%, #071D48 100%);
+  background-position: center, center, center;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  background-size: clamp(210px, 27vw, 360px) auto, cover, cover;
   box-shadow:
     inset 0 0 120px rgba(0, 5, 18, .48),
     inset 0 1px 0 rgba(255, 255, 255, .055);
+}
+
+@media (max-width: 599px) {
+  body::before {
+    background-size: clamp(190px, 58vw, 270px) auto, cover, cover;
+  }
 }
 
 body::after {
