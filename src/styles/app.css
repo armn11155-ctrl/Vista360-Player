@@ -10055,7 +10055,7 @@ details.report-admin-panel {
 
 /* Prioridades accionables del Centro de gestión. Solo se consultan al abrirlo. */
 .gestion-hoy {
-  width: min(600px, 100%);
+  width: min(1040px, 100%);
   margin: 0 auto 18px;
   padding: 18px;
   border: 1px solid #DCE5F1;
