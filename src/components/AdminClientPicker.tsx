@@ -76,6 +76,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   // firmada vencida puede renovarse y volver a intentar; antes el cliente
   // quedaba sin foto durante todo el montaje aunque ya hubiera una URL nueva.
   const [avataresFallidos, setAvataresFallidos] = useState<Map<string, string>>(new Map());
+  const [avataresListos, setAvataresListos] = useState<Map<string, string>>(new Map());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
   const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
   // Se consume una sola vez al montar -- el valor ya quedó capturado
@@ -447,6 +448,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         <div className="admin-picker-grid">
           {clientesMostrados.map((c, indice) => {
             const { bg } = brandColor(c.empresa ?? "?");
+            const foto = avatarSrc(c);
             const busy = accionandoId === c.id;
             const campanasActivas = campanasActivasPorCliente[c.id] ?? 0;
             const detalleCuenta = c.archived
@@ -477,25 +479,25 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                     tabIndex={-1}
                   >
                     <span className="admin-picker-tile-avatar" style={{ background: bg }}>
-                      {avatarSrc(c) ? (
+                      <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
+                      {foto ? (
                         <img
-                          src={avatarSrc(c)}
+                          src={foto}
+                          className={avataresListos.get(c.id) === foto ? "is-loaded" : ""}
                           alt=""
                           loading={indice < 4 ? "eager" : "lazy"}
                           fetchPriority={indice < 4 ? "high" : "auto"}
                           decoding="async"
                           width="640"
                           height="420"
+                          onLoad={() => setAvataresListos((prev) => new Map(prev).set(c.id, foto))}
                           onError={() => setAvataresFallidos((prev) => {
                             const siguiente = new Map(prev);
-                            const url = avatarSrc(c);
-                            if (url) siguiente.set(c.id, url);
+                            siguiente.set(c.id, foto);
                             return siguiente;
                           })}
                         />
-                      ) : (
-                        <ClientAvatar name={c.empresa ?? c.contacto ?? c.id} avatarKey={c.avatarKey} size={58} />
-                      )}
+                      ) : null}
                       <span className="admin-picker-tile-shine" aria-hidden="true" />
                       <span className="admin-picker-tile-copy">
                         <strong>{c.empresa}</strong>

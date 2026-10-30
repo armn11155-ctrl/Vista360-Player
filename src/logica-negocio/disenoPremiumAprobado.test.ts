@@ -551,7 +551,8 @@ describe("refinamiento premium aprobado", () => {
 
     expect(inicio).toContain("inicio-kpi-card-${item.tone}");
     expect(sistema).toContain("PULIDA DE INICIO — RESUMEN CON JERARQUÍA Y REPORTE SIN COLISIONES");
-    expect(sistema).toMatch(/\.inicio-kpi-card-campaigns,[\s\S]*?\.inicio-kpi-card-deadline \{[\s\S]*?--kpi-accent: #2563eb;[\s\S]*?--kpi-accent-soft: rgba\(37,99,235,\.14\);/);
+    expect(sistema).toMatch(/\.inicio-kpi-card-campaigns,[\s\S]*?\.inicio-kpi-card-deadline \{[\s\S]*?--kpi-accent: #233B58;/);
+    expect(sistema).toMatch(/\.inicio-summary-grid > \.inicio-kpi-card \{[\s\S]*?background: #fff !important;/);
     expect(sistema).not.toContain("--kpi-accent: #1497b8");
     expect(sistema).not.toContain("--kpi-accent: #7357d9");
     expect(sistema).not.toContain("--kpi-accent: #d58a22");

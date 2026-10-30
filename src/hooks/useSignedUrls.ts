@@ -41,13 +41,33 @@ function cargarCacheInicial(): Map<string, { url: string; expiraEn: number }> {
 
 const CACHE = cargarCacheInicial();
 let generacionDeSesion = 0;
+const ORIGENES_PREPARADOS = new Set<string>();
+
+function prepararOrigenDeImagen(url: string) {
+  if (typeof document === "undefined") return;
+  try {
+    const origen = new URL(url).origin;
+    if (!origen.startsWith("https://") || ORIGENES_PREPARADOS.has(origen)) return;
+    ORIGENES_PREPARADOS.add(origen);
+    const enlace = document.createElement("link");
+    enlace.rel = "preconnect";
+    enlace.href = origen;
+    enlace.crossOrigin = "anonymous";
+    document.head.appendChild(enlace);
+  } catch {
+    // La URL firmada sigue su manejo habitual de error si no es válida.
+  }
+}
 
 function frescasDesdeCache(keys: string[]): Record<string, string> {
   const resultado: Record<string, string> = {};
   const ahora = Date.now();
   keys.forEach((key) => {
     const cache = CACHE.get(key);
-    if (cache && cache.expiraEn - MARGEN_MS > ahora) resultado[key] = cache.url;
+    if (cache && cache.expiraEn - MARGEN_MS > ahora) {
+      resultado[key] = cache.url;
+      prepararOrigenDeImagen(cache.url);
+    }
   });
   return resultado;
 }
@@ -88,6 +108,7 @@ async function firmar(keys: string[]): Promise<Record<string, string>> {
     if (generacionAlEmpezar !== generacionDeSesion) return {};
     data.urls.forEach(({ key, url, expiraEn }) => {
       resultado[key] = url;
+      prepararOrigenDeImagen(url);
       CACHE.set(key, {
         url,
         expiraEn: typeof expiraEn === "number" && expiraEn > Date.now()
