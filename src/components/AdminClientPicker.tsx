@@ -11,6 +11,7 @@ import { brandColor } from "../utils/brandColor";
 import { filtrarClientes, ordenarClientesPorCampanasActivas } from "../utils/clientPicker";
 import { ClientAvatar } from "./ClientAvatar";
 import BrandLoader from "./BrandLoader";
+import GestionHoy from "./GestionHoy";
 import { useDialogos } from "./DialogosProvider";
 import { conReautenticacion } from "../config/reautenticacion";
 
@@ -44,6 +45,7 @@ interface Props {
    *  gestión, que es de donde salió. */
   onOpenOcupacion?: () => void;
   onOpenCotizaciones?: () => void;
+  onOpenReporte?: (clienteId: string) => void;
   gestionInicial?: boolean;
   onGestionInicialConsumida?: () => void;
 }
@@ -53,7 +55,7 @@ interface Props {
  * la superficie principal y el nombre vive sobre un degradado legible.
  * Grid responsivo: dos columnas en móvil y tres en escritorio.
  */
-export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
+export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSolicitudes, onOpenAnalitica, onOpenPerfil, onOpenPaneles, onOpenOcupacion, onOpenCotizaciones, onOpenReporte, onOpenAprobaciones, onOpenPapelera, esGerente = true, adminIniciales, uid, vistaClienteActiva = false, onToggleVistaCliente, gestionInicial = false, onGestionInicialConsumida }: Props) {
   const { confirmar, avisar, pedirContrasena, notificar } = useDialogos();
   // El botón de activar notificaciones vive acá (al costado del perfil
   // del admin), no solo dentro de la vista de un cliente -- antes,
@@ -79,6 +81,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
   const [avataresListos, setAvataresListos] = useState<Map<string, string>>(new Map());
   const [miAvatarFallo, setMiAvatarFallo] = useState(false);
   const [gestionAbierta, setGestionAbierta] = useState(() => gestionInicial);
+  const [seleccionandoReporte, setSeleccionandoReporte] = useState(false);
+  const entrarCliente = (id: string) => {
+    if (seleccionandoReporte && onOpenReporte) onOpenReporte(id);
+    else onSelect(id);
+  };
   // Se consume una sola vez al montar -- el valor ya quedó capturado
   // arriba como estado inicial, así que esto solo le avisa al padre
   // que ya lo puede volver a poner en false (si no, la próxima vez
@@ -432,6 +439,12 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             className="admin-picker-search"
           />
         </div>
+        {seleccionandoReporte && (
+          <div className="admin-picker-report-prompt" role="status">
+            <span>Elige la cuenta para preparar su reporte.</span>
+            <button type="button" onClick={() => setSeleccionandoReporte(false)}>Cancelar</button>
+          </div>
+        )}
           </div>
 
           <div className="admin-picker-body">
@@ -460,11 +473,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <div
                 key={c.id}
                 className={`admin-picker-tile ${c.archived ? "archived" : ""}`}
-                onClick={() => !c.archived && !busy && onSelect(c.id)}
+                onClick={() => !c.archived && !busy && entrarCliente(c.id)}
                 onKeyDown={(event) => {
                   if ((event.key === "Enter" || event.key === " ") && !c.archived && !busy) {
                     event.preventDefault();
-                    onSelect(c.id);
+                    entrarCliente(c.id);
                   }
                 }}
                 role={!c.archived ? "button" : undefined}
@@ -619,6 +632,14 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             </div>
             <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-management-logo" draggable={false} />
           </div>
+          {esGerente && (
+            <GestionHoy
+              solicitudesPendientes={solicitudesPendientes}
+              onOpenSolicitudes={onOpenSolicitudes}
+              onOpenOcupacion={onOpenOcupacion}
+              onOpenCotizaciones={onOpenCotizaciones}
+            />
+          )}
           <div className="admin-picker-management-grid">
             <section className="admin-picker-management-group">
               <div className="admin-picker-management-group-head">
@@ -687,12 +708,22 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
                   <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span><i>›</i>
                 </button>
+                {onOpenReporte && (
+                  <button type="button" onClick={() => { setSeleccionandoReporte(true); setTab("activos"); setGestionAbierta(false); }} className="admin-picker-management-card">
+                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></span>
+                    <span><strong>Preparar reporte</strong><small>Elegir cliente y tomar fotos</small></span><i>›</i>
+                  </button>
+                )}
                 {esGerente && (
                   <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
                     <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
                     <span><strong>Analítica</strong><small>Actividad y accesos</small></span><i>›</i>
                   </button>
                 )}
+                <div className="admin-picker-management-card management-coming-soon" aria-label="Evidencia de emisión LED, próximamente">
+                  <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8M12 18v4M7 11h10"/></svg></span>
+                  <span><strong>Emisión LED</strong><small>Registros de reproducción</small><em>Próximamente</em></span>
+                </div>
               </div>
             </section>
           </div>

@@ -10052,3 +10052,62 @@ details.report-admin-panel {
     gap: 18px 16px;
   }
 }
+
+/* Prioridades accionables del Centro de gestión. Solo se consultan al abrirlo. */
+.gestion-hoy {
+  width: min(600px, 100%);
+  margin: 0 auto 18px;
+  padding: 18px;
+  border: 1px solid #DCE5F1;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 20px 44px -34px rgba(15,23,42,.35);
+}
+.gestion-hoy-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.gestion-hoy-kicker { color: #4774AC; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.gestion-hoy h2 { margin: 4px 0; color: #0B1220; font-size: 21px; letter-spacing: -.025em; }
+.gestion-hoy p { margin: 0; color: #64748B; font-size: 12px; line-height: 1.4; }
+.gestion-hoy-refresh { border: 1px solid #DCE5F1; border-radius: 9px; padding: 7px 10px; background: #F8FAFD; color: #34547B; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+.gestion-hoy-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin-top: 14px; }
+.gestion-hoy-item { display: flex; align-items: center; gap: 11px; min-width: 0; min-height: 74px; padding: 12px; border: 1px solid #E0E7F0; border-radius: 12px; background: #F9FBFE; color: #0B1220; font: inherit; text-align: left; cursor: pointer; }
+.gestion-hoy-item:hover, .gestion-hoy-item:focus-visible { border-color: #93B7E4; background: #F3F8FF; }
+.gestion-hoy-item.is-urgent { border-left: 3px solid #D97706; }
+.gestion-hoy-item.is-opportunity { border-left: 3px solid #0F9A75; }
+.gestion-hoy-item-number { display: grid; place-items: center; flex: 0 0 34px; width: 34px; height: 34px; border-radius: 10px; background: #EAF2FC; color: #174A84; font-size: 16px; font-weight: 800; }
+.gestion-hoy-item > span:nth-child(2) { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.gestion-hoy-item strong { font-size: 12px; line-height: 1.2; }
+.gestion-hoy-item small { color: #64748B; font-size: 10px; line-height: 1.25; }
+.gestion-hoy-item b { flex: 0 0 auto; color: #2E65A3; font-size: 10px; }
+.gestion-hoy-loading, .gestion-hoy-error, .gestion-hoy-empty { grid-column: 1 / -1; padding: 12px 0 0; color: #64748B; font-size: 12px; }
+.gestion-hoy-error button { padding: 0; border: 0; background: none; color: #0B63C9; font: inherit; font-weight: 700; cursor: pointer; }
+.admin-picker-management-card.management-coming-soon { cursor: default; opacity: .72; }
+.admin-picker-management-card.management-coming-soon:hover { transform: none; box-shadow: none; }
+.admin-picker-management-card.management-coming-soon em { display: inline-block; margin-top: 4px; color: #567492; font-size: 9px; font-style: normal; font-weight: 800; white-space: nowrap; }
+@media (max-width: 899px) { .admin-picker-management-card.management-coming-soon em { color: #A7C9F1; } }
+@media (max-width: 650px) {
+  .gestion-hoy { padding: 15px; }
+  .gestion-hoy-grid { grid-template-columns: 1fr; }
+  .gestion-hoy-item { min-height: 68px; }
+}
+
+.report-draft-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 11px;
+  padding: 9px 11px;
+  border: 1px solid #CFE2DC;
+  border-radius: 9px;
+  background: #F4FAF7;
+  color: #24634E;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.report-draft-status button { flex-shrink: 0; padding: 3px 0; border: 0; background: none; color: #315F75; font: inherit; font-weight: 800; cursor: pointer; }
+.report-campaign-panel-add.report-camera-button { border-color: #0B3F8A; background: #0B3F8A; }
+@media (min-width: 900px) { .report-campaign-panel-add.report-camera-button { display: none; } }
+
+.admin-picker-report-prompt { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 10px 12px; border: 1px solid rgba(130,177,242,.38); border-radius: 10px; background: rgba(22,57,101,.68); color: #fff; font-size: 12px; font-weight: 650; }
+.admin-picker-report-prompt button { border: 0; background: none; color: #BBD8FF; font: inherit; font-weight: 800; cursor: pointer; }

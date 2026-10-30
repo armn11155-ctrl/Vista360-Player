@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { mensajeDeError } from "../../utils/errores";
 import { subirFotoReporteR2 } from "../../config/r2";
 import { httpsCallable } from "firebase/functions";
@@ -11,6 +11,8 @@ import ClientScreenHeader from "../ClientScreenHeader";
 import { PhotoCropQueueModal } from "../PhotoCropQueueModal";
 import { ReportCard } from "../ReportCard";
 import { nombreCampanaVisibleEnReporte } from "../../utils/reportCampaignName";
+import { borrarBorradorReporte, claveBorradorReporte, guardarBorradorReporte, leerBorradorReporte } from "../../utils/reportDrafts";
+import { hoyEnPeru } from "../../utils/fechas";
 
 interface Props {
   cliente: Cliente | null;
@@ -19,6 +21,8 @@ interface Props {
   contratos?: Contrato[];
   paneles?: Record<string, Panel>;
   isAdmin?: boolean;
+  uid?: string;
+  abrirGenerador?: boolean;
   onMenuClick?: () => void;
   onNotifClick?: () => void;
   totalNotifs?: number;
@@ -43,7 +47,7 @@ type PanelFotosPayload = {
 };
 
 function mesActual() {
-  return new Date().toISOString().slice(0, 7);
+  return hoyEnPeru().slice(0, 7);
 }
 
 const NOMBRES_MES = [
@@ -73,7 +77,11 @@ function nombreCliente(cliente: Cliente | null) {
 
 
 
-export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, onMenuClick, onNotifClick, totalNotifs }: Props) {
+export default function Reportes({ cliente, clienteId, hayContratos, contratos = [], paneles = {}, isAdmin, uid, abrirGenerador, onMenuClick, onNotifClick, totalNotifs }: Props) {
+  const generadorRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (abrirGenerador) generadorRef.current?.setAttribute("open", "");
+  }, [abrirGenerador]);
   const informesState = useInformes(clienteId);
   const informes = informesState.status === "ready" ? informesState.informes : [];
   const [mes, setMes] = useState(() => mesActual());
@@ -100,7 +108,7 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   // Solo de referencia visual (no se envia al generar el reporte, que
   // sigue siendo por mes completo) -- el admin pidio poder ver/elegir
   // un dia junto al mes y año.
-  const [dia, setDia] = useState(() => String(new Date().getDate()).padStart(2, "0"));
+  const [dia, setDia] = useState(() => hoyEnPeru().slice(8, 10));
   const [generando, setGenerando] = useState(false);
   const [colaRecorte, setColaRecorte] = useState<File[] | null>(null);
   // A cual panel pertenece la cola de recorte actual -- el reporte
@@ -119,6 +127,45 @@ export default function Reportes({ cliente, clienteId, hayContratos, contratos =
   const contratoSeleccionado = contratos.find((c) => c.id === contratoId) ?? contratos[0];
   const panelIdsCampana = contratoSeleccionado ? panelesDeContrato(contratoSeleccionado) : [];
   const [fotosPorPanel, setFotosPorPanel] = useState<Record<string, FotoReporte[]>>({});
+  const [claveCargada, setClaveCargada] = useState<string | null>(null);
+  const [estadoBorrador, setEstadoBorrador] = useState<"cargando" | "guardando" | "guardado" | "error">("cargando");
+  const claveBorrador = isAdmin && uid && contratoSeleccionado
+    ? claveBorradorReporte(uid, clienteId, contratoSeleccionado.id, mes)
+    : null;
+  const cantidadFotos = panelIdsCampana.reduce((total, id) => total + (fotosPorPanel[id]?.length ?? 0), 0);
+
+  useEffect(() => {
+    if (!claveBorrador) return;
+    let cancelado = false;
+    setClaveCargada(null);
+    setEstadoBorrador("cargando");
+    setFotosPorPanel({});
+    void leerBorradorReporte(claveBorrador)
+      .then((borrador) => {
+        if (cancelado) return;
+        setFotosPorPanel(borrador?.fotosPorPanel ?? {});
+        setDia((actual) => String(Math.min(Math.max(Number(borrador?.dia ?? actual) || 1, 1), diasDelMes(mes))).padStart(2, "0"));
+        setClaveCargada(claveBorrador);
+        setEstadoBorrador("guardado");
+      })
+      .catch(() => {
+        if (cancelado) return;
+        setEstadoBorrador("error");
+      });
+    return () => { cancelado = true; };
+  }, [claveBorrador, mes]);
+
+  useEffect(() => {
+    if (!claveBorrador || claveCargada !== claveBorrador) return;
+    let activo = true;
+    const hayFotos = Object.values(fotosPorPanel).some((fotos) => fotos.length > 0);
+    if (hayFotos) setEstadoBorrador("guardando");
+    const operacion = hayFotos
+      ? guardarBorradorReporte(claveBorrador, { dia, fotosPorPanel, guardadoEn: Date.now() })
+      : borrarBorradorReporte(claveBorrador);
+    void operacion.then(() => { if (activo) setEstadoBorrador("guardado"); }).catch(() => { if (activo) setEstadoBorrador("error"); });
+    return () => { activo = false; };
+  }, [claveBorrador, claveCargada, dia, fotosPorPanel]);
 
   const ubicacionAuto = panelIdsCampana.map((id) => paneles[id]?.nombre).filter(Boolean).join(" + ")
     || cliente?.ciudad || "Ubicación del cliente";
@@ -301,6 +348,7 @@ function mensajeErrorReporte(error: unknown) {
       setMensajeAdminTipo("ok");
       setMensajeAdmin("Reporte generado. Ya puedes verlo y enviarlo desde la lista.");
       setFotosPorPanel({});
+      if (claveBorrador) void borrarBorradorReporte(claveBorrador).catch(() => undefined);
       informesState.recargar();
     } catch (error) {
       setMensajeAdminTipo("error");
@@ -322,7 +370,7 @@ function mensajeErrorReporte(error: unknown) {
 
       <div className="reports-screen-body reports-history-screen-body">
         {isAdmin && (
-          <details className="report-admin-panel">
+          <details className="report-admin-panel" ref={generadorRef}>
             <summary className="report-admin-header">
               <div className="report-admin-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -385,7 +433,7 @@ function mensajeErrorReporte(error: unknown) {
                   <select
                     className="report-month-select"
                     value={mes.slice(5, 7)}
-                    onChange={(e) => setMes(`${mes.slice(0, 4)}-${e.target.value}`)}
+                    onChange={(e) => { setMes(`${mes.slice(0, 4)}-${e.target.value}`); setFotosPorPanel({}); }}
                     aria-label="Mes"
                   >
                     {NOMBRES_MES.map((nombre, i) => (
@@ -397,7 +445,7 @@ function mensajeErrorReporte(error: unknown) {
                   <select
                     className="report-month-select report-month-select-anio"
                     value={mes.slice(0, 4)}
-                    onChange={(e) => setMes(`${e.target.value}-${mes.slice(5, 7)}`)}
+                    onChange={(e) => { setMes(`${e.target.value}-${mes.slice(5, 7)}`); setFotosPorPanel({}); }}
                     aria-label="Año"
                   >
                     {aniosDisponibles().map((a) => (
@@ -412,7 +460,7 @@ function mensajeErrorReporte(error: unknown) {
                 className="report-generate-btn"
                 type="button"
                 onClick={generarReporte}
-                disabled={!contratoSeleccionado || !mes || generando}
+                disabled={!contratoSeleccionado || !mes || generando || estadoBorrador === "cargando"}
               >
                 {generando ? "Generando..." : "Generar PDF"}
               </button>
@@ -421,6 +469,12 @@ function mensajeErrorReporte(error: unknown) {
               <span>Cliente: {nombreCliente(cliente)}</span>
               <span>Ubicación: {ubicacionAuto}</span>
             </div>
+            {cantidadFotos > 0 && (
+              <div className="report-draft-status" role="status">
+                <span>{cantidadFotos} {cantidadFotos === 1 ? "foto preparada" : "fotos preparadas"} · {estadoBorrador === "guardado" ? "Borrador guardado en este dispositivo" : estadoBorrador === "guardando" ? "Guardando borrador…" : estadoBorrador === "error" ? "No se pudo guardar; genera el PDF antes de salir" : "Recuperando borrador…"}</span>
+                <button type="button" onClick={() => { setFotosPorPanel({}); if (claveBorrador) void borrarBorradorReporte(claveBorrador).catch(() => undefined); }}>Descartar</button>
+              </div>
+            )}
             {panelIdsCampana.length > 0 && (
               <div className="report-campaign-panels">
                 {panelIdsCampana.length > 1 && (
@@ -445,12 +499,23 @@ function mensajeErrorReporte(error: unknown) {
                             type="file"
                             accept="image/*"
                             multiple
+                            disabled={estadoBorrador === "cargando"}
                             onChange={(e) => {
                               agregarFotos(e.target.files, id);
                               e.currentTarget.value = "";
                             }}
                           />
                           <span>Agregar fotos</span>
+                        </label>
+                        <label className="report-campaign-panel-add report-camera-button">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            disabled={estadoBorrador === "cargando"}
+                            onChange={(e) => { agregarFotos(e.target.files, id); e.currentTarget.value = ""; }}
+                          />
+                          <span>Tomar foto</span>
                         </label>
                       </div>
                       {fotosPanel.length > 0 && (

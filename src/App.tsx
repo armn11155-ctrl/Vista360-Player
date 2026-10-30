@@ -302,6 +302,7 @@ export default function App() {
     });
   }, [auth]);
   const [view, setViewInmediato] = useState<View>("inicio");
+  const [abrirGeneradorReporte, setAbrirGeneradorReporte] = useState(false);
   const [vistaSolicitada, setVistaSolicitada] = useState<View | null>(null);
   const [mostrarIndicadorNavegacion, setMostrarIndicadorNavegacion] = useState(false);
   // Las pantallas se cargan bajo demanda (lazy) para no descargar toda la
@@ -463,6 +464,7 @@ export default function App() {
 
   function setView(v: View) {
     if (v === view && !cambioEnCurso) return;
+    if (v !== "reportes") setAbrirGeneradorReporte(false);
     setVistaSolicitada(v);
     precargarVista(v);
     comenzarCambioDePantalla(() => setViewInmediato(v));
@@ -653,6 +655,7 @@ export default function App() {
           <AdminClientPicker
             onSelect={(id) => {
               reproducirSonidoInterfaz("cuenta");
+              setAbrirGeneradorReporte(false);
               cambiarClienteConTransicion(id);
             }}
             onOpenUsuarios={() => setView("accesos")}
@@ -662,6 +665,10 @@ export default function App() {
             onOpenPaneles={() => setView("paneles")}
             onOpenOcupacion={() => setView("ocupacion")}
             onOpenCotizaciones={() => setView("cotizaciones")}
+            onOpenReporte={!adminVistaCliente ? (id) => {
+              setAbrirGeneradorReporte(true);
+              cambiarClienteConTransicion(id, "reportes");
+            } : undefined}
             onOpenAprobaciones={esGerente ? () => setView("aprobaciones") : undefined}
             onOpenPapelera={esGerente ? () => setView("papelera") : undefined}
             esGerente={esGerente}
@@ -682,6 +689,7 @@ export default function App() {
         uid={uid}
         email={auth.user.email ?? ""}
         view={view}
+        abrirGeneradorReporte={abrirGeneradorReporte}
         vistaPendiente={vistaSolicitada}
         mostrarIndicadorNavegacion={mostrarIndicadorNavegacion}
         setView={setView}
@@ -738,6 +746,7 @@ interface AuthenticatedProps {
   uid?: string;
   email: string;
   view: View;
+  abrirGeneradorReporte?: boolean;
   vistaPendiente: View | null;
   mostrarIndicadorNavegacion: boolean;
   setView: (v: View) => void;
@@ -757,6 +766,7 @@ function AuthenticatedApp({
   uid,
   email,
   view,
+  abrirGeneradorReporte,
   vistaPendiente,
   mostrarIndicadorNavegacion,
   setView,
@@ -1024,6 +1034,8 @@ function AuthenticatedApp({
             contratos={contratos}
             paneles={paneles}
             isAdmin={isAdmin}
+            uid={uid}
+            abrirGenerador={abrirGeneradorReporte}
             onMenuClick={() => setSidebarOpen(true)}
             onNotifClick={() => setView("notificaciones")}
             totalNotifs={totalNotifs}
