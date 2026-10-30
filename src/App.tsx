@@ -11,12 +11,12 @@ const SIN_SOLICITUDES: SolicitudCampana[] = [];
 
 /** Si un cambio de pantalla tarda mas que esto, algo va mal. */
 const ESPERA_MAXIMA_CAMBIO_MS = 8000;
-/** Tiempo que tarda la cortina azul en cubrir por completo el contexto anterior. */
-const CIERRE_VISUAL_MS = 260;
+/** Tiempo que tarda la capa de marca en cubrir el contexto anterior. */
+const CIERRE_VISUAL_MS = 320;
 /** Dos cuadros dan tiempo al commit sin convertir la animación en espera. */
-const PAUSA_VISUAL_MS = 20;
-/** La salida hacia la izquierda revela el contexto nuevo ya renderizado. */
-const APERTURA_VISUAL_MS = 300;
+const PAUSA_VISUAL_MS = 40;
+/** El fundido revela el contexto nuevo ya renderizado. */
+const APERTURA_VISUAL_MS = 420;
 import { usePortalAuth, type AuthState } from "./hooks/usePortalAuth";
 import { useCliente } from "./hooks/useCliente";
 import { useContratos, useSolicitudesDelCliente } from "./hooks/useContratos";
@@ -497,16 +497,16 @@ export default function App() {
   function setAdminClienteId(id: string | null) {
     programarCambioDePantalla(() => setAdminClienteIdInmediato(id));
   }
-  // El selector ya tiene los clientes en memoria y las pantallas de uso
-  // frecuente están precargadas. Para cambiar entre cuentas no se necesita la
-  // cortina breve reservada al login/logout: se actualizan cuenta y vista
-  // en la misma transición de React y el listener revalida detrás.
-  function cambiarClienteSinEspera(id: string | null, destino: View = "inicio") {
+  // Cubrir primero la cuenta anterior evita que la nueva vista aparezca un
+  // frame antes de que monte su loader y reciba los contratos. El código de
+  // la pantalla sigue precargándose sin bloquear la interacción.
+  function cambiarClienteConTransicion(id: string | null, destino: View = "inicio") {
     setVistaSolicitada(destino);
     precargarVista(destino);
-    comenzarCambioDePantalla(() => {
+    programarCambioDePantalla(() => {
       setAdminClienteIdInmediato(id);
       setViewInmediato(destino);
+      if (id === null) setAdminVistaClienteInmediato(false);
     });
   }
   // Cuando se vuelve con "atrás" desde Usuarios/Solicitudes/Analítica/
@@ -653,7 +653,7 @@ export default function App() {
           <AdminClientPicker
             onSelect={(id) => {
               reproducirSonidoInterfaz("cuenta");
-              cambiarClienteSinEspera(id);
+              cambiarClienteConTransicion(id);
             }}
             onOpenUsuarios={() => setView("accesos")}
             onOpenSolicitudes={() => setView("solicitudes")}
@@ -701,13 +701,16 @@ export default function App() {
           setView("nueva");
         }}
         onCambiarCliente={() => {
-          cambiarClienteSinEspera(null);
-          setAdminVistaCliente(false);
+          cambiarClienteConTransicion(null);
         }}
         onOpenAdminPerfil={() => {
-          setAdminClienteId(null);
-          setAdminVistaCliente(false);
-          setView("miPerfil");
+          setVistaSolicitada("miPerfil");
+          precargarVista("miPerfil");
+          programarCambioDePantalla(() => {
+            setAdminClienteIdInmediato(null);
+            setAdminVistaClienteInmediato(false);
+            setViewInmediato("miPerfil");
+          });
         }}
       />
     );
@@ -792,17 +795,21 @@ function AuthenticatedApp({
     }
 
     let segundoFrame = 0;
-    let relojSalida = 0;
+    let relojInicioSalida = 0;
+    let relojFinSalida = 0;
     const primerFrame = window.requestAnimationFrame(() => {
       segundoFrame = window.requestAnimationFrame(() => {
-        setLoaderInicialSaliendo(true);
-        relojSalida = window.setTimeout(() => setLoaderInicialVisible(false), 300);
+        relojInicioSalida = window.setTimeout(() => {
+          setLoaderInicialSaliendo(true);
+          relojFinSalida = window.setTimeout(() => setLoaderInicialVisible(false), APERTURA_VISUAL_MS);
+        }, 120);
       });
     });
     return () => {
       window.cancelAnimationFrame(primerFrame);
       if (segundoFrame) window.cancelAnimationFrame(segundoFrame);
-      if (relojSalida) window.clearTimeout(relojSalida);
+      if (relojInicioSalida) window.clearTimeout(relojInicioSalida);
+      if (relojFinSalida) window.clearTimeout(relojFinSalida);
     };
   }, [clienteId, clienteLoaderId, contratosState.status]);
   const mostrarLoaderInicial = clienteLoaderId !== clienteId || loaderInicialVisible;

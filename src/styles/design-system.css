@@ -8761,8 +8761,7 @@ a {
    acento funcional. El reporte móvil reserva una fila completa a la fecha
    de generación para que nunca compita con la acción. */
 .inicio-kpi-card {
-  --kpi-accent: #377cf0;
-  --kpi-accent-soft: rgba(55,124,240,.14);
+  --kpi-accent: #233B58;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -8773,41 +8772,29 @@ a {
   position: absolute;
   inset: 0 0 auto;
   z-index: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--kpi-accent), color-mix(in srgb, var(--kpi-accent) 28%, transparent));
-  opacity: .94;
+  height: 2px;
+  background: #233B58;
+  opacity: .65;
   pointer-events: none;
 }
 
 .inicio-kpi-card::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  top: -44px;
-  right: -38px;
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--kpi-accent-soft), transparent 68%);
-  pointer-events: none;
+  content: none;
 }
 
 .inicio-kpi-card > * { position: relative; z-index: 1; }
-/* La jerarquía la construyen la profundidad y el espaciado, no una paleta
-   multicolor. Toda la familia usa únicamente el azul de Vista360 sobre
-   superficies blancas y tipografía negra. */
+/* Superficies limpias y un acento sobrio, compartidos en laptop y móvil. */
 .inicio-kpi-card-campaigns,
 .inicio-kpi-card-screens,
 .inicio-kpi-card-report,
 .inicio-kpi-card-deadline {
-  --kpi-accent: #2563eb;
-  --kpi-accent-soft: rgba(37,99,235,.14);
+  --kpi-accent: #233B58;
 }
 
 .inicio-kpi-card .inicio-kpi-icon {
-  border: 1px solid color-mix(in srgb, var(--kpi-accent) 18%, white);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--kpi-accent) 13%, white), #fff) !important;
-  box-shadow: inset 0 1px 0 #fff, 0 10px 20px -15px var(--kpi-accent);
+  border: 1px solid #E2E8F0;
+  background: #F4F6F9 !important;
+  box-shadow: inset 0 1px 0 #fff;
 }
 
 .inicio-kpi-card .inicio-kpi-icon svg { stroke: var(--kpi-accent) !important; }
@@ -8826,25 +8813,21 @@ a {
     padding: 14px 16px !important;
     border: 1px solid #dce4ed !important;
     border-radius: 16px !important;
-    background:
-      radial-gradient(circle at 96% 0%, var(--kpi-accent-soft), transparent 47%),
-      linear-gradient(145deg, #fff, #fbfcfe) !important;
-    box-shadow: 0 20px 40px -32px rgba(15,23,42,.62), inset 0 1px 0 #fff !important;
+    background: #fff !important;
+    box-shadow: 0 12px 30px -25px rgba(15,23,42,.42), inset 0 1px 0 #fff !important;
   }
 
   .inicio-summary-grid > .inicio-kpi-card:last-child { border-right: 1px solid #dce4ed !important; }
   .inicio-summary-grid > .inicio-kpi-card:hover {
     transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--kpi-accent) 30%, #dce4ed) !important;
-    box-shadow: 0 24px 44px -31px rgba(15,23,42,.66), inset 0 1px 0 #fff !important;
+    border-color: #AEBBCD !important;
+    box-shadow: 0 18px 34px -27px rgba(15,23,42,.48), inset 0 1px 0 #fff !important;
   }
 }
 
 @media (max-width: 899px) {
   .inicio-summary-grid > .inicio-kpi-card {
-    background:
-      radial-gradient(circle at 96% 0%, var(--kpi-accent-soft), transparent 48%),
-      linear-gradient(145deg, #fff, #f9fbfd) !important;
+    background: #fff !important;
   }
 
   .inicio-screen-client .inicio-content {

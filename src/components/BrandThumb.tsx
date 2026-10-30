@@ -34,15 +34,20 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
   // failed" en Safari). En vez de mostrar eso, volvemos al icono por
   // defecto.
   const [fallo, setFallo] = useState(false);
-  useEffect(() => setFallo(false), [src]);
+  const [imagenLista, setImagenLista] = useState<string | null>(null);
+  useEffect(() => {
+    setFallo(false);
+    setImagenLista(null);
+  }, [src]);
   const mostrarFoto = Boolean(src) && !fallo;
 
   return (
     <div style={{
       width: size, height: size, borderRadius: radius, flexShrink: 0,
       background: bg, display: "flex", alignItems: "center", justifyContent: "center",
-      overflow: "hidden", userSelect: "none",
+      overflow: "hidden", userSelect: "none", position: "relative",
     }}>
+      <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
       {mostrarFoto ? (
         <img
           src={src}
@@ -50,12 +55,11 @@ export function BrandThumb({ name, avatarKey, avatarUrl, size = 72, radius = 12,
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
           decoding="async"
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", position: "absolute", inset: 0, opacity: imagenLista === src ? 1 : 0, transition: "opacity 280ms ease" }}
+          onLoad={() => setImagenLista(src!)}
           onError={() => setFallo(true)}
         />
-      ) : (
-        <ClientAvatar name={name} avatarKey={avatarKey} size={iconSize} />
-      )}
+      ) : null}
     </div>
   );
 }
