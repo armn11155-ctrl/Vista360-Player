@@ -168,6 +168,10 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
 .campaign-list.mis-campanas-list { background: #f2f4f7 !important; }
 .mis-campanas-list { justify-content: flex-start !important; }
 .mis-campanas-list > * { flex-shrink: 0 !important; }
+.mis-campanas-month-status:has(> .mis-campanas-month-status-row:nth-child(2):last-child) {
+  width: min(620px,100%) !important;
+  justify-self: center !important;
+}
 .premium-campaign-card {
   border-color: #263b55 !important;
   background: linear-gradient(90deg,rgba(6,15,27,.97),rgba(6,15,27,.84) 63%,rgba(6,15,27,.33)), url('/editorial/vista360-costa-referencial.jpg') center 44% / cover no-repeat !important;
