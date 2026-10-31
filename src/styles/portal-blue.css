@@ -174,7 +174,8 @@ body, .main-area, .screens, .content-area, .inicio-screen, .inicio-content,
 details.report-admin-panel { border: 1px solid #dce4ef !important; border-radius: 14px !important; overflow: hidden; background: #fff !important; }
 details.report-admin-panel > .report-admin-header { padding: 17px 20px !important; min-height: 78px !important; }
 .report-admin-content { background: #fff !important; padding: 23px !important; border-top: 1px solid #dce4ef !important; }
-.report-admin-controls { display: grid !important; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr) auto !important; gap: 17px !important; align-items: end !important; padding: 0 0 24px !important; }
+.report-admin-controls { display: grid !important; grid-template-columns: minmax(0,1fr) minmax(0,1.25fr) !important; gap: 17px !important; align-items: end !important; padding: 0 0 24px !important; }
+.report-admin-controls > button { grid-column: 1 / -1 !important; justify-self: end !important; }
 .report-campaign-field, .report-month-field { min-width: 0 !important; }
 .report-campaign-field > span, .report-month-field > span { color: #526176 !important; font-size: 11px !important; font-weight: 750 !important; letter-spacing: .06em !important; }
 .report-admin-controls select, .report-admin-controls button { min-height: 44px !important; border-color: #cbd7e8 !important; border-radius: 8px !important; }
@@ -245,7 +246,7 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
 .profile-hero-metrics .profile-metric-icon { color: #9cc4ff !important; background: transparent !important; border: 0 !important; }
 .profile-hero-metrics .profile-metric-label { color: #c6d3e5 !important; font-size: 10px !important; line-height: 1.25 !important; }
 .profile-hero-metrics .profile-metric-row strong { color: #fff !important; font-size: 24px !important; }
-.profile-content { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 24px !important; max-width: 1250px !important; padding: 30px clamp(20px,3.2vw,48px) 52px !important; margin: 0 auto !important; }
+.profile-content { display: grid !important; grid-template-columns: minmax(0,1.45fr) minmax(280px,.8fr) !important; gap: 24px !important; max-width: 1250px !important; padding: 30px clamp(20px,3.2vw,48px) 52px !important; margin: 0 auto !important; }
 .profile-content > .profile-section { grid-column: auto !important; grid-row: auto !important; max-width: none !important; margin: 0 !important; }
 .profile-section h2 { color: #1769e8 !important; font-size: 10px !important; letter-spacing: .15em !important; }
 .profile-card-list, .profile-metric-card { border: 1px solid #dce4ef !important; border-radius: 13px !important; background: #fff !important; }
@@ -268,9 +269,10 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
 .admin-picker-session-exit:hover, .admin-picker-management-exit:hover { color: #1769e8; border-color: #1769e8; }
 .admin-picker-grid { justify-content: start !important; align-content: start !important; }
 .admin-picker-management-screen { background: #f4f7fb !important; overflow-y: auto !important; }
-.admin-picker-management-head { width: min(1240px,100%) !important; margin-bottom: 22px !important; border-color: #dce4ef !important; }
+.admin-picker-management-head { display: flex !important; align-items: center !important; gap: 14px !important; width: min(1240px,100%) !important; margin-bottom: 22px !important; border-color: #dce4ef !important; }
+.admin-picker-management-head > div { flex: 1 1 auto; min-width: 0; }
 .admin-picker-management-head .admin-picker-management-logo { display: none !important; }
-.admin-picker-management-exit { margin-left: auto; }
+.admin-picker-management-exit { width: auto !important; min-width: 112px !important; margin-left: auto; white-space: nowrap; }
 .admin-picker-management-layout { display: grid; grid-template-columns: minmax(0,1fr) 295px; align-items: start; gap: 19px; width: min(1240px,100%); margin: 0 auto; }
 .admin-picker-management-main { display: grid; gap: 17px; min-width: 0; }
 .admin-picker-management-intro { min-height: 142px; box-sizing: border-box; padding: 25px 30px; border-radius: 15px; background: linear-gradient(115deg,#080d18,#11264c); color: #fff; }
@@ -304,8 +306,8 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
   .inicio-welcome-visual { min-height: 148px !important; height: 148px !important; border: 0 !important; background-position: center 42% !important; }
   .inicio-welcome-visual-index, .inicio-welcome-visual-wordmark, .inicio-welcome-visual-caption { display: none !important; }
   .inicio-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 10px !important; }
-  .inicio-summary-grid > .inicio-kpi-card { min-height: 116px !important; padding: 13px !important; gap: 8px !important; }
-  .inicio-summary-grid .inicio-kpi-icon { width: 30px !important; height: 30px !important; }
+  .inicio-summary-grid > .inicio-kpi-card { min-height: 86px !important; flex-direction: row-reverse !important; align-items: center !important; padding: 12px !important; gap: 8px !important; }
+  .inicio-summary-grid .inicio-kpi-icon { display: flex !important; width: 30px !important; height: 30px !important; }
   .inicio-summary-grid .inicio-kpi-label { font-size: 10px !important; }
   .inicio-summary-grid .inicio-kpi-value { font-size: clamp(16px,4.5vw,22px) !important; }
   .reports-list { grid-template-columns: 1fr !important; gap: 13px !important; }
@@ -330,26 +332,29 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
   .coverage-panel-card { max-height: none; overflow: visible; }
   .profile-top { padding: 17px 19px 25px !important; }
   .profile-hero-company { grid-template-columns: 64px minmax(0,1fr) !important; gap: 13px !important; }
+  .profile-avatar-wrap, .profile-avatar-wrap > * { width: 64px !important; height: 64px !important; min-width: 64px !important; overflow: hidden !important; border-radius: 15px !important; }
+  .profile-avatar-wrap img { width: 100% !important; height: 100% !important; object-fit: cover !important; }
   .profile-hero-metrics { grid-column: 1 / -1; gap: 6px; margin-top: 13px; }
   .profile-hero-metrics .profile-metric-row { padding: 9px !important; }
   .profile-hero-metrics .profile-metric-icon { display: none !important; }
   .profile-hero-metrics .profile-metric-label { font-size: 9px !important; }
   .profile-hero-metrics .profile-metric-row strong { font-size: 20px !important; }
   .profile-company-copy h1 { font-size: 24px !important; }
-  .profile-content { grid-template-columns: 1fr !important; gap: 17px !important; padding: 23px 18px 38px !important; }
+  .profile-content { grid-template-columns: 1fr !important; align-content: start !important; gap: 17px !important; padding: 23px 18px 38px !important; }
   .admin-perfil-hero { grid-template-columns: 72px minmax(0,1fr) !important; gap: 14px !important; padding: 21px !important; }
   .admin-picker-shell .admin-picker-stage { display: flex !important; flex-direction: column !important; height: 100dvh !important; min-height: 0 !important; overflow: hidden !important; }
   .admin-picker-shell .admin-picker-editorial { flex: 0 0 228px !important; height: 228px !important; min-height: 228px !important; box-sizing: border-box !important; padding: calc(73px + env(safe-area-inset-top)) 22px 22px !important; }
-  .admin-picker-shell .admin-picker-editorial-copy { margin: auto 0 0 !important; max-width: 100% !important; }
+  .admin-picker-shell .admin-picker-editorial { display: flex !important; flex-direction: column !important; align-items: stretch !important; justify-content: flex-end !important; }
+  .admin-picker-shell .admin-picker-editorial-copy { width: 100% !important; max-width: 100% !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }
   .admin-picker-shell .admin-picker-editorial h1 { font-size: clamp(23px,6vw,30px) !important; line-height: 1.08 !important; }
   .admin-picker-shell .admin-picker-console { display: flex !important; flex-direction: column !important; flex: 1 1 auto !important; min-height: 0 !important; padding: 17px 17px 0 !important; overflow: hidden !important; }
   .admin-picker-heading { align-items: flex-start; gap: 9px; }
   .admin-picker-title { font-size: clamp(22px,6vw,29px) !important; line-height: 1.08 !important; }
   .admin-picker-session-exit { min-height: 34px; padding: 7px 9px; white-space: nowrap; font-size: 10px; }
   .admin-picker-shell .admin-picker-body { padding: 13px 0 calc(18px + env(safe-area-inset-bottom)) !important; overflow-y: auto !important; }
-  .admin-picker-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 10px !important; }
+  .admin-picker-shell .admin-picker-grid { width: 100% !important; max-width: none !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; gap: 10px !important; }
   .admin-picker-grid > .admin-picker-tile:not(.admin-picker-tile-vermas), .admin-picker-tile:not(.admin-picker-tile-vermas) { width: 100% !important; max-width: none !important; box-sizing: border-box !important; }
-  .admin-picker-grid > .admin-picker-tile:not(.admin-picker-tile-vermas):last-child:nth-child(odd) { grid-column: auto !important; }
+  .admin-picker-shell .admin-picker-grid > .admin-picker-tile:not(.admin-picker-tile-vermas):last-child:nth-child(odd) { grid-column: 1 / -1 !important; justify-self: center !important; width: calc((100% - 10px) / 2) !important; }
   .admin-picker-management-screen { padding: calc(18px + env(safe-area-inset-top)) 16px calc(38px + env(safe-area-inset-bottom)) !important; }
   .admin-picker-management-head { display: grid !important; grid-template-columns: auto minmax(0,1fr) !important; gap: 11px !important; }
   .admin-picker-management-exit { grid-column: 1 / -1; width: 100%; }

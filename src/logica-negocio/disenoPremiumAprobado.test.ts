@@ -392,7 +392,7 @@ describe("refinamiento premium aprobado", () => {
     expect(perfil).toContain('className="profile-section-account"');
     expect(estilos).toContain('.profile-hero-company { display: grid !important;');
     expect(estilos).toContain('.profile-hero-metrics { display: grid;');
-    expect(estilos).toContain('.profile-content { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important;');
+    expect(estilos).toContain('.profile-content { display: grid !important; grid-template-columns: minmax(0,1.45fr) minmax(280px,.8fr) !important;');
     expect(estilos).toContain('.profile-content { grid-template-columns: 1fr !important;');
   });
 
