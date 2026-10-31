@@ -54,14 +54,7 @@ html, body, .main-area, .screens, .content-area,
   content: '' !important; display: block !important; position: absolute; inset: 0; z-index: -1;
   background: linear-gradient(0deg, rgba(12,22,25,.88), rgba(12,22,25,.42) 68%, rgba(12,22,25,.35));
 }
-.admin-picker-editorial::after {
-  content: 'VISUALIZACIÓN REFERENCIAL' !important; display: block !important;
-  position: absolute; bottom: 22px; right: 25px; color: rgba(255,255,255,.7);
-  font-size: 8px; font-weight: 750; letter-spacing: .14em;
-}
-
-/* Home: the editorial feature uses a real local brand asset as a labeled
-   visualization; account data and actions remain separate and truthful. */
+/* Home: an editorial brand image gives context while account data stays separate. */
 .inicio-content {
   padding: 24px clamp(24px, 3.5vw, 54px) 46px !important;
   background: var(--signature-paper) !important;
@@ -392,4 +385,221 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
 @media (prefers-reduced-motion: reduce) {
   .inicio-welcome-actions button, .inicio-quick-grid > button,
   .inicio-account-status-grid button { transition: none !important; }
+}
+
+/* Approved palette and final document composition. */
+:root {
+  --signature-ink: #090b0b;
+  --signature-paper: #f3f3f0;
+  --signature-line: #dcddd8;
+  --signature-muted: #58615e;
+  --signature-accent: #b59a70;
+  --v360-ink: #090b0b;
+  --v360-ink-hover: #191d1c;
+  --v360-paper: #f3f3f0;
+  --v360-white: #ffffff;
+  --v360-secondary: #58615e;
+  --v360-rule: #dcddd8;
+  --app-bg: #090b0b;
+  --bg: #f3f3f0;
+  --dark: #090b0b;
+  --darker: #090b0b;
+  --card: #ffffff;
+  --text: #090b0b;
+  --text-2: #58615e;
+  --muted: #58615e;
+  --accent: #090b0b;
+  --border: #dcddd8;
+  --premium-rule: #090b0b;
+}
+
+.sidebar-panel, .sidebar-head, .inicio-header { background: var(--signature-ink) !important; }
+.inicio-desktop-welcome, .inicio-report-icon,
+.reports-list .report-pdf-icon { background-color: var(--signature-ink) !important; }
+.portal-eyebrow, .reports-list .report-kicker { color: #75654d !important; }
+.login-access-kicker strong { color: #75654d !important; }
+.login-btn, .inicio-welcome-primary, .report-action-primary,
+.factura-action-primary, .factura-upload-btn { background: var(--signature-ink) !important; border-color: var(--signature-ink) !important; }
+
+/* The access image is part of the brand surface on both devices. */
+.login-shell, .login-experience, .login-right-panel { background: var(--signature-paper) !important; }
+.login-left-panel {
+  background: var(--signature-ink) url('/editorial/vista360-avenida-referencial.jpg') 48% center / cover no-repeat !important;
+}
+.login-left-panel::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(9,11,11,.66), rgba(9,11,11,.24) 70%),
+    linear-gradient(0deg, rgba(9,11,11,.62), transparent 65%) !important;
+}
+.login-card .form-input { border-color: var(--signature-line) !important; background: #fff !important; color: var(--signature-ink) !important; }
+.login-card .form-input:focus { border-color: var(--signature-accent) !important; box-shadow: 0 0 0 3px rgba(181,154,112,.16) !important; }
+.login-remember-box.checked { background: var(--signature-ink) !important; border-color: var(--signature-ink) !important; }
+
+/* The account selector photograph fills its entire editorial column. */
+.admin-picker-editorial {
+  background: var(--signature-ink) url('/editorial/vista360-avenida-referencial.jpg') 57% center / cover no-repeat !important;
+}
+.admin-picker-editorial::after { content: none !important; display: none !important; }
+.admin-picker-editorial::before {
+  background: linear-gradient(0deg, rgba(9,11,11,.86), rgba(9,11,11,.31) 70%, rgba(9,11,11,.42)) !important;
+}
+.admin-picker-console { background: #fff !important; }
+@media (min-width: 900px) {
+  .admin-picker-shell .admin-picker-stage {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    flex: 0 0 100dvh !important;
+    align-items: stretch !important;
+    padding: 0 !important;
+  }
+  .admin-picker-shell .admin-picker-editorial {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    align-self: stretch !important;
+  }
+}
+
+/* Reports use one visible date. The document cover supplies identity. */
+.reports-list > .report-card, .reports-list > .report-card:last-child:nth-child(odd) {
+  max-width: none !important;
+  width: 100% !important;
+}
+.reports-list .report-pdf-icon img, .reports-list .factura-pdf-icon img { filter: none !important; }
+.reports-list .report-pdf-icon span { color: #d0b890 !important; }
+.reports-list .report-pdf-icon small { color: #bfc6c1 !important; }
+.reports-list .report-card:not(.factura-card) .report-ready-badge { display: none !important; }
+
+/* In the expanded editor, photos occupy the free column beside the form. */
+@media (min-width: 900px) {
+  details.report-admin-panel[open] { width: 100% !important; max-width: none !important; }
+  .report-admin-content:has(> .report-campaign-panels) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(330px, .9fr);
+    column-gap: 32px;
+    align-items: start;
+  }
+  .report-admin-content > .report-admin-controls { grid-column: 1; grid-row: 1; }
+  .report-admin-content > .report-auto-data { grid-column: 1; grid-row: 2; }
+  .report-admin-content > .report-draft-status { grid-column: 1; }
+  .report-admin-content > .report-campaign-panels {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    margin-top: 0 !important;
+  }
+  .report-admin-content > .report-admin-status { grid-column: 1 / -1; }
+  .report-campaign-panel-box { min-height: 120px; padding: 20px !important; }
+
+  .reports-list > .report-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    align-items: center;
+    gap: 25px;
+    min-height: 0 !important;
+  }
+  .reports-list .report-card-main { min-width: 0; }
+  .reports-list .report-card:not(.factura-card) .report-actions,
+  .reports-list .factura-card .report-actions {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-self: center;
+    margin: 0 !important;
+    gap: 8px !important;
+  }
+  .reports-list .report-action { width: 100% !important; }
+}
+
+/* Invoices share the same document cover and make the empty state useful. */
+.reports-list .factura-card .factura-pdf-icon {
+  display: flex !important;
+  flex: 0 0 155px !important;
+  width: 155px !important;
+  height: 182px !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  padding: 18px !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  color: #fff !important;
+  background: var(--signature-ink) !important;
+  box-shadow: 6px 7px 0 #e6e7e1 !important;
+}
+.reports-list .factura-pdf-icon img { display: block; width: 88px; height: auto; object-fit: contain; }
+.reports-list .factura-pdf-icon span { margin-top: 26px; color: #d0b890 !important; font-size: 8px; font-weight: 750; letter-spacing: .14em; }
+.reports-list .factura-pdf-icon strong { margin-top: 6px; color: #fff; font-size: 19px; line-height: 1.08; letter-spacing: -.04em; }
+.reports-list .factura-pdf-icon small { margin-top: auto; color: #bfc6c1 !important; font-size: 7px; font-weight: 750; letter-spacing: .12em; }
+.reports-list .factura-card .report-card-main { display: flex !important; align-items: center !important; gap: 24px !important; }
+.reports-list .factura-card .report-card-copy { min-width: 0; flex: 1 1 auto; }
+.reports-list .factura-card .report-title { font-size: clamp(18px, 2vw, 24px) !important; line-height: 1.15 !important; overflow-wrap: anywhere; }
+.reports-list .factura-card .report-ready-badge { margin: 0 !important; }
+.facturas-screen .factura-empty-state {
+  display: grid !important;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  max-width: none !important;
+  min-height: 212px !important;
+  padding: 0 !important;
+  text-align: left !important;
+  overflow: hidden;
+}
+.factura-empty-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 25px;
+  color: #fff;
+  background: var(--signature-ink);
+}
+.factura-empty-visual span, .factura-empty-visual small { color: #d0b890; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
+.factura-empty-visual strong { margin: auto 0; color: #fff; font-size: 58px; line-height: 1; font-weight: 400; }
+.factura-empty-copy { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 30px 36px; }
+.factura-empty-copy .report-empty-title { margin: 0 0 10px !important; color: var(--signature-ink) !important; font-size: 22px !important; letter-spacing: -.04em; text-align: left !important; }
+.factura-empty-copy .report-empty-sub { max-width: 480px; margin: 0 !important; color: var(--signature-muted) !important; font-size: 13px !important; line-height: 1.5; text-align: left !important; }
+
+@media (max-width: 899px) {
+  .login-left-panel {
+    background: var(--signature-ink) url('/editorial/vista360-costa-referencial.jpg') 64% center / cover no-repeat !important;
+  }
+  .login-left-panel::before {
+    background: linear-gradient(90deg, rgba(9,11,11,.58), rgba(9,11,11,.12)),
+      linear-gradient(0deg, rgba(9,11,11,.58), transparent 70%) !important;
+  }
+  .reports-list > .report-card { display: block !important; }
+  .reports-list .factura-card .report-card-main {
+    display: grid !important;
+    grid-template-columns: 103px minmax(0, 1fr) !important;
+    gap: 15px !important;
+  }
+  .reports-list .factura-card .factura-pdf-icon {
+    flex: 0 0 103px !important;
+    width: 103px !important;
+    height: 143px !important;
+    padding: 11px !important;
+    box-shadow: 4px 5px 0 #e6e7e1 !important;
+  }
+  .reports-list .factura-pdf-icon img { width: 63px; }
+  .reports-list .factura-pdf-icon span { margin-top: 18px; font-size: 6px; }
+  .reports-list .factura-pdf-icon strong { font-size: 15px; }
+  .reports-list .factura-pdf-icon small { font-size: 6px; }
+  .reports-list .factura-card .factura-badge-row {
+    display: flex !important;
+    position: static !important;
+    grid-column: 1 / -1 !important;
+    justify-self: start !important;
+  }
+  .reports-list .factura-card .report-ready-badge { position: static !important; margin: 0 !important; }
+  .reports-list .factura-card .report-actions { position: static !important; margin-top: 20px !important; }
+  .facturas-screen .factura-empty-state { grid-template-columns: 1fr; }
+  .factura-empty-visual { min-height: 94px; flex-direction: row; align-items: center; gap: 14px; padding: 18px 22px; }
+  .factura-empty-visual strong { margin: 0 auto 0 0; font-size: 32px; }
+  .factura-empty-visual small { text-align: right; }
+  .factura-empty-copy { padding: 23px; }
+  .factura-empty-copy .report-empty-title { font-size: 18px !important; }
 }

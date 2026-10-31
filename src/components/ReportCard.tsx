@@ -37,13 +37,6 @@ function fechaCorta(date: Date) {
   return `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
 }
 
-function fechaGenerada(mes: string, dia?: string) {
-  const diaValido = /^\d{1,2}$/.test(dia ?? "") ? String(dia).padStart(2, "0") : "01";
-  const base = mes || new Date().toISOString().slice(0, 7);
-  const fecha = new Date(`${base}-${diaValido}T12:00:00`);
-  return fechaCorta(Number.isNaN(fecha.getTime()) ? new Date() : fecha);
-}
-
 function formatoBytes(bytes?: number) {
   if (!bytes || bytes <= 0) return null;
   // Base decimal (1000), no binaria (1024) -- ver nota en
@@ -416,14 +409,13 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
       <div className="report-card-main">
         <div className="report-pdf-icon" aria-hidden="true">
           <img src="/logo-player.webp" alt="" decoding="async" />
-          <span>INFORME DE CAMPAÑA</span>
-          <strong>{informe.mesLabel}</strong>
-          <small>VISTA360 PLAYER / PDF</small>
+          <span>REPORTE MENSUAL</span>
+          <strong>Evidencia<br />que cuenta.</strong>
+          <small>PDF · CAMPAÑA</small>
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">{nombreCampanaActual ?? informe.contratoNombre ?? "Reporte mensual"}</div>
           <div className="report-title">{informe.mesLabel}</div>
-          <div className="report-meta report-meta-generated">Generado el {fechaGenerada(informe.mes, informe.dia)}</div>
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
           {isAdmin && (
             <div className={`report-meta report-seen-status ${informe.vistoPorCliente ? "is-seen" : "is-unseen"}`}>

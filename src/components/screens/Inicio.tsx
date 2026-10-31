@@ -26,18 +26,6 @@ interface Props {
   onCerrarNotifSpotlight?: () => void;
 }
 
-function fechaGeneradoInforme(createdAt: unknown): string {
-  if (createdAt && typeof createdAt === "object" && "toDate" in createdAt) {
-    const toDate = (createdAt as { toDate?: () => Date }).toDate;
-    if (typeof toDate === "function") return fechaCorta(toDate().toISOString().slice(0, 10));
-  }
-  if (typeof createdAt === "string") {
-    const parsed = new Date(createdAt);
-    if (!Number.isNaN(parsed.getTime())) return fechaCorta(parsed.toISOString().slice(0, 10));
-  }
-  return "—";
-}
-
 function proximoVencimiento(contratos: Contrato[]): Contrato | null {
   return contratos
     .filter((contrato) => estadoCampana(contrato) !== "Finalizada")
@@ -274,7 +262,6 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
           <div className="inicio-welcome-visual" aria-hidden="true">
             <span className="inicio-welcome-visual-index">VISTA360 / 01</span>
             <span className="inicio-welcome-visual-wordmark">Presencia<br />que se ve.</span>
-            <span className="inicio-welcome-visual-caption">Visualización referencial</span>
           </div>
         </section>
 
@@ -381,17 +368,13 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
               <div className="inicio-report-icon" aria-hidden="true">
                 <img src="/logo-player.webp" alt="" decoding="async" />
-                <span>INFORME MENSUAL</span>
-                <strong>{ultimoInforme.mesLabel}</strong>
-                <small>VISTA360 PLAYER</small>
+                <span>REPORTE MENSUAL</span>
+                <strong>Evidencia<br />que cuenta.</strong>
+                <small>PDF · CAMPAÑA</small>
               </div>
               <div className="inicio-report-body" style={{ flex:1 }}>
                 <div className="inicio-report-month" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
                   {ultimoInforme.mesLabel}
-                </div>
-                <div className="inicio-report-meta" style={{ display:"flex", alignItems:"center", gap:8, color:"#52627A", fontSize: 14, marginBottom:16 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52627A" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  Generado el {fechaGeneradoInforme(ultimoInforme.createdAt)}
                 </div>
                 <button type="button" className="inicio-report-link" onClick={() => onGoTo("reportes")} style={{ display:"inline-flex", alignItems:"center", gap:4, padding:0, border:"none", background:"transparent", color:"#0877FF", fontSize:16, fontWeight:800, fontFamily:"inherit", cursor:"pointer" }}>
                   Ver reportes <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>

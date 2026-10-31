@@ -249,15 +249,16 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
           </div>
         )}
         {state.status === "ready" && (ruc || clienteId) && facturas.length === 0 && (
-          <div className="report-empty-state">
-            <div className="report-empty-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="2">
-                <path d="M6 3h9l3 3v15H6z" />
-                <path d="M9 9h6M9 13h6M9 17h3" />
-              </svg>
+          <div className="report-empty-state factura-empty-state">
+            <div className="factura-empty-visual" aria-hidden="true">
+              <span>ARCHIVO PRIVADO</span>
+              <strong>—</strong>
+              <small>DOCUMENTOS DIGITALES</small>
             </div>
-            <div className="report-empty-title">Aún no hay facturas registradas</div>
-            <div className="report-empty-sub">La primera factura aparecerá aquí después de que el admin la suba.</div>
+            <div className="factura-empty-copy">
+              <div className="report-empty-title">Aún no hay facturas registradas</div>
+              <div className="report-empty-sub">Cuando se agregue la primera, podrás verla y descargarla desde este espacio.</div>
+            </div>
           </div>
         )}
 
