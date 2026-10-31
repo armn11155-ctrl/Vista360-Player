@@ -4,7 +4,6 @@ import { setPersistence, browserLocalPersistence, browserSessionPersistence } fr
 import type { MultiFactorResolver } from "firebase/auth";
 import { mensajeDeError } from "../utils/errores";
 import { completarLoginConCodigo, pideSegundoFactor, resolverDeSegundoFactor } from "../config/mfa";
-import PixelGlobe from "./PixelGlobe";
 import { prepararSonidosInterfaz } from "../utils/sonidosInterfaz";
 
 const LOGO = "/logo-player.webp";
@@ -154,14 +153,10 @@ export default function LoginScreen({ onLoggedIn }: Props) {
               <div className="login-network-message">
                 <h1>Más que visibilidad.<strong>Presencia.</strong></h1>
                 <p>Campañas, cobertura y resultados conectados en una sola plataforma.</p>
-                <div className="login-network-live"><i /><span>Red de campaña activa</span></div>
+                <div className="login-network-live"><i /><span>Una nueva perspectiva</span></div>
               </div>
             </div>
-
-            <div className="login-network-visual-globe">
-              <PixelGlobe />
-            </div>
-
+            <div className="login-editorial-credit">Imagen referencial creada con IA</div>
           </div>
         </section>
 

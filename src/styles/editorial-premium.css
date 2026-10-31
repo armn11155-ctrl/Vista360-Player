@@ -1,0 +1,395 @@
+/* Vista360 — dirección editorial clara. Se carga al final para mantener
+   intactos los estilos funcionales y resolver aquí la identidad visual. */
+:root {
+  --v360-ink-950: #101820;
+  --v360-ink-900: #17222c;
+  --v360-ink-850: #1d2a35;
+  --v360-ink-800: #243541;
+  --v360-brand-600: #173952;
+  --v360-brand-500: #234a63;
+  --v360-brand-400: #4d7185;
+  --v360-brand-soft: #e8efef;
+  --v360-canvas: #f7f5f0;
+  --v360-surface: #fffefa;
+  --v360-surface-subtle: #f8f6f1;
+  --v360-border: #e5e1d8;
+  --v360-border-strong: #d4cec2;
+  --v360-text: #1c252b;
+  --v360-text-secondary: #59646b;
+  --v360-text-tertiary: #68737a;
+  --v360-radius-card: 15px;
+  --v360-shadow-card: 0 12px 34px -31px rgba(26, 32, 34, .35);
+  --app-bg: #17222c;
+  --bg: #f7f5f0;
+  --dark: #17222c;
+  --darker: #101820;
+  --card: #fffefa;
+  --text: #1c252b;
+  --text-2: #59646b;
+  --muted: #68737a;
+  --accent: #234a63;
+  --border: #e5e1d8;
+  --premium-rule: #b58e5b;
+}
+
+/* El lienzo cálido y los bordes finos acompañan todas las pantallas de uso. */
+.screens,
+.content-area,
+.campaign-list,
+.mis-campanas-list,
+.ev-content,
+.reports-screen-body,
+.quotes-scroll,
+.admin-tool-screen,
+.admin-picker-management-screen {
+  background: #f7f5f0 !important;
+}
+
+.card,
+.report-card,
+.profile-card-list,
+.profile-metric-card,
+.quotes-form-card,
+.quotes-list-card,
+.factura-edit-panel,
+.report-email-preview {
+  border-color: #e5e1d8 !important;
+  background: #fffefa !important;
+  box-shadow: 0 12px 34px -31px rgba(26,32,34,.35) !important;
+}
+
+.detail-header,
+.reports-header,
+.coverage-header-compact,
+.campanas-header,
+.quotes-header {
+  background: #17222c !important;
+}
+
+.section-title::before,
+.inicio-section-title::before,
+.reports-history-screen-body .reports-month-header::before,
+.facturas-history-screen-body .reports-month-header::before {
+  background: #b58e5b !important;
+}
+
+:where(.btn-primary, .login-btn, .quotes-primary-btn, .report-action-primary,
+  .factura-action-primary, .report-generate-btn, .factura-upload-send,
+  .panel-create-toggle, .accesos-create-btn.is-primary) {
+  border-color: #173952 !important;
+  background: #234a63 !important;
+  box-shadow: 0 13px 24px -20px rgba(23,57,82,.63) !important;
+}
+
+:where(.btn-primary, .login-btn, .quotes-primary-btn, .report-action-primary,
+  .factura-action-primary, .report-generate-btn, .factura-upload-send,
+  .panel-create-toggle, .accesos-create-btn.is-primary):hover:not(:disabled) {
+  background: #173952 !important;
+}
+
+:where(button, [role="button"], input, select, textarea, a):focus-visible {
+  outline-color: #b58e5b;
+  box-shadow: 0 0 0 3px rgba(181,142,91,.22), 0 0 0 1px #b58e5b;
+}
+
+/* Marca y navegación: una sola superficie de tinta, sin resplandor. */
+.sidebar-panel,
+.sidebar-head,
+.sidebar-bottom .sidebar-item-danger {
+  background: #17222c !important;
+}
+
+.sidebar-panel .sidebar-pill {
+  border: 1px solid rgba(224,230,225,.16) !important;
+  border-radius: 11px !important;
+  background: rgba(243,246,242,.12) !important;
+  filter: none !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.sidebar-panel .sidebar-pill::after { display: none !important; }
+.sidebar-item-active::before { background: transparent !important; box-shadow: none !important; }
+.sidebar-profile-chip { border-color: rgba(255,255,255,.13) !important; background: rgba(255,255,255,.055) !important; }
+.sidebar-desktop-context span { color: rgba(235,239,235,.56) !important; }
+
+.bottom-nav {
+  border-top-color: #e6e1d8 !important;
+  background: rgba(255,254,250,.98) !important;
+  box-shadow: 0 -10px 30px -25px rgba(23,34,44,.25) !important;
+}
+.bottom-nav .nav-item.active span { color: #234a63 !important; }
+.bottom-nav .nav-item.active::before { background: #b58e5b !important; box-shadow: none !important; }
+.bottom-nav .nav-item.active svg { stroke: #234a63 !important; }
+.bottom-nav .nav-item.active svg path[fill="white"] { fill: #fffefa !important; }
+
+/* Acceso: fotografía de contexto y formulario luminoso con el logo real. */
+.login-shell { background: #f7f5f0 !important; }
+.login-shell::before,
+.login-shell::after { background: #f7f5f0 !important; animation: none !important; }
+.login-experience { background: #f7f5f0 !important; box-shadow: none !important; }
+.login-left-panel { animation: none !important; }
+.login-left-panel::after { content: none !important; animation: none !important; }
+.login-left-panel::before {
+  content: "" !important;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg, rgba(11,24,32,.72), rgba(11,24,32,.23) 60%, rgba(11,24,32,.08)),
+    linear-gradient(0deg, rgba(11,24,32,.55), transparent 52%) !important;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+.login-network-stage { color: #fffefa; }
+.login-network-copy::after { content: none !important; }
+.login-network-message::before { content: none !important; }
+.login-network-copy h1,
+.login-network-copy h1 strong { color: #fffefa !important; text-shadow: 0 8px 24px rgba(0,0,0,.20) !important; }
+.login-network-copy h1 { font-weight: 550 !important; letter-spacing: -.052em; }
+.login-network-copy h1 strong { font-weight: 800 !important; }
+.login-network-message > p { color: rgba(255,254,250,.87) !important; }
+.login-network-kicker { color: rgba(255,254,250,.82) !important; }
+.login-network-kicker > span { background: #d7b785 !important; box-shadow: none !important; }
+.login-network-live { color: rgba(255,254,250,.82) !important; }
+.login-network-live > i { background: #d7b785 !important; box-shadow: none !important; }
+.login-network-live > i::after { animation: none !important; border-color: rgba(215,183,133,.35); }
+.login-editorial-credit {
+  position: absolute;
+  z-index: 5;
+  right: 26px;
+  bottom: 22px;
+  color: rgba(255,254,250,.78);
+  font-size: 10px;
+  font-weight: 580;
+  letter-spacing: .045em;
+  text-shadow: 0 2px 8px rgba(0,0,0,.62);
+}
+.login-right-panel {
+  border-color: #e3ded4 !important;
+  color: #1c252b;
+  background: #f7f5f0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.login-right-panel::before,
+.login-right-panel::after { content: none !important; }
+.login-right-panel .login-logo { transform: none !important; }
+.login-right-panel .login-logo img { filter: brightness(0) saturate(100%) !important; }
+.login-right-panel .login-logo .login-tagline { color: #59646b !important; }
+.login-access-kicker { color: #7b766c !important; }
+.login-access-kicker strong { color: #234a63 !important; }
+.login-title { color: #1c252b !important; font-weight: 710 !important; letter-spacing: -.04em; }
+.login-sub { color: #68737a !important; }
+.login-card .form-label { color: #59646b !important; }
+.login-card .form-input {
+  border-color: #ded9cf !important;
+  background: #fffefa !important;
+  color: #1c252b !important;
+  box-shadow: none !important;
+}
+.login-card .form-input:focus { border-color: #234a63 !important; box-shadow: 0 0 0 3px rgba(35,74,99,.12) !important; }
+.login-input-icon,
+.login-password-toggle { color: #68737a !important; }
+.login-remember-label { color: #59646b !important; }
+.login-remember-box { border-color: #d4cec2 !important; background: #fffefa !important; }
+.login-remember-box.checked { background: #234a63 !important; border-color: #234a63 !important; }
+.login-foot { color: #7b766c !important; }
+.login-secondary-link { color: #59646b !important; }
+.login-message-stack .login-error { color: #8d2a36 !important; background: #fff1ef !important; border-color: #e8bbb8 !important; }
+
+@media (min-width: 900px) {
+  .login-experience { grid-template-columns: minmax(370px, .8fr) minmax(0, 1.2fr) !important; }
+  .login-left-panel {
+    background: #23313b url('/editorial/vista360-avenida-referencial.jpg') 42% center / cover no-repeat !important;
+  }
+  .login-right-panel { padding: clamp(46px, 5vw, 74px) !important; }
+  .login-right-panel .login-logo { max-width: 340px; margin-bottom: 35px !important; }
+  .login-right-panel .login-logo img { width: clamp(180px, 15vw, 215px) !important; }
+  .login-network-copy {
+    top: auto !important;
+    right: clamp(42px, 5vw, 76px) !important;
+    bottom: clamp(78px, 10vh, 116px) !important;
+    left: auto !important;
+    width: min(440px, 55%) !important;
+    text-align: right !important;
+  }
+  .login-network-kicker { display: flex !important; justify-content: flex-end !important; }
+  .login-network-logo { display: none !important; }
+  .login-network-message { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .login-network-copy h1 { font-size: clamp(40px, 4.3vw, 58px) !important; }
+  .login-network-message > p { max-width: 360px !important; margin: 16px 0 0 auto !important; }
+  .login-network-live { display: inline-flex !important; margin-top: 20px; }
+}
+
+@media (max-width: 899px) {
+  .login-shell { overflow-y: auto !important; }
+  .login-experience { max-width: 440px; background: #f7f5f0 !important; }
+  .login-left-panel {
+    min-height: 300px !important;
+    flex-basis: 300px !important;
+    border: 0 !important;
+    background: #23313b url('/editorial/vista360-costa-referencial.jpg') 68% center / cover no-repeat !important;
+  }
+  .login-left-panel::before {
+    background: linear-gradient(90deg, rgba(11,24,32,.68), rgba(11,24,32,.12)),
+      linear-gradient(0deg, rgba(11,24,32,.66), transparent 62%) !important;
+  }
+  .login-network-copy {
+    top: auto !important;
+    right: auto !important;
+    bottom: 43px !important;
+    left: 26px !important;
+    width: min(270px, 75%) !important;
+  }
+  .login-network-copy h1 { max-width: 270px !important; font-size: clamp(30px, 8vw, 38px) !important; }
+  .login-network-message > p { max-width: 255px !important; font-size: 11px !important; }
+  .login-network-live { display: none !important; }
+  .login-editorial-credit { right: 16px; bottom: 37px; font-size: 8px; }
+  .login-right-panel {
+    width: 100% !important;
+    max-width: 440px !important;
+    min-height: 0;
+    margin: -20px auto 0 !important;
+    padding: 23px 25px calc(24px + env(safe-area-inset-bottom)) !important;
+    border: 1px solid #e3ded4 !important;
+    border-bottom: 0 !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+  .login-right-panel .login-logo { margin-bottom: 18px !important; text-align: left !important; }
+  .login-right-panel .login-logo img { width: 145px !important; }
+  .login-title { font-size: 29px !important; }
+  .login-foot { padding-top: 15px; }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-left-panel {
+    min-height: 86px !important;
+    flex-basis: 86px !important;
+  }
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-network-copy,
+  .login-shell:has(#login-email:focus, #login-password:focus) .login-editorial-credit { opacity: 0; }
+}
+
+/* Inicio: fotografía solo como contexto, datos y acciones sobre marfil. */
+.inicio-screen { background: #17222c !important; }
+.inicio-content {
+  background: #f7f5f0 !important;
+  border-color: #e9e4da !important;
+  box-shadow: none !important;
+}
+.inicio-header::before,
+.inicio-header::after { content: none !important; }
+.inicio-header .inicio-logo { filter: drop-shadow(0 2px 9px rgba(0,0,0,.45)) !important; }
+.inicio-visual-credit {
+  position: absolute;
+  right: 19px;
+  bottom: 9px;
+  z-index: 2;
+  color: rgba(255,254,250,.83);
+  font-size: 9px;
+  font-weight: 580;
+  letter-spacing: .02em;
+  text-shadow: 0 2px 7px rgba(0,0,0,.65);
+}
+.inicio-desktop-welcome::before { content: none !important; }
+.inicio-desktop-welcome-kicker { color: #e8cda6 !important; }
+.inicio-desktop-welcome p { color: rgba(255,254,250,.86) !important; }
+.inicio-desktop-welcome-status { color: #fffefa !important; border-color: rgba(255,255,255,.22) !important; background: rgba(12,25,33,.39) !important; }
+.inicio-section-title { color: #1c252b !important; }
+.inicio-section-title::before { display: none !important; }
+.inicio-summary-grid > .inicio-kpi-card,
+.inicio-quick-grid > button {
+  border-color: #e5e1d8 !important;
+  background: #fffefa !important;
+  box-shadow: 0 12px 34px -31px rgba(26,32,34,.35) !important;
+}
+.inicio-kpi-card::before { content: none !important; }
+.inicio-kpi-card .inicio-kpi-icon { border-color: #e7e4da !important; background: #f3f0e9 !important; box-shadow: none !important; }
+.inicio-kpi-card .inicio-kpi-icon svg { stroke: #234a63 !important; }
+.inicio-kpi-label { color: #667078 !important; }
+.inicio-kpi-value { color: #1c252b !important; font-weight: 750 !important; }
+.inicio-quick-grid > button svg { stroke: #234a63 !important; }
+.inicio-quick-copy span { color: #1c252b !important; }
+.inicio-quick-copy small { color: #68737a !important; }
+.inicio-evidence-card,
+.inicio-side-col .inicio-evidence-card {
+  border-color: #e5e1d8 !important;
+  color: #1c252b !important;
+  background: #fffefa !important;
+  box-shadow: 0 12px 34px -31px rgba(26,32,34,.35) !important;
+}
+.inicio-evidence-card .inicio-report-title,
+.inicio-evidence-card .inicio-report-month { color: #1c252b !important; }
+.inicio-evidence-card .inicio-report-icon { background: #eef0eb !important; }
+.inicio-evidence-card .inicio-report-icon svg { stroke: #234a63 !important; }
+.inicio-report-link { color: #234a63 !important; }
+.inicio-report-link svg { stroke: #234a63 !important; }
+.inicio-account-status { border-color: #e5e1d8 !important; background: #fffefa !important; box-shadow: 0 12px 34px -31px rgba(26,32,34,.35) !important; }
+.inicio-account-status-grid button { background: #fffefa !important; border-color: #ece8df !important; }
+.inicio-account-status-icon { color: #234a63 !important; background: #e8efef !important; }
+.inicio-account-status-badge { color: #59646b !important; border-color: #e5e1d8 !important; background: #f7f5f0 !important; }
+.inicio-current-client {
+  border: 1px solid #e5e1d8 !important;
+  background: #fffefa !important;
+  box-shadow: 0 12px 34px -31px rgba(26,32,34,.35) !important;
+}
+.inicio-current-client-copy small { color: #68737a !important; }
+.inicio-current-client-copy strong { color: #1c252b !important; }
+.inicio-current-client-action { color: #234a63 !important; }
+
+@media (min-width: 900px) {
+  .inicio-header { background: #17222c !important; }
+  .inicio-desktop-welcome {
+    min-height: 155px !important;
+    padding: 25px 28px !important;
+    border: 0 !important;
+    border-radius: 17px !important;
+    background: linear-gradient(90deg, rgba(12,26,36,.80), rgba(12,26,36,.24) 64%, rgba(12,26,36,.08)),
+      url('/editorial/vista360-costa-referencial.jpg') 58% center / cover no-repeat !important;
+    box-shadow: 0 20px 40px -31px rgba(16,24,32,.45) !important;
+  }
+  .inicio-desktop-welcome h2 { color: #fffefa !important; font-size: clamp(25px, 2.2vw, 31px) !important; }
+  .inicio-desktop-welcome-status { align-self: flex-start; }
+  .inicio-desktop-welcome .inicio-visual-credit { bottom: 14px; right: 18px; }
+  .inicio-header .inicio-visual-credit { display: none; }
+  .inicio-summary-grid { gap: 10px !important; }
+  .inicio-summary-grid > .inicio-kpi-card { border: 1px solid #e5e1d8 !important; border-radius: 14px !important; }
+  .inicio-summary-grid > .inicio-kpi-card:last-child { border-right: 1px solid #e5e1d8 !important; }
+}
+
+@media (max-width: 899px) {
+  .inicio-header {
+    min-height: 202px !important;
+    padding-bottom: 55px !important;
+    background: linear-gradient(90deg, rgba(12,26,36,.88), rgba(12,26,36,.37) 78%),
+      url('/editorial/vista360-costa-referencial.jpg') 62% center / cover no-repeat !important;
+  }
+  .inicio-header .inicio-visual-credit { bottom: 38px; right: 20px; font-size: 8px; }
+  .inicio-desktop-welcome { display: none !important; }
+  .inicio-content { border-radius: 23px 23px 0 0 !important; }
+  .inicio-screen-client,
+  .inicio-screen-client .inicio-content {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    touch-action: pan-y !important;
+  }
+  .inicio-summary-grid > .inicio-kpi-card { border-radius: 13px !important; }
+  .inicio-quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .inicio-quick-grid > button {
+    min-height: 70px !important;
+    border-radius: 13px !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 10px 13px !important;
+    text-align: left;
+  }
+  .inicio-quick-copy span { font-size: 11px !important; text-align: left !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-left-panel,
+  .login-right-panel,
+  .inicio-desktop-welcome { animation: none !important; transition: none !important; }
+}

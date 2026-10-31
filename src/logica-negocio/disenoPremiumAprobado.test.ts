@@ -27,8 +27,8 @@ describe("refinamiento premium aprobado", () => {
     expect(login).toContain("Publicidad exterior premium");
     expect(login).toContain("Campañas, cobertura y resultados conectados");
     expect(login).toContain('className="login-network-stage"');
-    expect(login).toContain("import PixelGlobe");
-    expect(login).toContain("<PixelGlobe />");
+    expect(login).not.toContain("import PixelGlobe");
+    expect(login).not.toContain("<PixelGlobe />");
     expect(login).not.toContain("login-network-label-coverage");
     expect(login).not.toContain("login-network-label-results");
     expect(login).not.toContain("login-network-visual-brand");
@@ -36,7 +36,8 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain("login-network-visual-billboard");
     expect(login).not.toContain("login-billboard-code-frame");
     expect(login).not.toContain("login-network-index");
-    expect(login).toContain("Red de campaña activa");
+    expect(login).toContain("Una nueva perspectiva");
+    expect(login).toContain("Imagen referencial creada con IA");
     expect(login).toContain('className="login-network-message"');
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');
@@ -83,6 +84,11 @@ describe("refinamiento premium aprobado", () => {
     const sistema = leer("src/styles/design-system.css");
     expect(sistema).toContain(".login-message-stack");
     expect(sistema).toContain("@media (max-width: 899px) and (max-height: 740px)");
+
+    const editorial = leer("src/styles/editorial-premium.css");
+    expect(editorial).toContain("/editorial/vista360-avenida-referencial.jpg");
+    expect(editorial).toContain("/editorial/vista360-costa-referencial.jpg");
+    expect(editorial).toContain(".login-right-panel .login-logo img");
   });
 
   it("anima un planeta pixelado eficiente y libera todos sus recursos", () => {

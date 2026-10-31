@@ -215,6 +215,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             <span style={{ fontSize:11.5, color:"#fff", fontWeight:650 }}>{todoOk ? "Todo funcionando" : "Revisa tus campañas"}</span>
           </div>
         )}
+        <span className="inicio-visual-credit">Imagen referencial creada con IA</span>
       </div>
 
       {/* ── FONDO BLANCO CON CURVA ── */}
@@ -266,6 +267,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             <span aria-hidden="true" />
             {isAdmin ? "Gestión centralizada" : todoOk ? "Todo funcionando" : "Revisa tus campañas"}
           </div>
+          <span className="inicio-visual-credit">Imagen referencial creada con IA</span>
         </section>
 
         <div className="inicio-section-title inicio-summary-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>
@@ -343,7 +345,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             { bg:"#FFFFFF", label:"Facturas", description:"Consulta y descarga documentos", tab:"facturas" as const,
               icon:<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B3F8A" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="14" y2="17"/></svg> },
             { bg:"#FFFFFF", label:"Mi perfil", description:"Tus datos y accesos", tab:"perfil" as const,
-              icon:<PersonIcon size={24} color="#0877FF" /> },
+              icon:<PersonIcon size={24} color="#234a63" /> },
           ].map(q => (
             <button type="button" key={q.tab} onClick={() => onGoTo(q.tab)} style={{ minHeight:78, padding:0, background:q.bg, color:"inherit", border:"1px solid #E2E8F0", borderRadius:8, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:7, cursor:"pointer", WebkitTapHighlightColor:"transparent", boxShadow:"0 12px 26px rgba(15,23,42,0.05)", font:"inherit" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:28 }}>
