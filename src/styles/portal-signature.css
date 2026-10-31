@@ -149,6 +149,12 @@ html, body, .main-area, .screens, .content-area,
   padding: 18px !important; background: var(--signature-ink) !important; border: 0 !important; border-radius: 2px !important;
   box-shadow: 6px 7px 0 #e4e4dc !important;
 }
+.inicio-side-col .inicio-evidence-card .inicio-report-icon {
+  width: 160px !important;
+  height: 174px !important;
+  background: var(--signature-ink) !important;
+  border-radius: 2px !important;
+}
 .inicio-report-icon img { width: 82px; height: auto; object-fit: contain; }
 .inicio-report-icon span, .inicio-report-icon small { color: #c7d0c9; font-size: 8px; letter-spacing: .15em; font-weight: 750; }
 .inicio-report-icon span { margin-top: 28px; }
@@ -205,6 +211,12 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
 
 /* Campaign list: stronger hierarchy and a clear path into each campaign. */
 .campaign-list.mis-campanas-list, .mis-campanas-list { padding: 29px clamp(24px, 3.5vw, 54px) 48px !important; }
+.mis-campanas-list {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  max-width: none !important;
+}
 .campanas-filter-bar { margin: 25px clamp(24px, 3.5vw, 54px) 0 !important; }
 .mis-campanas-month-status { margin: 0 0 24px !important; }
 .mis-campanas-month-status-header { color: #7b705d !important; }
@@ -261,6 +273,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-side-col .inicio-evidence-card { min-height: 0 !important; padding: 16px !important; }
   .inicio-side-col .inicio-report-row { display: flex !important; gap: 17px !important; }
   .inicio-side-col .inicio-report-icon { flex-basis: 104px !important; width: 104px !important; height: 132px !important; padding: 11px !important; box-shadow: 4px 5px 0 #e6e6df !important; }
+  .inicio-side-col .inicio-evidence-card .inicio-report-icon { width: 104px !important; height: 132px !important; }
   .inicio-report-icon img { width: 63px; }
   .inicio-report-icon span { margin-top: 17px; font-size: 6px; }
   .inicio-report-icon strong { font-size: 14px; }
@@ -301,6 +314,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
 @media (max-width: 360px) {
   .reports-intro-count, .campaigns-intro-count { display: none; }
   .inicio-side-col .inicio-report-icon { flex-basis: 88px !important; width: 88px !important; }
+  .inicio-side-col .inicio-evidence-card .inicio-report-icon { width: 88px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
