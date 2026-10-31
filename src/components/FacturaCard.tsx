@@ -471,9 +471,9 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
       <div className="report-card-main">
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
           <img src="/logo-player.webp" alt="" decoding="async" />
-          <span>DOCUMENTO DIGITAL</span>
-          <strong>Siempre<br />a mano.</strong>
-          <small>ARCHIVO PRIVADO · PDF</small>
+          <span>COMPROBANTE</span>
+          <strong>Factura<br />digital.</strong>
+          <small>DOCUMENTO · PDF</small>
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">Factura</div>

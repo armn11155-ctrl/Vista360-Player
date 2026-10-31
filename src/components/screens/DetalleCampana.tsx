@@ -332,6 +332,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
 
         {/* Nombre / estado / fechas — arriba, ancho completo */}
         <div className="campaign-detail-summary">
+          <span className="campaign-detail-eyebrow">Campaña publicitaria · Vista360</span>
           <div className="campaign-detail-title-row">
             <div className="campaign-detail-panel-name">
               {tituloCampana}

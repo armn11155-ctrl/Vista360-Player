@@ -92,12 +92,12 @@ export function estadoTexto(panel: PanelConUso) {
 // queda de ella es informativo, solo dentro del popup (fecha en que
 // "Finalizó" + botón "Volver a contratar") -- eso no pasa por acá.
 function estadoColor(label: string) {
-  if (label === "Activo") return "#22C55E";
-  if (label === "Programado") return "#0877FF"; // antes naranja -- se pidió que no haya naranjas, todo en la paleta azul de la marca
-  if (label === "Disponible") return "#16A34A";
-  if (label === "Ocupado") return "#0877FF";
-  if (label === "Mantenimiento") return "#7C3AED";
-  return "#60A5FA";
+  if (label === "Activo") return "#867453";
+  if (label === "Programado") return "#4d5551";
+  if (label === "Disponible") return "#6e765f";
+  if (label === "Ocupado") return "#090b0b";
+  if (label === "Mantenimiento") return "#a08067";
+  return "#747b76";
 }
 
 /** Negro = contratado por este cliente y todavía vigente/programado.
@@ -218,13 +218,9 @@ export function estadoPinPanel(panel: PanelConUso): EstadoPinPanel {
   return esPanelDisponibleAhora(panel) ? "disponible" : "ocupado";
 }
 
-// Se pidió cambiar los colores: AZUL para los paneles contratados por
-// este cliente y NEGRO para los ocupados por otro. (Antes era al revés.)
-// Solo cambia el color -- qué significa cada estado no cambió, así que
-// estadoPinPanel() y las clases CSS de abajo siguen igual.
-// OJO: el archivo azul se llama ...-contratado.png justamente por esto;
-// antes se llamaba ...-occupied.png y, tras el cambio, ese nombre habría
-// significado lo contrario de lo que muestra.
+// Los tres archivos preservan las siluetas de cada estado. La capa de
+// presentación recolorea el pin contratado en champagne y el ocupado
+// en negro para ajustarlos a la paleta actual sin cambiar su significado.
 const PIN_URL: Record<EstadoPinPanel, string> = {
   mio: "/vista360-map-marker-contratado.png",
   ocupado: "/vista360-map-marker-v4.png",
@@ -657,12 +653,8 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
         // con datosListos=true.
         if (datosListos) conCoordenadas.forEach((panel) => {
           const selected = panel.id === seleccionado?.id;
-          // 3 colores de pin a propósito (se pidió distinguir "mío" de
-          // "ocupado por otro" -- antes los dos se veían negros igual y
-          // se prestaba a confusión): negro = tengo yo una campaña
-          // vigente/programada acá; azul = no es mío pero no está
-          // disponible (otro cliente lo tiene, o está en Mantenimiento);
-          // blanco = de verdad está libre hoy. estadoPinPanel() decide
+          // Tres apariencias distinguen contratado, ocupado y disponible.
+          // estadoPinPanel() decide
           // cuál de los tres es, usando esPanelActivoCliente() y
           // esPanelDisponibleAhora() (NO esPanelContratable: esa además
           // cuenta como "disponible" a un panel lleno con libreDesde
