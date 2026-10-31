@@ -307,6 +307,17 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
 
       {/* List */}
       <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
+        <section className="campaigns-intro" aria-label="Resumen de campañas">
+          <div>
+            <span className="portal-eyebrow">PRESENCIA EN MOVIMIENTO</span>
+            <h2>Cada espacio cuenta.</h2>
+            <p>Sigue el estado, las fechas y el avance de tu presencia publicitaria.</p>
+          </div>
+          {!cargandoHistorial && <div className="campaigns-intro-count" aria-label={`${filtradas.length} campañas en esta vista`}>
+            <strong>{String(filtradas.length).padStart(2, "0")}</strong>
+            <span>{filtro === "Activa" ? "activas" : filtro.toLowerCase()}</span>
+          </div>}
+        </section>
         {/* Un solo cuadro para todas las campañas -- antes era un
          *  cuadro separado por cada campaña activa, y con varias
          *  campañas quedaban un montón de cajas apiladas. Ahora es UN

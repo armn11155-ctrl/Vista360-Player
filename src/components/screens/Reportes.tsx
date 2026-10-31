@@ -369,6 +369,17 @@ function mensajeErrorReporte(error: unknown) {
       />
 
       <div className="reports-screen-body reports-history-screen-body">
+        <section className="reports-intro" aria-label="Introducción a reportes">
+          <div>
+            <span className="portal-eyebrow">EVIDENCIA · VISTA360 PLAYER</span>
+            <h2>Tu impacto, documentado.</h2>
+            <p>Consulta la actividad de cada campaña y comparte sus resultados desde un solo lugar.</p>
+          </div>
+          {informesState.status === "ready" && <div className="reports-intro-count" aria-label={`${informes.length} ${informes.length === 1 ? "reporte" : "reportes"}`}>
+            <strong>{String(informes.length).padStart(2, "0")}</strong>
+            <span>{informes.length === 1 ? "reporte" : "reportes"}</span>
+          </div>}
+        </section>
         {isAdmin && (
           <details className="report-admin-panel" ref={generadorRef}>
             <summary className="report-admin-header">

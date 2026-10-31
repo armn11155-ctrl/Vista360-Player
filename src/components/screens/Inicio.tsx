@@ -262,12 +262,20 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                 ? "Tus clientes, campañas y resultados en una sola vista."
                 : "Tu presencia publicitaria, clara y bajo control."}
             </p>
+            <div className="inicio-welcome-actions">
+              <button type="button" className="inicio-welcome-primary" onClick={() => onGoTo("campanas")}>
+                Explorar campañas <span aria-hidden="true">↗</span>
+              </button>
+              <button type="button" className="inicio-welcome-secondary" onClick={() => onGoTo("reportes")}>
+                Ver resultados <span aria-hidden="true">→</span>
+              </button>
+            </div>
           </div>
-          <div className={`inicio-desktop-welcome-status${!isAdmin && !todoOk ? " is-alert" : ""}`}>
-            <span aria-hidden="true" />
-            {isAdmin ? "Gestión centralizada" : todoOk ? "Todo funcionando" : "Revisa tus campañas"}
+          <div className="inicio-welcome-visual" aria-hidden="true">
+            <span className="inicio-welcome-visual-index">VISTA360 / 01</span>
+            <span className="inicio-welcome-visual-wordmark">Presencia<br />que se ve.</span>
+            <span className="inicio-welcome-visual-caption">Visualización referencial</span>
           </div>
-          <span className="inicio-visual-credit">Imagen referencial creada con IA</span>
         </section>
 
         <div className="inicio-section-title inicio-summary-title" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:12 }}>
@@ -371,11 +379,11 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
             </div>
           ) : ultimoInforme ? (
             <div className="inicio-report-row" style={{ display:"flex", gap:16, alignItems:"center" }}>
-              <div className="inicio-report-icon" style={{ width:56, height:70, borderRadius:12, flexShrink:0, background:"#123778", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#BFD5FF" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M7 1.5h10.5L23 8v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V3.5A2 2 0 0 1 7 1.5Z" />
-                  <path d="M17 1.5V7a2 2 0 0 0 2 2h4" />
-                </svg>
+              <div className="inicio-report-icon" aria-hidden="true">
+                <img src="/logo-player.webp" alt="" decoding="async" />
+                <span>INFORME MENSUAL</span>
+                <strong>{ultimoInforme.mesLabel}</strong>
+                <small>VISTA360 PLAYER</small>
               </div>
               <div className="inicio-report-body" style={{ flex:1 }}>
                 <div className="inicio-report-month" style={{ fontSize:17, fontWeight:800, color:"#08122B", marginBottom:8, lineHeight:1.28 }}>
@@ -421,7 +429,9 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
                 <strong>{campanaRenovable ? (campanaRenovable.nombre || "Campaña activa") : "Todo al día"}</strong>
                 <small>
                   {campanaRenovable
-                    ? `${diasRenovacion} ${diasRenovacion === 1 ? "día" : "días"} para finalizar`
+                    ? diasRenovacion !== null && diasRenovacion > 90
+                      ? `Vigente hasta ${fechaCorta(campanaRenovable.fin)}`
+                      : `${diasRenovacion} ${diasRenovacion === 1 ? "día" : "días"} para finalizar`
                     : "No hay renovaciones pendientes"}
                 </small>
               </div>

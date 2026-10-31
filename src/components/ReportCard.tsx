@@ -415,13 +415,10 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
       )}
       <div className="report-card-main">
         <div className="report-pdf-icon" aria-hidden="true">
-          <svg width="46" height="58" viewBox="0 0 46 58" fill="none">
-            <path d="M7 1.5h22.5L44.5 16v35A5.5 5.5 0 0 1 39 56.5H7A5.5 5.5 0 0 1 1.5 51V7A5.5 5.5 0 0 1 7 1.5Z" fill="#123778" stroke="#4B7FE7" />
-            <path d="M29.5 1.5V12A4.5 4.5 0 0 0 34 16.5h10.5" fill="#6FA2FF" fillOpacity=".35" />
-            <rect x="12.5" y="22.5" width="21" height="19" rx="1.5" stroke="#BFD5FF" strokeWidth="1.6" />
-            <path d="M17 28h8M17 32h12M17 36h15" stroke="#BFD5FF" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <span>PDF</span>
+          <img src="/logo-player.webp" alt="" decoding="async" />
+          <span>INFORME DE CAMPAÑA</span>
+          <strong>{informe.mesLabel}</strong>
+          <small>VISTA360 PLAYER / PDF</small>
         </div>
         <div className="report-card-copy">
           <div className="report-kicker">{nombreCampanaActual ?? informe.contratoNombre ?? "Reporte mensual"}</div>

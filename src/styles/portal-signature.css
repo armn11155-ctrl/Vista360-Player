@@ -1,0 +1,309 @@
+/* Vista360's client portal: a restrained editorial surface with a visual
+   story for the media business. This is the final layer over legacy screens. */
+:root {
+  --signature-ink: #142023;
+  --signature-paper: #f6f5f0;
+  --signature-line: #d9ddd7;
+  --signature-muted: #53615e;
+  --signature-accent: #b8a078;
+}
+
+html, body, .main-area, .screens, .content-area,
+.inicio-screen, .inicio-content, .reports-screen-body,
+.campaign-list.mis-campanas-list, .facturas-history-screen-body {
+  background-color: var(--signature-paper) !important;
+}
+
+.portal-eyebrow {
+  display: block;
+  color: #7b705d;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: .2em;
+}
+
+/* Navigation frames */
+@media (min-width: 900px) {
+  .app-shell:has(> .sidebar-panel) > .sidebar-panel {
+    width: 210px !important;
+    min-width: 210px !important;
+  }
+  .sidebar-panel .sidebar-head { padding: 30px 24px 22px !important; }
+  .sidebar-panel .sidebar-logo { width: 151px !important; max-height: 31px !important; }
+  .sidebar-panel .sidebar-list { padding-top: 42px !important; }
+  .sidebar-panel .sidebar-item { margin-inline: 13px !important; width: calc(100% - 26px) !important; }
+}
+.sidebar-panel, .sidebar-head { background: #141f22 !important; }
+.sidebar-item { min-height: 48px !important; }
+.sidebar-item-active { background: rgba(255,255,255,.11) !important; }
+.sidebar-item-label { font-size: 13px !important; letter-spacing: -.015em !important; }
+.sidebar-item-active .sidebar-item-label { font-weight: 700 !important; }
+.client-screen-header, .detail-header, .reports-header,
+.coverage-header-compact, .campanas-header, .quotes-header {
+  background: var(--signature-paper) !important;
+  border-bottom-color: var(--signature-line) !important;
+}
+.admin-picker-editorial {
+  position: relative;
+  isolation: isolate;
+  background: #182429 url('/editorial/vista360-avenida-referencial.jpg') 57% center / cover no-repeat !important;
+}
+.admin-picker-editorial::before {
+  content: '' !important; display: block !important; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(0deg, rgba(12,22,25,.88), rgba(12,22,25,.42) 68%, rgba(12,22,25,.35));
+}
+.admin-picker-editorial::after {
+  content: 'VISUALIZACIÓN REFERENCIAL' !important; display: block !important;
+  position: absolute; bottom: 22px; right: 25px; color: rgba(255,255,255,.7);
+  font-size: 8px; font-weight: 750; letter-spacing: .14em;
+}
+
+/* Home: the editorial feature uses a real local brand asset as a labeled
+   visualization; account data and actions remain separate and truthful. */
+.inicio-content {
+  padding: 24px clamp(24px, 3.5vw, 54px) 46px !important;
+  background: var(--signature-paper) !important;
+}
+.inicio-admin-actions { margin-bottom: 16px !important; }
+.inicio-current-client { min-height: 66px !important; }
+.inicio-current-client-copy strong { font-size: 16px !important; }
+.inicio-desktop-welcome {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 43%) !important;
+  align-items: stretch !important;
+  min-height: 322px !important;
+  margin: 0 0 31px !important;
+  padding: 0 !important;
+  background: var(--signature-ink) !important;
+  overflow: hidden !important;
+}
+.inicio-desktop-welcome-copy {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding: clamp(30px, 4vw, 56px) !important;
+  min-width: 0 !important;
+}
+.inicio-desktop-welcome-kicker { color: #d7c6a9 !important; font-size: 10px !important; letter-spacing: .2em !important; }
+.inicio-desktop-welcome h2 {
+  max-width: 620px !important;
+  margin: 17px 0 11px !important;
+  font-size: clamp(33px, 3.5vw, 52px) !important;
+  line-height: 1.03 !important;
+  letter-spacing: -.058em !important;
+  text-wrap: balance !important;
+}
+.inicio-desktop-welcome p {
+  max-width: 430px !important;
+  margin: 0 !important;
+  color: #c4ceca !important;
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+.inicio-welcome-actions { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; margin-top: 30px; }
+.inicio-welcome-actions button { min-height: 42px; font: inherit; font-size: 12px; font-weight: 750; cursor: pointer; }
+.inicio-welcome-primary {
+  display: inline-flex; align-items: center; gap: 28px;
+  padding: 0 18px; color: var(--signature-ink); background: #f7f5ed;
+  border: 1px solid #f7f5ed; border-radius: 4px;
+}
+.inicio-welcome-secondary { display: inline-flex; align-items: center; gap: 10px; padding: 0; color: #e4ebe8; background: transparent; border: 0; border-bottom: 1px solid #a8b6ae; }
+.inicio-welcome-actions button:hover { filter: brightness(.92); }
+.inicio-welcome-visual {
+  position: relative; display: flex; flex-direction: column; justify-content: space-between;
+  min-height: 100%; padding: 27px 28px 21px; isolation: isolate; overflow: hidden;
+  background: #223033 url('/editorial/vista360-costa-referencial.jpg') center center / cover no-repeat;
+  border-left: 1px solid rgba(255,255,255,.13);
+}
+.inicio-welcome-visual::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(10,18,20,.18), rgba(10,18,20,.07)), linear-gradient(0deg, rgba(10,18,20,.82), transparent 54%); }
+.inicio-welcome-visual-index, .inicio-welcome-visual-caption { color: #fff; font-size: 9px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+.inicio-welcome-visual-wordmark { margin-top: auto; color: #fff; font-size: clamp(30px, 3.3vw, 50px); font-weight: 700; letter-spacing: -.055em; line-height: .97; text-shadow: 0 2px 18px rgba(0,0,0,.27); }
+.inicio-welcome-visual-caption { margin-top: 15px; color: #e6e9e4; letter-spacing: .09em; }
+.inicio-desktop-welcome-status { display: none !important; }
+.inicio-summary-title { order: 2 !important; margin-bottom: 11px !important; }
+.inicio-summary-grid { order: 3 !important; margin-bottom: 35px !important; }
+.inicio-dashboard-grid { order: 4 !important; grid-template-columns: minmax(0, .85fr) minmax(300px, 1.15fr) !important; gap: 28px !important; margin-bottom: 33px !important; }
+.inicio-account-status { order: 5 !important; }
+.inicio-section-title { font-size: 14px !important; font-weight: 750 !important; letter-spacing: -.025em !important; }
+.inicio-summary-grid { border-color: var(--signature-line) !important; }
+.inicio-summary-grid > .inicio-kpi-card { min-height: 103px !important; border-color: var(--signature-line) !important; padding-top: 20px !important; }
+.inicio-kpi-label { color: var(--signature-muted) !important; font-size: 11px !important; font-weight: 650 !important; }
+.inicio-kpi-value { color: var(--signature-ink) !important; font-size: clamp(24px, 2.4vw, 34px) !important; letter-spacing: -.06em !important; }
+.inicio-quick-grid { grid-template-columns: 1fr !important; }
+.inicio-quick-grid > button { min-height: 66px !important; border-color: var(--signature-line) !important; padding: 12px 4px !important; }
+.inicio-quick-grid > button:hover, .inicio-account-status-grid button:hover { background: rgba(20,32,35,.035) !important; }
+.inicio-quick-grid > button svg { color: var(--signature-ink) !important; stroke: var(--signature-ink) !important; }
+.inicio-quick-copy span { font-size: 13px !important; font-weight: 730 !important; }
+.inicio-quick-copy small { display: block !important; margin-top: 3px !important; font-size: 11px !important; }
+.inicio-evidence-card, .inicio-side-col .inicio-evidence-card {
+  padding: 21px !important; border: 1px solid var(--signature-line) !important;
+  background: #fff !important; min-height: 240px !important;
+}
+.inicio-evidence-card .inicio-report-title { margin-bottom: 16px !important; font-size: 14px !important; }
+.inicio-side-col .inicio-report-row { align-items: stretch !important; gap: 20px !important; }
+.inicio-report-icon {
+  display: flex !important; flex: 0 0 160px !important; width: 160px !important; height: 174px !important;
+  flex-direction: column; align-items: flex-start !important; justify-content: flex-start !important;
+  padding: 18px !important; background: var(--signature-ink) !important; border: 0 !important; border-radius: 2px !important;
+  box-shadow: 6px 7px 0 #e4e4dc !important;
+}
+.inicio-report-icon img { width: 82px; height: auto; object-fit: contain; }
+.inicio-report-icon span, .inicio-report-icon small { color: #c7d0c9; font-size: 8px; letter-spacing: .15em; font-weight: 750; }
+.inicio-report-icon span { margin-top: 28px; }
+.inicio-report-icon strong { color: #fff; font-size: 19px; line-height: 1.12; letter-spacing: -.04em; margin-top: 6px; }
+.inicio-report-icon small { margin-top: auto; }
+.inicio-report-body { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.inicio-report-month { font-size: 22px !important; letter-spacing: -.04em !important; }
+.inicio-report-meta { font-size: 12px !important; }
+.inicio-side-col .inicio-report-link { align-self: flex-start !important; color: var(--signature-ink) !important; font-size: 13px !important; }
+.inicio-account-status-head h2 { font-size: 16px !important; }
+.inicio-account-status-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 16px !important; }
+.inicio-account-status-grid button { min-height: 123px !important; align-items: flex-start !important; padding: 18px !important; border: 1px solid var(--signature-line) !important; background: #fff !important; }
+.inicio-account-status-grid button:last-child { border-bottom: 1px solid var(--signature-line) !important; }
+.inicio-account-status-grid button strong { font-size: 15px !important; }
+
+/* Report archive: a branded document cover makes the artifact recognizable. */
+.reports-screen-body, .facturas-history-screen-body { padding: 30px clamp(24px, 3.5vw, 54px) 50px !important; }
+.reports-intro, .campaigns-intro { display: flex; justify-content: space-between; align-items: flex-end; gap: 22px; padding: 0 0 27px; margin-bottom: 24px; border-bottom: 1px solid var(--signature-line); }
+.reports-intro h2, .campaigns-intro h2 { margin: 9px 0 7px; color: var(--signature-ink); font-size: clamp(28px, 3vw, 40px); line-height: 1.05; letter-spacing: -.055em; font-weight: 720; }
+.reports-intro p, .campaigns-intro p { margin: 0; color: var(--signature-muted); font-size: 13px; line-height: 1.5; }
+.reports-intro-count, .campaigns-intro-count { display: flex; flex-direction: column; align-items: flex-end; flex: 0 0 auto; color: var(--signature-ink); }
+.reports-intro-count strong, .campaigns-intro-count strong { font-size: 46px; line-height: .9; letter-spacing: -.07em; font-weight: 620; font-variant-numeric: tabular-nums; }
+.reports-intro-count span, .campaigns-intro-count span { margin-top: 8px; color: var(--signature-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .13em; }
+details.report-admin-panel { margin-bottom: 29px !important; border-top: 0 !important; border-bottom: 1px solid var(--signature-line) !important; }
+details.report-admin-panel > .report-admin-header { min-height: 74px !important; }
+.report-admin-toggle { letter-spacing: .01em; }
+.reports-filter-stack { max-width: 760px; margin-bottom: 28px !important; }
+.reports-month-header { margin-bottom: 14px !important; font-size: 13px !important; text-transform: uppercase; letter-spacing: .13em !important; }
+.reports-list > .report-card, .reports-list > .report-card:last-child:nth-child(odd) {
+  position: relative; max-width: 900px !important; min-height: 252px !important;
+  padding: 22px !important; border: 1px solid var(--signature-line) !important;
+  background: #fff !important; margin: 0 0 16px !important;
+}
+.reports-list > .report-card:last-child { border-bottom: 1px solid var(--signature-line) !important; }
+.reports-list .report-card-main { display: flex !important; align-items: stretch !important; justify-content: flex-start !important; gap: 27px !important; }
+.reports-list .report-pdf-icon {
+  display: flex !important; flex: 0 0 170px !important; width: 170px !important; height: 193px !important;
+  flex-direction: column; align-items: flex-start; padding: 19px !important;
+  color: #fff; background: var(--signature-ink) !important; border: 0 !important;
+  border-radius: 2px !important; box-shadow: 6px 7px 0 #e8e8e2 !important;
+}
+.reports-list .report-pdf-icon img { display: block; width: 93px; height: auto; object-fit: contain; }
+.reports-list .report-pdf-icon span, .reports-list .report-pdf-icon small { display: block; color: #c5cfc9; font-size: 8px; font-weight: 750; letter-spacing: .14em; }
+.reports-list .report-pdf-icon span { margin-top: 28px; }
+.reports-list .report-pdf-icon strong { display: block; margin-top: 6px; color: #fff; font-size: 20px; line-height: 1.08; letter-spacing: -.04em; }
+.reports-list .report-pdf-icon small { margin-top: auto; }
+.reports-list .report-card-copy { align-self: center; min-width: 0; }
+.reports-list .report-kicker { color: #7b705d !important; font-size: 10px !important; font-weight: 800 !important; letter-spacing: .14em !important; text-transform: uppercase; }
+.reports-list .report-title { margin: 8px 0 12px !important; font-size: 31px !important; }
+.reports-list .report-meta { font-size: 12px !important; line-height: 1.6 !important; }
+.reports-list .report-ready-badge { align-self: flex-start; margin-left: auto !important; margin-right: 30px !important; }
+.reports-list .report-actions { position: absolute; left: 219px; bottom: 22px; margin: 0 !important; }
+.reports-list .report-action { min-height: 38px !important; padding: 8px 14px !important; }
+
+/* Campaign list: stronger hierarchy and a clear path into each campaign. */
+.campaign-list.mis-campanas-list, .mis-campanas-list { padding: 29px clamp(24px, 3.5vw, 54px) 48px !important; }
+.campanas-filter-bar { margin: 25px clamp(24px, 3.5vw, 54px) 0 !important; }
+.mis-campanas-month-status { margin: 0 0 24px !important; }
+.mis-campanas-month-status-header { color: #7b705d !important; }
+.premium-campaign-card-hit { max-width: 900px !important; }
+.premium-campaign-card {
+  min-height: 194px !important; padding: 25px 28px !important; margin-bottom: 16px !important;
+  background: #fff !important; border: 1px solid var(--signature-line) !important;
+  border-radius: 2px !important;
+}
+.premium-campaign-card::before { content: none !important; }
+.premium-campaign-kicker { color: #7b705d !important; font-size: 10px !important; }
+.premium-campaign-title { font-size: clamp(26px, 2.6vw, 36px) !important; }
+.premium-campaign-meta { font-size: 12px !important; }
+.premium-campaign-progress { height: 4px !important; max-width: 420px !important; margin-top: 17px !important; }
+.premium-campaign-progress-label { font-size: 10px !important; margin-top: 7px !important; }
+.mis-campanas-cta { margin-top: 18px !important; }
+
+/* Honest empty states are useful, not giant empty panels. */
+.factura-upload-card { border: 1px solid var(--signature-line) !important; background: #fff !important; box-shadow: none !important; }
+.factura-upload-btn { border-radius: 5px !important; }
+.facturas-screen .report-empty-state, .reports-screen-body > .report-empty-state {
+  max-width: 760px; min-height: 240px; padding: 44px 30px !important;
+  background: #fff !important; border: 1px solid var(--signature-line) !important;
+  box-shadow: none !important; border-radius: 2px !important;
+}
+.report-empty-icon { background: #eef0eb !important; color: var(--signature-ink) !important; }
+.report-empty-icon svg { stroke: var(--signature-ink) !important; }
+
+@media (max-width: 1090px) and (min-width: 900px) {
+  .inicio-desktop-welcome { grid-template-columns: minmax(0,1fr) 37% !important; }
+  .inicio-desktop-welcome-copy { padding: 30px !important; }
+  .inicio-dashboard-grid { grid-template-columns: 1fr !important; }
+  .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 899px) {
+  .admin-picker-editorial { background-position: 57% 43% !important; }
+  .admin-picker-editorial::after { display: none !important; }
+  .inicio-header { min-height: 170px !important; padding-bottom: 43px !important; }
+  .inicio-content { padding: 19px 19px 38px !important; margin-top: -19px !important; }
+  .inicio-desktop-welcome {
+    display: block !important; min-height: 0 !important; margin: 4px 0 24px !important;
+  }
+  .inicio-desktop-welcome-copy { display: none !important; }
+  .inicio-welcome-visual { height: 159px; min-height: 159px; padding: 14px 17px !important; border: 0; background-position: center 46%; }
+  .inicio-welcome-visual-wordmark { font-size: 27px; }
+  .inicio-welcome-visual-index, .inicio-welcome-visual-caption { font-size: 8px; }
+  .inicio-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; margin-bottom: 27px !important; }
+  .inicio-summary-grid > .inicio-kpi-card { min-height: 87px !important; padding: 13px 9px !important; }
+  .inicio-kpi-value { font-size: 19px !important; white-space: normal !important; overflow: visible !important; }
+  .inicio-dashboard-grid { display: flex !important; flex-direction: column !important; gap: 27px !important; }
+  .inicio-main-col { order: 2; }
+  .inicio-side-col { order: 1; }
+  .inicio-side-col .inicio-evidence-card { min-height: 0 !important; padding: 16px !important; }
+  .inicio-side-col .inicio-report-row { display: flex !important; gap: 17px !important; }
+  .inicio-side-col .inicio-report-icon { flex-basis: 104px !important; width: 104px !important; height: 132px !important; padding: 11px !important; box-shadow: 4px 5px 0 #e6e6df !important; }
+  .inicio-report-icon img { width: 63px; }
+  .inicio-report-icon span { margin-top: 17px; font-size: 6px; }
+  .inicio-report-icon strong { font-size: 14px; }
+  .inicio-report-icon small { font-size: 6px; }
+  .inicio-side-col .inicio-report-body { display: flex !important; flex-direction: column !important; align-items: flex-start; justify-content: center; gap: 0 !important; }
+  .inicio-side-col .inicio-report-month { white-space: normal !important; font-size: 17px !important; }
+  .inicio-side-col .inicio-report-meta { font-size: 10px !important; margin: 0 0 10px !important; }
+  .inicio-side-col .inicio-report-link { font-size: 12px !important; color: var(--signature-ink) !important; background: transparent !important; border-color: var(--signature-ink) !important; opacity: 1 !important; }
+  .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .inicio-quick-grid > button { min-height: 59px !important; }
+  .inicio-quick-copy small { display: none !important; }
+  .inicio-account-status-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
+  .inicio-account-status-grid button { min-height: 76px !important; padding: 14px 1px !important; border: 0 !important; border-top: 1px solid var(--signature-line) !important; background: transparent !important; }
+  .inicio-account-status-grid button:last-child { border-bottom: 1px solid var(--signature-line) !important; }
+  .reports-screen-body, .facturas-history-screen-body, .mis-campanas-list { padding: 20px 19px 40px !important; }
+  .reports-intro, .campaigns-intro { align-items: flex-start; gap: 12px; padding-bottom: 21px; margin-bottom: 18px; }
+  .reports-intro h2, .campaigns-intro h2 { font-size: 29px; }
+  .reports-intro p, .campaigns-intro p { font-size: 12px; }
+  .reports-intro-count strong, .campaigns-intro-count strong { font-size: 32px; }
+  .reports-intro-count span, .campaigns-intro-count span { font-size: 8px; }
+  .campanas-filter-bar { margin: 18px 19px 0 !important; }
+  .premium-campaign-card { padding: 20px !important; }
+  .reports-list > .report-card, .reports-list > .report-card:last-child:nth-child(odd) { min-height: 0 !important; padding: 17px !important; }
+  .reports-list .report-card-main { gap: 15px !important; }
+  .reports-list .report-pdf-icon { flex-basis: 103px !important; width: 103px !important; height: 143px !important; padding: 11px !important; box-shadow: 4px 5px 0 #e8e8e2 !important; }
+  .reports-list .report-pdf-icon img { width: 63px; }
+  .reports-list .report-pdf-icon span { margin-top: 18px; font-size: 6px; }
+  .reports-list .report-pdf-icon strong { font-size: 15px; }
+  .reports-list .report-pdf-icon small { font-size: 6px; }
+  .reports-list .report-title { font-size: 22px !important; }
+  .reports-list .report-card-copy { align-self: flex-start; padding-top: 6px !important; }
+  .reports-list .report-ready-badge { display: none !important; }
+  .reports-list .report-actions { position: static; display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; margin-top: 19px !important; }
+  .reports-list .report-action { width: 100% !important; }
+  .facturas-screen .report-empty-state { min-height: 210px; }
+}
+
+@media (max-width: 360px) {
+  .reports-intro-count, .campaigns-intro-count { display: none; }
+  .inicio-side-col .inicio-report-icon { flex-basis: 88px !important; width: 88px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inicio-welcome-actions button, .inicio-quick-grid > button,
+  .inicio-account-status-grid button { transition: none !important; }
+}
