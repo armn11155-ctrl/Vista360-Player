@@ -376,6 +376,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .reports-list .report-pdf-icon small { font-size: 6px; }
   .reports-list .report-title { font-size: 22px !important; }
   .reports-list .report-card-copy { align-self: flex-start; padding-top: 6px !important; }
+  .reports-list .report-meta-generated { white-space: normal !important; line-height: 1.35 !important; }
   .reports-list .report-ready-badge { display: none !important; }
   .reports-list .report-actions { position: static; display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important; margin-top: 19px !important; }
   .reports-list .report-action { width: 100% !important; }
