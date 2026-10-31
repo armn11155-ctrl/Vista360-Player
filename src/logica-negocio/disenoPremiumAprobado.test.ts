@@ -382,19 +382,18 @@ describe("refinamiento premium aprobado", () => {
     expect(leer("src/utils/viewport-height.ts")).toContain('document.documentElement.dataset.keyboardOpen = "true"');
   });
 
-  it("mantiene estable y negro el perfil de laptop", () => {
+  it("presenta la identidad y el resumen del perfil en una sola cabecera adaptable", () => {
     const perfil = leer("src/components/screens/Perfil.tsx");
-    const sistema = leer("src/styles/design-system.css");
+    const estilos = leer("src/styles/portal-blue.css");
 
     expect(perfil).toContain('className="profile-section-company"');
     expect(perfil).toContain('label="Nombre de la empresa" value={empresa}');
-    expect(perfil).toContain('className="profile-section-summary"');
+    expect(perfil).toContain('className="profile-hero-metrics"');
     expect(perfil).toContain('className="profile-section-account"');
-    expect(sistema).toMatch(/@media \(min-width: 900px\) \{[\s\S]*?\.sidebar-panel \{[\s\S]*?background: #050505 !important;/);
-    expect(sistema).toMatch(/\.profile-content > \.profile-section-company \{[\s\S]*?grid-row: 1;/);
-    expect(sistema).toMatch(/\.profile-content > \.profile-section-summary \{[\s\S]*?grid-row: 1;/);
-    expect(sistema).toMatch(/\.profile-section-company > h2,[\s\S]*?\.profile-section-summary > h2 \{[\s\S]*?color: #080b11 !important;/);
-    expect(sistema).toMatch(/@media \(max-width: 899px\) \{[\s\S]*?\.profile-company-name-desktop \{ display: none; \}/);
+    expect(estilos).toContain('.profile-hero-company { display: grid !important;');
+    expect(estilos).toContain('.profile-hero-metrics { display: grid;');
+    expect(estilos).toContain('.profile-content { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)) !important;');
+    expect(estilos).toContain('.profile-content { grid-template-columns: 1fr !important;');
   });
 
   it("alinea Inicio y deja la fotografía de Campañas sin franja lateral", () => {
