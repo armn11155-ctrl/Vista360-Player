@@ -295,7 +295,9 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
     justify-content: flex-start !important;
     gap: 14px !important;
   }
-  .inicio-summary-grid .inicio-kpi-icon { width: 38px !important; height: 38px !important; flex: 0 0 38px !important; }
+  .inicio-summary-grid > .inicio-kpi-card:first-child,
+  .inicio-summary-grid > .inicio-kpi-card:nth-child(3) { padding-left: 16px !important; }
+  .inicio-summary-grid .inicio-kpi-icon { display: flex !important; width: 38px !important; height: 38px !important; flex: 0 0 38px !important; }
   .inicio-summary-grid .inicio-kpi-body { width: auto !important; min-width: 0 !important; }
   .inicio-summary-grid .inicio-kpi-value { font-size: clamp(20px,1.55vw,25px) !important; }
 }
@@ -410,6 +412,7 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
   .coverage-map-heading { min-height: 31px; }
   .coverage-panel-card { max-height: none !important; }
   .admin-picker-heading > .admin-picker-session-exit { display: none !important; }
+  .admin-picker-shell .admin-picker-body { padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important; }
   .admin-picker-mobile-exit-wrap { display: block; padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); margin-top: 18px; border-top: 1px solid #dce4ef; }
   .admin-picker-mobile-exit {
     width: 100%;
