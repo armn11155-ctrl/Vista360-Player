@@ -37,7 +37,8 @@ describe("refinamiento premium aprobado", () => {
     expect(login).not.toContain("login-billboard-code-frame");
     expect(login).not.toContain("login-network-index");
     expect(login).toContain("Una nueva perspectiva");
-    expect(login).toContain("Imagen referencial creada con IA");
+    expect(login).toContain("PORTAL VISTA360");
+    expect(login).not.toContain("Imagen referencial creada con IA");
     expect(login).toContain('className="login-network-message"');
     expect(login).toContain('className="login-access-kicker"');
     expect(login).toContain('className="login-remember-native"');

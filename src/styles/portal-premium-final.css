@@ -1,0 +1,245 @@
+/* A single, restrained visual language for the public and private portal. */
+:root {
+  --signature-paper: #f2f4f7;
+  --v360-paper: #f2f4f7;
+  --signature-accent: #315f9d;
+  --accent: #315f9d;
+  --bg: #f2f4f7;
+}
+body, .main-area, .screens, .content-area, .inicio-screen, .inicio-content,
+.reports-screen-body, .facturas-history-screen-body, .campaign-list.mis-campanas-list,
+.coverage-premium-area, .profile-screen, .profile-content, .solicitudes-screen,
+.solicitudes-area, .admin-picker-shell {
+  background-color: #f2f4f7 !important;
+}
+.client-screen-header, .detail-header, .reports-header, .coverage-header-compact,
+.campanas-header, .quotes-header { background: #f2f4f7 !important; }
+.portal-eyebrow, .reports-list .report-kicker, .mis-campanas-month-status-header,
+.premium-campaign-kicker { color: #315f9d !important; }
+.inicio-welcome-actions .inicio-welcome-primary,
+.coverage-selected-actions button, .coverage-popup-action, .coverage-google-link {
+  background: #315f9d !important;
+  border-color: #315f9d !important;
+  color: #fff !important;
+}
+.inicio-summary-grid .inicio-kpi-icon,
+.profile-row-icon, .profile-metric-row .profile-metric-icon { color: #315f9d !important; background: #e9eef6 !important; }
+.inicio-summary-grid .inicio-kpi-icon svg { stroke: #315f9d !important; }
+
+/* Documents: the document graphic supports the name and never crowds an action. */
+.reports-list > .report-card {
+  min-height: 298px !important;
+  padding: 21px !important;
+}
+.reports-list > .report-card .report-card-main,
+.reports-list > .factura-card .report-card-main {
+  flex: 0 1 auto !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  min-height: 170px !important;
+  align-items: center !important;
+  gap: 20px !important;
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+.reports-list .report-pdf-icon, .reports-list .factura-pdf-icon {
+  flex-basis: 132px !important;
+  width: 132px !important;
+  height: 168px !important;
+  padding: 14px !important;
+  box-shadow: 4px 5px 0 #dce4ee !important;
+}
+.reports-list .report-pdf-icon span,
+.reports-list .factura-pdf-icon span {
+  margin-top: 16px !important;
+  color: #a6c2e8 !important;
+}
+.reports-list .report-pdf-icon .report-cover-illustration {
+  display: block;
+  width: 98px;
+  max-width: 100%;
+  height: 78px;
+  margin: 6px auto 0;
+  color: #b9d4f5;
+}
+.reports-list .report-pdf-icon small,
+.reports-list .factura-pdf-icon small { margin-top: auto !important; }
+.reports-list .report-card-copy { margin-left: 0 !important; }
+.reports-list .report-action { min-height: 42px !important; font-weight: 700 !important; }
+.reports-list .report-action-primary,
+.reports-list .factura-action-primary {
+  background: #0a111d !important;
+  border-color: #0a111d !important;
+  color: #fff !important;
+}
+.reports-list .report-action-download {
+  background: #315f9d !important;
+  border-color: #315f9d !important;
+  color: #fff !important;
+}
+.reports-list .report-action-muted {
+  background: #f6f8fb !important;
+  border: 1px solid #d9e1ec !important;
+  color: #18283e !important;
+}
+.reports-list .report-action-muted svg { color: #315f9d !important; }
+.facturas-month-group .reports-list > .factura-card:only-child {
+  grid-column: 1 / -1 !important;
+  width: min(100%, 640px) !important;
+  justify-self: center !important;
+}
+.facturas-month-group .reports-month-header { text-align: center; }
+
+/* The report creator is a distinct workspace with a clear entry point. */
+details.report-admin-panel { border-color: #cad5e4 !important; background: #fff !important; }
+details.report-admin-panel > .report-admin-header {
+  min-height: 96px !important;
+  padding: 20px 24px !important;
+  align-items: center !important;
+  gap: 17px !important;
+  background: #0b1525 !important;
+  margin: 0 !important;
+}
+.report-admin-icon { background: #1c3658 !important; color: #d7e8ff !important; box-shadow: none !important; }
+.report-admin-title { color: #fff !important; font-size: 20px !important; letter-spacing: -.025em; }
+.report-admin-sub { color: #b5c2d4 !important; font-size: 12px !important; }
+.report-admin-toggle {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  border: 1px solid #456288 !important;
+  border-radius: 8px !important;
+  background: #1a3658 !important;
+  color: #fff !important;
+}
+.report-admin-content { background: #fff !important; }
+.report-admin-controls { padding: 0 0 18px !important; }
+.report-admin-controls > button { background: #315f9d !important; color: #fff !important; }
+
+/* Coverage has one visual hierarchy: introduction, geographic view, inventory. */
+.coverage-overview {
+  min-height: 156px;
+  box-sizing: border-box;
+  padding: 27px 34px;
+  border-radius: 16px;
+  background: linear-gradient(115deg,#0b1525 0%,#11243e 78%,#183a64 100%);
+  align-items: center;
+}
+.coverage-overview-kicker { color: #a8c4e8 !important; }
+.coverage-overview h1 { color: #fff !important; }
+.coverage-overview p { color: #bccbdb !important; }
+.coverage-overview-stats { gap: 9px; }
+.coverage-overview-stats span {
+  min-width: 116px;
+  padding: 13px 15px;
+  border: 1px solid rgba(179,205,235,.24);
+  border-radius: 10px;
+  color: #b9c7d7;
+  background: rgba(255,255,255,.045);
+}
+.coverage-overview-stats span:first-child { border-color: rgba(136,180,236,.46); background: rgba(49,95,157,.3); }
+.coverage-overview-stats span:first-child strong { color: #9fc3f2 !important; }
+.coverage-overview-stats strong { color: #fff !important; }
+.coverage-workspace { grid-template-columns: minmax(0,1fr) minmax(288px,340px); gap: 17px; }
+.coverage-map-column::before {
+  content: 'MAPA INTERACTIVO';
+  display: block;
+  margin: 0 0 -7px 2px;
+  color: #607089;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.coverage-map-real { border: 5px solid #fff !important; border-radius: 15px !important; box-shadow: 0 15px 40px -31px #193450 !important; }
+.coverage-leaflet-map .leaflet-tile-pane { filter: grayscale(.22) saturate(.7) contrast(1.02) !important; }
+.coverage-panel-card { padding: 18px !important; background: #fff !important; }
+.coverage-panel-card .section-title { padding: 0 0 16px !important; margin: 0 0 3px !important; color: #111d2c !important; font-size: 18px !important; border-bottom: 1px solid #e1e6ed; }
+.coverage-panel-row { min-height: 65px !important; padding: 11px 5px !important; }
+.coverage-panel-row.is-selected { background: #e9eef6 !important; box-shadow: inset 3px 0 0 #315f9d !important; }
+.coverage-panel-state { color: #315f9d !important; }
+.coverage-map-legend > div:nth-child(2) { background: rgba(49,95,157,.24) !important; }
+.coverage-map-legend > div:nth-child(2) strong,
+.coverage-selected-tipo, .coverage-popup-tipo { color: #a8cbf5 !important; }
+.coverage-selected-tipo, .coverage-popup-tipo { background: #1b3658 !important; }
+
+/* Campaigns and requests use the same quiet canvas, with content sized to data. */
+.campaign-list.mis-campanas-list { background: #f2f4f7 !important; }
+.premium-campaign-card { border-color: #d9e1ec !important; }
+.premium-campaign-state { background: #e9eef6 !important; }
+.premium-campaign-state span { color: #315f9d !important; }
+.premium-campaign-progress { background: #dce5f0 !important; }
+.solicitudes-overview {
+  padding: 26px 29px;
+  border: 0;
+  border-radius: 15px;
+  background: linear-gradient(110deg,#0b1525,#173451);
+}
+.solicitudes-overview > div:first-child > span { color: #a8c4e8 !important; }
+.solicitudes-overview h1 { color: #fff !important; }
+.solicitudes-overview p { color: #bdc9d8 !important; }
+.solicitudes-overview-count { padding: 12px 16px; border: 1px solid rgba(178,206,240,.25); border-radius: 10px; }
+.solicitudes-overview-count strong { color: #fff !important; }
+.solicitudes-overview-count small { color: #b4c7de !important; }
+.solicitudes-pending-list > .solicitudes-card:only-child { grid-column: 1 / -1; width: min(100%,720px); justify-self: center; }
+.solicitudes-screen .solicitudes-card { border-left-color: #315f9d !important; box-shadow: 0 20px 34px -32px rgba(12,29,55,.55) !important; }
+.solicitudes-screen .solicitudes-card button[style*='var(--accent)'], .solicitud-action.primary { background: #315f9d !important; color: #fff !important; }
+.solicitudes-screen .request-status-chip { color: #315f9d !important; background: #e9eef6 !important; border-color: #d7e2f0 !important; }
+
+/* Profile: compact identity and readable sections on a small screen. */
+.profile-top { background: linear-gradient(125deg,#0b1525,#132d4b) !important; }
+.profile-section h2 { color: #1d2d42 !important; font-size: 14px !important; letter-spacing: -.01em !important; text-transform: none !important; }
+.profile-card-list { overflow: hidden; box-shadow: 0 17px 34px -33px rgba(10,30,56,.6) !important; }
+.profile-row { min-height: 57px !important; }
+.profile-row-label, .profile-row-value { min-width: 0; overflow-wrap: anywhere; }
+
+/* Login: a tonal architectural photograph and one intentional blue action. */
+.login-left-panel {
+  background: linear-gradient(90deg,rgba(5,14,27,.72),rgba(5,14,27,.27)), url('/editorial/vista360-costa-referencial.jpg') center / cover no-repeat !important;
+}
+.login-left-panel::before { background: linear-gradient(0deg,rgba(5,14,27,.76),transparent 55%) !important; mask-image: none !important; }
+.login-network-visual-globe, .login-network-globe-canvas { display: none !important; }
+.login-network-copy::after { background: radial-gradient(ellipse,rgba(5,14,27,.58),transparent 70%) !important; }
+.login-network-copy h1 strong { color: #fff !important; }
+.login-network-message > p { color: #e1e9f2 !important; }
+.login-access-kicker { color: #aebed0 !important; }
+.login-access-kicker::before { background: #94b4dd !important; box-shadow: none !important; }
+.login-access-kicker strong { color: #8ea9cb !important; }
+.login-btn { background: #315f9d !important; border-color: #315f9d !important; box-shadow: 0 12px 28px -20px #315f9d !important; }
+.login-remember-box.checked { background: #315f9d !important; border-color: #315f9d !important; }
+.login-card .form-input:focus { border-color: #7598c5 !important; box-shadow: 0 0 0 3px rgba(94,139,191,.15) !important; }
+
+@media (min-width: 900px) {
+  .campaign-list.mis-campanas-list { grid-template-columns: repeat(2,minmax(290px,500px)) !important; gap: 14px !important; }
+  .mis-campanas-list .premium-campaign-card-hit { min-height: 152px !important; }
+  .mis-campanas-list .premium-campaign-card-last-single { width: min(620px,100%) !important; }
+  .mis-campanas-month-status { max-width: 1014px !important; }
+  .login-left-panel { background-position: center 42% !important; }
+}
+@media (max-width: 899px) {
+  .reports-list > .report-card { min-height: 0 !important; padding: 15px !important; }
+  .reports-list > .report-card .report-card-main,
+  .reports-list > .factura-card .report-card-main { min-height: 144px !important; gap: 14px !important; }
+  .reports-list .report-pdf-icon, .reports-list .factura-pdf-icon { flex-basis: 103px !important; width: 103px !important; height: 143px !important; padding: 10px !important; }
+  .reports-list .report-pdf-icon .report-cover-illustration { width: 78px; height: 61px; margin-top: 5px; }
+  .reports-list .report-pdf-icon span, .reports-list .factura-pdf-icon span { margin-top: 13px !important; }
+  .facturas-month-group .reports-list > .factura-card:only-child { width: 100% !important; }
+  details.report-admin-panel > .report-admin-header { min-height: 84px !important; padding: 15px !important; }
+  .report-admin-title { font-size: 17px !important; }
+  .report-admin-toggle { padding-inline: 10px !important; }
+  .coverage-overview { display: block; min-height: 0; padding: 23px 20px; }
+  .coverage-overview-stats { margin-top: 20px; }
+  .coverage-overview-stats span { flex: 1 1 0; min-width: 0; }
+  .coverage-workspace { grid-template-columns: 1fr; }
+  .coverage-map-real { height: 360px !important; min-height: 360px !important; }
+  .coverage-panel-card { max-height: none; }
+  .solicitudes-overview { display: block; padding: 22px 19px; }
+  .solicitudes-overview-count { display: inline-flex; flex-direction: row; align-items: baseline; gap: 8px; margin-top: 16px; }
+  .solicitudes-overview-count small { margin-top: 0; }
+  .solicitudes-pending-list > .solicitudes-card:only-child { width: 100%; }
+  .profile-top { padding-bottom: 22px !important; }
+  .profile-top-bar { margin-bottom: 18px !important; }
+  .profile-hero-metrics { gap: 7px !important; }
+  .profile-content { gap: 21px !important; padding-top: 23px !important; }
+  .profile-section h2 { margin-bottom: 9px !important; }
+  .profile-row { min-height: 53px !important; }
+  .login-left-panel { background-position: center 44% !important; }
+}

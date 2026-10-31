@@ -156,7 +156,6 @@ export default function LoginScreen({ onLoggedIn }: Props) {
                 <div className="login-network-live"><i /><span>Una nueva perspectiva</span></div>
               </div>
             </div>
-            <div className="login-editorial-credit">Imagen referencial creada con IA</div>
           </div>
         </section>
 
@@ -167,7 +166,7 @@ export default function LoginScreen({ onLoggedIn }: Props) {
           </div>
           <div className="login-card">
             <div className="login-access-kicker">
-              <span>Acceso privado</span>
+              <span>PORTAL VISTA360</span>
               <strong>V360</strong>
             </div>
             <div className="login-title">{resolverMfa ? "Verificación en dos pasos" : "Bienvenido"}</div>

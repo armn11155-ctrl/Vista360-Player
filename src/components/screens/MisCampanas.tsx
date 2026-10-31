@@ -383,8 +383,8 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               onClick={onNueva}
               style={{
                 marginTop: 20, padding: "11px 22px", borderRadius: 999, border: "none",
-                background: "#0877FF", color: "#fff", fontSize: 13.5, fontWeight: 700,
-                cursor: "pointer", boxShadow: "0 6px 16px rgba(8,119,255,0.28)",
+                background: "#234f88", color: "#fff", fontSize: 13.5, fontWeight: 700,
+                cursor: "pointer", boxShadow: "0 6px 16px rgba(15,40,75,0.18)",
               }}
             >
               Lanzar nueva campaña
@@ -450,7 +450,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                 {estado !== "Finalizada" && (
                   <div>
                     <div className="premium-campaign-progress">
-                      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#0877FF,#52A5FF)", borderRadius: 4, transition: "width .3s" }} />
+                      <div style={{ height: "100%", width: `${pct}%`, background: "#315f9d", borderRadius: 4, transition: "width .3s" }} />
                     </div>
                     <div className="premium-campaign-progress-label">{pct}% completado</div>
                   </div>
