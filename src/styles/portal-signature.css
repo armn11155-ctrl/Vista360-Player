@@ -234,6 +234,43 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
 .premium-campaign-progress-label { font-size: 10px !important; margin-top: 7px !important; }
 .mis-campanas-cta { margin-top: 18px !important; }
 
+/* Campaign detail continues the same materials and hierarchy. */
+.campaign-detail-screen { background: var(--signature-paper) !important; }
+.campaign-detail-hero { min-height: 232px !important; background: var(--signature-ink) !important; }
+.campaign-detail-panel-name { font-size: clamp(27px, 3vw, 42px) !important; line-height: 1.05 !important; }
+.detalle-campana-line { height: 1px !important; background: #b6a27e !important; box-shadow: none !important; }
+.detalle-campana-line::after { content: none !important; }
+.campaign-detail-tabs { background: var(--signature-paper) !important; border-color: var(--signature-line) !important; }
+.campaign-detail-tab { color: var(--signature-muted) !important; border-bottom: 2px solid transparent !important; font-weight: 650 !important; }
+.campaign-detail-tab[aria-selected="true"] { color: var(--signature-ink) !important; border-bottom-color: var(--signature-ink) !important; font-weight: 780 !important; }
+.campaign-detail-body { background: var(--signature-paper) !important; padding: 26px clamp(24px, 3.5vw, 54px) 45px !important; }
+.campaign-status-card, .campaign-location-card, .campaign-expiry-card {
+  background: #fff !important; background-image: none !important;
+  border: 1px solid var(--signature-line) !important; border-radius: 2px !important;
+  box-shadow: none !important; padding: 23px !important;
+}
+.campaign-status-card > div:first-child, .campaign-location-card > div:first-child { color: var(--signature-ink) !important; font-size: 14px !important; font-weight: 750 !important; }
+.campaign-status-card > div:nth-child(2) > div:first-child { color: #276750 !important; background: #e7f0e9 !important; }
+.campaign-status-card > div:nth-child(2) > div:first-child svg { stroke: #276750 !important; }
+.campaign-expiry-icon { color: var(--signature-ink) !important; background: #eef0eb !important; box-shadow: none !important; border-radius: 4px !important; }
+.campaign-expiry-copy span { color: var(--signature-muted) !important; }
+.campaign-expiry-copy strong { color: var(--signature-ink) !important; font-size: 16px !important; }
+.campaign-expiry-status { color: #315c51 !important; background: #e8f0eb !important; }
+.campaign-period-rail i { background: var(--signature-line) !important; }
+.campaign-period-rail i b { background: var(--signature-ink) !important; }
+.campaign-expiry-calendar-btn { color: var(--signature-ink) !important; background: #fff !important; border: 1px solid var(--signature-line) !important; border-radius: 4px !important; }
+@media (min-width: 900px) {
+  .campaign-detail-body:has(.campaign-status-card) {
+    display: grid !important;
+    grid-template-columns: minmax(280px, .8fr) minmax(360px, 1.2fr);
+    gap: 16px;
+    align-content: start;
+  }
+  .campaign-detail-body .campaign-status-card { grid-column: 1; grid-row: 1; margin: 0 !important; }
+  .campaign-detail-body .campaign-location-card { grid-column: 2; grid-row: 1 / span 2; margin: 0 !important; }
+  .campaign-detail-body .campaign-expiry-card { grid-column: 1; grid-row: 2; margin: 0 !important; }
+}
+
 /* Honest empty states are useful, not giant empty panels. */
 .factura-upload-card { border: 1px solid var(--signature-line) !important; background: #fff !important; box-shadow: none !important; }
 .factura-upload-btn { border-radius: 5px !important; }
@@ -296,6 +333,9 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .reports-intro-count span, .campaigns-intro-count span { font-size: 8px; }
   .campanas-filter-bar { margin: 18px 19px 0 !important; }
   .premium-campaign-card { padding: 20px !important; }
+  .campaign-detail-hero { min-height: 198px !important; }
+  .campaign-detail-body { padding: 16px 19px 36px !important; }
+  .campaign-status-card, .campaign-location-card, .campaign-expiry-card { padding: 17px !important; margin-bottom: 12px !important; }
   .reports-list > .report-card, .reports-list > .report-card:last-child:nth-child(odd) { min-height: 0 !important; padding: 17px !important; }
   .reports-list .report-card-main { gap: 15px !important; }
   .reports-list .report-pdf-icon { flex-basis: 103px !important; width: 103px !important; height: 143px !important; padding: 11px !important; box-shadow: 4px 5px 0 #e8e8e2 !important; }

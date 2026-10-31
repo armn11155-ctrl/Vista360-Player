@@ -120,6 +120,8 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
       ? "Vence hoy"
       : diasParaVencer === 1
         ? "Vence mañana"
+        : diasParaVencer > 90
+          ? "Vigencia extendida"
         : `Vence en ${diasParaVencer} días`;
 
   // Uno o varios paneles segun sea una campaña normal o multi-panel.
@@ -288,7 +290,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
+    <div className="campaign-detail-screen" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
       <div className="campaign-detail-hero" style={{ padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
@@ -356,9 +358,9 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
       <div className="detalle-campana-line" style={{ height: 3, flexShrink: 0 }} />
 
       {/* Tabs */}
-      <div role="tablist" aria-label="Detalle de campaña" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
+      <div className="campaign-detail-tabs" role="tablist" aria-label="Detalle de campaña" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #E5E7EB", flexShrink: 0 }}>
         {TABS.map((t) => (
-          <button type="button" role="tab" aria-selected={tab === t.id} key={t.id} onClick={() => setTab(t.id)} style={{
+          <button className="campaign-detail-tab" type="button" role="tab" aria-selected={tab === t.id} key={t.id} onClick={() => setTab(t.id)} style={{
             padding: "16px 0 14px", fontSize: 14, fontWeight: tab === t.id ? 800 : 500,
             color: tab === t.id ? "#0877FF" : "#64748B",
             borderBottom: tab === t.id ? "3px solid #0877FF" : "3px solid transparent",
@@ -371,13 +373,13 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+      <div className="campaign-detail-body" style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
 
         {/* ── TAB RESUMEN ── */}
         {tab === "resumen" && (
           <>
             {/* Estado general */}
-            <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
+            <div className="campaign-status-card" style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Estado general</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
@@ -402,7 +404,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                 (antes solo mostraba el primero, aunque hubiera 2+),
                 cada uno con su nombre arriba para saber cual es cual. */}
             {panelesContrato.length > 0 && (
-              <div style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
+              <div className="campaign-location-card" style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>
                   {panelesContrato.length > 1 ? "Ubicación de las pantallas" : "Ubicación de pantalla"}
                 </div>
