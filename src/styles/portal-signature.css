@@ -333,7 +333,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-summary-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; margin-bottom: 27px !important; }
   .inicio-summary-grid > .inicio-kpi-card { min-height: 87px !important; padding: 13px 9px !important; }
   .inicio-kpi-value { font-size: 19px !important; white-space: normal !important; overflow: visible !important; }
-  .inicio-dashboard-grid { display: flex !important; flex-direction: column !important; gap: 27px !important; }
+  .inicio-dashboard-grid { display: flex !important; flex-direction: column !important; gap: 27px !important; margin-bottom: 15px !important; }
   .inicio-main-col { order: 2; }
   .inicio-side-col { order: 1; }
   .inicio-side-col .inicio-evidence-card { min-height: 0 !important; padding: 16px !important; }
@@ -351,7 +351,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-dashboard-grid .inicio-main-col .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
   .inicio-quick-grid > button { min-height: 59px !important; }
   .inicio-quick-copy small { display: none !important; }
-  .inicio-screen .inicio-account-status { display: block !important; margin: 21px 0 0 !important; }
+  .inicio-screen .inicio-account-status { display: block !important; margin: 0 !important; }
   .inicio-account-status-head { margin-bottom: 10px !important; }
   .inicio-account-status-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
   .inicio-account-status-grid button { min-height: 76px !important; padding: 14px 1px !important; border: 0 !important; border-top: 1px solid var(--signature-line) !important; background: transparent !important; }
