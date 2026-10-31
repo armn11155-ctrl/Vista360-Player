@@ -412,8 +412,8 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
   .coverage-map-heading { min-height: 31px; }
   .coverage-panel-card { max-height: none !important; }
   .admin-picker-heading > .admin-picker-session-exit { display: none !important; }
-  .admin-picker-shell .admin-picker-body { padding-bottom: calc(22px + env(safe-area-inset-bottom)) !important; }
-  .admin-picker-mobile-exit-wrap { display: block; padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); margin-top: 18px; border-top: 1px solid #dce4ef; }
+  .admin-picker-shell .admin-picker-body { padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important; }
+  .admin-picker-mobile-exit-wrap { display: block; padding: 12px 0 calc(8px + env(safe-area-inset-bottom)); margin-top: 10px; border-top: 1px solid #dce4ef; }
   .admin-picker-mobile-exit {
     width: 100%;
     min-height: 44px;
