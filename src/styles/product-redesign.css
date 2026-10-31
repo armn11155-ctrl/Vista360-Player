@@ -113,6 +113,9 @@ html, body, .app-shell, .main-area, .screens,
 }
 .client-screen-header .simple-title::before,
 .inicio-header-title::before { background: var(--v360-ink) !important; box-shadow: none !important; }
+.client-screen-header-title::before,
+.inicio-desktop-page-title > span,
+.profile-desktop-page-title > span { content: none !important; display: none !important; }
 .client-screen-header-title, .simple-title,
 .header-title, .reports-header .simple-title {
   color: var(--v360-ink) !important;
@@ -617,9 +620,59 @@ details.report-admin-panel .report-admin-toggle {
 .admin-picker-management-head { background: var(--v360-white) !important; border-bottom: 1px solid var(--v360-rule) !important; border-radius: 0 !important; box-shadow: none !important; }
 .admin-picker-management-head :is(strong, span, svg) { color: var(--v360-ink) !important; }
 .admin-picker-management-head > button { color: var(--v360-ink) !important; background: var(--v360-paper) !important; border-color: var(--v360-rule) !important; }
-.admin-picker-management-group { box-shadow: none !important; }
-.admin-picker-management-card { background: var(--v360-white) !important; border-color: var(--v360-rule) !important; border-radius: 7px !important; box-shadow: none !important; }
-.admin-picker-management-card .admin-picker-action-icon { color: var(--v360-ink) !important; background: var(--v360-paper) !important; }
+.admin-picker-management-logo { filter: brightness(0) !important; opacity: .8 !important; }
+.admin-picker-management-grid {
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
+}
+.admin-picker-management-group,
+.admin-picker-management-screen .admin-picker-management-group {
+  min-width: 0 !important;
+  padding: 18px !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--v360-rule) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.admin-picker-management-group-head { border-bottom: 0 !important; }
+.admin-picker-management-group-head > span {
+  color: var(--v360-secondary) !important;
+  background: transparent !important;
+  border: 1px solid var(--v360-rule) !important;
+  box-shadow: none !important;
+}
+.admin-picker-management-group-head strong { color: var(--v360-ink) !important; font-size: 15px !important; }
+.admin-picker-management-group-head small { color: var(--v360-secondary) !important; font-size: 10px !important; }
+.admin-picker-management-group-cards { grid-template-columns: minmax(0,1fr) !important; gap: 0 !important; }
+.admin-picker-management-card,
+.admin-picker-management-screen .admin-picker-management-card {
+  min-height: 70px !important;
+  padding: 10px 2px !important;
+  color: var(--v360-ink) !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-top: 1px solid var(--v360-rule) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.admin-picker-management-card .admin-picker-action-icon {
+  color: var(--v360-ink) !important;
+  background: var(--v360-white) !important;
+  border-color: var(--v360-rule) !important;
+  box-shadow: none !important;
+}
+.admin-picker-management-card strong { color: var(--v360-ink) !important; font-size: 12px !important; }
+.admin-picker-management-card small { color: var(--v360-secondary) !important; font-size: 10px !important; }
+.admin-picker-management-card i { color: var(--v360-secondary) !important; }
 
 @media (min-width: 900px) {
   .sidebar-panel .sidebar-item-label { display: block !important; }
