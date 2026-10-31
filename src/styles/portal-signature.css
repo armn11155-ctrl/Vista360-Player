@@ -131,6 +131,7 @@ html, body, .main-area, .screens, .content-area,
   height: auto !important;
   min-height: 0 !important;
   overflow: visible !important;
+  flex: 0 0 auto !important;
 }
 .inicio-section-title { font-size: 14px !important; font-weight: 750 !important; letter-spacing: -.025em !important; }
 .inicio-summary-grid { border-color: var(--signature-line) !important; }
@@ -184,7 +185,11 @@ html, body, .main-area, .screens, .content-area,
 .inicio-side-col .inicio-report-link { align-self: flex-start !important; color: var(--signature-ink) !important; font-size: 13px !important; }
 .inicio-account-status-head h2 { font-size: 16px !important; }
 .inicio-account-status-grid { grid-template-columns: repeat(3,minmax(0,1fr)) !important; gap: 16px !important; }
-.inicio-account-status-grid button { min-height: 123px !important; align-items: flex-start !important; padding: 18px !important; border: 1px solid var(--signature-line) !important; background: #fff !important; }
+.inicio-account-status-grid button { display: grid !important; grid-template-columns: minmax(0,1fr) 17px !important; gap: 12px !important; min-height: 123px !important; align-items: center !important; padding: 18px !important; border: 1px solid var(--signature-line) !important; background: #fff !important; }
+.inicio-account-status-grid button > div:nth-child(2) { display: flex !important; flex-direction: column !important; align-items: flex-start !important; min-width: 0; }
+.inicio-account-status-grid button > div:nth-child(2) > span { display: block !important; margin-bottom: 5px !important; color: var(--signature-muted) !important; font-size: 10px !important; line-height: 1.3 !important; letter-spacing: .08em !important; text-transform: uppercase; }
+.inicio-account-status-grid button strong { display: block !important; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.25 !important; }
+.inicio-account-status-grid button small { display: block !important; max-width: 100%; overflow: hidden; color: var(--signature-muted) !important; font-size: 11px !important; line-height: 1.4 !important; text-overflow: ellipsis; white-space: nowrap; }
 .inicio-account-status-grid button:last-child { border-bottom: 1px solid var(--signature-line) !important; }
 .inicio-account-status-grid button strong { font-size: 15px !important; }
 
