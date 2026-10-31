@@ -131,8 +131,20 @@ html, body, .main-area, .screens, .content-area,
 .inicio-summary-grid > .inicio-kpi-card { min-height: 103px !important; border-color: var(--signature-line) !important; padding-top: 20px !important; }
 .inicio-kpi-label { color: var(--signature-muted) !important; font-size: 11px !important; font-weight: 650 !important; }
 .inicio-kpi-value { color: var(--signature-ink) !important; font-size: clamp(24px, 2.4vw, 34px) !important; letter-spacing: -.06em !important; }
-.inicio-quick-grid { grid-template-columns: 1fr !important; }
+.inicio-dashboard-grid .inicio-main-col .inicio-quick-grid {
+  grid-template-columns: 1fr !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
 .inicio-quick-grid > button { min-height: 66px !important; border-color: var(--signature-line) !important; padding: 12px 4px !important; }
+.inicio-dashboard-grid .inicio-quick-grid > button {
+  border: 0 !important;
+  border-top: 1px solid var(--signature-line) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
 .inicio-quick-grid > button:hover, .inicio-account-status-grid button:hover { background: rgba(20,32,35,.035) !important; }
 .inicio-quick-grid > button svg { color: var(--signature-ink) !important; stroke: var(--signature-ink) !important; }
 .inicio-quick-copy span { font-size: 13px !important; font-weight: 730 !important; }
@@ -286,7 +298,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-desktop-welcome { grid-template-columns: minmax(0,1fr) 37% !important; }
   .inicio-desktop-welcome-copy { padding: 30px !important; }
   .inicio-dashboard-grid { grid-template-columns: 1fr !important; }
-  .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .inicio-dashboard-grid .inicio-main-col .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
 }
 
 @media (max-width: 899px) {
@@ -295,7 +307,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-header { min-height: 170px !important; padding-bottom: 43px !important; }
   .inicio-content { padding: 19px 19px 38px !important; margin-top: -19px !important; }
   .inicio-desktop-welcome {
-    display: block !important; min-height: 0 !important; margin: 4px 0 24px !important;
+    display: block !important; height: 159px !important; min-height: 159px !important; margin: 4px 0 24px !important;
   }
   .inicio-desktop-welcome-copy { display: none !important; }
   .inicio-welcome-visual { height: 159px; min-height: 159px; padding: 14px 17px !important; border: 0; background-position: center 46%; }
@@ -319,7 +331,7 @@ details.report-admin-panel > .report-admin-header { min-height: 74px !important;
   .inicio-side-col .inicio-report-month { white-space: normal !important; font-size: 17px !important; }
   .inicio-side-col .inicio-report-meta { font-size: 10px !important; margin: 0 0 10px !important; }
   .inicio-side-col .inicio-report-link { font-size: 12px !important; color: var(--signature-ink) !important; background: transparent !important; border-color: var(--signature-ink) !important; opacity: 1 !important; }
-  .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
+  .inicio-dashboard-grid .inicio-main-col .inicio-quick-grid { grid-template-columns: repeat(2,minmax(0,1fr)) !important; }
   .inicio-quick-grid > button { min-height: 59px !important; }
   .inicio-quick-copy small { display: none !important; }
   .inicio-account-status-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
