@@ -214,11 +214,17 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
           );
         })()}
 
-        <div className="card solicitudes-context" style={{ background: "#f4f1eb" }}>
-          <div style={{ fontSize: 12, color: "#58615e", lineHeight: 1.5 }}>
-            Lo que tus clientes piden desde su portal. Solo tú ves esta pantalla.
+        <header className="solicitudes-overview">
+          <div>
+            <span>OPERACIÓN · CAMPAÑAS</span>
+            <h1>Solicitudes por atender.</h1>
+            <p>Revisa lo que tus clientes necesitan y da seguimiento desde un solo lugar.</p>
           </div>
-        </div>
+          <div className="solicitudes-overview-count" aria-label={`${pendientes.length} solicitudes pendientes`}>
+            <strong>{String(pendientes.length).padStart(2, "0")}</strong>
+            <small>PENDIENTES</small>
+          </div>
+        </header>
 
         {accionError && (
           <div
@@ -271,7 +277,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
         )}
 
         {pendientes.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+          <div className="solicitudes-pending-list">
             {pendientes.map((s) => {
               const creada = s.createdAt?.toMillis?.() ?? 0;
               const diasPendiente = creada ? Math.max(0, Math.floor((ahora - creada) / 86_400_000)) : 0;
@@ -331,7 +337,7 @@ export default function SolicitudesCampana({ onBack, onCrearCampana }: Props) {
                     style={{ width: "100%", height: 128, objectFit: "cover", borderRadius: 12, marginBottom: 10, display: "block" }}
                   />
                 )}
-                <div style={{ display: "flex", gap: 8 }}>
+                <div className="solicitudes-card-actions" style={{ display: "flex", gap: 8 }}>
                   <button type="button"
                     onClick={(event) => { event.stopPropagation(); resolver(s.id, "Revisada"); }}
                     disabled={resolviendo === s.id}

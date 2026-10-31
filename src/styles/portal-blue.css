@@ -199,9 +199,19 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
 .premium-campaign-state { background: #eaf2ff !important; }
 .premium-campaign-state span { color: #1758ab !important; }
 .solicitudes-screen, .solicitudes-area { background: #f4f7fb !important; }
+.solicitudes-area { max-width: 1190px !important; margin-inline: auto !important; padding: 30px clamp(20px,3.2vw,45px) 52px !important; }
+.solicitudes-overview { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding: 0 0 23px; margin-bottom: 22px; border-bottom: 1px solid #dce4ef; }
+.solicitudes-overview > div:first-child > span { color: #1769e8; font-size: 10px; font-weight: 800; letter-spacing: .18em; }
+.solicitudes-overview h1 { margin: 10px 0 8px; color: #080d18; font-size: clamp(28px,3vw,40px); line-height: 1.06; letter-spacing: -.05em; }
+.solicitudes-overview p { margin: 0; color: #57677d; font-size: 13px; line-height: 1.5; }
+.solicitudes-overview-count { display: flex; flex-direction: column; align-items: flex-end; flex: 0 0 auto; }
+.solicitudes-overview-count strong { color: #080d18; font-size: 43px; line-height: .9; letter-spacing: -.07em; }
+.solicitudes-overview-count small { margin-top: 8px; color: #57677d; font-size: 9px; font-weight: 750; letter-spacing: .15em; }
+.solicitudes-pending-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: 14px; }
 .solicitudes-context { background: #eaf2ff !important; border-color: #cbdfff !important; }
-.solicitudes-screen .solicitudes-card { border: 1px solid #dce4ef !important; border-left: 3px solid #1769e8 !important; background: #fff !important; }
+.solicitudes-screen .solicitudes-card { min-width: 0; padding: 20px !important; border: 1px solid #dce4ef !important; border-left: 3px solid #1769e8 !important; border-radius: 13px !important; background: #fff !important; box-shadow: 0 18px 32px -34px rgba(8,28,65,.6) !important; }
 .solicitudes-screen .solicitudes-card:hover { border-color: #1769e8 !important; background: #fff !important; }
+.solicitudes-card-actions { padding-top: 14px; border-top: 1px solid #e5ebf3; }
 .solicitudes-screen .request-status-chip { color: #1758ab !important; background: #eaf2ff !important; border-color: #cbdfff !important; }
 .solicitudes-screen .solicitudes-card button[style*='var(--accent)'], .solicitud-action.primary { color: #fff !important; background: #1769e8 !important; }
 .solicitud-action.secondary { color: #111827 !important; background: #fff !important; border-color: #dce4ef !important; }
@@ -372,6 +382,12 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
   .admin-picker-management-grid { grid-template-columns: 1fr !important; }
   .admin-picker-management-intro { min-height: 0; padding: 22px; }
   .admin-picker-management-layout .gestion-hoy { grid-row: 2; }
+  .solicitudes-area { padding: 21px 17px 43px !important; }
+  .solicitudes-overview { gap: 12px; margin-bottom: 16px; }
+  .solicitudes-overview h1 { font-size: 26px; }
+  .solicitudes-overview p { font-size: 12px; }
+  .solicitudes-overview-count strong { font-size: 30px; }
+  .solicitudes-pending-list { grid-template-columns: 1fr; gap: 12px; }
 }
 @media (max-width: 390px) {
   .admin-picker-shell .admin-picker-editorial { flex-basis: 208px !important; height: 208px !important; min-height: 208px !important; }
