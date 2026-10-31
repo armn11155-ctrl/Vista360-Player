@@ -177,6 +177,17 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
       />
 
       <div className="reports-screen-body facturas-screen-body facturas-history-screen-body">
+        <section className="reports-intro facturas-intro" aria-label="Introducción a facturas">
+          <div>
+            <span className="portal-eyebrow">ARCHIVO · VISTA360 PLAYER</span>
+            <h2>Documentos, siempre a mano.</h2>
+            <p>Consulta y descarga los comprobantes vinculados a tu cuenta.</p>
+          </div>
+          {state.status === "ready" && <div className="reports-intro-count" aria-label={`${facturas.length} ${facturas.length === 1 ? "factura" : "facturas"}`}>
+            <strong>{String(facturas.length).padStart(2, "0")}</strong>
+            <span>{facturas.length === 1 ? "factura" : "facturas"}</span>
+          </div>}
+        </section>
         {isAdmin && (ruc || clienteId) && (
           <div className="card factura-upload-card">
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
