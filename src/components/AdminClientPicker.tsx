@@ -586,6 +586,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             </div>
           )}
         </div>
+        <div className="admin-picker-mobile-exit-wrap">
+          <button type="button" className="admin-picker-mobile-exit" onClick={() => logout()}>
+            Cerrar sesión
+          </button>
+        </div>
           </div>
         </div>
       </div>

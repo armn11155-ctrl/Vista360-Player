@@ -921,6 +921,10 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
         </header>
         <div className="coverage-workspace">
           <div className="coverage-map-column">
+        <div className="coverage-map-heading">
+          <span>Mapa de ubicaciones</span>
+          <small>{conCoordenadas.length} {conCoordenadas.length === 1 ? "punto localizado" : "puntos localizados"}</small>
+        </div>
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
           {mapReady && !mapError && !esEntradaTactil && (
@@ -1035,7 +1039,13 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           </div>
 
         <div className="coverage-panel-card">
-          <div className="section-title">Paneles ubicados</div>
+          <div className="coverage-inventory-head">
+            <div>
+              <div className="section-title">Paneles ubicados</div>
+              <p>Selecciona una ubicación para ver sus detalles.</p>
+            </div>
+            <span>{lista.length}</span>
+          </div>
           {panelesState.status === "loading" || !contratosListos ? (
             <div className="state-sub" style={{ maxWidth: "none" }}>
               Cargando paneles…

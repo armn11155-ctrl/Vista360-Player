@@ -6,6 +6,7 @@ import { usePushEstado } from "../../hooks/usePushEstado";
 import NotifPrompt from "../NotifPrompt";
 import { PersonIcon } from "../PersonIcon";
 import { BrandThumb } from "../BrandThumb";
+import { ReportCameraMark } from "../ReportCameraMark";
 
 interface Props {
   cliente: Cliente | null;
@@ -369,7 +370,7 @@ export default function Inicio({ cliente, clienteId, contratos, paneles: _panele
               <div className="inicio-report-icon" aria-hidden="true">
                 <img src="/logo-player.webp" alt="" decoding="async" />
                 <span>REPORTE MENSUAL</span>
-                <strong>Evidencia<br />que cuenta.</strong>
+                <ReportCameraMark className="inicio-report-camera" />
                 <small>PDF · CAMPAÑA</small>
               </div>
               <div className="inicio-report-body" style={{ flex:1 }}>

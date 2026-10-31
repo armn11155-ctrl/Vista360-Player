@@ -264,3 +264,162 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
   .profile-row { min-height: 53px !important; }
   .login-left-panel { background-position: center 44% !important; }
 }
+
+/* Final photographic-report, coverage and responsive access refinements. */
+.inicio-screen .inicio-content {
+  background: #f4f7fb !important;
+  border-color: #dfe7f1 !important;
+}
+.inicio-side-col .inicio-evidence-card .inicio-report-icon span { margin-top: 12px !important; }
+.inicio-report-icon .inicio-report-camera {
+  display: block !important;
+  width: 94px !important;
+  max-width: 100% !important;
+  height: 76px !important;
+  margin: 6px auto 0 !important;
+  color: #b9d4f5 !important;
+  stroke: currentColor !important;
+}
+@media (min-width: 900px) {
+  .inicio-desktop-welcome,
+  .inicio-desktop-welcome-copy,
+  .inicio-welcome-visual { min-height: 308px !important; }
+  .inicio-desktop-welcome { margin-bottom: 24px !important; }
+  .inicio-desktop-welcome-copy { padding: 30px clamp(30px,3.5vw,46px) !important; }
+  .inicio-summary-grid { margin-bottom: 22px !important; }
+  .inicio-summary-grid > .inicio-kpi-card {
+    min-height: 105px !important;
+    padding: 16px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+  }
+  .inicio-summary-grid .inicio-kpi-icon { width: 38px !important; height: 38px !important; flex: 0 0 38px !important; }
+  .inicio-summary-grid .inicio-kpi-body { width: auto !important; min-width: 0 !important; }
+  .inicio-summary-grid .inicio-kpi-value { font-size: clamp(20px,1.55vw,25px) !important; }
+}
+
+/* The map is a usable geographic surface; blue identifies a contracted panel. */
+.coverage-map-column::before { display: none !important; }
+.coverage-map-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  min-height: 33px;
+  padding: 0 3px;
+  color: #1a2b43;
+}
+.coverage-map-heading span { font-size: 13px; font-weight: 780; letter-spacing: -.01em; }
+.coverage-map-heading small { color: #617187; font-size: 11px; font-weight: 650; }
+.coverage-workspace { gap: 20px !important; }
+.coverage-map-real {
+  border: 1px solid #cbd9e8 !important;
+  box-shadow: 0 22px 42px -34px rgba(18,51,91,.52) !important;
+}
+.coverage-leaflet-map .leaflet-tile-pane {
+  filter: grayscale(1) contrast(.86) brightness(1.1) !important;
+}
+.coverage-map-legend > div:nth-child(2) img,
+.coverage-leaflet-marker.is-contracted img { filter: none !important; }
+.coverage-map-pin, .coverage-map-pin.active { background: #315f9d !important; }
+.coverage-panel-card {
+  max-height: 558px !important;
+  padding: 12px !important;
+  border-color: #d7e2ee !important;
+  box-shadow: 0 20px 37px -34px rgba(18,51,91,.45) !important;
+}
+.coverage-inventory-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 9px 14px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #e1e8f1;
+}
+.coverage-inventory-head .section-title {
+  padding: 0 !important;
+  margin: 0 0 4px !important;
+  border: 0 !important;
+  font-size: 18px !important;
+}
+.coverage-inventory-head .section-title::before { display: none !important; }
+.coverage-inventory-head p { margin: 0; color: #64748b; font-size: 11px; line-height: 1.4; }
+.coverage-inventory-head > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 31px;
+  height: 31px;
+  border-radius: 8px;
+  background: #eaf1fa;
+  color: #315f9d;
+  font-size: 13px;
+  font-weight: 800;
+}
+.coverage-panel-row { min-height: 69px !important; margin: 2px 0 !important; padding: 12px 10px !important; border-radius: 9px !important; }
+.coverage-panel-row.is-selected {
+  background: #eaf1fa !important;
+  box-shadow: inset 3px 0 0 #315f9d !important;
+}
+.coverage-panel-dot { box-shadow: 0 0 0 3px #eaf1fa !important; }
+.coverage-panel-state { font-size: 11px !important; }
+
+/* A cooler architectural treatment unifies login and account selection. */
+.login-left-panel,
+.admin-picker-editorial { background: #10233b !important; isolation: isolate; }
+.login-left-panel::before {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url('/editorial/vista360-avenida-referencial.jpg') center 44% / cover no-repeat !important;
+  filter: grayscale(1) contrast(.96) brightness(.72);
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
+.login-left-panel::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(90deg,rgba(5,19,38,.81),rgba(13,41,75,.38)),linear-gradient(0deg,rgba(5,19,38,.65),transparent 60%) !important;
+}
+.login-network-stage { position: relative; z-index: 1; }
+.login-access-kicker {
+  color: #263c59 !important;
+  font-weight: 800 !important;
+  letter-spacing: .13em !important;
+}
+.login-access-kicker span { color: #263c59 !important; }
+.login-access-kicker strong { color: #315f9d !important; }
+.login-access-kicker::before { background: #315f9d !important; }
+.admin-picker-editorial::before {
+  background: linear-gradient(0deg,rgba(4,18,39,.88),rgba(12,41,75,.24) 72%),url('/editorial/vista360-avenida-referencial.jpg') center 44% / cover no-repeat !important;
+  filter: grayscale(1) contrast(.96) brightness(.78);
+}
+.admin-picker-mobile-exit-wrap { display: none; }
+
+@media (max-width: 899px) {
+  .inicio-screen .inicio-content { background: #f4f7fb !important; }
+  .inicio-side-col .inicio-evidence-card .inicio-report-icon span { margin-top: 9px !important; }
+  .inicio-report-icon .inicio-report-camera { width: 65px !important; height: 52px !important; margin-top: 2px !important; }
+  .coverage-map-heading { min-height: 31px; }
+  .coverage-panel-card { max-height: none !important; }
+  .admin-picker-heading > .admin-picker-session-exit { display: none !important; }
+  .admin-picker-mobile-exit-wrap { display: block; padding: 24px 0 calc(24px + env(safe-area-inset-bottom)); margin-top: 18px; border-top: 1px solid #dce4ef; }
+  .admin-picker-mobile-exit {
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid #cbd7e8;
+    border-radius: 9px;
+    background: #fff;
+    color: #263c59;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 750;
+  }
+}

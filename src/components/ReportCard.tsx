@@ -9,6 +9,7 @@ import { mensajeDeError } from "../utils/errores";
 import type { Cliente, InformeCliente } from "../types";
 import { useDialogos } from "./DialogosProvider";
 import { descargarArchivo, verArchivo } from "../utils/descargarArchivo";
+import { ReportCameraMark } from "./ReportCameraMark";
 
 interface Props {
   informe: InformeCliente;
@@ -410,13 +411,7 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
         <div className="report-pdf-icon" aria-hidden="true">
           <img src="/logo-player.webp" alt="" decoding="async" />
           <span>REPORTE MENSUAL</span>
-          <svg className="report-cover-illustration" viewBox="0 0 120 88" fill="none" aria-hidden="true">
-            <rect x="14" y="7" width="92" height="74" rx="5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M28 60h64M28 68h45" stroke="currentColor" strokeOpacity=".55" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M30 48V34l13-8 13 10 13-18 20 10v20H30Z" fill="currentColor" fillOpacity=".16" />
-            <path d="m30 44 13-9 13 8 13-19 20 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="69" cy="24" r="3" fill="currentColor" />
-          </svg>
+          <ReportCameraMark className="report-cover-illustration" />
           <small>PDF · CAMPAÑA</small>
         </div>
         <div className="report-card-copy">
