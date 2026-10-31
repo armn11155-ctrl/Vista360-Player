@@ -32,7 +32,8 @@ html, body, .main-area, .screens, .content-area,
   .sidebar-panel .sidebar-head { padding: 30px 24px 22px !important; }
   .sidebar-panel .sidebar-logo { width: 151px !important; max-height: 31px !important; }
   .sidebar-panel .sidebar-list { padding-top: 42px !important; }
-  .sidebar-panel .sidebar-item { margin-inline: 13px !important; width: calc(100% - 26px) !important; }
+  .sidebar-panel .sidebar-item { margin-inline: 13px !important; width: calc(100% - 26px) !important; gap: 12px !important; }
+  .sidebar-panel .sidebar-item::after { content: none !important; }
 }
 .sidebar-panel, .sidebar-head { background: #141f22 !important; }
 .sidebar-item { min-height: 48px !important; }
