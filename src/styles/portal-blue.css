@@ -185,9 +185,19 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
 /* Campaign details and requests use blue only as an interaction and status cue. */
 .campaign-detail-hero { background: linear-gradient(90deg,rgba(8,13,24,.97),rgba(8,13,24,.78) 55%,rgba(8,13,24,.28)), url('/editorial/vista360-costa-referencial.jpg') center 48% / cover no-repeat !important; }
 .campaign-detail-eyebrow { color: #90bdff !important; }
+.campaign-detail-title-row > span { color: #b8d4ff !important; background: rgba(23,105,232,.24) !important; }
+.campaign-status-card > div:nth-child(2) > div:first-child { background: #1769e8 !important; }
+.campaign-expiry-status { color: #1758ab !important; background: #eaf2ff !important; }
+.campaign-period-rail b.is-activa { background: #1769e8 !important; }
 .campaign-detail-tab[aria-selected='true'] { border-bottom-color: #1769e8 !important; }
 .detalle-campana-line { background: #1769e8 !important; }
 .campaign-detail-meta svg { color: #90bdff !important; }
+.mis-campanas-month-status { height: auto !important; max-height: none !important; padding: 16px 18px !important; border: 1px solid #dce4ef !important; border-radius: 12px !important; background: #fff !important; }
+.mis-campanas-month-status-header { color: #1769e8 !important; }
+.premium-campaign-card { border: 1px solid #dce4ef !important; border-radius: 14px !important; background: #fff !important; box-shadow: 0 18px 32px -33px rgba(8,28,65,.65) !important; }
+.premium-campaign-kicker { color: #1769e8 !important; }
+.premium-campaign-state { background: #eaf2ff !important; }
+.premium-campaign-state span { color: #1758ab !important; }
 .solicitudes-screen, .solicitudes-area { background: #f4f7fb !important; }
 .solicitudes-context { background: #eaf2ff !important; border-color: #cbdfff !important; }
 .solicitudes-screen .solicitudes-card { border: 1px solid #dce4ef !important; border-left: 3px solid #1769e8 !important; background: #fff !important; }
@@ -213,7 +223,7 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
 .coverage-overview-stats strong { color: #080d18; font-size: 27px; line-height: 1; }
 .coverage-workspace { display: grid; grid-template-columns: minmax(0,1fr) minmax(270px,330px); gap: 17px; max-width: 1500px; margin: 0 auto; align-items: start; }
 .coverage-map-column { display: grid; gap: 16px; min-width: 0; }
-.coverage-map-real { min-height: 525px !important; border: 1px solid #dce4ef !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 25px 44px -38px rgba(8,28,65,.65) !important; }
+.coverage-map-real { height: 525px !important; min-height: 525px !important; border: 1px solid #dce4ef !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 25px 44px -38px rgba(8,28,65,.65) !important; }
 .coverage-leaflet-map { height: 525px !important; }
 .coverage-leaflet-map .leaflet-tile-pane { filter: saturate(.64) contrast(1.01) !important; }
 .coverage-map-summary { background: #080d18 !important; border-color: #080d18 !important; color: #fff !important; }
@@ -327,7 +337,7 @@ details.report-admin-panel > .report-admin-header { padding: 17px 20px !importan
   .coverage-overview h1 { font-size: 29px; }
   .coverage-overview-stats { margin-top: 17px; }
   .coverage-workspace { grid-template-columns: 1fr; gap: 14px; }
-  .coverage-map-real { min-height: 360px !important; }
+  .coverage-map-real { height: 360px !important; min-height: 360px !important; }
   .coverage-leaflet-map { height: 360px !important; }
   .coverage-panel-card { max-height: none; overflow: visible; }
   .profile-top { padding: 17px 19px 25px !important; }

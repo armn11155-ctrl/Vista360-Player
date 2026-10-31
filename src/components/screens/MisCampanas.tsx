@@ -436,7 +436,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <div className="premium-campaign-title">{tituloCampana}</div>
                 </div>
-                <div style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 8, padding: "2px 8px", marginBottom: 6 }}>
+                <div className="premium-campaign-state" style={{ display: "inline-flex", alignItems: "center", background: badge.bg, borderRadius: 8, padding: "2px 8px", marginBottom: 6 }}>
                   <span style={{ fontSize: 12, fontWeight: 600, color: badge.color }}>{estado}</span>
                 </div>
                 <div className="premium-campaign-meta">
