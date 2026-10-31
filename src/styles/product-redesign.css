@@ -340,6 +340,17 @@ html, body, .app-shell, .main-area, .screens,
 .inicio-evidence-card .inicio-report-meta,
 .inicio-evidence-card .inicio-report-meta svg { color: var(--v360-secondary) !important; stroke: var(--v360-secondary) !important; }
 .inicio-report-link, .inicio-report-link svg { color: var(--v360-ink) !important; stroke: var(--v360-ink) !important; }
+.inicio-side-col .inicio-report-link {
+  color: var(--v360-ink) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--v360-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  min-height: 0 !important;
+  padding: 0 0 3px !important;
+}
+.inicio-side-col .inicio-report-link svg { stroke: var(--v360-ink) !important; }
 
 /* Reports: the generator belongs to the same page, with no navy island. */
 .reports-screen-body { padding: 28px clamp(20px,4vw,48px) 42px !important; }
@@ -698,7 +709,8 @@ details.report-admin-panel .report-admin-toggle {
   .admin-picker-editorial-kicker { display: none !important; }
   .admin-picker-console { width: 100% !important; max-width: none !important; padding: 22px 22px 28px !important; }
   .admin-picker-footer { left: 22px !important; bottom: 14px !important; }
-  .admin-picker-logout { color: var(--v360-secondary) !important; background: transparent !important; border-color: var(--v360-rule) !important; box-shadow: none !important; }
+  .admin-picker-footer { background: var(--v360-white) !important; border-top: 1px solid var(--v360-rule) !important; }
+  .admin-picker-logout { color: var(--v360-ink) !important; background: transparent !important; border-color: var(--v360-rule) !important; box-shadow: none !important; }
   .admin-picker-top-left-actions { top: calc(13px + env(safe-area-inset-top)) !important; left: 14px !important; }
   .admin-picker-management-btn, .admin-picker-client-view-btn { height: 34px !important; border-radius: 7px !important; }
   .admin-picker-perfil-btn { top: calc(11px + env(safe-area-inset-top)) !important; right: 14px !important; width: 36px !important; height: 36px !important; border-radius: 7px !important; box-shadow: none !important; }
