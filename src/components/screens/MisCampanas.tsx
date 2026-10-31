@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { mensajeDeError } from "../../utils/errores";
 import { httpsCallable } from "firebase/functions";
 import type { CampanaEstado, Contrato, Panel } from "../../types";
@@ -8,7 +8,6 @@ import { useContratosHistoricos } from "../../hooks/useContratos";
 import { useInformes } from "../../hooks/useInformes";
 import { cloudFunctions } from "../../config/firebase";
 import ClientScreenHeader from "../ClientScreenHeader";
-import { campaignCityImage } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 import { useDialogos } from "../DialogosProvider";
 
@@ -398,9 +397,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
           // solicitud de renovación para que llegue con la misma forma
           // que las que se crean desde Nueva campaña / Cobertura.
           const ciudadCampana = paneles[idsPanelesCampana[0]]?.ciudad ?? "";
-          const cityStyle = {
-            "--campaign-city-image": `url("${campaignCityImage(c.id)}")`,
-          } as CSSProperties;
           return (
             // Tres capas, cada una con un solo trabajo (ver comentario
             // largo junto a .premium-campaign-card-lift en app.css):
@@ -423,7 +419,7 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
               }}
             >
               <div className="premium-campaign-card-lift">
-              <div className="premium-campaign-card" style={cityStyle}>
+              <div className="premium-campaign-card">
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="premium-campaign-kicker">CAMPAÑA PUBLICITARIA</div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>

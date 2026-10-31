@@ -9,6 +9,7 @@ import "./styles/design-system.css";
 import "./styles/login-network.css";
 import "./styles/navigation-motion.css";
 import "./styles/editorial-premium.css";
+import "./styles/product-redesign.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
 import { mantenerOrientacionVertical } from "./utils/orientacion-vertical";

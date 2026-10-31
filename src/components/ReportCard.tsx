@@ -523,9 +523,6 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
       {isAdmin && !previaCorreo && correoEnviadoOk && (
         <div className="report-email-enviado-ok">{correoEnviadoOk}</div>
       )}
-      {isAdmin && !previaCorreo && diagnosticoCompartir && (
-        <div className="report-share-diagnostico">Adjunto no disponible ({diagnosticoCompartir}) — Correo/WhatsApp mandan el link.</div>
-      )}
     </div>
   );
 }

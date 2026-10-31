@@ -161,7 +161,7 @@ export default function Sidebar({ open, onClose, onNavigate, onIntentNavigate, o
               900px), arriba del chip de perfil. En móvil el chip de
               perfil sigue siendo lo único visible acá. */}
           <img
-            src="/icon-192.png"
+            src="/logo-player.webp"
             alt="Vista360 Player"
             className="sidebar-logo"
             draggable={false}

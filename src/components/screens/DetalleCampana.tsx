@@ -1,11 +1,10 @@
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 import { httpsCallable } from "firebase/functions";
 import type { Cliente, Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { diasHasta, fechaCorta, fechaLarga, hoyEnPeru, soloFecha, sumarDias } from "../../utils/fechas";
 import { useInformes } from "../../hooks/useInformes";
 import { ReportCard } from "../ReportCard";
-import { campaignCityImageHero } from "../../utils/campaignCity";
 import { formatCampaignName } from "../../utils/campaignName";
 import { agruparPorMes, etiquetaMes } from "../../utils/informesGrouping";
 import { cloudFunctions } from "../../config/firebase";
@@ -133,9 +132,6 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
   // (campañas viejas, o cuando no se puso), se sigue mostrando el
   // nombre del/los panel(es) como titulo, como antes.
   const tituloCampana = formatCampaignName(contrato.nombre || nombrePaneles);
-  const cityStyle = {
-    "--campaign-city-image": `url("${campaignCityImageHero(contrato.id)}")`,
-  } as CSSProperties;
 
   // ── Solicitar renovación directo desde el detalle ──
   // Mismo flujo (y misma Cloud Function, crearSolicitudCampana) que
@@ -295,7 +291,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
     <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
 
       {/* Header */}
-      <div className="campaign-detail-hero" style={{ ...cityStyle, padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
+      <div className="campaign-detail-hero" style={{ padding: "calc(22px + env(safe-area-inset-top)) 20px 18px", flexShrink: 0, display: "flex", flexDirection: "column" }}>
         <div className="campaign-detail-toolbar">
           <button type="button" onClick={onBack} style={{ background: "none", border: "none", padding: 6, marginLeft: -6, cursor: "pointer", display: "flex" }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2"><path d="m15 18-6-6 6-6"/></svg>

@@ -4,7 +4,6 @@ import type { Contrato, Panel } from "../../types";
 import { estadoCampana, panelesDeContrato } from "../../types";
 import { diasHasta, fechaLarga } from "../../utils/fechas";
 import { agruparPorCercania, cargarLeaflet, offsetsCirculares, zoomMinimoSinGris } from "../../utils/leaflet";
-import { campaignCityImage } from "../../utils/campaignCity";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 
 interface Props {
@@ -273,15 +272,8 @@ export function escapeHtml(value: string) {
     .replace(/'/g, "&#39;");
 }
 
-/** Mini tarjeta premium que se abre al hacer click en un pin del mapa
- *  -- antes era el popup por defecto de Leaflet (solo nombre y
- *  direccion en texto plano, sin nada de diseño). Layout horizontal
- *  (imagen a la izquierda, texto a la derecha) a pedido -- antes era
- *  vertical (imagen arriba). La foto es la MISMA que usa la campaña
- *  que esta usando este panel (campaignCityImage keyed por el id del
- *  contrato, igual que en Mis Campañas) -- si el panel no tiene
- *  campaña asignada, se usa el id del panel como reemplazo, para que
- *  siempre se vea una foto en vez de un cuadro vacio. */
+/** Tarjeta de un panel en el mapa. La banda gráfica muestra su tipo y
+ *  estado sin atribuirle una fotografía de otra ubicación. */
 export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   const nombre = escapeHtml(panel.nombre);
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
@@ -301,7 +293,6 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   // trata exactamente IGUAL que no tener ningún contrato: como si esta
   // campaña nunca hubiera existido para efectos de lo que se muestra hoy.
   const contrato = panel.contrato && estadoCampana(panel.contrato) !== "Finalizada" ? panel.contrato : undefined;
-  const fotoUrl = campaignCityImage(contrato?.id ?? panel.id);
 
   // Con contrato Activo y cerca de vencer -- se pidió que además de la
   // fecha de vigencia aparezca "Solicitar renovación" (no en reemplazo).
@@ -358,7 +349,7 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
 
   return `
     <div class="coverage-popup-card">
-      <div class="coverage-popup-media" data-fondo="${fotoUrl}">
+      <div class="coverage-popup-media">
         <span class="coverage-popup-panel-icon" aria-hidden="true">
           <svg viewBox="0 0 512 512" fill="#FFFFFF" aria-hidden="true">
             <rect x="76.043" y="122.165" width="359.916" height="115.585"/>
@@ -401,10 +392,6 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
  */
 export function aplicarEstilosPopup(el: HTMLElement | undefined | null): void {
   if (!el) return;
-  const media = el.querySelector<HTMLElement>(".coverage-popup-media[data-fondo]");
-  if (media?.dataset.fondo) {
-    media.style.backgroundImage = `url('${media.dataset.fondo}')`;
-  }
   const badge = el.querySelector<HTMLElement>(".coverage-popup-badge[data-color]");
   if (badge?.dataset.color) {
     badge.style.color = badge.dataset.color;
