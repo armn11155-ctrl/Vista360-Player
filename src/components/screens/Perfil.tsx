@@ -307,6 +307,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
             )}
           </div>
           <div className="profile-company-copy">
+            <span className="profile-hero-eyebrow">TU CUENTA · VISTA360 PLAYER</span>
             <h1>{empresa}</h1>
             <p>{email || cliente?.email || "Cliente Vista360"}</p>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -317,6 +318,11 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
                 <span>Cuenta verificada</span>
               </span>
             </div>
+          </div>
+          <div className="profile-hero-metrics" aria-label="Resumen de cuenta">
+            <ProfileMetricRow icon="campaign" label="Campañas activas" value={String(activas)} tone="blue" />
+            <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
+            <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="attention" />
           </div>
         </section>
 
@@ -491,14 +497,6 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
               mostrarlas aquí hacía creer que se modificaría al cliente. */}
           {!esInterno && <ProfileRow icon="lock" label="Cambiar contraseña" onClick={() => setModalPasswordAbierto(true)} />}
           {isAdmin && <ProfileRow icon="switch" label="Cambiar cliente" onClick={onCambiarCliente} />}
-        </ProfileSection>
-
-        <ProfileSection title="Resumen de cuenta" className="profile-section-summary">
-          <div className="profile-metric-card">
-            <ProfileMetricRow icon="campaign" label="Campañas activas" value={String(activas)} tone="blue" />
-            <ProfileMetricRow icon="screen" label="Pantallas contratadas" value={String(pantallas)} tone="green" />
-            <ProfileMetricRow icon="invoice" label="Facturas pendientes" value={String(facturasPendientes)} tone="attention" />
-          </div>
         </ProfileSection>
 
         {!esInterno && (

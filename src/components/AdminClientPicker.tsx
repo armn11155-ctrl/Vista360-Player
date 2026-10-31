@@ -372,9 +372,16 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           <span className="admin-picker-badge-dot" />
           {esGerente ? "Modo Gerente" : "Modo Trabajador"}
         </div>
-        <div className="admin-picker-title">¿Qué cuenta gestionas?</div>
-        <div className="admin-picker-sub">
-          {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
+        <div className="admin-picker-heading">
+          <div>
+            <div className="admin-picker-title">¿Qué cuenta gestionas?</div>
+            <div className="admin-picker-sub">
+              {vistaClienteActiva ? "Selecciona el cliente que deseas previsualizar." : "Selecciona un perfil de cliente para continuar."}
+            </div>
+          </div>
+          <button type="button" className="admin-picker-session-exit" onClick={() => logout()}>
+            Cerrar sesión
+          </button>
         </div>
 
         {solicitudesPendientes > 0 && (
@@ -631,15 +638,15 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               <span>Administra tu operación desde un solo lugar.</span>
             </div>
             <img src="/logo-player.webp" decoding="async" alt="Vista360 Player" className="admin-picker-management-logo" draggable={false} />
+            <button type="button" className="admin-picker-management-exit" onClick={() => logout()}>Cerrar sesión</button>
           </div>
-          {esGerente && (
-            <GestionHoy
-              solicitudesPendientes={solicitudesPendientes}
-              onOpenSolicitudes={onOpenSolicitudes}
-              onOpenOcupacion={onOpenOcupacion}
-              onOpenCotizaciones={onOpenCotizaciones}
-            />
-          )}
+          <div className="admin-picker-management-layout">
+            <div className="admin-picker-management-main">
+              <div className="admin-picker-management-intro">
+                <span>OPERACIÓN · VISTA360</span>
+                <h2>Tu negocio, en orden.</h2>
+                <p>Gestiona clientes, inventario y propuestas desde un espacio claro.</p>
+              </div>
           <div className="admin-picker-management-grid">
             <section className="admin-picker-management-group">
               <div className="admin-picker-management-group-head">
@@ -727,14 +734,21 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
               </div>
             </section>
           </div>
+            </div>
+            {esGerente && (
+              <aside className="admin-picker-management-side">
+                <GestionHoy
+                  solicitudesPendientes={solicitudesPendientes}
+                  onOpenSolicitudes={onOpenSolicitudes}
+                  onOpenOcupacion={onOpenOcupacion}
+                  onOpenCotizaciones={onOpenCotizaciones}
+                />
+              </aside>
+            )}
+          </div>
         </div>
       )}
 
-      <div className="admin-picker-footer">
-        <button type="button" onClick={() => logout()} className="admin-picker-logout">
-          Cerrar sesión
-        </button>
-      </div>
         </>
       )}
     </div>

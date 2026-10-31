@@ -92,12 +92,12 @@ export function estadoTexto(panel: PanelConUso) {
 // queda de ella es informativo, solo dentro del popup (fecha en que
 // "Finalizó" + botón "Volver a contratar") -- eso no pasa por acá.
 function estadoColor(label: string) {
-  if (label === "Activo") return "#867453";
-  if (label === "Programado") return "#4d5551";
-  if (label === "Disponible") return "#6e765f";
-  if (label === "Ocupado") return "#090b0b";
-  if (label === "Mantenimiento") return "#a08067";
-  return "#747b76";
+  if (label === "Activo") return "#1769e8";
+  if (label === "Programado") return "#244e8f";
+  if (label === "Disponible") return "#1261c8";
+  if (label === "Ocupado") return "#111827";
+  if (label === "Mantenimiento") return "#65748b";
+  return "#526176";
 }
 
 /** Negro = contratado por este cliente y todavía vigente/programado.
@@ -908,6 +908,19 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
       />
 
       <div className="content-area coverage-premium-area">
+        <header className="coverage-overview">
+          <div>
+            <span className="coverage-overview-kicker">COBERTURA · VISTA360</span>
+            <h1>Tu ciudad, en perspectiva.</h1>
+            <p>Explora las ubicaciones disponibles y el estado de cada pantalla.</p>
+          </div>
+          <div className="coverage-overview-stats" aria-label="Resumen de cobertura">
+            <span><strong>{panelesActivos}</strong> contratados</span>
+            <span><strong>{panelesContratables}</strong> disponibles</span>
+          </div>
+        </header>
+        <div className="coverage-workspace">
+          <div className="coverage-map-column">
         <div className="coverage-map-real coverage-map-osm">
           <div ref={mapEl} className="coverage-leaflet-map" />
           {mapReady && !mapError && !esEntradaTactil && (
@@ -1019,6 +1032,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
             </div>
           </div>
         )}
+          </div>
 
         <div className="coverage-panel-card">
           <div className="section-title">Paneles ubicados</div>
@@ -1056,6 +1070,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
               );
             })
           )}
+        </div>
         </div>
       </div>
     </div>

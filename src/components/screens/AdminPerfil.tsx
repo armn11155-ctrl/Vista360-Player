@@ -359,6 +359,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
               (usePortalAuth trae el real de Firestore, o el respaldo
               conocido por correo si todavía no está guardado). Pedido
               explícito: sin lápiz ni prompt(), solo el nombre. */}
+          <span className="admin-perfil-eyebrow">TU CUENTA · VISTA360 PLAYER</span>
           <span className="admin-perfil-nombre">{nombre || rolInterno}</span>
           <div className="admin-perfil-email">{email}</div>
           <span className="profile-verified">
