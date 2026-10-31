@@ -631,8 +631,8 @@ details.report-admin-panel .report-admin-toggle {
   .sidebar-panel .sidebar-item-active .sidebar-item-icon svg { filter: none !important; }
   .sidebar-panel .sidebar-logo { margin: 0 !important; }
   .admin-picker-stage { width: 100% !important; max-width: none !important; grid-template-columns: minmax(0,42%) minmax(0,58%) !important; gap: 0 !important; padding: 0 !important; }
-  .admin-picker-editorial { padding: 100px clamp(34px,5vw,76px) 68px !important; }
-  .admin-picker-console { padding: 102px clamp(34px,5vw,76px) 48px !important; }
+  .admin-picker-editorial { padding: 70px clamp(34px,5vw,76px) 48px !important; }
+  .admin-picker-console { padding: 70px clamp(34px,5vw,76px) 12px !important; }
   .admin-picker-editorial-copy { margin-bottom: 58px !important; }
   .admin-picker-top-left-actions { top: 24px !important; left: 32px !important; }
   .admin-picker-perfil-btn { background: var(--v360-white) !important; color: var(--v360-ink) !important; border-color: var(--v360-rule) !important; box-shadow: none !important; }
@@ -643,7 +643,7 @@ details.report-admin-panel .report-admin-toggle {
   .admin-picker-stage { gap: 0 !important; padding: calc(58px + env(safe-area-inset-top)) 0 0 !important; }
   .admin-picker-editorial { width: 100% !important; min-height: 112px !important; flex-basis: 112px !important; padding: 15px 22px !important; }
   .admin-picker-editorial-kicker { display: none !important; }
-  .admin-picker-console { width: 100% !important; max-width: none !important; padding: 22px 22px calc(76px + env(safe-area-inset-bottom)) !important; }
+  .admin-picker-console { width: 100% !important; max-width: none !important; padding: 22px 22px 28px !important; }
   .admin-picker-footer { left: 22px !important; bottom: 14px !important; }
   .admin-picker-logout { color: var(--v360-secondary) !important; background: transparent !important; border-color: var(--v360-rule) !important; box-shadow: none !important; }
   .admin-picker-top-left-actions { top: calc(13px + env(safe-area-inset-top)) !important; left: 14px !important; }
