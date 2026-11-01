@@ -93,6 +93,13 @@
   .admin-perfil-email { grid-row: 3 !important; font-size: 11px !important; overflow-wrap: anywhere; }
   .admin-perfil-hero .profile-verified { grid-row: 4 !important; justify-self: start !important; }
   .admin-tool-screen:has(.admin-perfil-hero) .profile-section { margin-top: 20px !important; }
+  .admin-tool-screen:has(.admin-perfil-hero) .profile-metric-label {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+  }
 
   /* Campañas: una superficie continua y menos cajas entre filtros y datos. */
   .mis-campanas-screen,
