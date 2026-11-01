@@ -445,7 +445,7 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
 }
 .admin-picker-globe {
   position: absolute;
-  inset: auto 0 -12px;
+  inset: auto 0 clamp(-12px, calc(40vh - 264px), 55px);
   z-index: 1;
   height: min(87vh, 550px);
   pointer-events: none;
