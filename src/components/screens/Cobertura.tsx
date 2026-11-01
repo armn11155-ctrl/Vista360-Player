@@ -219,9 +219,9 @@ export function estadoPinPanel(panel: PanelConUso): EstadoPinPanel {
 }
 
 const PIN_URL: Record<EstadoPinPanel, string> = {
-  mio: "/map-pin-contracted.svg",
-  ocupado: "/map-pin-occupied.svg",
-  disponible: "/map-pin-available.svg",
+  mio: "/vista360-map-marker-contratado.png",
+  ocupado: "/vista360-map-marker-v4.png",
+  disponible: "/vista360-map-marker-available.png",
 };
 
 const PIN_CLASE: Record<EstadoPinPanel, string> = {
@@ -946,17 +946,17 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           {mapReady && !mapError && datosListos && (
             <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
-                <img src="/map-pin-available.svg" decoding="async" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Disponibles</span>
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
-                <img src="/map-pin-contracted.svg" decoding="async" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
               <div>
-                <img src="/map-pin-occupied.svg" decoding="async" alt="" aria-hidden="true" />
+                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Ocupados</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>
@@ -1063,7 +1063,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
                   onClick={() => setSeleccionadoId(panel.id)}
                   aria-pressed={seleccionado?.id === panel.id}
                 >
-                  <div className="coverage-panel-dot" style={{ background: color }} />
+                  <img className="coverage-panel-pin" src={PIN_URL[estadoPinPanel(panel)]} alt="" decoding="async" />
                   <div className="coverage-panel-info">
                     <div className="coverage-panel-name">{panel.nombre}</div>
                     <div className="coverage-panel-meta">
