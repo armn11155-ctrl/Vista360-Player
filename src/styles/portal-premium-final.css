@@ -704,3 +704,23 @@ select.reports-filter-select { background-color: #fff !important; }
 .accesos-screen .card:not(.accesos-internal-card) small { color: #52657b !important; }
 .solicitudes-screen .solicitud-action.primary,
 .accesos-screen .accesos-create-btn.is-primary { background: #315f9d !important; color: #fff !important; }
+.admin-tool-screen .detail-header .back-btn {
+  border: 1px solid #cad7e6 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #142942 !important;
+  box-shadow: none !important;
+}
+.admin-tool-screen .detail-header .back-btn svg { color: #142942 !important; stroke: #142942 !important; }
+.accesos-screen .accesos-internal-card {
+  border: 1px solid #1d3654 !important;
+  color: #fff !important;
+  background: linear-gradient(125deg, #0a1423, #17314f 78%, #214365) !important;
+}
+.accesos-screen .accesos-internal-card .access-person-row {
+  border: 1px solid rgba(177, 203, 233, .2) !important;
+  background: rgba(255, 255, 255, .07) !important;
+}
+.accesos-screen .accesos-internal-card .accesos-section-heading h2,
+.accesos-screen .accesos-internal-card .access-person-name { color: #fff !important; }
+.accesos-screen .accesos-internal-card .access-person-email { color: #c1d1e4 !important; }
