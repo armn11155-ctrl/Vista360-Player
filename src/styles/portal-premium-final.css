@@ -665,8 +665,9 @@ select.reports-filter-select { background-color: #fff !important; }
 .profile-hero-metrics .profile-metric-icon { color: #a9c6e8 !important; }
 .profile-metric-card::before { background: #315f9d !important; }
 .admin-picker-management-screen { background: #eaf0f7 !important; }
-.admin-picker-management-group {
+.admin-picker-management-screen .admin-picker-management-group {
   --management-accent: #315f9d;
+  min-height: 0 !important;
   align-content: start !important;
   border-color: #cad8e8 !important;
   background: linear-gradient(160deg, #e7eef7, #f4f7fb 78%) !important;
