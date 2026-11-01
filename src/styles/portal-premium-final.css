@@ -451,7 +451,7 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
   pointer-events: none;
   overflow: hidden;
 }
-.admin-picker-globe-canvas {
+.admin-picker-globe .login-network-globe-canvas {
   display: block !important;
   width: 100% !important;
   height: 100% !important;

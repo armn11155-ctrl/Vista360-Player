@@ -361,7 +361,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <p>Clientes, campañas y resultados conectados en una sola experiencia.</p>
           </div>
           <div className="admin-picker-globe" aria-hidden="true">
-            <PixelGlobe className="admin-picker-globe-canvas" />
+            <PixelGlobe />
             <div className="admin-picker-globe-caption">
               <span>Cobertura</span>
             </div>
