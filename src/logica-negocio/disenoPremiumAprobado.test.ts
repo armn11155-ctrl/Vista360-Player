@@ -218,10 +218,12 @@ describe("refinamiento premium aprobado", () => {
     expect(campanas).toContain("{filtradas.length > 0 && (");
   });
 
-  it("expone visualmente qué panel está seleccionado en Cobertura", () => {
+  it("conecta la ficha comercial con el panel seleccionado en el mapa de Cobertura", () => {
     const cobertura = leer("src/components/screens/Cobertura.tsx");
-    expect(cobertura).toContain('" is-selected"');
-    expect(cobertura).toContain("aria-pressed={seleccionado?.id === panel.id}");
+    expect(cobertura).toContain("onClick={() => verEnMapa(panel)}");
+    expect(cobertura).toContain("setSeleccionadoId(panel.id)");
+    expect(cobertura).toContain('className="coverage-selected-card"');
+    expect(cobertura).toContain('aria-label="Mapa de ubicaciones"');
   });
 
   it("mantiene fijo el login móvil cuando aparece el teclado", () => {
