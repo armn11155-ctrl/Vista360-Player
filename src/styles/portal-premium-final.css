@@ -512,3 +512,187 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
     height: 100%;
   }
 }
+
+/* Notifications: legible navigation, a useful overview and compact activity. */
+.notifications-screen { min-height: 100%; background: #edf2f8 !important; }
+.notifications-screen .notif-header {
+  background: #edf2f8 !important;
+  border-bottom: 1px solid #d7e1ed !important;
+}
+.notifications-screen .notif-header .simple-title { color: #101c2d !important; }
+.notifications-screen .notif-header .back-btn {
+  border: 1px solid #cbd8e8 !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  color: #142942 !important;
+}
+.notifications-screen .notif-header .back-btn svg { stroke: #142942 !important; }
+.notifications-screen > .content-area {
+  width: min(100%, 920px);
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 25px clamp(17px, 3vw, 34px) 60px !important;
+  background: transparent !important;
+}
+.notifications-intro {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 155px;
+  box-sizing: border-box;
+  padding: 25px 29px;
+  margin-bottom: 22px;
+  border: 1px solid #213b5c;
+  border-radius: 16px;
+  background: linear-gradient(115deg, #0a1423, #172f4d 78%, #254a75);
+  box-shadow: 0 24px 38px -34px rgba(8, 29, 56, .65);
+}
+.notifications-intro span { color: #9ebfe6; font-size: 10px; font-weight: 800; letter-spacing: .18em; }
+.notifications-intro h1 { margin: 12px 0 7px; color: #fff; font-size: clamp(23px, 3vw, 31px); line-height: 1.1; letter-spacing: -.04em; }
+.notifications-intro p { margin: 0; color: #c7d3e2; font-size: 13px; line-height: 1.5; }
+.notifications-intro-count { flex: 0 0 auto; display: grid; justify-items: end; gap: 2px; color: #fff; }
+.notifications-intro-count strong { font-size: 35px; line-height: 1; letter-spacing: -.05em; }
+.notifications-intro-count small { color: #afc7e4; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+.notifications-screen .notifications-group { margin-top: 18px; }
+.notifications-screen .notifications-group-title { margin: 0 0 10px 2px; color: #465c76; font-size: 11px; letter-spacing: .14em; }
+.notifications-screen .notification-card-premium {
+  min-height: 83px;
+  box-sizing: border-box;
+  padding: 17px 18px;
+  margin-bottom: 10px;
+  align-items: center;
+  border: 1px solid #d8e2ee !important;
+  border-radius: 13px;
+  background: #fff !important;
+  box-shadow: 0 15px 30px -27px rgba(11, 37, 70, .55);
+}
+.notifications-screen .notification-card-premium::before { width: 3px; background: #315f9d; }
+.notifications-screen .notification-card-icon { color: #315f9d; background: #eaf1f9; border: 1px solid #d6e3f2; }
+.notifications-screen .notification-card-copy strong { color: #14243a; font-size: 14px; }
+.notifications-screen .notification-card-copy span { color: #42546a; font-size: 12px; }
+.notifications-screen .notification-card-copy small { color: #64758b; }
+.notifications-screen .notification-delete-btn { color: #667b93 !important; }
+.notifications-screen .notification-push-card { border: 1px solid #d6e2f0 !important; border-radius: 13px; background: #fff !important; }
+.notifications-screen .notification-push-card svg { stroke: #315f9d !important; }
+.notifications-screen .notification-push-card button { background: #315f9d !important; }
+.notifications-screen .notification-push-status { color: #315f9d; padding: 8px 2px; }
+.notifications-screen .notifications-empty-premium { margin-top: 20px; border-radius: 14px; }
+.notifications-screen .notifications-empty-icon { color: #315f9d; background: #eaf1f9; border-color: #d5e3f2; }
+.notifications-screen .notifications-empty-icon svg { stroke: currentColor; }
+
+/* Report creation: campaign first, report date second, then clear action. */
+.report-admin-content .report-admin-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  gap: 15px !important;
+  padding-bottom: 21px !important;
+}
+.report-admin-content .report-campaign-field,
+.report-admin-content .report-month-field { width: 100%; min-width: 0 !important; }
+.report-admin-content .report-campaign-field > span,
+.report-admin-content .report-month-field > span { color: #253951 !important; font-size: 11px !important; font-weight: 800 !important; }
+.report-admin-content .report-month-selects { background: #f3f6fa !important; border: 1px solid #d7e1ed !important; }
+.report-admin-content .report-auto-data span { color: #324861 !important; background: #eef3f9 !important; border-color: #d7e2ee !important; }
+.report-admin-content .report-campaign-panels-hint { color: #52657b !important; }
+.report-admin-content .report-admin-controls > button {
+  width: 100% !important;
+  justify-self: stretch !important;
+  min-height: 48px !important;
+  border-radius: 9px !important;
+  background: linear-gradient(135deg, #244f85, #326eae) !important;
+  color: #fff !important;
+}
+select.reports-filter-select,
+.report-admin-content select.report-month-select,
+.report-admin-content select.reports-panel-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23315f9d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 11px center !important;
+  padding-right: 32px !important;
+  color: #18283e !important;
+}
+select.reports-filter-select { background-color: #fff !important; }
+.report-admin-content select.report-month-select,
+.report-admin-content select.reports-panel-select { background-color: #fff !important; }
+
+/* Documents and the latest report use their available width deliberately. */
+.reports-list .factura-pdf-icon .factura-cover-illustration {
+  display: block;
+  width: 90px;
+  max-width: 100%;
+  height: 78px;
+  margin: 6px auto 0;
+  color: #b9d4f5;
+}
+@media (min-width: 900px) {
+  .inicio-side-col .inicio-evidence-card { max-width: none !important; }
+  .inicio-side-col .inicio-report-row { width: 100%; }
+  .inicio-side-col .inicio-report-body {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas: "month action" !important;
+    align-items: center !important;
+    column-gap: 18px !important;
+  }
+  .inicio-side-col .inicio-report-link {
+    grid-area: action;
+    justify-self: end;
+    min-height: 40px;
+    padding: 0 13px !important;
+    border: 1px solid rgba(142, 181, 228, .35) !important;
+    border-radius: 8px;
+    background: rgba(78, 128, 184, .15) !important;
+    color: #c6ddf7 !important;
+    white-space: nowrap;
+  }
+  .inicio-side-col .inicio-report-link svg { stroke: #c6ddf7 !important; }
+}
+@media (max-width: 899px) {
+  .reports-list .factura-pdf-icon .factura-cover-illustration { width: 70px; height: 58px; margin-top: 4px; }
+  .notifications-intro { min-height: 0; padding: 22px 19px; gap: 12px; }
+  .notifications-intro-count strong { font-size: 27px; }
+  .notifications-intro h1 { font-size: 22px; }
+}
+
+/* The profile and management surfaces share the sidebar's navy and muted blue. */
+.profile-top { background: linear-gradient(125deg, #080e19 0%, #13263e 68%, #244466 100%) !important; }
+.profile-top-curve-base { stroke: #547da9 !important; }
+.profile-hero-metrics .profile-metric-icon { color: #a9c6e8 !important; }
+.profile-metric-card::before { background: #315f9d !important; }
+.admin-picker-management-screen { background: #eaf0f7 !important; }
+.admin-picker-management-group {
+  --management-accent: #315f9d;
+  align-content: start !important;
+  border-color: #cad8e8 !important;
+  background: linear-gradient(160deg, #e7eef7, #f4f7fb 78%) !important;
+  box-shadow: 0 20px 34px -30px rgba(13, 42, 78, .5) !important;
+}
+.admin-picker-management-group-head { border-color: #cddbeb !important; }
+.admin-picker-management-group-head > span,
+.admin-picker-management-card .admin-picker-action-icon { color: #315f9d !important; background: #dce9f7 !important; border-color: #c6d9ef !important; }
+.admin-picker-management-card { border-color: #d2deec !important; background: #fff !important; }
+.admin-picker-management-card strong { color: #12233a !important; }
+.admin-picker-management-card small { color: #50637b !important; }
+.admin-picker-management-card.management-coming-soon em { color: #315f9d !important; }
+.admin-picker-management-layout .gestion-hoy { border-color: #cad8e8 !important; background: #e5edf7 !important; }
+.admin-picker-management-layout .gestion-hoy-item { border-color: #cbd9e9 !important; background: #f8fafc !important; }
+.admin-picker-management-layout .gestion-hoy-item.is-urgent,
+.admin-picker-management-layout .gestion-hoy-item.is-opportunity { border-color: #bad0e9 !important; background: #eef4fb !important; }
+.admin-picker-management-layout .gestion-hoy-item-number { color: #315f9d !important; background: #dce9f7 !important; }
+.admin-picker-management-layout .gestion-hoy-item b { color: #315f9d !important; }
+.mis-campanas-cta button,
+.campaign-renewal-button { background: linear-gradient(135deg, #244f85, #326eae) !important; border-color: #326eae !important; color: #fff !important; box-shadow: 0 14px 25px -20px #173b66 !important; }
+.campaign-renewal-button strong,
+.campaign-renewal-button small { color: #fff !important; }
+.campaign-renewal-button svg { color: #fff !important; }
+.solicitudes-screen .solicitudes-card,
+.accesos-screen .card:not(.accesos-internal-card) { color: #18283e !important; }
+.solicitudes-screen .solicitudes-card small,
+.accesos-screen .card:not(.accesos-internal-card) small { color: #52657b !important; }
+.solicitudes-screen .solicitud-action.primary,
+.accesos-screen .accesos-create-btn.is-primary { background: #315f9d !important; color: #fff !important; }

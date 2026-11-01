@@ -472,7 +472,12 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
         <div className="report-pdf-icon factura-pdf-icon" aria-hidden="true">
           <img src="/logo-player.webp" alt="" decoding="async" />
           <span>COMPROBANTE</span>
-          <strong>Factura<br />digital.</strong>
+          <svg className="factura-cover-illustration" viewBox="0 0 96 92" fill="none" aria-hidden="true">
+            <path d="M21 7h42l13 13v62H21V7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+            <path d="M63 7v14h13M32 35h31M32 44h23M32 58h31M32 67h20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="68" cy="66" r="12" fill="#0b1525" stroke="currentColor" strokeWidth="2" />
+            <path d="m63 66 3.5 3.5 6.5-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           <small>DOCUMENTO · PDF</small>
         </div>
         <div className="report-card-copy">

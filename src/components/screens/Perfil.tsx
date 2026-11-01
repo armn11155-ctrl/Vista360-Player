@@ -330,9 +330,9 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
           <svg viewBox="0 0 438 38" preserveAspectRatio="none">
             <defs>
               <linearGradient id="profile-top-curve-gradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stopColor="#2f6fed" />
-                <stop offset="0.5" stopColor="#5b93ff" />
-                <stop offset="1" stopColor="#2f6fed" />
+                <stop offset="0" stopColor="#254a78" />
+                <stop offset="0.5" stopColor="#7399c5" />
+                <stop offset="1" stopColor="#254a78" />
               </linearGradient>
               <linearGradient id="profile-top-curve-shine-gradient" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0" stopColor="#FFFFFF" stopOpacity="0" />
