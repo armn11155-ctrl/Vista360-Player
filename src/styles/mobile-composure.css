@@ -1,0 +1,278 @@
+/* Una escala, un fondo y menos ruido para las vistas móviles. */
+@media (max-width: 899px) {
+  /* Perfil: identidad y tres cifras sin una portada de media pantalla. */
+  .profile-screen,
+  .profile-content { background: #f6f8fa !important; }
+  .profile-top {
+    padding: 14px 18px 19px !important;
+    border-radius: 0 0 22px 22px !important;
+    background: linear-gradient(135deg, #0b1b2f, #17354e) !important;
+  }
+  .profile-top-bar { min-height: 30px !important; margin-bottom: 16px !important; }
+  .profile-top-logo { width: 132px !important; max-width: 40% !important; }
+  .profile-bell { width: 36px !important; height: 36px !important; }
+  .profile-hero-company {
+    grid-template-columns: 52px minmax(0, 1fr) !important;
+    column-gap: 12px !important;
+    row-gap: 0 !important;
+    align-items: center !important;
+  }
+  .profile-avatar-wrap,
+  .profile-avatar-wrap > *,
+  .profile-avatar-wrap .brand-thumb { width: 52px !important; height: 52px !important; min-width: 52px !important; border-radius: 12px !important; }
+  .profile-company-copy { min-width: 0; }
+  .profile-hero-eyebrow { margin-bottom: 3px !important; font-size: 8px !important; letter-spacing: .12em !important; }
+  .profile-company-copy h1 { margin-bottom: 2px !important; font-size: 21px !important; line-height: 1.12 !important; }
+  .profile-company-copy p { margin: 0 0 5px !important; font-size: 11px !important; overflow-wrap: anywhere; }
+  .profile-verified { min-height: 20px !important; padding: 1px 5px !important; font-size: 10px !important; }
+  .profile-verified-mark,
+  .profile-verified-mark img { width: 14px !important; height: 14px !important; }
+  .profile-hero-metrics {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0 !important;
+    margin-top: 17px !important;
+    padding-top: 13px !important;
+    border-top: 1px solid rgba(210,229,243,.2) !important;
+  }
+  .profile-screen .profile-hero-metrics .profile-metric-icon { display: none !important; }
+  .profile-hero-metrics .profile-metric-row {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-height: 55px !important;
+    padding: 2px 8px !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(210,229,243,.16) !important;
+  }
+  .profile-hero-metrics .profile-metric-row:first-child { padding-left: 0 !important; }
+  .profile-hero-metrics .profile-metric-row:last-child { border-right: 0 !important; }
+  .profile-hero-metrics .profile-metric-row strong { font-size: 21px !important; line-height: 1 !important; }
+  .profile-hero-metrics .profile-metric-label { color: #bdcfdd !important; font-size: 9px !important; line-height: 1.25 !important; }
+  .profile-content { gap: 18px !important; padding: 20px 18px 30px !important; }
+  .profile-section h2 { margin-bottom: 8px !important; color: #294d68 !important; font-size: 11px !important; letter-spacing: .02em !important; }
+  .profile-card-list { border-color: #dce5eb !important; border-radius: 13px !important; box-shadow: none !important; }
+  .profile-row { min-height: 49px !important; padding-block: 8px !important; }
+  .profile-row-icon { width: 30px !important; height: 30px !important; border-radius: 8px !important; }
+  .profile-row-label,
+  .profile-row-value { font-size: 11px !important; }
+
+  /* El perfil del gestor usa la misma escala y mantiene cada dato en su fila. */
+  .admin-tool-screen:has(.admin-perfil-hero),
+  .admin-tool-screen:has(.admin-perfil-hero) > .content-area { background: #f6f8fa !important; }
+  .admin-tool-screen:has(.admin-perfil-hero) > .content-area { padding: 17px 18px 32px !important; }
+  .admin-perfil-hero {
+    display: grid !important;
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    column-gap: 12px !important;
+    row-gap: 3px !important;
+    align-items: center !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #0b1b2f, #17354e) !important;
+  }
+  .admin-perfil-hero > div:first-child {
+    grid-column: 1 !important;
+    grid-row: 1 / span 4 !important;
+    align-self: center !important;
+    width: 54px !important;
+    height: 54px !important;
+    margin: 0 !important;
+  }
+  .admin-perfil-hero .profile-avatar-hover-btn,
+  .admin-perfil-hero .profile-avatar-hover-btn > div { width: 54px !important; height: 54px !important; border-radius: 12px !important; }
+  .admin-perfil-eyebrow,
+  .admin-perfil-nombre,
+  .admin-perfil-email,
+  .admin-perfil-hero .profile-verified { grid-column: 2 !important; min-width: 0 !important; margin: 0 !important; }
+  .admin-perfil-eyebrow { grid-row: 1 !important; font-size: 8px !important; letter-spacing: .11em !important; }
+  .admin-perfil-nombre { grid-row: 2 !important; font-size: 20px !important; line-height: 1.1 !important; }
+  .admin-perfil-email { grid-row: 3 !important; font-size: 11px !important; overflow-wrap: anywhere; }
+  .admin-perfil-hero .profile-verified { grid-row: 4 !important; justify-self: start !important; }
+  .admin-tool-screen:has(.admin-perfil-hero) .profile-section { margin-top: 20px !important; }
+
+  /* Campañas: una superficie continua y menos cajas entre filtros y datos. */
+  .mis-campanas-screen,
+  .mis-campanas-screen .campanas-header,
+  .mis-campanas-screen .mis-campanas-list { background: #f7f9fb !important; }
+  .mis-campanas-screen .campanas-header { border-bottom: 1px solid #e3e9ee !important; }
+  .mis-campanas-screen .campanas-filter-bar {
+    width: auto !important;
+    display: flex !important;
+    gap: 0 !important;
+    margin: 0 18px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e1e8ee !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .mis-campanas-screen .campanas-filter-tab {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    min-height: 43px !important;
+    padding: 0 2px !important;
+    border: 0 !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    color: #6c7c8b !important;
+    font-size: 11px !important;
+    font-weight: 650 !important;
+    box-shadow: none !important;
+  }
+  .mis-campanas-screen .campanas-filter-tab.active { border-bottom-color: #173d5b !important; color: #173d5b !important; font-weight: 800 !important; }
+  .mis-campanas-screen .mis-campanas-list { gap: 12px !important; padding: 18px 18px 28px !important; }
+  .mis-campanas-list .campaigns-intro { margin: 0 0 2px !important; padding: 0 0 15px !important; border-bottom: 1px solid #e1e8ee !important; }
+  .mis-campanas-list .campaigns-intro h2 { margin: 7px 0 5px !important; font-size: 23px !important; line-height: 1.08 !important; }
+  .mis-campanas-list .campaigns-intro p { max-width: 270px; font-size: 11px !important; line-height: 1.42 !important; }
+  .mis-campanas-list .campaigns-intro-count strong { font-size: 26px !important; }
+  .mis-campanas-list .campaigns-intro-count span { font-size: 8px !important; }
+  .mis-campanas-list .mis-campanas-month-status {
+    margin: 0 !important;
+    padding: 11px 14px !important;
+    border: 1px solid #dce6ed !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .mis-campanas-list .mis-campanas-month-status-header { padding: 0 0 6px !important; font-size: 9px !important; letter-spacing: .12em !important; }
+  .mis-campanas-list .mis-campanas-month-status-row { padding: 6px 0 0 !important; font-size: 10px !important; }
+  .mis-campanas-list .premium-campaign-card { min-height: 0 !important; margin-bottom: 0 !important; padding: 18px !important; border-radius: 13px !important; box-shadow: none !important; }
+  .mis-campanas-list .premium-campaign-kicker { font-size: 9px !important; }
+  .mis-campanas-list .premium-campaign-title { font-size: 22px !important; }
+  .mis-campanas-list .premium-campaign-meta { font-size: 10px !important; }
+  .mis-campanas-list .premium-campaign-progress { margin-top: 13px !important; }
+  .mis-campanas-list .mis-campanas-cta { gap: 9px !important; margin: 2px 0 0 !important; }
+  .mis-campanas-list .mis-campanas-cta button { min-height: 41px !important; }
+
+  /* Selector: globo más pequeño y cuentas legibles en una lista calmada. */
+  .admin-picker-shell .admin-picker-editorial { min-height: 144px !important; height: 144px !important; flex: 0 0 144px !important; border-radius: 0 0 16px 16px !important; }
+  .admin-picker-shell .admin-picker-editorial-copy { top: 69px !important; left: 18px !important; width: 53% !important; }
+  .admin-picker-shell .admin-picker-editorial-kicker { font-size: 7px !important; margin-bottom: 5px !important; }
+  .admin-picker-shell .admin-picker-editorial h1 { font-size: 18px !important; line-height: 1.05 !important; }
+  .admin-picker-shell .admin-picker-globe { inset: auto 21px 1px auto !important; width: 190px !important; height: 115px !important; opacity: .7 !important; }
+  .admin-picker-shell .admin-picker-console { padding: 18px 17px 13px !important; background: #f9fbfc !important; }
+  .admin-picker-shell .admin-picker-header { padding-bottom: 11px !important; border-bottom-color: #e3e9ee !important; }
+  .admin-picker-shell .admin-picker-title { font-size: 22px !important; margin-bottom: 4px !important; color: #101e2c !important; }
+  .admin-picker-shell .admin-picker-sub { margin-bottom: 0 !important; color: #66798a !important; font-size: 11px !important; }
+  .admin-picker-shell .admin-picker-attention { margin: 12px 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }
+  .admin-picker-shell .admin-picker-attention-label { display: none !important; }
+  .admin-picker-shell .admin-picker-attention-actions > button { min-height: 38px !important; padding: 6px 11px !important; border: 1px solid #dce6ed !important; border-radius: 9px !important; background: #f0f5f8 !important; }
+  .admin-picker-shell .admin-picker-attention-actions > button strong { color: #204966 !important; font-size: 16px !important; }
+  .admin-picker-shell .admin-picker-attention-actions > button span { color: #45657a !important; font-size: 11px !important; }
+  .admin-picker-shell .admin-picker-attention-actions > button b { color: #1c5d86 !important; font-size: 10px !important; }
+  .admin-picker-shell .admin-picker-tabs { margin: 0 0 8px !important; border-color: #e0e8ee !important; background: #edf3f6 !important; }
+  .admin-picker-shell .admin-picker-tabs button { color: #5d7182 !important; }
+  .admin-picker-shell .admin-picker-tabs button.active { color: #fff !important; background: #173d5b !important; box-shadow: none !important; }
+  .admin-picker-shell .admin-picker-search-wrap { margin: 0 !important; }
+  .admin-picker-shell .admin-picker-search { min-height: 40px !important; border-color: #dce5ec !important; background: #fff !important; color: #173049 !important; box-shadow: none !important; }
+  .admin-picker-shell .admin-picker-body { padding-top: 10px !important; }
+  .admin-picker-shell .admin-picker-grid { width: 100% !important; grid-template-columns: minmax(0, 1fr) !important; gap: 8px !important; }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas),
+  .admin-picker-shell .admin-picker-grid > .admin-picker-tile:not(.admin-picker-tile-vermas):last-child:nth-child(odd) {
+    grid-column: auto !important;
+    width: 100% !important;
+    height: 70px !important;
+    min-height: 68px !important;
+    justify-self: stretch !important;
+    border: 1px solid #dce5ec !important;
+    border-radius: 11px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+  }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar-wrap,
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-main {
+    height: 68px !important;
+    min-height: 68px !important;
+    max-height: 68px !important;
+  }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar {
+    height: 68px !important;
+    aspect-ratio: auto !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+  }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar > img,
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-avatar > svg {
+    inset: 7px auto auto 7px !important;
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 8px !important;
+    object-fit: cover !important;
+  }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-shine { display: none !important; }
+  .admin-picker-shell .admin-picker-tile-copy { top: 50% !important; right: 51px !important; bottom: auto !important; left: 75px !important; transform: translateY(-50%) !important; }
+  .admin-picker-shell .admin-picker-tile-copy strong { color: #18364c !important; font-size: 13px !important; text-shadow: none !important; }
+  .admin-picker-shell .admin-picker-tile-copy small { color: #688094 !important; font-size: 10px !important; }
+  .admin-picker-shell .admin-picker-tile:not(.admin-picker-tile-vermas) .admin-picker-tile-gear { top: 17px !important; right: 11px !important; border-color: #e0e8ee !important; background: #f5f8fa !important; color: #4e6678 !important; box-shadow: none !important; }
+  .admin-picker-shell .admin-picker-mobile-exit-wrap { padding-top: 13px !important; margin-top: 13px !important; }
+  .admin-picker-shell .admin-picker-mobile-exit { min-height: 39px !important; }
+
+  /* Gestión: cabecera de una línea, secciones compactas, badges alineados. */
+  .admin-picker-shell .admin-picker-management-screen { padding: 16px 16px 30px !important; background: #f6f8fa !important; }
+  .admin-picker-shell .admin-picker-management-head {
+    display: grid !important;
+    grid-template-columns: 36px minmax(0,1fr) auto !important;
+    min-height: 44px !important;
+    gap: 9px !important;
+    margin: 0 auto 13px !important;
+    padding: 0 0 13px !important;
+    border-bottom: 1px solid #e0e8ee !important;
+  }
+  .admin-picker-shell .admin-picker-management-head > button:first-child { width: 36px !important; height: 36px !important; min-width: 36px !important; }
+  .admin-picker-shell .admin-picker-management-head strong { font-size: 17px !important; line-height: 1.15 !important; }
+  .admin-picker-shell .admin-picker-management-head span { display: none !important; }
+  .admin-picker-shell .admin-picker-management-exit { position: static !important; grid-column: 3 !important; grid-row: 1 !important; width: auto !important; min-height: 32px !important; padding: 6px 8px !important; font-size: 10px !important; }
+  .admin-picker-shell .admin-picker-management-layout { gap: 14px !important; }
+  .admin-picker-shell .admin-picker-management-intro { min-height: 0 !important; margin: 0 0 14px !important; padding: 1px 0 14px !important; border: 0 !important; border-bottom: 1px solid #e0e8ee !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important; }
+  .admin-picker-shell .admin-picker-management-intro > span { color: #5b7b93 !important; font-size: 9px !important; }
+  .admin-picker-shell .admin-picker-management-intro h2 { margin: 5px 0 3px !important; color: #102e46 !important; font-size: 22px !important; }
+  .admin-picker-shell .admin-picker-management-intro p { max-width: 310px; margin: 0 !important; color: #688094 !important; font-size: 11px !important; line-height: 1.4 !important; }
+  .admin-picker-shell .admin-picker-management-grid { gap: 10px !important; }
+  .admin-picker-shell .admin-picker-management-group { min-height: 0 !important; padding: 12px 13px 5px !important; border: 1px solid #dce5ec !important; border-radius: 12px !important; background: #fff !important; box-shadow: none !important; }
+  .admin-picker-shell .admin-picker-management-group-head { min-height: 0 !important; margin: 0 0 5px !important; padding: 0 0 9px !important; border-bottom-color: #e7edf1 !important; }
+  .admin-picker-shell .admin-picker-management-group-head > span { width: 29px !important; height: 29px !important; color: #315e7d !important; background: #eaf2f7 !important; }
+  .admin-picker-shell .admin-picker-management-group-head strong { font-size: 13px !important; }
+  .admin-picker-shell .admin-picker-management-group-head small { font-size: 9px !important; }
+  .admin-picker-shell .admin-picker-management-group-cards { gap: 0 !important; }
+  .admin-picker-shell .admin-picker-management-card {
+    display: grid !important;
+    grid-template-columns: 30px minmax(0,1fr) auto auto !important;
+    align-items: center !important;
+    gap: 9px !important;
+    min-height: 54px !important;
+    padding: 7px 1px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #edf1f4 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .admin-picker-shell .admin-picker-management-card:last-child { border-bottom: 0 !important; }
+  .admin-picker-shell .admin-picker-management-card .admin-picker-action-icon { width: 29px !important; height: 29px !important; flex-basis: 29px !important; border-radius: 8px !important; }
+  .admin-picker-shell .admin-picker-management-card strong { font-size: 12px !important; }
+  .admin-picker-shell .admin-picker-management-card small { font-size: 10px !important; }
+  .admin-picker-shell .admin-picker-management-card b { grid-column: 3 !important; grid-row: 1 !important; margin: 0 !important; }
+  .admin-picker-shell .admin-picker-management-card i { grid-column: 4 !important; grid-row: 1 !important; }
+}
+
+/* En pantallas altas, el acceso distribuye la forma y el pie con intención. */
+@media (max-width: 899px) and (min-height: 780px) {
+  .login-right-panel { justify-content: space-evenly !important; }
+}
+
+@media (max-width: 899px) and (max-height: 779px) {
+  .login-foot { margin-top: auto !important; }
+}
+
+@media (max-width: 360px) {
+  .admin-picker-shell .admin-picker-editorial-copy { width: 54% !important; }
+  .admin-picker-shell .admin-picker-editorial h1 { font-size: 16px !important; }
+  .profile-hero-metrics .profile-metric-label { font-size: 8.5px !important; }
+  .admin-picker-shell .admin-picker-management-head strong { font-size: 15px !important; }
+}
