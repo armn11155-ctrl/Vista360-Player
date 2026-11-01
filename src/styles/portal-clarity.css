@@ -94,7 +94,7 @@
     background: #fff !important;
     padding: 15px !important;
   }
-  .coverage-selected-actions { width: 100%; justify-content: space-between; }
+  .coverage-selected-actions { width: 100%; flex-direction: row; align-items: center; justify-content: space-between; }
   .coverage-google-link { min-height: 36px; display: inline-flex; align-items: center; }
   .mis-campanas-list .mis-campanas-month-status-header { font-size: 11px !important; }
   .mis-campanas-list .mis-campanas-month-status-row { font-size: 12px !important; line-height: 1.4; }
