@@ -32,12 +32,12 @@ describe("colorEstado", () => {
     expect(colorEstado(null)).toBe("#64748B");
   });
 
-  it("verde si entró hace menos de 3 días", () => {
-    expect(colorEstado(Date.now() - 1 * 86_400_000)).toBe("#16A34A");
+  it("azul intenso si entró hace menos de 3 días", () => {
+    expect(colorEstado(Date.now() - 1 * 86_400_000)).toBe("#2464b2");
   });
 
-  it("ámbar si entró entre 3 y 14 días", () => {
-    expect(colorEstado(Date.now() - 7 * 86_400_000)).toBe("#7C3AED");
+  it("azul medio si entró entre 3 y 14 días", () => {
+    expect(colorEstado(Date.now() - 7 * 86_400_000)).toBe("#537da9");
   });
 
   it("gris si entró hace más de 14 días", () => {
