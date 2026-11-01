@@ -82,6 +82,8 @@
 @media (max-width: 899px) {
   .profile-hero-metrics { grid-column: 1 / -1 !important; border-top: 1px solid #527092; padding-top: 9px; }
   .profile-hero-metrics .profile-metric-row { min-height: 52px !important; padding: 6px 0 !important; }
+  .profile-screen .profile-hero-metrics .profile-metric-icon { display: grid !important; }
+  .profile-screen .profile-hero-metrics .profile-metric-label { min-width: 0 !important; overflow: visible !important; white-space: normal !important; }
   .profile-hero-metrics .profile-metric-row strong { font-size: 20px !important; }
   .profile-hero-metrics .profile-metric-label { font-size: 10px !important; }
   .reports-list .factura-pdf-icon .factura-cover-illustration { width: min(70px, 100%) !important; height: min(57px, 100%) !important; }
@@ -153,7 +155,7 @@
 .coverage-premium-area .coverage-panel-info { grid-column: 2; min-width: 0; }
 .coverage-premium-area .coverage-panel-name { color: #102b49 !important; }
 .coverage-premium-area .coverage-panel-meta { color: #5e7590 !important; }
-.coverage-premium-area .coverage-panel-state { grid-column: 2; color: #275d9b !important; font-weight: 800 !important; }
+.coverage-premium-area .coverage-panel-state { grid-column: 2; justify-self: start !important; width: auto !important; padding: 3px 9px !important; border: 0 !important; border-radius: 999px !important; background: #e3eefb !important; color: #275d9b !important; font-weight: 800 !important; }
 
 .mis-campanas-month-status,
 .mis-campanas-month-status:has(> .mis-campanas-month-status-row:nth-child(2):last-child) {
@@ -298,6 +300,8 @@
   font-size: 13px !important;
   font-weight: 800 !important;
   box-shadow: none !important;
+  align-self: center !important;
+  justify-self: center !important;
 }
 .inicio-side-col .inicio-report-link svg { stroke: #fff !important; }
 
@@ -320,6 +324,9 @@
   padding: 0 !important;
 }
 .facturas-screen .reports-list > .factura-card .factura-pdf-icon {
+  width: 132px !important;
+  min-width: 0 !important;
+  max-width: 132px !important;
   height: 168px !important;
   display: grid !important;
   grid-template-rows: 23px 15px minmax(0,1fr) 12px !important;
@@ -344,7 +351,7 @@
 }
 @media (max-width: 899px) {
   .facturas-screen .reports-list > .factura-card .report-card-main { grid-template-columns: 103px minmax(0,1fr) !important; min-height: 143px !important; gap: 14px !important; }
-  .facturas-screen .reports-list > .factura-card .factura-pdf-icon { width: 103px !important; height: 143px !important; grid-template-rows: 17px 12px minmax(0,1fr) 10px !important; row-gap: 3px !important; padding: 10px 7px !important; }
+  .facturas-screen .reports-list > .factura-card .factura-pdf-icon { width: 103px !important; max-width: 103px !important; height: 143px !important; grid-template-rows: 17px 12px minmax(0,1fr) 10px !important; row-gap: 3px !important; padding: 10px 7px !important; }
   .facturas-screen .reports-list > .factura-card .factura-pdf-icon img { width: 66px !important; }
   .facturas-screen .reports-list > .factura-card .factura-pdf-icon .factura-cover-illustration { width: 56px !important; height: 53px !important; }
   .facturas-screen .reports-list > .factura-card .report-card-copy { padding-right: 0 !important; }
@@ -361,6 +368,7 @@
 .admin-tool-screen > .detail-header::after { display: none !important; }
 .admin-tool-screen > .detail-header .simple-title { color: #fff !important; }
 .admin-tool-screen > .detail-header .back-btn { border-color: #6787a9 !important; background: #21466e !important; color: #fff !important; }
+.admin-tool-screen > .detail-header .back-btn svg { stroke: #fff !important; }
 .aprobaciones-screen .premium-empty-panel,
 .papelera-screen .premium-empty-panel,
 .aprobaciones-screen .premium-loading-panel,
