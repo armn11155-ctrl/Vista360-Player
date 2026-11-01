@@ -14,6 +14,7 @@ import BrandLoader from "./BrandLoader";
 import GestionHoy from "./GestionHoy";
 import { useDialogos } from "./DialogosProvider";
 import { conReautenticacion } from "../config/reautenticacion";
+import PixelGlobe from "./PixelGlobe";
 
 const SIN_CLIENTES: Cliente[] = [];
 
@@ -359,10 +360,11 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
             <h1>Una operación.<br />Todas tus cuentas.</h1>
             <p>Clientes, campañas y resultados conectados en una sola experiencia.</p>
           </div>
-          <div className="admin-picker-editorial-orbit" aria-hidden="true">
-            <span className="admin-picker-editorial-orbit-field" />
-            <span className="admin-picker-editorial-orbit-ring"><i /></span>
-            <b /><b /><b /><b />
+          <div className="admin-picker-globe" aria-hidden="true">
+            <PixelGlobe className="admin-picker-globe-canvas" />
+            <div className="admin-picker-globe-caption">
+              <span>Cobertura</span>
+            </div>
           </div>
         </section>
         <div className="admin-picker-console">

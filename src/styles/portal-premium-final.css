@@ -429,3 +429,74 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
     font-weight: 750;
   }
 }
+
+/* El selector recupera el planeta real animado de la identidad original. */
+.admin-picker-editorial {
+  background:
+    radial-gradient(circle at 53% 68%, rgba(53, 111, 198, .21), transparent 43%),
+    linear-gradient(155deg, #0d223f 0%, #07162d 56%, #030b19 100%) !important;
+  isolation: isolate;
+}
+.admin-picker-editorial::before,
+.admin-picker-editorial::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+.admin-picker-globe {
+  position: absolute;
+  inset: auto 0 8px;
+  z-index: 1;
+  height: min(52vh, 410px);
+  pointer-events: none;
+  overflow: hidden;
+}
+.admin-picker-globe-canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: .94;
+}
+.admin-picker-globe-caption {
+  position: absolute;
+  left: clamp(16px, 4vw, 48px);
+  bottom: 13px;
+  padding-left: 11px;
+  border-left: 2px solid #79b5ff;
+  color: #e9f2ff;
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, .5);
+}
+
+@media (max-width: 899px) {
+  .admin-picker-editorial {
+    min-height: 146px !important;
+    flex: 0 0 146px !important;
+    display: block !important;
+    padding: 17px 18px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(132, 181, 245, .18) !important;
+    border-radius: 14px !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  }
+  .admin-picker-editorial-brand {
+    position: relative;
+    z-index: 2;
+    display: grid !important;
+    gap: 7px;
+    margin: 0 !important;
+  }
+  .admin-picker-editorial-copy { display: none !important; }
+  .admin-picker-globe {
+    inset: 0;
+    height: 100%;
+  }
+  .admin-picker-globe-caption {
+    left: 18px;
+    bottom: 19px;
+    font-size: 10px;
+  }
+}

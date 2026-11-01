@@ -119,7 +119,7 @@ function interpolarEsfera(origen: Vector3, destino: Vector3, progreso: number): 
   return { x: origen.x * a + destino.x * b, y: origen.y * a + destino.y * b, z: origen.z * a + destino.z * b };
 }
 
-export default function PixelGlobe() {
+export default function PixelGlobe({ className = "login-network-globe-canvas" }: { className?: string }) {
   const referencia = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -509,5 +509,5 @@ export default function PixelGlobe() {
     };
   }, []);
 
-  return <canvas ref={referencia} className="login-network-globe-canvas" aria-hidden="true" />;
+  return <canvas ref={referencia} className={className} aria-hidden="true" />;
 }
