@@ -1,0 +1,102 @@
+/* Correcciones de lectura y estado para el catálogo y el portal comercial. */
+.coverage-catalog-search,
+.coverage-catalog-search input {
+  background-color: #fff !important;
+  color-scheme: light;
+}
+.coverage-catalog-search input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+  -webkit-text-fill-color: #173249 !important;
+}
+.coverage-popup-maps-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 0 2px;
+  border-top: 1px solid #e1e8ee;
+  color: #183f66;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-decoration: none;
+}
+.coverage-popup-maps-link:hover { text-decoration: underline; }
+.coverage-popup-maps-link span { font-size: 15px; }
+
+.mis-campanas-list > .mis-campanas-month-status,
+.mis-campanas-month-status:has(> .mis-campanas-month-status-row:nth-child(2):last-child) {
+  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 1014px !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  justify-self: start !important;
+  align-self: start !important;
+}
+.mis-campanas-month-status-header {
+  color: #394d60 !important;
+  font-size: 11px !important;
+}
+.mis-campanas-month-status-row {
+  color: #2e4051 !important;
+  font-size: 12px !important;
+}
+.mis-campanas-month-status-row.is-sent { color: #176346 !important; }
+
+.campaign-status-card,
+.campaign-expiry-card {
+  border: 1px solid #d7e1e8 !important;
+  border-left: 1px solid #d7e1e8 !important;
+  background: #fff !important;
+  box-shadow: 0 12px 28px -26px #183047 !important;
+}
+.campaign-status-card > div:nth-child(2) > div:first-child,
+.campaign-status-card.is-activa > div:nth-child(2) > div:first-child {
+  background: #17724e !important;
+}
+.campaign-status-card.is-programada > div:nth-child(2) > div:first-child { background: #315f9d !important; }
+.campaign-status-card.is-finalizada > div:nth-child(2) > div:first-child { background: #455466 !important; }
+.campaign-status-card > div:nth-child(2) > div:first-child svg { stroke: #fff !important; }
+.campaign-status-card > div:nth-child(2) > div:last-child > div:last-child { color: #526577 !important; }
+.campaign-expiry-icon { color: #253f57 !important; background: #edf2f5 !important; }
+.campaign-expiry-copy span { color: #526577 !important; }
+.campaign-expiry-copy strong { color: #14283b !important; }
+.campaign-expiry-status { color: #31506b !important; background: #e8eef3 !important; }
+.campaign-expiry-card.is-soon .campaign-expiry-status { color: #77520b !important; background: #fff1cc !important; }
+.campaign-expiry-card.is-finished .campaign-expiry-status { color: #526170 !important; background: #e9edf1 !important; }
+.campaign-location-map-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0 10px;
+  color: #263e53;
+  font-size: 11px;
+  font-weight: 750;
+}
+.campaign-location-map-label a { color: #235d91; text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+
+.quotes-form-card .quotes-optional-label { color: #526577 !important; font-size: 10px !important; }
+.quotes-list-card .quotes-card-heading span { color: #37556d !important; font-size: 11px !important; }
+.quotes-list-card .quote-row-number { color: #315b80 !important; font-size: 10px !important; }
+.quotes-list-card .quote-row-main > small { color: #3d5368 !important; font-size: 12px !important; }
+.quotes-form-card label { color: #213c53 !important; }
+.quotes-period-summary span { color: #3d566b !important; }
+
+@media (max-width: 899px) {
+  .coverage-screen .coverage-selected-card {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff !important;
+    padding: 15px !important;
+  }
+  .coverage-selected-actions { width: 100%; justify-content: space-between; }
+  .coverage-google-link { min-height: 36px; display: inline-flex; align-items: center; }
+  .mis-campanas-list .mis-campanas-month-status-header { font-size: 11px !important; }
+  .mis-campanas-list .mis-campanas-month-status-row { font-size: 12px !important; line-height: 1.4; }
+  .campaign-location-map-label { align-items: flex-start; flex-direction: column; }
+}

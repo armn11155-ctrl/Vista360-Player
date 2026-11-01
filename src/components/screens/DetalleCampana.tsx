@@ -84,9 +84,14 @@ function EmptyReportsIcon() {
 
 function CampaignLocationMap({ panel }: { panel: Panel }) {
   const googleMapsUrl = `https://www.google.com/maps?q=${panel.lat},${panel.lng}&z=17&output=embed`;
+  const googleMapsExternalUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${panel.lat},${panel.lng}`)}`;
 
   return (
     <div className="campaign-location-map">
+      <div className="campaign-location-map-label">
+        <span>{panel.nombre} · {panel.tipo || "Publicidad exterior"}</span>
+        <a href={googleMapsExternalUrl} target="_blank" rel="noopener noreferrer">Abrir en Google Maps ↗</a>
+      </div>
       <iframe
         className="campaign-location-google-frame"
         src={googleMapsUrl}
@@ -380,12 +385,12 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
         {tab === "resumen" && (
           <>
             {/* Estado general */}
-            <div className="campaign-status-card" style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
+            <div className={`campaign-status-card is-${estado.toLowerCase()}`} style={{ background: "#fff", borderRadius: 16, padding: 14, marginBottom: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: "#0B1220", marginBottom: 10 }}>Estado general</div>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                  background: estado === "Activa" ? "#315f9d" : estado === "Programada" ? "#4d7db8" : "#243b59",
+                  background: estado === "Activa" ? "#17724e" : estado === "Programada" ? "#315f9d" : "#455466",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
@@ -396,7 +401,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
                   <div style={{ fontSize: 14, fontWeight: 600, color: "#0B1220" }}>
                     {estado === "Activa" ? "Todo funcionando" : estado === "Programada" ? "Por iniciar" : "Campaña finalizada"}
                   </div>
-                  <div style={{ fontSize: 12, color: "#64748B" }}>Sin incidencias reportadas</div>
+                  <div style={{ fontSize: 12, color: "#64748B" }}>{estado === "Activa" ? "Sin incidencias reportadas" : estado === "Programada" ? "Pendiente de inicio" : "Periodo concluido"}</div>
                 </div>
               </div>
             </div>
@@ -426,7 +431,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
               </div>
             )}
 
-            <div className="campaign-expiry-card">
+            <div className={`campaign-expiry-card${estado === "Finalizada" ? " is-finished" : diasParaVencer <= 30 ? " is-soon" : ""}`}>
               <div className="campaign-expiry-main">
                 <span className="campaign-expiry-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none">
