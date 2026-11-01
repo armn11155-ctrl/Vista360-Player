@@ -362,9 +362,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
           </div>
           <div className="admin-picker-globe" aria-hidden="true">
             <PixelGlobe />
-            <div className="admin-picker-globe-caption">
-              <span>Cobertura</span>
-            </div>
           </div>
         </section>
         <div className="admin-picker-console">
