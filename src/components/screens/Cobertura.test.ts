@@ -241,6 +241,14 @@ describe("seguridad: el popup del mapa no puede ser usado para inyectar HTML", (
     expect(tieneAlgoEjecutable(interpretar(popupHtml(panel(), true)))).toBe(false);
   });
 
+  it("abre en Google Maps la coordenada real del pin y omite el enlace sin coordenadas", () => {
+    const conUbicacion = interpretar(popupHtml(panel({ lat: -12.0464, lng: -77.0428 }), true));
+    const enlace = conUbicacion.querySelector<HTMLAnchorElement>(".coverage-popup-maps-link");
+    expect(enlace?.href).toContain("query=-12.0464%2C-77.0428");
+    expect(enlace?.target).toBe("_blank");
+    expect(interpretar(popupHtml(panel(), true)).querySelector(".coverage-popup-maps-link")).toBeNull();
+  });
+
   const camposDeTexto: Array<{ campo: string; p: () => PanelConUso }> = [
     { campo: "nombre", p: () => panel({ nombre: CARGA }) },
     { campo: "dirección", p: () => panel({ direccion: CARGA }) },

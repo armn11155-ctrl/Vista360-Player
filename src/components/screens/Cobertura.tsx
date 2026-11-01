@@ -272,6 +272,9 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
   const direccion = escapeHtml(panel.direccion || panel.ciudad || "Sin dirección registrada");
   const label = estadoTexto(panel);
   const color = estadoColor(label);
+  const googleMapsUrl = tieneCoordenadas(panel)
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${panel.lat},${panel.lng}`)}`
+    : "";
   // Se pidió, explícitamente y varias veces, que una campaña propia ya
   // Finalizada "no tenga nada que ver" con lo que se muestra en el pin
   // -- ni su fecha de fin, ni un botón de "volver a contratar" ligado a
@@ -363,6 +366,7 @@ export function popupHtml(panel: PanelConUso, permitirSolicitar: boolean) {
         </div>
         ${vigenciaHtml}
         ${libreDesdeHtml}
+        ${googleMapsUrl ? `<a class="coverage-popup-maps-link" href="${escapeHtml(googleMapsUrl)}" target="_blank" rel="noopener noreferrer">Abrir ubicación en Google Maps <span aria-hidden="true">↗</span></a>` : ""}
         ${accionHtml}
       </div>
     </div>
