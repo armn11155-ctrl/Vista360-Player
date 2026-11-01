@@ -416,6 +416,11 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
     typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches
   );
   const [zoomRuedaActivo, setZoomRuedaActivo] = useState(false);
+  const mapaSeccionRef = useRef<HTMLElement | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [ciudadFiltro, setCiudadFiltro] = useState("");
+  const [tipoFiltro, setTipoFiltro] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState<"todos" | "disponible" | "mios" | "ocupado" | "mantenimiento">("todos");
 
   // Se pidió que en Cobertura se vea TODO el inventario de paneles (no
   // solo los que este cliente ya tiene contratados), para que pueda
@@ -468,6 +473,23 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   // useContratos() responda (sobre todo al cambiar de cliente sin
   // recargar la página, como hace el admin en "vista cliente").
   const datosListos = panelesState.status === "ready" && contratosListos;
+  const ciudades = useMemo(() => [...new Set(lista.map((panel) => panel.ciudad).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")), [lista]);
+  const tipos = useMemo(() => [...new Set(lista.map((panel) => panel.tipo).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es")), [lista]);
+  const visibles = useMemo(() => {
+    const termino = busqueda.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es");
+    return lista.filter((panel) => {
+      if (ciudadFiltro && panel.ciudad !== ciudadFiltro) return false;
+      if (tipoFiltro && panel.tipo !== tipoFiltro) return false;
+      const estado = estadoTexto(panel);
+      if (estadoFiltro === "disponible" && !esPanelDisponibleAhora(panel)) return false;
+      if (estadoFiltro === "mios" && !esPanelActivoCliente(panel)) return false;
+      if (estadoFiltro === "ocupado" && estado !== "Ocupado") return false;
+      if (estadoFiltro === "mantenimiento" && estado !== "Mantenimiento") return false;
+      if (!termino) return true;
+      return [panel.nombre, panel.direccion, panel.ciudad, panel.tipo]
+        .filter(Boolean).join(" ").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").includes(termino);
+    });
+  }, [lista, busqueda, ciudadFiltro, tipoFiltro, estadoFiltro]);
   // Paneles distintos pueden compartir la misma ubicación, o estar a
   // pocos metros uno del otro (ej. un mediano y un grande en el mismo
   // poste/edificio de Pacífico, o en veredas opuestas de la misma
@@ -493,7 +515,8 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   // distancia real entre ellos, y se recalcula solo cada vez que
   // cambia el zoom.
   const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
-  const panelesContratables = useMemo(() => conCoordenadas.filter(esPanelContratable).length, [conCoordenadas]);
+  const contratadosCatalogo = useMemo(() => lista.filter(esPanelActivoCliente).length, [lista]);
+  const panelesDisponiblesAhora = useMemo(() => conCoordenadas.filter(esPanelDisponibleAhora).length, [conCoordenadas]);
   // Cuántos paneles están ocupados por OTRO cliente (ni son míos ni
   // están libres) -- para la fila nueva de la leyenda con el pin azul.
   const panelesOcupadosPorOtros = useMemo(
@@ -502,6 +525,10 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   );
   const [seleccionadoId, setSeleccionadoId] = useState<string | null>(null);
   const seleccionado = lista.find((panel) => panel.id === seleccionadoId) ?? conCoordenadas[0] ?? lista[0];
+  const verEnMapa = (panel: PanelConUso) => {
+    setSeleccionadoId(panel.id);
+    mapaSeccionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     let cancelado = false;
@@ -905,21 +932,104 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
       />
 
       <div className="content-area coverage-premium-area">
-        <header className="coverage-overview">
-          <div>
-            <span className="coverage-overview-kicker">COBERTURA · VISTA360</span>
-            <h1>Tu ciudad, en perspectiva.</h1>
-            <p>Explora las ubicaciones disponibles y el estado de cada pantalla.</p>
+        <header className="coverage-catalog-hero">
+          <div className="coverage-catalog-hero-copy">
+            <span className="coverage-catalog-eyebrow"><span /> VISTA360 · RED DE PUBLICIDAD EXTERIOR</span>
+            <h2>El lugar correcto<br /><em>cambia todo.</em></h2>
+            <p>Descubre nuestros espacios publicitarios, explora cada ubicación y encuentra el punto para tu próxima campaña.</p>
+            <a href="#catalogo-paneles" className="coverage-catalog-hero-link">Explorar espacios <span aria-hidden="true">↗</span></a>
+            <div className="coverage-catalog-hero-metrics" aria-label="Resumen del catálogo">
+              <span><strong>{datosListos ? lista.length : "—"}</strong> {lista.length === 1 ? "espacio" : "espacios"}</span>
+              <span><strong>{datosListos ? ciudades.length : "—"}</strong> {ciudades.length === 1 ? "ciudad" : "ciudades"}</span>
+              <span><strong>{datosListos ? contratadosCatalogo : "—"}</strong> {contratadosCatalogo === 1 ? "contratado" : "contratados"}</span>
+            </div>
           </div>
-          <div className="coverage-overview-stats" aria-label="Resumen de cobertura">
-            <span><strong>{panelesActivos}</strong> contratados</span>
-            <span><strong>{panelesContratables}</strong> disponibles</span>
+          <div className="coverage-catalog-hero-media" aria-hidden="true">
+            <img src="/editorial/vista360-avenida-referencial.jpg" alt="" />
+            <span>IMAGEN REFERENCIAL</span>
           </div>
         </header>
-        <div className="coverage-workspace">
+
+        <section id="catalogo-paneles" className="coverage-catalog" aria-labelledby="coverage-catalog-title">
+          <div className="coverage-catalog-heading">
+            <div>
+              <span className="coverage-catalog-section-label">01 / EL CATÁLOGO</span>
+              <h2 id="coverage-catalog-title">Espacios para hacerte ver.</h2>
+              <p>Elige una ubicación para conocer su estado y solicitar información comercial.</p>
+            </div>
+            {datosListos && <span className="coverage-catalog-total">{visibles.length} de {lista.length} espacios</span>}
+          </div>
+
+          <div className="coverage-catalog-controls" aria-label="Filtros del catálogo">
+            <label className="coverage-catalog-search">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 5 5" /></svg>
+              <span className="sr-only">Buscar espacios</span>
+              <input type="search" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar por nombre, dirección o ciudad" />
+            </label>
+            <label className="coverage-catalog-select"><span className="sr-only">Filtrar por ciudad</span><select value={ciudadFiltro} onChange={(event) => setCiudadFiltro(event.target.value)}><option value="">Todas las ciudades</option>{ciudades.map((ciudad) => <option key={ciudad} value={ciudad}>{ciudad}</option>)}</select></label>
+            <label className="coverage-catalog-select"><span className="sr-only">Filtrar por formato</span><select value={tipoFiltro} onChange={(event) => setTipoFiltro(event.target.value)}><option value="">Todos los formatos</option>{tipos.map((tipo) => <option key={tipo} value={tipo}>{tipo}</option>)}</select></label>
+          </div>
+          <div className="coverage-catalog-chips" role="group" aria-label="Filtrar por estado">
+            {([
+              ["todos", "Todos"],
+              ["disponible", "Disponibles hoy"],
+              ["ocupado", "Ocupados"],
+              ["mios", "Mis espacios"],
+              ["mantenimiento", "Mantenimiento"],
+            ] as const).map(([valor, texto]) => (
+              <button key={valor} type="button" className={estadoFiltro === valor ? "is-active" : ""} aria-pressed={estadoFiltro === valor} onClick={() => setEstadoFiltro(valor)}>{texto}</button>
+            ))}
+          </div>
+
+          {!datosListos ? (
+            <div className="coverage-catalog-empty">{panelesState.status === "error" ? panelesState.message : "Preparando espacios…"}</div>
+          ) : lista.length === 0 ? (
+            <div className="coverage-catalog-empty">Todavía no hay espacios registrados.</div>
+          ) : visibles.length === 0 ? (
+            <div className="coverage-catalog-empty">
+              <strong>No encontramos espacios con esos filtros.</strong>
+              <button type="button" onClick={() => { setBusqueda(""); setCiudadFiltro(""); setTipoFiltro(""); setEstadoFiltro("todos"); }}>Ver todos los espacios</button>
+            </div>
+          ) : (
+            <div className="coverage-catalog-grid">
+              {visibles.map((panel) => {
+                const estado = estadoTexto(panel);
+                const contratoPropio = esPanelActivoCliente(panel) ? panel.contrato : undefined;
+                const puedeRenovar = contratoPropio && estado === "Activo" && diasHasta(contratoPropio.fin) <= DIAS_AVISO_RENOVACION;
+                const etiquetaAccion = panel.libreDesde && !contratoPropio
+                  ? "Consultar reserva futura"
+                  : estado === "Disponible" ? "Solicitar disponibilidad" : "Consultar disponibilidad";
+                return (
+                  <article className="coverage-catalog-card" key={panel.id}>
+                    <div className="coverage-catalog-card-media">
+                      <img src={panel.id.charCodeAt(panel.id.length - 1) % 2 === 0 ? "/editorial/vista360-costa-referencial.jpg" : "/editorial/vista360-avenida-referencial.jpg"} alt="" loading="lazy" />
+                      <span className="coverage-catalog-card-reference">Imagen referencial</span>
+                      <span className={`coverage-catalog-status status-${estado.toLowerCase()}`}>{estado}</span>
+                    </div>
+                    <div className="coverage-catalog-card-content">
+                      <span className="coverage-catalog-card-kicker">{panel.ciudad || "Ciudad por registrar"} <i aria-hidden="true">/</i> {panel.tipo || "Espacio exterior"}</span>
+                      <h3>{panel.nombre}</h3>
+                      <p className="coverage-catalog-card-address"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6-5 6-11a6 6 0 1 0-12 0c0 6 6 11 6 11Z" /><circle cx="12" cy="10" r="2" /></svg>{panel.direccion || "Dirección por registrar"}</p>
+                      {contratoPropio && <p className="coverage-catalog-date">Tu campaña {estado === "Programado" ? "programada" : "vigente"} hasta <strong>{fechaLarga(contratoPropio.fin)}</strong></p>}
+                      {!contratoPropio && panel.libreDesde && <p className="coverage-catalog-date">Próxima liberación <strong>{fechaLarga(String(panel.libreDesde))}</strong></p>}
+                      <div className="coverage-catalog-card-actions">
+                        {onSolicitarPanel && (puedeRenovar || !contratoPropio) && (
+                          <button type="button" className="coverage-catalog-primary" onClick={() => onSolicitarPanel(panel, puedeRenovar ? "renovacion" : "disponibilidad")}>{puedeRenovar ? "Solicitar renovación" : etiquetaAccion}<span aria-hidden="true">↗</span></button>
+                        )}
+                        {tieneCoordenadas(panel) && <button type="button" className="coverage-catalog-map-link" onClick={() => verEnMapa(panel)}>Ver en mapa <span aria-hidden="true">↗</span></button>}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+          <p className="coverage-catalog-note">Las imágenes son referenciales. La disponibilidad se confirma al solicitar información.</p>
+        </section>
+        <section className="coverage-workspace" ref={mapaSeccionRef} aria-label="Mapa de ubicaciones">
           <div className="coverage-map-column">
         <div className="coverage-map-heading">
-          <span>Mapa de ubicaciones</span>
+          <span>02 / Explora las ubicaciones en el mapa</span>
           <small>{conCoordenadas.length} {conCoordenadas.length === 1 ? "punto localizado" : "puntos localizados"}</small>
         </div>
         <div className="coverage-map-real coverage-map-osm">
@@ -948,7 +1058,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
               <div>
                 <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
                 <span>Disponibles</span>
-                <strong>{panelesContratables}</strong>
+                <strong>{panelesDisponiblesAhora}</strong>
               </div>
               <div>
                 <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
@@ -957,7 +1067,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
               </div>
               <div>
                 <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Ocupados</span>
+                <span>No disponibles</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>
             </div>
@@ -1035,50 +1145,7 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
         )}
           </div>
 
-        <div className="coverage-panel-card">
-          <div className="coverage-inventory-head">
-            <div>
-              <div className="section-title">Paneles ubicados</div>
-              <p>Selecciona una ubicación para ver sus detalles.</p>
-            </div>
-            <span>{lista.length}</span>
-          </div>
-          {panelesState.status === "loading" || !contratosListos ? (
-            <div className="state-sub" style={{ maxWidth: "none" }}>
-              Cargando paneles…
-            </div>
-          ) : lista.length === 0 ? (
-            <div className="state-sub" style={{ maxWidth: "none" }}>
-              Todavía no hay paneles registrados.
-            </div>
-          ) : (
-            lista.map((panel) => {
-              const label = estadoTexto(panel);
-              const color = estadoColor(label);
-              return (
-                <button
-                  key={panel.id}
-                  type="button"
-                  className={`coverage-panel-row${seleccionado?.id === panel.id ? " is-selected" : ""}`}
-                  onClick={() => setSeleccionadoId(panel.id)}
-                  aria-pressed={seleccionado?.id === panel.id}
-                >
-                  <img className="coverage-panel-pin" src={PIN_URL[estadoPinPanel(panel)]} alt="" decoding="async" />
-                  <div className="coverage-panel-info">
-                    <div className="coverage-panel-name">{panel.nombre}</div>
-                    <div className="coverage-panel-meta">
-                      {panel.ciudad || "Sin ciudad"} · {tieneCoordenadas(panel) ? "Con coordenadas" : "Sin coordenadas"}
-                    </div>
-                  </div>
-                  <div className="coverage-panel-state" style={{ color }}>
-                    {label}
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
-        </div>
+        </section>
       </div>
     </div>
   );
