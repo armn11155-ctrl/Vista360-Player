@@ -812,6 +812,7 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
             )}
             {clientesAdmin.status === "ready" && clientesSinAcceso.length > 0 && (
               <div style={{ display: "grid", gap: 10 }}>
+                <label className="premium-form-field">Cliente
                 <select
                   value={clienteAccesoId}
                   onChange={(e) => {
@@ -826,9 +827,9 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
                   {clientesSinAcceso.map((c) => (
                     <option key={c.id} value={c.id}>{c.empresa}</option>
                   ))}
-                </select>
-                <input value={nuevoAccesoEmail} onChange={(e) => setNuevoAccesoEmail(e.target.value)} placeholder="Correo para el login" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-                <input value={nuevoAccesoPassword} onChange={(e) => setNuevoAccesoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                </select></label>
+                <label className="premium-form-field">Correo para el acceso<input value={nuevoAccesoEmail} onChange={(e) => setNuevoAccesoEmail(e.target.value)} placeholder="nombre@empresa.com" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+                <label className="premium-form-field">Contraseña inicial <small>Opcional</small><input value={nuevoAccesoPassword} onChange={(e) => setNuevoAccesoPassword(e.target.value)} placeholder="Contraseña inicial" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
               </div>
             )}
             {errorAcceso && (
@@ -866,9 +867,9 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
               sensibles (eliminar algo, crear o editar paneles) quedan pendientes de tu aprobación.
             </div>
             <div style={{ display: "grid", gap: 10 }}>
-              <input value={nuevoTrabajadorNombre} onChange={(e) => setNuevoTrabajadorNombre(e.target.value)} placeholder="Nombre del trabajador" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-              <input value={nuevoTrabajadorEmail} onChange={(e) => setNuevoTrabajadorEmail(e.target.value)} placeholder="Correo del trabajador" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-              <input value={nuevoTrabajadorPassword} onChange={(e) => setNuevoTrabajadorPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <label className="premium-form-field">Nombre del trabajador<input value={nuevoTrabajadorNombre} onChange={(e) => setNuevoTrabajadorNombre(e.target.value)} placeholder="Nombre completo" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+              <label className="premium-form-field">Correo del trabajador<input value={nuevoTrabajadorEmail} onChange={(e) => setNuevoTrabajadorEmail(e.target.value)} placeholder="nombre@empresa.com" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+              <label className="premium-form-field">Contraseña inicial <small>Opcional</small><input value={nuevoTrabajadorPassword} onChange={(e) => setNuevoTrabajadorPassword(e.target.value)} placeholder="Contraseña inicial" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
             </div>
             {errorTrabajador && (
               <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{errorTrabajador}</div>
@@ -914,21 +915,21 @@ export default function Accesos({ onBack, esGerente = true, uidPropio }: Props) 
               <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>Cargando datos del cliente...</div>
             )}
             <div style={{ display: "grid", gap: 10 }}>
-              <input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre de la empresa" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <label className="premium-form-field">Nombre de la empresa<input value={nuevaEmpresa} onChange={(e) => setNuevaEmpresa(e.target.value)} placeholder="Nombre comercial" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={nuevoRuc} onChange={(e) => setNuevoRuc(e.target.value)} placeholder="RUC (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-                <input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                <label className="premium-form-field">RUC <small>Opcional</small><input value={nuevoRuc} onChange={(e) => setNuevoRuc(e.target.value)} placeholder="RUC" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+                <label className="premium-form-field">Ciudad <small>Opcional</small><input value={nuevaCiudad} onChange={(e) => setNuevaCiudad(e.target.value)} placeholder="Ciudad" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
               </div>
-              <input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <label className="premium-form-field">Sector <small>Opcional</small><input value={nuevoSector} onChange={(e) => setNuevoSector(e.target.value)} placeholder="Sector" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
               {!clienteEditandoId && (
                 <>
                   <div style={{ height: 1, background: "var(--border)", margin: "2px 0" }} />
-                  <input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="Correo del usuario" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-                  <input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial (opcional)" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+                  <label className="premium-form-field">Correo del usuario<input value={nuevoEmail} onChange={(e) => setNuevoEmail(e.target.value)} placeholder="nombre@empresa.com" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+                  <label className="premium-form-field">Contraseña inicial <small>Opcional</small><input value={nuevoPassword} onChange={(e) => setNuevoPassword(e.target.value)} placeholder="Contraseña inicial" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
                 </>
               )}
-              <input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Nombre/contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
-              <input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="WhatsApp" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} />
+              <label className="premium-form-field">Nombre del contacto<input value={nuevoContacto} onChange={(e) => setNuevoContacto(e.target.value)} placeholder="Persona de contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
+              <label className="premium-form-field">WhatsApp<input value={nuevoCelular} onChange={(e) => setNuevoCelular(e.target.value)} placeholder="Número de contacto" style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "11px", boxSizing: "border-box" }} /></label>
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>Avatar del cliente</div>
                 <ClientAvatarPicker

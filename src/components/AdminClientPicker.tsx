@@ -350,7 +350,7 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
         </button>
       )}
       <div className="admin-picker-stage">
-        <section className="admin-picker-editorial" aria-hidden="true">
+        <section className="admin-picker-editorial" aria-label="Vista360 Player">
           <div className="admin-picker-editorial-brand">
             <img src="/logo-player.webp" width="640" height="140" decoding="async" fetchPriority="high" alt="" draggable={false} />
             <span>PORTAL DE GESTIÓN</span>

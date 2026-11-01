@@ -5,7 +5,7 @@ import { httpsCallable } from "firebase/functions";
 import { cloudFunctions } from "../../config/firebase";
 import { usePanelesDisponibles } from "../../hooks/usePanelesDisponibles";
 import { formatCampaignName } from "../../utils/campaignName";
-import { sumarMeses } from "../../utils/fechas";
+import { fechaLarga, sumarMeses } from "../../utils/fechas";
 import BackButton from "../BackButton";
 
 interface Props {
@@ -24,6 +24,7 @@ interface Props {
      *  muestra como dato fijo en vez de volver a preguntar la ciudad. */
     panelId?: string;
     panelNombre?: string;
+    motivo?: "disponibilidad" | "renovacion";
   };
 }
 
@@ -44,19 +45,18 @@ const CIUDADES = ["Huánuco", "Lima", "Arequipa", "Trujillo", "Chiclayo", "Piura
  */
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   const id = useId();
-  const hijo = isValidElement(children)
+  const esControl = isValidElement(children) && ["input", "select", "textarea"].includes(String(children.type));
+  const controlId = esControl ? (children.props as { id?: string }).id ?? id : id;
+  const hijo = esControl
     ? cloneElement(children as React.ReactElement<{ id?: string }>, {
-        id: (children.props as { id?: string }).id ?? id,
+        id: controlId,
       })
     : children;
   return (
-    <div style={{ marginBottom: 16 }}>
-      <label
-        htmlFor={id}
-        style={{ fontSize: 12, fontWeight: 600, color: "#64748B", display: "block", marginBottom: 6, letterSpacing: 0.3 }}
-      >
-        {label}
-      </label>
+    <div className="campaign-field">
+      {esControl
+        ? <label className="campaign-field-label" htmlFor={controlId}>{label}</label>
+        : <div className="campaign-field-label">{label}</div>}
       {hijo}
     </div>
   );
@@ -88,6 +88,10 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // Si venimos del mapa con un panel concreto, preguntar la ciudad otra
   // vez sobra -- y peor, si eligiera una distinta contradiría al panel.
   const panelFijo = prefill?.panelNombre ? { id: prefill.panelId ?? "", nombre: prefill.panelNombre } : null;
+  const esRenovacion = panelFijo && prefill?.motivo === "renovacion";
+  const tituloSolicitud = panelFijo
+    ? esRenovacion ? "Solicitar renovación" : "Solicitar disponibilidad"
+    : "Nueva campaña";
   const [comentarios, setComentarios] = useState(() => prefill?.comentarios ?? "");
   // Fecha desde la que le gustaría empezar -- no se puede pedir una
   // campaña con fecha de antes de hoy, por eso el min del input ya
@@ -225,7 +229,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   if (isAdmin) {
     const paneles = panelesState.status === "ready" ? panelesState.paneles : [];
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
+      <div className="campaign-admin-screen" style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
         <div className="detail-header">
           <BackButton onClick={onBack} />
           <div className="simple-title">Nueva campaña</div>
@@ -323,28 +327,25 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
 
   if (enviado) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-        <div className="detail-header">
+      <div className="campaign-request-screen">
+        <div className="detail-header campaign-request-header">
           <BackButton onClick={onEnviada} />
-          <div className="simple-title">Nueva campaña</div>
+          <div className="simple-title">{tituloSolicitud}</div>
           <div style={{ width: 32 }} />
         </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div className="new-campaign-success-wrap">
+        <div className="campaign-request-scroll campaign-request-success-scroll">
+          <div className="new-campaign-success-wrap campaign-request-success">
             <CampaignFormProgress complete />
-            <div style={{ background: "#fff", borderRadius: 16, padding: "28px 22px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)", textAlign: "center", maxWidth: 340 }}>
-              <div style={{
-                width: 52, height: 52, borderRadius: "50%", background: "rgba(34,197,94,0.12)",
-                display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px",
-              }}>
+            <div className="campaign-request-success-card">
+              <div className="campaign-request-success-icon">
                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#16A34A" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6 9 17l-5-5" />
                 </svg>
               </div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#0B1220", marginBottom: 8 }}>
+              <div className="campaign-request-success-title">
                 {enviadoYaExistia ? "Solicitud en proceso" : "Solicitud recibida"}
               </div>
-              <div style={{ fontSize: 13, color: "#64748B", lineHeight: 1.5 }}>
+              <div className="campaign-request-success-message">
                 {enviadoYaExistia
                   ? "Tu solicitud ya está siendo atendida. Nuestro equipo se comunicará contigo a la brevedad para coordinar los siguientes pasos."
                   : "La solicitud fue enviada correctamente. Nuestro equipo la revisará y se comunicará contigo a la brevedad para coordinar los siguientes pasos."}
@@ -352,11 +353,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
             </div>
           </div>
         </div>
-        <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-          <button type="button" onClick={onEnviada} style={{
-            width: "100%", padding: "14px", background: "#0877FF", color: "#fff",
-            fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: "pointer",
-          }}>
+        <div className="campaign-request-footer">
+          <button type="button" className="campaign-request-submit" onClick={onEnviada}>
             Listo
           </button>
         </div>
@@ -365,47 +363,47 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: "#F8F9FB" }}>
-      {/* Header */}
-      <div className="detail-header">
+    <div className="campaign-request-screen">
+      <div className="detail-header campaign-request-header">
         <BackButton onClick={onBack} />
-        <div className="simple-title">Nueva campaña</div>
+        <div className="simple-title">{tituloSolicitud}</div>
         <div style={{ width: 32 }} />
       </div>
 
-      {/* Form */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 16px" }}>
+      <div className="campaign-request-scroll">
+        <div className="campaign-request-intro">
+          <span>{panelFijo ? "SOLICITUD COMERCIAL · VISTA360" : "TU PRÓXIMA CAMPAÑA · VISTA360"}</span>
+          <h1>{panelFijo ? esRenovacion ? "Sigamos presentes en este espacio." : "Hablemos de este espacio." : "Tu próxima campaña comienza aquí."}</h1>
+          <p>{panelFijo
+            ? "Indícanos la fecha y el plazo que tienes en mente. Nuestro equipo confirmará la disponibilidad y te acompañará con los siguientes pasos."
+            : "Cuéntanos qué tienes en mente y nuestro equipo te ayudará a encontrar la mejor ubicación."}</p>
+        </div>
         <CampaignFormProgress />
-        <div style={{ background: "#fff", borderRadius: 16, padding: 18, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", overflow: "hidden" }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#0B1220", marginBottom: 18 }}>Información de la campaña</div>
+        <div className="campaign-request-card">
+          <div className="campaign-request-card-heading">
+            <span>01 / DETALLES DE TU SOLICITUD</span>
+            <h2>Cuéntanos lo esencial.</h2>
+            <p>Solo necesitamos unos datos para preparar una respuesta útil.</p>
+          </div>
 
           {error && (
-            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#DC2626", fontSize: 13, padding: "10px 14px", borderRadius: 12, marginBottom: 16 }}>
+            <div className="campaign-request-error" role="alert">
               {error}
             </div>
           )}
 
           <Field label="Nombre de la campaña">
-            <input style={inputStyle} maxLength={MAX_NOMBRE} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Campaña Invierno 2024" />
+            <input style={inputStyle} maxLength={MAX_NOMBRE} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Lanzamiento de temporada" />
           </Field>
           {panelFijo ? (
             <Field label="Panel solicitado">
-              <div style={{
-                ...inputStyle,
-                background: "#F8FAFC",
-                display: "flex",
-                alignItems: "center",
-                gap: 9,
-                color: "#0B1220",
-                fontWeight: 600,
-              }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0877FF" strokeWidth="1.9" style={{ flexShrink: 0 }}>
+              <div className="campaign-request-panel">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" style={{ flexShrink: 0 }}>
                   <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
                   <circle cx="12" cy="10" r="1.8" />
                 </svg>
-                <span style={{ minWidth: 0, overflowWrap: "break-word" }}>
-                  {panelFijo.nombre}{ciudad ? ` · ${ciudad}` : ""}
-                </span>
+                <span><strong>{panelFijo.nombre}</strong><small>{ciudad || "Ubicación seleccionada"}</small></span>
+                <b>Seleccionado</b>
               </div>
             </Field>
           ) : (
@@ -425,49 +423,37 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
             />
           </Field>
           <Field label="¿Por cuánto tiempo?">
-            <div style={{ display: "flex", gap: 8 }}>
+            <div className="campaign-request-duration" role="group" aria-label="Duración de la campaña">
               {[3, 6, 12].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setMeses(n)}
-                  style={{
-                    flex: 1,
-                    padding: "12px 6px",
-                    borderRadius: 12,
-                    cursor: "pointer",
-                    fontSize: 14,
-                    fontWeight: 800,
-                    border: meses === n ? "1.5px solid #0877FF" : "1.5px solid #E5E7EB",
-                    background: meses === n ? "rgba(8,119,255,0.08)" : "#fff",
-                    color: meses === n ? "#0877FF" : "#0B1220",
-                  }}
+                  className={meses === n ? "is-active" : ""}
+                  aria-pressed={meses === n}
                 >
-                  {n} meses
+                  <strong>{n}</strong><span>{n === 1 ? "mes" : "meses"}</span>
                 </button>
               ))}
             </div>
           </Field>
-          <div style={{ fontSize: 11, color: "#0B1220", marginTop: -10, marginBottom: 16, lineHeight: 1.45 }}>
-            El contrato mínimo es de 3 meses.
+          <div className="campaign-request-hint">
+            El plazo mínimo es de 3 meses.
             {fechaInicio && (
-              <> Terminaría el <strong>{sumarMeses(fechaInicio, meses)}</strong>.</>
+              <> Periodo estimado hasta el <strong>{fechaLarga(sumarMeses(fechaInicio, meses))}</strong>.</>
             )}
           </div>
           <Field label="Comentarios adicionales">
-            <textarea style={{ ...inputStyle, minHeight: 80, resize: "none" }} maxLength={MAX_COMENTARIOS} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Cuéntanos más sobre tu campaña..." />
+            <textarea style={inputStyle} maxLength={MAX_COMENTARIOS} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Objetivo, formato o detalles que debamos conocer" />
           </Field>
         </div>
-        <div style={{ height: 16 }} />
+        <p className="campaign-request-privacy">Tu solicitud llegará al equipo de Vista360. Confirmaremos fechas y disponibilidad contigo antes de avanzar.</p>
       </div>
 
-      {/* Footer */}
-      <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-        <button type="button" onClick={enviar} disabled={enviando} style={{
-          width: "100%", padding: "14px", background: enviando ? "#93C5FD" : "#0877FF", color: "#fff",
-          fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: enviando ? "default" : "pointer",
-        }}>
-          {enviando ? "Enviando…" : "Enviar solicitud"}
+      <div className="campaign-request-footer">
+        <button type="button" className="campaign-request-submit" onClick={enviar} disabled={enviando}>
+          {enviando ? "Enviando…" : panelFijo ? esRenovacion ? "Enviar solicitud de renovación" : "Consultar disponibilidad" : "Enviar solicitud"}
+          {!enviando && <span aria-hidden="true">↗</span>}
         </button>
       </div>
     </div>
