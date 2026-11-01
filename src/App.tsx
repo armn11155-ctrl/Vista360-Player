@@ -886,8 +886,8 @@ function AuthenticatedApp({
   // que también necesita ir envuelto en startTransition -- si no,
   // React 18 revienta con el error #426 igual, aunque setView ya esté
   // envuelto (ver ese comentario en App() para el detalle completo).
-  const [prefillNueva, setPrefillNuevaInmediato] = useState<{ nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null>(null);
-  function setPrefillNueva(p: { nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string } | null) {
+  const [prefillNueva, setPrefillNuevaInmediato] = useState<{ nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string; motivo?: "disponibilidad" | "renovacion" } | null>(null);
+  function setPrefillNueva(p: { nombre?: string; ciudad?: string; comentarios?: string; panelId?: string; panelNombre?: string; motivo?: "disponibilidad" | "renovacion" } | null) {
     startTransition(() => setPrefillNuevaInmediato(p));
   }
   const [mostrarOnboarding, setMostrarOnboarding] = useState(() => !isAdmin && debeVerOnboarding(uid));
@@ -1060,7 +1060,7 @@ function AuthenticatedApp({
         content = (
           <NuevaCampana
             clienteId={clienteId}
-            onBack={() => { setPrefillNueva(null); setView("campanas"); }}
+            onBack={() => { setPrefillNueva(null); setView(prefillNueva ? "cobertura" : "campanas"); }}
             onEnviada={() => { setPrefillNueva(null); setView("campanas"); }}
             // Si venimos de "Solicitar disponibilidad/renovación" en
             // Cobertura (prefillNueva viene cargado), siempre es el
@@ -1089,6 +1089,7 @@ function AuthenticatedApp({
                 ciudad: panel.ciudad,
                 panelId: panel.id,
                 panelNombre: panel.nombre,
+                motivo: tipo,
                 comentarios:
                   tipo === "renovacion"
                     ? `Quiero renovar mi campaña en el panel "${panel.nombre}" (${panel.ciudad}).`

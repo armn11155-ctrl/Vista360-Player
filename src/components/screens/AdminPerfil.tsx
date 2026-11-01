@@ -716,6 +716,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                   Por seguridad, primero confirma tu contraseña actual.
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: passwordError ? 10 : 18 }}>
+                  <label className="premium-password-field">Contraseña actual
                   <input
                     type="password"
                     value={passwordActual}
@@ -725,6 +726,8 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                     disabled={cambiandoPassword}
                     style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
+                  </label>
+                  <label className="premium-password-field">Nueva contraseña
                   <input
                     type="password"
                     value={passwordNueva}
@@ -734,6 +737,8 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                     disabled={cambiandoPassword}
                     style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
+                  </label>
+                  <label className="premium-password-field">Confirmar nueva contraseña
                   <input
                     type="password"
                     value={passwordConfirmar}
@@ -743,6 +748,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
                     disabled={cambiandoPassword}
                     style={{ width: "100%", border: "1px solid var(--border)", borderRadius: 12, padding: "12px", boxSizing: "border-box", fontSize: 14 }}
                   />
+                  </label>
                 </div>
                 {passwordError && (
                   <div style={{ color: "#DC2626", fontSize: 13, marginBottom: 14, lineHeight: 1.4 }}>{passwordError}</div>

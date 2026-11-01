@@ -125,7 +125,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           <i aria-hidden="true" />
           <div className={resultado ? "is-active" : ""}><span>3</span><small>Entrega</small></div>
         </div>
-        <div style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
+        <div className="create-client-card" style={{ background: "#fff", border: "1px solid #E8EDF5", borderRadius: 16, padding: 16, boxShadow: "0 10px 24px rgba(15,23,42,0.045)" }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#08122B", marginBottom: 4 }}>Usuario del cliente</div>
           <div style={{ fontSize: 12, color: "#64748B", marginBottom: 16 }}>
             Cliente seleccionado: <strong style={{ color: "#0B1220" }}>{cliente?.empresa ?? "Cliente actual"}</strong>. Aquí sólo se crea el acceso al portal.
@@ -181,7 +181,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
           )}
 
           {!resultado && (
-            <button type="button" onClick={crear} disabled={creando || subiendoAvatar} style={{
+            <button type="button" className="create-client-submit" onClick={crear} disabled={creando || subiendoAvatar} style={{
               width: "100%", marginTop: 16, padding: "14px", border: "none", borderRadius: 12,
               background: creando || subiendoAvatar ? "#93C5FD" : "#0877FF", color: "#fff", fontWeight: 800, fontSize: 14,
               cursor: creando || subiendoAvatar ? "not-allowed" : "pointer",

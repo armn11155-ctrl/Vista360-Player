@@ -16,6 +16,7 @@ import "./styles/portal-blue.css";
 import "./styles/portal-premium-final.css";
 import "./styles/portal-polish.css";
 import "./styles/coverage-catalog.css";
+import "./styles/forms-premium.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
 import { mantenerOrientacionVertical } from "./utils/orientacion-vertical";

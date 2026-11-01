@@ -1,0 +1,327 @@
+/* Un lenguaje de formularios consistente en el portal. */
+.campaign-request-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: #f1f5f8;
+}
+.campaign-request-header {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #163854 !important;
+  background: #071729 !important;
+  color: #fff !important;
+}
+.campaign-request-header .simple-title { color: #fff !important; }
+.campaign-request-header .back-btn { color: #fff !important; border-color: rgba(255,255,255,.25) !important; background: rgba(255,255,255,.09) !important; }
+.campaign-request-header .back-btn svg { stroke: #fff !important; }
+.campaign-request-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 26px clamp(16px, 3vw, 38px) 36px;
+  -webkit-overflow-scrolling: touch;
+}
+.campaign-request-scroll > * { width: min(100%, 760px); margin-left: auto !important; margin-right: auto !important; }
+.campaign-request-intro {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  min-height: 196px;
+  padding: clamp(26px, 3.5vw, 38px);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 89% 12%, rgba(106,175,218,.2), transparent 30%),
+    linear-gradient(125deg, #071729 0%, #123756 100%);
+  color: #fff;
+  box-shadow: 0 24px 38px -32px #0b2b47;
+}
+.campaign-request-intro::after {
+  content: "";
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  right: -65px;
+  bottom: -155px;
+  border: 1px solid rgba(185,223,242,.18);
+  border-radius: 50%;
+  box-shadow: 0 0 0 25px rgba(150,207,236,.035), 0 0 0 55px rgba(150,207,236,.025);
+  pointer-events: none;
+}
+.campaign-request-intro > span,
+.campaign-request-card-heading > span {
+  display: block;
+  color: #a9d3e6;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .17em;
+}
+.campaign-request-intro h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  margin: 18px 0 10px;
+  color: #fff;
+  font-size: clamp(29px, 3vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+.campaign-request-intro p {
+  position: relative;
+  z-index: 1;
+  max-width: 570px;
+  margin: 0;
+  color: #c9dce9;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.campaign-request-screen .campaign-form-progress {
+  width: min(100%, 500px);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.campaign-request-screen .campaign-form-progress > div.is-active { color: #225b83; }
+.campaign-request-screen .campaign-form-progress > div.is-active > span { color: #fff; border-color: #173f60; background: #173f60; }
+.campaign-request-screen .campaign-form-progress.is-complete > i { background: #78acbd; }
+.campaign-request-card {
+  box-sizing: border-box;
+  padding: clamp(22px, 3.3vw, 36px);
+  border: 1px solid #d8e3eb;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 25px 48px -42px #173e59;
+}
+.campaign-request-card-heading {
+  margin-bottom: 26px;
+  padding-bottom: 19px;
+  border-bottom: 1px solid #e2e9ee;
+}
+.campaign-request-card-heading > span { color: #397499; }
+.campaign-request-card-heading h2 { margin: 8px 0 6px; color: #0c2b42; font-size: 25px; line-height: 1.15; letter-spacing: -.03em; }
+.campaign-request-card-heading p { margin: 0; color: #657e8f; font-size: 12px; line-height: 1.5; }
+.campaign-field { min-width: 0; margin-bottom: 19px; }
+.campaign-field-label,
+.panel-form-field,
+.create-client-card label,
+.quotes-form-card label {
+  display: block;
+  margin-bottom: 8px;
+  color: #314c61 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: .005em;
+}
+.panel-form-field span { margin-left: 4px; color: #8196a5; font-size: 10px; font-weight: 600; }
+.campaign-request-card :is(input, select, textarea),
+.new-campaign-admin-card :is(input:not([type="checkbox"]), select, textarea),
+.create-client-card :is(input:not([type="checkbox"]), select, textarea),
+.panel-form-card :is(input:not([type="checkbox"]), select, textarea),
+.quotes-form-card :is(input:not([type="checkbox"]), select, textarea),
+.report-admin-content :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+.facturas-screen-body :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+.admin-tool-screen :is(input:not([type="checkbox"]):not([type="file"]):not([type="range"]), select, textarea),
+.profile-screen input:not([type="checkbox"]),
+.mis-campanas-screen input:not([type="checkbox"]),
+.campaign-edit-dialog :is(input, select, textarea) {
+  box-sizing: border-box !important;
+  min-width: 0;
+  min-height: 47px;
+  border: 1px solid #cbdbe5 !important;
+  border-radius: 10px !important;
+  background: #fbfdfe !important;
+  color: #102e46 !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  box-shadow: inset 0 1px 1px rgba(15,43,65,.025);
+  transition: border-color .18s, box-shadow .18s, background-color .18s;
+}
+.campaign-request-card :is(input, select, textarea):focus,
+.new-campaign-admin-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.create-client-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.panel-form-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.quotes-form-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.report-admin-content :is(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus,
+.facturas-screen-body :is(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus,
+.admin-tool-screen :is(input:not([type="checkbox"]):not([type="file"]):not([type="range"]), select, textarea):focus,
+.profile-screen input:not([type="checkbox"]):focus,
+.mis-campanas-screen input:not([type="checkbox"]):focus,
+.campaign-edit-dialog :is(input, select, textarea):focus {
+  outline: none !important;
+  border-color: #347ca5 !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(52,124,165,.15) !important;
+}
+.campaign-request-card textarea,
+.quotes-form-card textarea { min-height: 96px !important; padding: 13px 14px !important; line-height: 1.5; resize: vertical; }
+.campaign-request-card input::placeholder,
+.campaign-request-card textarea::placeholder,
+.panel-form-card input::placeholder { color: #8a9eac; }
+.campaign-request-panel {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 63px;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border: 1px solid #bcd6e4;
+  border-radius: 11px;
+  background: linear-gradient(100deg, #eaf4f8, #f6fbfd);
+  color: #27617f;
+}
+.campaign-request-panel > span { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; gap: 3px; overflow-wrap: anywhere; }
+.campaign-request-panel strong { color: #143a55; font-size: 13px; }
+.campaign-request-panel small { color: #5a7d94; font-size: 11px; }
+.campaign-request-panel b { flex: 0 0 auto; padding: 5px 8px; border-radius: 999px; background: #d9eaf2; color: #2d6987; font-size: 9px; font-weight: 850; }
+.campaign-request-duration { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+.campaign-request-duration button {
+  min-height: 58px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #d5e1e9;
+  border-radius: 10px;
+  background: #fff;
+  color: #405d72;
+  font: inherit;
+  cursor: pointer;
+}
+.campaign-request-duration button:hover { border-color: #90b9ce; }
+.campaign-request-duration button.is-active { border-color: #205e80; background: #edf6fa; color: #174c6a; box-shadow: inset 0 0 0 1px #205e80; }
+.campaign-request-duration strong { font-size: 20px; font-weight: 850; letter-spacing: -.04em; }
+.campaign-request-duration span { font-size: 11px; font-weight: 750; }
+.campaign-request-hint { margin: -8px 0 19px; color: #60798b; font-size: 11px; line-height: 1.5; }
+.campaign-request-hint strong { color: #214a63; }
+.campaign-request-privacy { margin-top: 16px; color: #6b8191; font-size: 11px; line-height: 1.55; text-align: center; }
+.campaign-request-error { margin-bottom: 20px; padding: 12px 14px; border: 1px solid #ebbbb9; border-radius: 10px; background: #fff3f2; color: #ae3630; font-size: 12px; line-height: 1.5; }
+.campaign-request-footer {
+  flex: 0 0 auto;
+  padding: 13px 20px calc(13px + env(safe-area-inset-bottom));
+  border-top: 1px solid #dbe5ec;
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 -13px 30px -30px #173e59;
+}
+.campaign-request-submit,
+.create-client-submit,
+.panel-form-submit,
+.quotes-primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  min-height: 48px;
+  border: 1px solid #153d5b !important;
+  border-radius: 10px !important;
+  background: #153d5b !important;
+  color: #fff !important;
+  font: inherit;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  box-shadow: 0 13px 24px -20px #153d5b;
+  cursor: pointer;
+}
+.campaign-request-submit { width: min(100%, 760px); margin: 0 auto; }
+.campaign-request-submit span { font-size: 18px; font-weight: 500; }
+.campaign-request-submit:hover:not(:disabled),
+.create-client-submit:hover:not(:disabled),
+.panel-form-submit:hover:not(:disabled),
+.quotes-primary-btn:hover:not(:disabled) { background: #0a2b45 !important; }
+.campaign-request-submit:disabled,
+.create-client-submit:disabled,
+.panel-form-submit:disabled,
+.quotes-primary-btn:disabled { opacity: .55; cursor: progress; }
+.campaign-request-success-scroll { display: flex; align-items: center; justify-content: center; }
+.campaign-request-success { width: min(100%, 520px); }
+.campaign-request-success-card { padding: 42px 34px; border: 1px solid #d7e4e7; border-radius: 18px; background: #fff; text-align: center; box-shadow: 0 25px 45px -40px #173e59; }
+.campaign-request-success-icon { display: grid; place-items: center; width: 55px; height: 55px; margin: 0 auto 18px; border-radius: 50%; background: #e6f5ed; }
+.campaign-request-success-title { margin-bottom: 9px; color: #123a50; font-size: 24px; font-weight: 850; letter-spacing: -.035em; }
+.campaign-request-success-message { color: #5d788a; font-size: 13px; line-height: 1.65; }
+
+/* Los formularios operativos comparten los mismos márgenes y estados. */
+.new-campaign-admin-card,
+.create-client-card,
+.panel-form-card,
+.quotes-form-card { border: 1px solid #d7e2ea !important; border-radius: 18px !important; background: #fff !important; box-shadow: 0 24px 44px -39px #183d58 !important; }
+.new-campaign-admin-card,
+.panel-form-card { width: min(100%, 760px); box-sizing: border-box; margin-left: auto; margin-right: auto; padding: clamp(20px, 3vw, 32px) !important; }
+.new-campaign-admin-card::before { background: #2c7399 !important; }
+.new-campaign-admin-kicker { color: #397499 !important; }
+.new-campaign-admin-title { color: #0c2b42 !important; font-size: 22px !important; letter-spacing: -.03em; }
+.new-campaign-admin-sub { color: #647d8e !important; font-size: 12px !important; }
+.new-campaign-admin-hint { border: 1px solid #dbeaf1; background: #f1f8fb; color: #3c647c; }
+.create-client-card { width: min(100%, 680px); box-sizing: border-box; margin: 0 auto; padding: clamp(20px, 3vw, 30px) !important; }
+.create-client-screen .create-client-progress { margin-bottom: 20px; }
+.create-client-submit { width: 100%; margin-top: 22px !important; }
+.panel-form-card > div:first-child { color: #0c2b42 !important; font-size: 22px !important; letter-spacing: -.03em; }
+.panel-form-field { margin: 0 !important; }
+.panel-form-field input,
+.panel-form-field select { display: block; width: 100%; margin-top: 7px; }
+.panel-form-type-button { transition: border-color .18s, background .18s; }
+.panel-form-type-button[aria-pressed="true"] { border-color: #205e80 !important; background: #edf6fa !important; }
+.panel-form-type-button[aria-pressed="true"] > span:first-child { color: #174c6a !important; }
+.panel-form-submit { width: 100%; margin-top: 22px !important; }
+.quotes-form-card { padding: clamp(20px, 3vw, 30px) !important; }
+.quotes-form-card .quotes-card-heading { margin-bottom: 4px; }
+.quotes-form-card .quotes-check { display: flex; align-items: center; gap: 9px; }
+.quotes-form-card .quotes-check input { width: 18px; height: 18px; accent-color: #246785; }
+.quotes-primary-btn { width: 100%; }
+.report-admin-content { background: #fff !important; }
+.report-admin-content :is(select, input:not([type="file"])) { max-width: 100%; }
+.campaign-edit-dialog { border: 1px solid #d7e3eb !important; box-shadow: 0 30px 65px -40px #092942 !important; }
+.campaign-edit-save { background: #153d5b !important; border-color: #153d5b !important; }
+.premium-form-field,
+.premium-password-field {
+  display: block;
+  min-width: 0;
+  color: #314c61;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.premium-form-field small { color: #8297a5; font-size: 10px; font-weight: 600; }
+.premium-form-field :is(input, select),
+.premium-password-field input { display: block; width: 100%; margin-top: 7px; }
+.premium-password-field { margin-bottom: 4px; }
+
+/* El mensaje acompaña al globo en el selector móvil. */
+@media (max-width: 899px) {
+  .admin-picker-shell .admin-picker-editorial { min-height: 160px !important; flex: 0 0 160px !important; }
+  .admin-picker-shell .admin-picker-editorial-copy {
+    display: block !important;
+    position: absolute !important;
+    z-index: 4 !important;
+    top: 72px !important;
+    left: 18px !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(48%, 188px) !important;
+    max-width: none !important;
+    padding: 0 !important;
+    border: 0 !important;
+    margin: 0 !important;
+    pointer-events: none;
+  }
+  .admin-picker-shell .admin-picker-editorial-kicker { display: block !important; margin-bottom: 6px !important; color: #a8cee6 !important; font-size: 8px !important; letter-spacing: .14em !important; }
+  .admin-picker-shell .admin-picker-editorial h1 { color: #fff !important; font-size: clamp(18px, 5vw, 22px) !important; line-height: 1.04 !important; letter-spacing: -.045em !important; text-shadow: 0 2px 15px rgba(0,0,0,.4); }
+  .admin-picker-shell .admin-picker-editorial p { display: none !important; }
+}
+@media (max-width: 640px) {
+  .campaign-request-scroll { padding: 14px 14px 28px; }
+  .campaign-request-intro { min-height: 0; padding: 25px 22px; border-radius: 15px; }
+  .campaign-request-intro h1 { font-size: 28px; }
+  .campaign-request-intro p { font-size: 12px; }
+  .campaign-request-card { padding: 22px 18px; border-radius: 15px; }
+  .campaign-request-card-heading h2 { font-size: 22px; }
+  .campaign-request-panel b { display: none; }
+  .campaign-request-footer { padding: 11px 14px calc(11px + env(safe-area-inset-bottom)); }
+  .campaign-request-success-card { padding: 34px 23px; }
+  .create-client-card { padding: 20px !important; }
+}
+@media (max-width: 360px) {
+  .admin-picker-shell .admin-picker-editorial-copy { left: 14px !important; width: 49% !important; }
+  .admin-picker-shell .admin-picker-editorial h1 { font-size: 17px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campaign-request-duration button,
+  .panel-form-type-button { transition: none; }
+}

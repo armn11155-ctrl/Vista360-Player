@@ -443,8 +443,12 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
             </div>
 
             <div style={{ display: "grid", gap: 10 }}>
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Nombre del panel" style={inputStyle} />
-              <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ciudad" style={inputStyle} />
+              <label className="panel-form-field">Nombre del panel
+                <input value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} placeholder="Ej. Mural Javier Prado" style={inputStyle} />
+              </label>
+              <label className="panel-form-field">Ciudad
+                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} maxLength={60} placeholder="Ej. Lima" style={inputStyle} />
+              </label>
 
               {/* Tipo fijo, no texto libre -- antes esto era un input
                   de texto y terminaba con datos cargados sin querer
@@ -461,6 +465,8 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                     <button
                       key={valorTipo}
                       type="button"
+                      className="panel-form-type-button"
+                      aria-pressed={tipo === valorTipo}
                       onClick={() => {
                         setTipo(valorTipo);
                         setModalidad(valorModalidad);
@@ -492,7 +498,9 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                   </div>
                 ) : null}
               </div>
-              <input value={direccion} onChange={(e) => setDireccion(e.target.value)} maxLength={160} placeholder="Dirección (opcional)" style={inputStyle} />
+              <label className="panel-form-field">Dirección <span>Opcional</span>
+                <input value={direccion} onChange={(e) => setDireccion(e.target.value)} maxLength={160} placeholder="Ej. Av. Principal 123" style={inputStyle} />
+              </label>
 
               <div>
                 <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 800, marginBottom: 8 }}>
@@ -506,14 +514,20 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitud" inputMode="decimal" style={inputStyle} />
-                <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitud" inputMode="decimal" style={inputStyle} />
+                <label className="panel-form-field">Latitud
+                  <input value={lat} onChange={(e) => setLat(e.target.value)} placeholder="-12.0464" inputMode="decimal" style={inputStyle} />
+                </label>
+                <label className="panel-form-field">Longitud
+                  <input value={lng} onChange={(e) => setLng(e.target.value)} placeholder="-77.0428" inputMode="decimal" style={inputStyle} />
+                </label>
               </div>
-              <select value={estado} onChange={(e) => setEstado(e.target.value as PanelEstado)} style={{ ...inputStyle, background: "#fff", color: "var(--text)" }}>
-                {ESTADOS.map((e) => (
-                  <option key={e} value={e}>{e}</option>
-                ))}
-              </select>
+              <label className="panel-form-field">Estado operativo
+                <select value={estado} onChange={(e) => setEstado(e.target.value as PanelEstado)} style={{ ...inputStyle, background: "#fff", color: "var(--text)" }}>
+                  {ESTADOS.map((e) => (
+                    <option key={e} value={e}>{e}</option>
+                  ))}
+                </select>
+              </label>
               {/* Disponible/Ocupado ya no se guarda tal cual se elija
                   acá -- el sistema lo recalcula solo a partir de los
                   contratos vigentes apenas se guarda el panel, así que
@@ -526,13 +540,15 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
                 </div>
               )}
               <div>
-                <input
-                  value={impactoDiario}
-                  onChange={(e) => setImpactoDiario(e.target.value)}
-                  placeholder="Impacto diario aprox. (personas o vehículos, opcional)"
-                  inputMode="numeric"
-                  style={inputStyle}
-                />
+                <label className="panel-form-field">Impacto diario aproximado <span>Opcional</span>
+                  <input
+                    value={impactoDiario}
+                    onChange={(e) => setImpactoDiario(e.target.value)}
+                    placeholder="Personas o vehículos por día"
+                    inputMode="numeric"
+                    style={inputStyle}
+                  />
+                </label>
                 <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 5, lineHeight: 1.4 }}>
                   Estimado de cuánta gente pasa por acá en un día -- se usa para calcular el
                   impacto aproximado de las campañas en este panel. No hace falta un sensor,
@@ -541,7 +557,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
               </div>
             </div>
             {error && <div style={{ color: "#DC2626", fontSize: 12, marginTop: 10 }}>{error}</div>}
-            <button type="button"
+            <button type="button" className="panel-form-submit"
               onClick={guardarPanel}
               disabled={creando}
               style={{ width: "100%", marginTop: 12, background: creando ? "#93C5FD" : "#0B1220", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontWeight: 800, cursor: creando ? "not-allowed" : "pointer" }}
