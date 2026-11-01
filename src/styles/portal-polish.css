@@ -1,0 +1,223 @@
+/* Final visual alignment: navy, white, and one consistent action blue. */
+:root { --v360-action: linear-gradient(135deg, #357bd1, #1f60b8); }
+
+.reports-list .factura-pdf-icon {
+  display: grid !important;
+  grid-template-rows: auto auto minmax(0, 1fr) auto !important;
+  justify-items: center !important;
+  align-items: center !important;
+  row-gap: 4px !important;
+}
+.reports-list .factura-pdf-icon span { margin: 0 !important; }
+.reports-list .factura-pdf-icon .factura-cover-illustration {
+  width: min(88px, 100%) !important;
+  height: min(76px, 100%) !important;
+  margin: 0 !important;
+  align-self: center !important;
+}
+.reports-list .factura-pdf-icon small { align-self: end !important; margin: 0 !important; }
+.reports-list .factura-card .factura-badge-row {
+  top: 17px !important;
+  right: 17px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+}
+.reports-list .factura-card .factura-menu-btn { border-color: #d5deea !important; background: #f5f8fc !important; color: #294465 !important; }
+
+.report-admin-content .report-generate-btn,
+.report-admin-content .report-campaign-panel-add,
+.report-admin-content .report-admin-controls > button,
+.inicio-welcome-actions .inicio-welcome-primary,
+.mis-campanas-cta button,
+.campaign-renewal-button {
+  background: var(--v360-action) !important;
+  background-color: #276dcc !important;
+  border-color: #276dcc !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+.report-admin-content .report-campaign-panel-add *,
+.report-admin-content .report-generate-btn *,
+.mis-campanas-cta button *,
+.campaign-renewal-button * { color: #fff !important; }
+.inicio-welcome-actions .inicio-welcome-primary::before,
+.inicio-welcome-actions .inicio-welcome-primary::after,
+.mis-campanas-cta button::before,
+.mis-campanas-cta button::after { box-shadow: none !important; filter: none !important; }
+
+@media (min-width: 900px) {
+  .profile-top { padding-bottom: 32px !important; }
+  .profile-hero-company {
+    grid-template-columns: 84px minmax(0, 1fr) !important;
+    grid-template-areas: "avatar identity" "metrics metrics" !important;
+    column-gap: 22px !important;
+    row-gap: 26px !important;
+    align-items: center !important;
+  }
+  .profile-hero-company .profile-avatar-wrap { grid-area: avatar !important; }
+  .profile-hero-company .profile-company-copy { grid-area: identity !important; }
+  .profile-hero-company .profile-hero-metrics { grid-area: metrics !important; }
+}
+.profile-hero-metrics { gap: 10px !important; }
+.profile-hero-metrics .profile-metric-row {
+  min-height: 102px !important;
+  padding: 16px 18px !important;
+  border: 1px solid #6283ad !important;
+  border-radius: 12px !important;
+  background: linear-gradient(145deg, #193653, #213f62) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12) !important;
+}
+.profile-hero-metrics .profile-metric-label { color: #d6e4f4 !important; font-size: 11px !important; }
+.profile-hero-metrics .profile-metric-row strong { color: #fff !important; font-size: clamp(24px, 2.3vw, 34px) !important; }
+.profile-hero-metrics .profile-metric-icon { color: #b9d5f5 !important; background: transparent !important; }
+@media (max-width: 899px) {
+  .profile-hero-metrics .profile-metric-row { min-height: 88px !important; padding: 10px !important; }
+  .profile-hero-metrics .profile-metric-row strong { font-size: 20px !important; }
+  .profile-hero-metrics .profile-metric-label { font-size: 10px !important; }
+  .reports-list .factura-pdf-icon .factura-cover-illustration { width: min(70px, 100%) !important; height: min(57px, 100%) !important; }
+}
+
+/* A map workspace with clear inventory and cool, legible surfaces. */
+.coverage-workspace { gap: 20px !important; }
+.coverage-map-column::before { display: none !important; }
+.coverage-map-column { gap: 12px !important; }
+.coverage-map-heading {
+  min-height: 63px !important;
+  padding: 14px 19px !important;
+  border: 1px solid #27496e !important;
+  border-radius: 13px !important;
+  background: linear-gradient(110deg, #0c1b2e, #173d67) !important;
+  color: #fff !important;
+}
+.coverage-map-heading span { color: #fff !important; font-weight: 800 !important; }
+.coverage-map-heading small { color: #bbd0e8 !important; }
+.coverage-map-real { border: 4px solid #dce7f3 !important; border-radius: 14px !important; box-shadow: 0 20px 38px -32px #102a4a !important; }
+.coverage-leaflet-map .leaflet-tile-pane { filter: grayscale(.78) saturate(.58) contrast(1.03) !important; }
+.coverage-map-summary { border-radius: 12px !important; background: #0c1b2e !important; }
+.coverage-map-legend { border: 1px solid #395a7f !important; border-radius: 12px !important; background: #0c1b2e !important; }
+.coverage-map-legend > div:nth-child(2) { background: #214b78 !important; }
+.coverage-map-legend > div:nth-child(2) strong { color: #d9eaff !important; }
+.coverage-selected-card { padding: 19px !important; border: 1px solid #c5d9ef !important; background: #eaf2fb !important; box-shadow: none !important; }
+.coverage-selected-name { color: #10233b !important; }
+.coverage-selected-address { color: #49627d !important; }
+.coverage-panel-card { padding: 19px !important; border: 1px solid #244362 !important; background: linear-gradient(160deg, #0e2034, #142e4a) !important; box-shadow: 0 22px 40px -34px #0b203a !important; }
+.coverage-inventory-head { padding: 0 0 17px !important; margin-bottom: 7px !important; border-bottom: 1px solid #476482 !important; }
+.coverage-panel-card .section-title { padding: 0 !important; border: 0 !important; color: #fff !important; }
+.coverage-inventory-head p { color: #bdcee1 !important; }
+.coverage-inventory-head > span { color: #fff !important; background: #275a95 !important; border-color: #4878ad !important; }
+.coverage-panel-card .state-sub { color: #d0deed !important; }
+.coverage-panel-row { min-height: 73px !important; padding: 12px 10px !important; border-color: #35516e !important; border-radius: 8px !important; color: #fff !important; }
+.coverage-panel-row:not(:last-child)::after { background: #35516e !important; }
+.coverage-panel-row:hover { background: #1c4168 !important; }
+.coverage-panel-row.is-selected { background: #245184 !important; box-shadow: inset 3px 0 0 #94c4fa !important; }
+.coverage-panel-name { color: #fff !important; }
+.coverage-panel-meta { color: #bad0e8 !important; }
+.coverage-panel-state { color: #d4e7ff !important; }
+.coverage-panel-dot { box-shadow: 0 0 0 3px #0e2034 !important; }
+
+.mis-campanas-month-status,
+.mis-campanas-month-status:has(> .mis-campanas-month-status-row:nth-child(2):last-child) {
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  width: min(680px, 100%) !important;
+  padding: 12px 16px !important;
+  margin: 0 auto 12px !important;
+  align-self: start !important;
+  align-content: start !important;
+}
+.mis-campanas-month-status-header { padding: 3px 0 9px !important; color: #315f9d !important; }
+.mis-campanas-month-status-row { min-height: 0 !important; padding: 9px 0 3px !important; color: #27405d !important; }
+.mis-campanas-month-status-row.is-sent { color: #2868b5 !important; }
+.campaign-status-card { border: 1px solid #b8d1eb !important; border-left: 4px solid #315f9d !important; background: #edf4fb !important; box-shadow: none !important; }
+.campaign-status-card > div:nth-child(2) > div:first-child { background: #315f9d !important; }
+.campaign-status-card > div:nth-child(2) > div:last-child > div:last-child { color: #3d5d7d !important; }
+.campaign-expiry-card { border-color: #bdd2e9 !important; background: #eaf2fb !important; box-shadow: none !important; }
+.campaign-expiry-icon { color: #315f9d !important; background: #d4e5f7 !important; }
+.campaign-expiry-copy span { color: #345677 !important; }
+.campaign-expiry-copy strong { color: #122944 !important; }
+.campaign-expiry-status { color: #255e9c !important; background: #d5e7f8 !important; }
+
+/* Management controls and statuses. */
+.admin-picker-management-group::before,
+.admin-picker-management-group:nth-child(2)::before,
+.admin-picker-management-group:nth-child(3)::before { background: #315f9d !important; }
+.admin-picker-management-layout .gestion-hoy-item,
+.admin-picker-management-layout .gestion-hoy-item.is-urgent,
+.admin-picker-management-layout .gestion-hoy-item.is-opportunity { border-left: 3px solid #315f9d !important; }
+.gestion-hoy-updated { display: block; margin-top: 4px; color: #536f8d; font-size: 10px; font-weight: 700; }
+.gestion-hoy-refresh { background: #d8e8f8 !important; color: #194b82 !important; border-color: #adc9e7 !important; }
+.gestion-hoy-refresh:disabled { opacity: .7; cursor: wait; }
+.aprobaciones-screen .premium-empty-check,
+.papelera-screen .premium-empty-check { color: #245f9f !important; border-color: #bfd6ee !important; background: #e7f2fd !important; }
+.premium-loading-panel { justify-content: center !important; text-align: left; }
+.premium-loading-orbit {
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: #e6f2ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='%232b69ad' stroke-width='1.8'%3E%3Ccircle cx='24' cy='24' r='18'/%3E%3Cellipse cx='24' cy='24' rx='8' ry='18'/%3E%3Cpath d='M6 24h36M10 14h28M10 34h28'/%3E%3C/svg%3E") center / 31px 31px no-repeat !important;
+  animation: spin 2.5s linear infinite !important;
+}
+.paneles-screen, .paneles-screen > .content-area { background: #edf3f9 !important; }
+.paneles-screen .paneles-catalog { background: #e5eef8 !important; border-color: #cbdbee !important; }
+.paneles-screen .campo-busqueda,
+.paneles-screen input,
+.paneles-screen select { background-color: #fff !important; color: #17304d !important; border-color: #b9cce0 !important; }
+.paneles-screen .campo-busqueda::placeholder { color: #667f9a !important; }
+.paneles-screen .panel-inventory-card { border-color: #ccdaea !important; background: #fff !important; }
+.paneles-screen .panel-inventory-actions > span { background: #e4effb !important; color: #245a94 !important; }
+
+/* Quotations: calm white form against a deep blue commercial ledger. */
+.quotes-screen, .quotes-scroll { background: #edf3f9 !important; }
+.quotes-header { border-color: #244d7b !important; background: linear-gradient(110deg, #0b1b2f, #153c66) !important; }
+.quotes-header h1 { color: #fff !important; }
+.quotes-header p { color: #c4d7eb !important; }
+.quotes-header span { color: #a9caee !important; }
+.quotes-header-inner > button { border-color: #6d8bad !important; color: #fff !important; background: #1e436d !important; }
+.quotes-form-card { border-color: #ccdaeb !important; background: #fff !important; box-shadow: 0 24px 40px -36px #183956 !important; }
+.quotes-form-card .quotes-card-heading { padding-bottom: 16px; border-bottom: 1px solid #d9e4f0; }
+.quotes-form-card .quotes-card-heading h2 { color: #102741 !important; }
+.quotes-form-card .quotes-card-heading span { color: #315f9d !important; }
+.quotes-form-card .quotes-card-icon { color: #fff !important; background: #315f9d !important; box-shadow: none !important; }
+.quotes-form-card .quotes-card-heading > b { color: #245c9c !important; background: #e9f2fc !important; border-color: #bed5ee !important; }
+.quotes-form-card label { color: #344c66 !important; }
+.quotes-form-card .quotes-optional-label { color: #6d829a !important; }
+.quotes-form-card input, .quotes-form-card select, .quotes-form-card textarea { border-color: #c8d8e9 !important; background: #f8fbfe !important; color: #122c49 !important; }
+.quotes-form-card input:focus, .quotes-form-card select:focus, .quotes-form-card textarea:focus { border-color: #357bd1 !important; box-shadow: 0 0 0 3px #d9eafd !important; }
+.quotes-form-card .quotes-check span { color: #294767 !important; }
+.quotes-period-summary { border-color: #c9dcef !important; background: #eaf3fc !important; }
+.quotes-period-summary span { color: #426383 !important; }
+.quotes-period-summary strong { color: #173959 !important; }
+.quotes-primary-btn { background: var(--v360-action) !important; color: #fff !important; box-shadow: none !important; }
+.quotes-message { color: #1d5b9c !important; background: #e4f0fc !important; }
+.quotes-list-card { border-color: #234769 !important; background: linear-gradient(150deg, #0f233b, #173b60) !important; box-shadow: 0 24px 42px -34px #0c2947 !important; }
+.quotes-list-card .quotes-card-heading h2 { color: #fff !important; }
+.quotes-list-card .quotes-card-heading span { color: #adcdf0 !important; }
+.quotes-list-card .quotes-card-icon { background: #2a619c !important; box-shadow: none !important; }
+.quotes-list-head { border-color: #436384 !important; }
+.quotes-list-head > strong { color: #fff !important; background: #2764a3 !important; }
+.quote-row { border-color: #476988 !important; background: #213f5e !important; }
+.quote-row-main { color: #fff !important; }
+.quote-row-number { color: #a9d0fc !important; }
+.quote-row-main > small { color: #c2d4e7 !important; }
+.quote-row-actions button { border-color: #7090af !important; background: #2a4d72 !important; }
+.quote-row-actions select { background: #f2f7fc !important; color: #173551 !important; }
+
+/* Analytics keeps the same quiet palette while giving data a clear anchor. */
+.analitica-screen, .analitica-screen > .content-area { background: #edf3f9 !important; }
+.analitica-screen > .content-area > .card:first-child { border-color: #234e7d !important; background: linear-gradient(110deg, #102742, #1a4c7b) !important; }
+.analitica-screen > .content-area > .card:first-child > div { color: #e0ecf9 !important; }
+.analitica-screen .analytics-summary { gap: 10px !important; }
+.analitica-screen .analytics-summary > div { min-height: 92px !important; padding: 17px 18px !important; border-color: #355f8a !important; background: linear-gradient(145deg, #183c63, #224e7d) !important; box-shadow: none !important; }
+.analitica-screen .analytics-summary strong { color: #fff !important; font-size: 27px !important; }
+.analitica-screen .analytics-summary span { color: #bed4eb !important; font-size: 10px !important; }
+.analitica-screen > .content-area > .card:not(:first-child) { border-color: #cbdcec !important; background: #fff !important; box-shadow: 0 12px 24px -24px #24476e !important; }
+
+@media (max-width: 899px) {
+  .coverage-workspace { grid-template-columns: 1fr !important; }
+  .coverage-panel-card { max-height: none !important; overflow: visible !important; }
+  .quotes-layout { grid-template-columns: 1fr !important; }
+  .quotes-header-inner > img { display: none !important; }
+}

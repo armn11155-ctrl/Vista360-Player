@@ -115,7 +115,7 @@ export default function Papelera({ onBack }: Props) {
   const items = estado.status === "ready" ? estado.items : [];
 
   return (
-    <div className="admin-tool-screen solicitudes-screen">
+    <div className="admin-tool-screen solicitudes-screen papelera-screen">
       <div className="detail-header">
         <BackButton onClick={onBack} />
         <div className="simple-title">Papelera</div>

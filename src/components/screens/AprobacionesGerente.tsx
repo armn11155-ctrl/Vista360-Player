@@ -82,7 +82,7 @@ export default function AprobacionesGerente({ onBack }: Props) {
   const resueltas = solicitudes.filter((s) => s.estado !== "Pendiente");
 
   return (
-    <div className="admin-tool-screen solicitudes-screen">
+    <div className="admin-tool-screen solicitudes-screen aprobaciones-screen">
       <div className="detail-header">
         <BackButton onClick={onBack} />
         <div className="simple-title">Aprobaciones</div>
@@ -90,8 +90,8 @@ export default function AprobacionesGerente({ onBack }: Props) {
       </div>
 
       <div className="content-area solicitudes-area">
-        <div className="card" style={{ background: "rgba(8,119,255,0.12)" }}>
-          <div style={{ fontSize: 12, color: "#6D28D9", lineHeight: 1.5 }}>
+        <div className="card" style={{ background: "#eaf2fc" }}>
+          <div style={{ fontSize: 12, color: "#24466d", lineHeight: 1.5 }}>
             Acciones que un Trabajador pidió hacer y necesitan tu aprobación. Solo tú ves esta pantalla.
           </div>
         </div>

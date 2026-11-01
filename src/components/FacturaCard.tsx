@@ -519,9 +519,11 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
               )}
             </div>
           )}
-          <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
-            {f.estado}
-          </div>
+          {f.estado !== "Emitida" && (
+            <div className="report-ready-badge" style={{ background: badge.bg, color: badge.color }}>
+              {f.estado}
+            </div>
+          )}
         </div>
       </div>
 

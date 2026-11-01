@@ -218,13 +218,10 @@ export function estadoPinPanel(panel: PanelConUso): EstadoPinPanel {
   return esPanelDisponibleAhora(panel) ? "disponible" : "ocupado";
 }
 
-// Los tres archivos preservan las siluetas de cada estado. La capa de
-// presentación recolorea el pin contratado en champagne y el ocupado
-// en negro para ajustarlos a la paleta actual sin cambiar su significado.
 const PIN_URL: Record<EstadoPinPanel, string> = {
-  mio: "/vista360-map-marker-contratado.png",
-  ocupado: "/vista360-map-marker-v4.png",
-  disponible: "/vista360-map-marker-available.png",
+  mio: "/map-pin-contracted.svg",
+  ocupado: "/map-pin-occupied.svg",
+  disponible: "/map-pin-available.svg",
 };
 
 const PIN_CLASE: Record<EstadoPinPanel, string> = {
@@ -949,17 +946,17 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
           {mapReady && !mapError && datosListos && (
             <div className="coverage-map-legend" aria-label="Leyenda del mapa">
               <div>
-                <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
+                <img src="/map-pin-available.svg" decoding="async" alt="" aria-hidden="true" />
                 <span>Disponibles</span>
                 <strong>{panelesContratables}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
+                <img src="/map-pin-contracted.svg" decoding="async" alt="" aria-hidden="true" />
                 <span>Contratados</span>
                 <strong>{panelesActivos}</strong>
               </div>
               <div>
-                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
+                <img src="/map-pin-occupied.svg" decoding="async" alt="" aria-hidden="true" />
                 <span>Ocupados</span>
                 <strong>{panelesOcupadosPorOtros}</strong>
               </div>

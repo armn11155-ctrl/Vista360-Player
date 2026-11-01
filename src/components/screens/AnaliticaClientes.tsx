@@ -52,12 +52,12 @@ export function tiempoRelativo(ms: number | null): string {
   return `Hace ${meses} ${meses === 1 ? "mes" : "meses"}`;
 }
 
-/** Verde si entró hace poco, ámbar si hace un tiempo, gris si nunca/hace mucho. */
+/** La intensidad del azul indica qué tan reciente fue el ingreso. */
 export function colorEstado(ms: number | null): string {
   if (ms === null) return "#64748B";
   const dias = (Date.now() - ms) / 86400000;
-  if (dias < 3) return "#16A34A";
-  if (dias < 14) return "#7C3AED";
+  if (dias < 3) return "#2464b2";
+  if (dias < 14) return "#537da9";
   return "#64748B";
 }
 

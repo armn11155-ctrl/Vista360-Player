@@ -385,7 +385,7 @@ export default function DetalleCampana({ contrato, paneles, clienteNombre: _clie
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-                  background: estado === "Activa" ? "#22C55E" : estado === "Programada" ? "#0877FF" : "#64748B",
+                  background: estado === "Activa" ? "#315f9d" : estado === "Programada" ? "#4d7db8" : "#243b59",
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">

@@ -15,6 +15,8 @@ interface Props {
 export default function GestionHoy({ solicitudesPendientes, onOpenSolicitudes, onOpenOcupacion, onOpenCotizaciones }: Props) {
   const ocupacion = useOcupacion();
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[] | null>(null);
+  const [actualizando, setActualizando] = useState(false);
+  const [actualizadoEn, setActualizadoEn] = useState<string | null>(null);
   const puedeCotizar = Boolean(onOpenCotizaciones);
   useEffect(() => {
     if (!cloudFunctions || !puedeCotizar) return;
@@ -27,6 +29,14 @@ export default function GestionHoy({ solicitudesPendientes, onOpenSolicitudes, o
   }, [puedeCotizar]);
   const recargar = "recargar" in ocupacion ? ocupacion.recargar : undefined;
   const datos = ocupacion.status === "ready" ? ocupacion.datos : null;
+  useEffect(() => {
+    if (!datos) return;
+    setActualizando(false);
+    setActualizadoEn(new Date().toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" }));
+  }, [datos]);
+  useEffect(() => {
+    if (ocupacion.status === "error") setActualizando(false);
+  }, [ocupacion.status]);
   const vencidas = datos?.cobranza.vencidas ?? 0;
   const porVencer = datos?.porVencer.length ?? 0;
   const libres = datos?.totales.libres ?? 0;
@@ -41,8 +51,9 @@ export default function GestionHoy({ solicitudesPendientes, onOpenSolicitudes, o
           <span className="gestion-hoy-kicker">TU OPERACIÓN</span>
           <h2>Trabajo de hoy</h2>
           <p>{datos ? (pendientes > 0 ? `${pendientes} asuntos para revisar` : "Todo al día. Revisa oportunidades de venta.") : "Tus prioridades, reunidas en un lugar."}</p>
+          {actualizadoEn && <small className="gestion-hoy-updated">Datos actualizados a las {actualizadoEn}</small>}
         </div>
-        {datos && <button type="button" className="gestion-hoy-refresh" onClick={recargar}>Actualizar</button>}
+        {datos && <button type="button" className="gestion-hoy-refresh" disabled={actualizando} onClick={() => { if (recargar) { setActualizando(true); recargar(); } }}>{actualizando ? "Actualizando…" : "Actualizar"}</button>}
       </div>
 
       {ocupacion.status === "loading" && <div className="gestion-hoy-loading" role="status">Preparando prioridades…</div>}

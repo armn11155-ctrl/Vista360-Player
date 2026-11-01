@@ -719,12 +719,6 @@ export default function AdminClientPicker({ onSelect, onOpenUsuarios, onOpenSoli
                   <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
                   <span><strong>Cotizaciones</strong><small>Crear propuestas comerciales</small></span><i>›</i>
                 </button>
-                {onOpenReporte && (
-                  <button type="button" onClick={() => { setSeleccionandoReporte(true); setTab("activos"); setGestionAbierta(false); }} className="admin-picker-management-card">
-                    <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3h9l3 3v15H6z"/><path d="M9 10h6M9 14h6M9 18h4"/></svg></span>
-                    <span><strong>Preparar reporte</strong><small>Elegir cliente y tomar fotos</small></span><i>›</i>
-                  </button>
-                )}
                 {esGerente && (
                   <button type="button" onClick={onOpenAnalitica} className="admin-picker-management-card">
                     <span className="admin-picker-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>

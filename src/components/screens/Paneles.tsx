@@ -176,7 +176,7 @@ export default function Paneles({ onBack, onMenuClick, esGerente = true }: Props
           draggable: true,
           icon: L.divIcon({
             className: "coverage-leaflet-marker active",
-            html: '<span><img src="/vista360-map-marker-v4.png" alt="" /></span>',
+            html: '<span><img src="/map-pin-contracted.svg" alt="" /></span>',
             iconSize: [48, 74],
             iconAnchor: [24, 72],
           }),
