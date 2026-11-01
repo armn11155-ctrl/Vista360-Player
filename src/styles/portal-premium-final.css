@@ -75,9 +75,9 @@ body, .main-area, .screens, .content-area, .inicio-screen, .inicio-content,
 }
 .reports-list > .report-card .report-actions .report-action-download,
 .facturas-screen .reports-list > .factura-card .report-actions .report-action.report-action-download {
-  background: #315f9d !important;
-  background-color: #315f9d !important;
-  border-color: #315f9d !important;
+  background: linear-gradient(135deg,#357bd1,#1f60b8) !important;
+  background-color: #276dcc !important;
+  border-color: #276dcc !important;
   color: #fff !important;
 }
 .reports-list .report-action-muted {
@@ -406,6 +406,9 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
 .admin-picker-mobile-exit-wrap { display: none; }
 
 @media (max-width: 899px) {
+  .inicio-screen .inicio-desktop-welcome { display: none !important; }
+  .inicio-summary-grid > .inicio-kpi-card:first-child,
+  .inicio-summary-grid > .inicio-kpi-card:nth-child(3) { padding-left: 12px !important; }
   .inicio-screen .inicio-content { background: #f4f7fb !important; }
   .inicio-side-col .inicio-evidence-card .inicio-report-icon span { margin-top: 9px !important; }
   .inicio-report-icon .inicio-report-camera { width: 65px !important; height: 52px !important; margin-top: 2px !important; }
