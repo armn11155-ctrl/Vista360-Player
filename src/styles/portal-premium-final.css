@@ -445,7 +445,7 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
 }
 .admin-picker-globe {
   position: absolute;
-  inset: 0 0 auto;
+  inset: auto 0 -12px;
   z-index: 1;
   height: min(87vh, 550px);
   pointer-events: none;
@@ -462,14 +462,23 @@ details.report-admin-panel > .report-admin-header .report-admin-sub { color: #b5
     position: absolute;
     left: clamp(38px, 5vw, 72px);
     right: 30px;
-    bottom: 20px;
+    top: clamp(125px, 18vh, 165px);
+    bottom: auto;
     max-width: none;
     margin: 0 !important;
   }
-  .admin-picker-editorial-kicker,
-  .admin-picker-editorial p { display: none !important; }
+  .admin-picker-editorial-kicker {
+    display: inline-flex !important;
+    margin-bottom: 10px;
+  }
+  .admin-picker-editorial p {
+    display: block !important;
+    margin-top: 12px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
   .admin-picker-editorial h1 {
-    font-size: clamp(34px, 3vw, 43px);
+    font-size: clamp(34px, 2.7vw, 40px);
     line-height: 1.01;
     text-shadow: 0 2px 18px rgba(0, 0, 0, .5);
   }
