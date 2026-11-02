@@ -48,18 +48,53 @@
   }
 }
 
-/* Campañas: tarjeta compacta con título y texto sobre el mismo eje. */
+/* Campañas: contexto, filtro y aviso siguen un mismo eje de lectura. */
+.mis-campanas-list > .campanas-filter-bar {
+  box-sizing: border-box;
+  grid-column: 1 / -1;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 5px !important;
+  width: min(100%, 900px) !important;
+  max-width: 900px !important;
+  margin: 0 auto 5px !important;
+  padding: 5px !important;
+  border: 1px solid #d6e2ef !important;
+  border-radius: 12px !important;
+  background: #eaf1f9 !important;
+  box-shadow: none !important;
+}
+.mis-campanas-list > .campanas-filter-bar .campanas-filter-tab {
+  min-height: 48px !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: #48617a !important;
+  font-size: 13px !important;
+  font-weight: 720 !important;
+  box-shadow: none !important;
+}
+.mis-campanas-list > .campanas-filter-bar .campanas-filter-tab.active {
+  background: #173e68 !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+.mis-campanas-list > .campanas-filter-bar .campanas-filter-tab:focus-visible {
+  outline: 2px solid #276dcc !important;
+  outline-offset: 2px;
+}
 .mis-campanas-list > .mis-campanas-month-status,
 .mis-campanas-month-status:has(> .mis-campanas-month-status-row:nth-child(2):last-child) {
   box-sizing: border-box;
-  width: fit-content !important;
-  min-width: min(100%, 430px) !important;
-  max-width: min(100%, 760px) !important;
+  width: min(100%, 780px) !important;
+  min-width: 0 !important;
+  max-width: 780px !important;
   min-height: 0 !important;
-  margin: 0 0 12px !important;
-  padding: 15px 19px !important;
-  justify-self: start !important;
-  align-self: start !important;
+  margin: 0 auto 12px !important;
+  padding: 16px 22px !important;
+  justify-self: center !important;
+  align-self: center !important;
   border: 1px solid #dbe4ef !important;
   border-radius: 14px !important;
   background: #fff !important;
@@ -74,6 +109,7 @@
   color: #276dcc !important;
   font-size: 10px !important;
   letter-spacing: .13em !important;
+  text-align: center !important;
 }
 .mis-campanas-list .mis-campanas-month-status-header img { display: none !important; }
 .mis-campanas-list .mis-campanas-month-status-row {
@@ -85,11 +121,17 @@
   font-size: 13px !important;
   font-weight: 700 !important;
   line-height: 1.4 !important;
+  text-align: center !important;
 }
 .mis-campanas-list .mis-campanas-month-status-row + .mis-campanas-month-status-row { margin-top: 10px !important; border-top: 1px solid #edf1f5 !important; }
 .mis-campanas-list .mis-campanas-month-status-row.is-sent { color: #276dcc !important; }
 @media (max-width: 899px) {
   .mis-campanas-list > .mis-campanas-month-status { width: 100% !important; max-width: none !important; min-width: 0 !important; }
+}
+@media (max-width: 640px) {
+  .mis-campanas-list > .campanas-filter-bar { width: 100% !important; gap: 2px !important; margin-bottom: 2px !important; padding: 4px !important; }
+  .mis-campanas-list > .campanas-filter-bar .campanas-filter-tab { min-height: 42px !important; padding: 6px 2px !important; font-size: 11px !important; }
+  .mis-campanas-list > .mis-campanas-month-status { padding: 14px !important; }
 }
 
 /* Cobertura: una sola superficie para buscar y un mapa sin leyenda superpuesta. */
@@ -118,6 +160,39 @@
   box-shadow: none !important;
   color: #1b2d41 !important;
 }
+.coverage-screen .coverage-catalog-select {
+  min-width: 0;
+  padding: 0 !important;
+  border: 1px solid #c9d9ed !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+}
+.coverage-screen .coverage-catalog-select:focus-within {
+  border-color: #276dcc !important;
+  box-shadow: 0 0 0 3px rgba(39, 109, 204, .14) !important;
+}
+.coverage-screen .coverage-catalog-select select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 38px 0 15px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background-color: #fff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23276dcc' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 13px center !important;
+  background-size: 16px 16px !important;
+  color: #173e68 !important;
+  font-size: 12px !important;
+  font-weight: 720 !important;
+  cursor: pointer;
+}
+.coverage-screen .coverage-leaflet-map .leaflet-tile-pane { filter: none !important; }
 .coverage-screen .coverage-map-heading {
   display: flex !important;
   align-items: end !important;
@@ -243,6 +318,59 @@
   .facturas-history-screen-body > .reports-filter-bar { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: 8px !important; }
   .reports-history-screen-body select.reports-filter-select,
   .facturas-screen .facturas-screen-body.facturas-history-screen-body select.reports-filter-select { width: 100% !important; min-width: 0 !important; }
+}
+
+/* La carga de facturas comparte el lenguaje del creador de reportes. */
+.facturas-screen .factura-upload-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px 18px;
+  padding: 21px 24px !important;
+  border: 1px solid #1c3658 !important;
+  border-radius: 14px !important;
+  background: linear-gradient(115deg, #0b1525, #142a49) !important;
+  box-shadow: 0 20px 36px -30px rgba(5, 15, 30, .7) !important;
+}
+.facturas-screen .factura-upload-title { margin-bottom: 5px; color: #fff; font-size: 19px; font-weight: 780; letter-spacing: -.025em; }
+.facturas-screen .factura-upload-description { color: #b5c2d4; font-size: 12px; line-height: 1.5; }
+.facturas-screen .factura-upload-campaign-label { display: block; margin-bottom: 5px; color: #d0deef; font-size: 11px; font-weight: 700; }
+.facturas-screen .factura-upload-card > div:nth-of-type(2) { grid-column: 1; }
+.facturas-screen .factura-upload-btn {
+  min-height: 43px;
+  padding: 0 17px;
+  border: 1px solid #276dcc !important;
+  border-radius: 9px !important;
+  background: #276dcc !important;
+  color: #fff !important;
+  font-size: 12px;
+  font-weight: 780;
+}
+.facturas-screen .factura-upload-btn:hover:not(:disabled) { border-color: #3f82dc !important; background: #3f82dc !important; }
+.facturas-screen .factura-upload-send { grid-column: 2; }
+.facturas-screen .factura-upload-msg { color: #d8e9ff !important; }
+@media (max-width: 640px) {
+  .facturas-screen .factura-upload-card { grid-template-columns: minmax(0, 1fr) !important; padding: 19px !important; }
+  .facturas-screen .factura-upload-card > div:nth-of-type(2),
+  .facturas-screen .factura-upload-send,
+  .facturas-screen .factura-upload-msg { grid-column: 1 !important; }
+  .facturas-screen .factura-upload-btn { width: 100%; }
+}
+
+/* El azul noche del perfil se extiende a los encabezados del portal. */
+:is(.client-screen-header, .admin-tool-screen > .detail-header, .quotes-header, .inicio-header) {
+  border-bottom: 1px solid #1c3658 !important;
+  background: linear-gradient(115deg, #060b13 0%, #0d1a2d 69%, #142a49 100%) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+:is(.client-screen-header, .admin-tool-screen > .detail-header, .quotes-header, .inicio-header)
+  :is(.client-screen-header-title, .simple-title, .header-title, .inicio-header-title) {
+  color: #fff !important;
+}
+:is(.client-screen-header, .admin-tool-screen > .detail-header, .quotes-header, .inicio-header)
+  :is(.back-btn, .client-screen-notification-btn, .mobile-sidebar-header-btn, .inicio-header-icon-btn, .quotes-header-inner > button) {
+  border-color: rgba(255, 255, 255, .2) !important;
+  background: rgba(255, 255, 255, .08) !important;
+  color: #e9f2ff !important;
 }
 
 /* Perfil: cifras legibles en celular y datos de acceso fáciles de localizar. */

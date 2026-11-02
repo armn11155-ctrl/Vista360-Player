@@ -192,8 +192,8 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
           <div className="card factura-upload-card">
             <input ref={fileRef} type="file" accept="application/pdf" style={{ display: "none" }} onChange={elegirPdf} />
             <div>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text)", marginBottom: 4 }}>Agregar PDF</div>
-              <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.35 }}>
+              <div className="factura-upload-title">Agregar PDF</div>
+              <div className="factura-upload-description">
                 Se optimiza en versión digital antes de enviarla al cliente.
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function Facturas({ ruc, clienteId, cliente, isAdmin, onMenuClick
             </button>
             {pdfListo && contratos.length > 0 && (
               <div style={{ marginTop: 2 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: "var(--muted)", display: "block", marginBottom: 4 }}>
+                <label className="factura-upload-campaign-label">
                   ¿A qué campaña corresponde? (opcional)
                 </label>
                 <select
