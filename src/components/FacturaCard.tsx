@@ -484,7 +484,11 @@ export function FacturaCard({ factura: f, cliente, isAdmin }: Props) {
           <div className="report-kicker">Factura</div>
           <div className="report-title" style={{ fontSize: tamanoTitulo(nombreFactura) }}>{nombreFactura}</div>
           <div className="report-meta report-meta-generated">
-            {fechaEmisionDate ? `Generado el ${fechaCorta(fechaEmisionDate)}` : (f.fecha_emision ?? "—")}
+            {fechaEmisionDate
+              ? `Generado el ${fechaCorta(fechaEmisionDate)}`
+              : f.fecha_emision?.trim()
+                ? `Generado el ${f.fecha_emision.trim()}`
+                : "Fecha de emisión por registrar"}
           </div>
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
         </div>
