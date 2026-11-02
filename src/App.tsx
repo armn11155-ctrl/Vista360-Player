@@ -74,8 +74,8 @@ const Ocupacion = pantallaLazy(() => import("./components/screens/Ocupacion"));
 const Cotizaciones = pantallaLazy(() => import("./components/screens/Cotizaciones"));
 // Estas seis estaban en el bundle inicial: ~2600 líneas que el navegador
 // descargaba para poder mostrar la pantalla de login, donde no se usa
-// ninguna. Ahora bajan cuando hacen falta, y precargarPantallas() las pide
-// apenas la app queda ociosa, así no se nota el cambio al abrirlas.
+// ninguna. Ahora bajan cuando hacen falta; las rutas frecuentes se preparan
+// al quedar libre la conexión y las demás cuando existe intención de abrirlas.
 const AdminClientPicker = pantallaLazy(() => import("./components/AdminClientPicker"));
 const AdminPerfil = pantallaLazy(() => import("./components/screens/AdminPerfil"));
 const MisCampanas = pantallaLazy(() => import("./components/screens/MisCampanas"));
@@ -85,19 +85,15 @@ const OnboardingTour = pantallaLazy(() => import("./components/OnboardingTour"))
 
 type CargaPantalla = () => Promise<unknown>;
 
-const PANTALLAS_PRIORITARIAS: CargaPantalla[] = [
+const RUTAS_FRECUENTES: CargaPantalla[] = [
   () => import("./components/screens/MisCampanas"),
   () => import("./components/screens/DetalleCampana"),
-  () => import("./components/AdminClientPicker"),
   () => import("./components/screens/Cobertura"),
+  () => import("./components/screens/Perfil"),
 ];
 
-// Reportes y Facturas son destinos de navegación directa y sus chunks son
-// pequeños (~5.5 kB y ~3.1 kB gzip). Esperar a requestIdleCallback para
-// pedirlos funciona bien en escritorio, pero Safari/PWA puede postergar ese
-// callback mientras termina de pintar la pantalla inicial. Se descargan apenas
-// la sesión está lista, sin montar los componentes ni abrir consultas: cero
-// lecturas adicionales y el primer toque ya encuentra el código en caché.
+// Reportes y Facturas son destinos directos. Se preparan después de que el
+// resumen inicial ya llegó, sin montar componentes ni abrir consultas.
 function precargarDocumentos() {
   void Promise.allSettled([
     import("./components/screens/Reportes"),
@@ -105,62 +101,18 @@ function precargarDocumentos() {
   ]);
 }
 
-const PANTALLAS_SECUNDARIAS: CargaPantalla[] = [
-  () => import("./components/screens/NuevaCampana"),
-  () => import("./components/screens/MisPantallas"),
-  () => import("./components/screens/AnaliticaClientes"),
-  () => import("./components/screens/AprobacionesGerente"),
-  () => import("./components/screens/SolicitudesCampana"),
-  () => import("./components/screens/Accesos"),
-  () => import("./components/screens/Notificaciones"),
-  () => import("./components/screens/CrearCliente"),
-  () => import("./components/screens/Paneles"),
-  () => import("./components/screens/Ocupacion"),
-  () => import("./components/screens/Cotizaciones"),
-  () => import("./components/screens/AdminPerfil"),
-  () => import("./components/screens/Perfil"),
-];
+/** Descarga solo destinos habituales. Herramientas administrativas, mapa y
+ * datos de cobertura esperan a que el usuario señale o abra esa sección. */
+function precargarRutasFrecuentes() {
+  void Promise.allSettled(RUTAS_FRECUENTES.map((cargar) => cargar()));
+}
 
-/** Deja todas las pantallas en caché apenas la sesión ya está lista.
- * Primero se solicitan las rutas más usadas y, en el siguiente microtask,
- * todas las demás. Así no se retrasa el login, pero una vez dentro los
- * cambios de pestaña no esperan una descarga por primera vez. */
-function precargarTodasLasPantallas() {
-  const prioritarias = Promise.allSettled(PANTALLAS_PRIORITARIAS.map((cargar) => cargar()));
-
-  // La version anterior disparaba las 19 rutas casi en el mismo instante:
-  // primero seis y, en el microtask siguiente, todas las demas. En una red
-  // movil eso hace que las pantallas importantes compitan con herramientas
-  // raras y con jsPDF/Leaflet. Se siguen descargando TODAS en segundo plano,
-  // pero las secundarias van en lotes de cuatro cuando termina el grupo
-  // prioritario. El usuario conserva cambios instantaneos sin ahogar la
-  // conexion justo despues de iniciar sesion.
-  void prioritarias.then(async () => {
-    for (let inicio = 0; inicio < PANTALLAS_SECUNDARIAS.length; inicio += 4) {
-      const lote = PANTALLAS_SECUNDARIAS.slice(inicio, inicio + 4);
-      await Promise.allSettled(lote.map((cargar) => cargar()));
-    }
-  });
-
-  // Cobertura necesita además el chunk de Leaflet (ahora empaquetado con
-  // la app, ya no un CDN externo -- ver utils/leaflet.ts). Pedirlo acá
-  // igual sirve: aunque ya esté en el mismo paquete Vite, sigue siendo
-  // un chunk aparte que el navegador tiene que buscar en caché/red la
-  // primera vez, así que precargarlo evita que el primer ingreso a
-  // Cobertura tenga que esperar recién ahí.
-  void cargarLeaflet().catch(() => {
-    // Si la precarga falla (por ejemplo, por una conexión momentáneamente
-    // inestable), Cobertura vuelve a intentarlo normalmente al abrirse.
-  });
-  // Y no solo el CÓDIGO de Cobertura -- también sus DATOS. Descargar la
-  // pantalla de antemano no evitaba el "Cargando paneles" que se veía
-  // la primera vez que se entraba en toda la sesión, porque el pedido
-  // a Firestore recién arrancaba cuando el componente se montaba. Acá
-  // se arranca esa misma escucha (compartida, ver usePanelesDisponibles)
-  // de una vez -- así, para cuando la persona realmente toca
-  // "Cobertura", lo más probable es que los paneles ya hayan llegado
-  // mientras miraba Inicio, y no vea "Cargando" en absoluto.
-  precargarPaneles();
+function conexionLimitada(): boolean {
+  const navegador = navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  };
+  const conexion = navegador.connection;
+  return !!conexion?.saveData || ["slow-2g", "2g", "3g"].includes(conexion?.effectiveType ?? "");
 }
 
 type View =
@@ -865,16 +817,16 @@ function AuthenticatedApp({
   // siempre aparecía el ícono genérico aunque la cuenta sí tuviera foto.
   const adminAvatarUrl = useAvatarPropio(esInterno ? uid : undefined);
   useEffect(() => {
-    // No competir con la autenticación. En cuanto ya existe una sesión,
-    // Reportes/Facturas se piden de inmediato porque son destinos frecuentes;
-    // el resto conserva la precarga ociosa y escalonada para no saturar móvil.
-    if (!uid) return;
+    // Primero termina la lectura que alimenta Inicio. En conexiones lentas o
+    // con ahorro de datos no se descarga ninguna pantalla que no se pidió;
+    // navegación y foco aún preparan la ruta elegida en precargarVista().
+    if (!uid || contratosState.status === "loading" || conexionLimitada()) return;
     precargarDocumentos();
     const idle = (window as any).requestIdleCallback ?? ((fn: () => void) => window.setTimeout(fn, 800));
     const cancelar = (window as any).cancelIdleCallback ?? window.clearTimeout;
-    const id = idle(precargarTodasLasPantallas, { timeout: 1200 });
+    const id = idle(precargarRutasFrecuentes, { timeout: 2400 });
     return () => cancelar(id);
-  }, [uid]);
+  }, [uid, contratosState.status]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Precarga del formulario de Nueva campaña cuando se pide desde un
