@@ -333,9 +333,9 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
         <div style={{ width: 32 }} />
       </div>
 
-      <div className="content-area">
+      <div className="content-area admin-perfil-content">
         <div className="admin-perfil-hero">
-          <div style={{ width: 76, height: 76, marginBottom: 14 }}>
+          <div className="admin-perfil-avatar-wrap">
             <button
               type="button"
               className="profile-avatar-hover-btn"
@@ -359,15 +359,17 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
               (usePortalAuth trae el real de Firestore, o el respaldo
               conocido por correo si todavía no está guardado). Pedido
               explícito: sin lápiz ni prompt(), solo el nombre. */}
-          <span className="admin-perfil-eyebrow">TU CUENTA · VISTA360 PLAYER</span>
-          <span className="admin-perfil-nombre">{nombre || rolInterno}</span>
-          <div className="admin-perfil-email">{email}</div>
-          <span className="profile-verified">
-            <span className="profile-verified-mark" aria-hidden="true">
-              <img src="/verified-check.svg" decoding="async" alt="" />
+          <div className="admin-perfil-identity">
+            <span className="admin-perfil-eyebrow">TU CUENTA · VISTA360 PLAYER</span>
+            <h1 className="admin-perfil-nombre">{nombre || rolInterno}</h1>
+            <p className="admin-perfil-email">{email}</p>
+            <span className="profile-verified">
+              <span className="profile-verified-mark" aria-hidden="true">
+                <img src="/verified-check.svg" decoding="async" alt="" />
+              </span>
+              <span>Cuenta {rolInterno.toLowerCase()}</span>
             </span>
-            <span>Cuenta {rolInterno.toLowerCase()}</span>
-          </span>
+          </div>
         </div>
 
         {modalAvatarAbierto && (
@@ -379,7 +381,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
           />
         )}
 
-        <section className="profile-section" style={{ marginTop: 24 }}>
+        <section className="profile-section admin-perfil-storage">
           <h2>Almacenamiento</h2>
           <div className="profile-card-list">
             <div className="profile-metric-card">
@@ -615,7 +617,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
           </div>
         </section>
 
-        <section className="profile-section">
+        <section className="profile-section admin-perfil-security">
           <h2>Seguridad</h2>
           <div className="profile-card-list">
             {/* Solo para Gerentes por ahora: es la cuenta que puede
@@ -648,7 +650,7 @@ export default function AdminPerfil({ uid, nombre, email, esGerente = true, onBa
           </p>
         </section>
 
-        <section className="profile-section">
+        <section className="profile-section admin-perfil-account">
           <h2>Cuenta</h2>
           <div className="profile-card-list">
             <button type="button" className="profile-row clickable" onClick={() => setModalPasswordAbierto(true)}>
