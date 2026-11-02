@@ -1,26 +1,42 @@
-/* Cobertura entra directamente al catálogo y usa tinta para las acciones. */
+/* Cobertura usa el mismo azul que las acciones de Inicio y Campañas. */
 .coverage-screen .coverage-premium-area { padding-top: 25px !important; }
 .coverage-screen .coverage-catalog { padding-top: 0; }
 .coverage-screen .coverage-catalog-section-label,
-.coverage-screen .coverage-catalog-card-kicker { color: #405466; }
+.coverage-screen .coverage-catalog-card-kicker { color: #276dcc; }
 .coverage-screen .coverage-catalog-heading h2,
 .coverage-screen .coverage-catalog-card h3 { color: #111820; }
 .coverage-screen .coverage-catalog-search:focus-within,
 .coverage-screen .coverage-catalog-select:focus-within {
-  border-color: #0b2c47;
-  box-shadow: 0 0 0 3px rgba(11,44,71,.12);
+  border-color: #276dcc;
+  box-shadow: 0 0 0 3px rgba(39,109,204,.14);
 }
 .coverage-screen .coverage-catalog-primary {
-  border-color: #111820;
-  background: #111820;
+  border-color: #276dcc;
+  background: #276dcc;
   color: #fff;
 }
-.coverage-screen .coverage-catalog-primary:hover { border-color: #0b2c47; background: #0b2c47; }
+.coverage-screen .coverage-catalog-primary:hover { border-color: #1c58a9; background: #1c58a9; }
 .coverage-screen .coverage-catalog-map-link,
 .coverage-screen .coverage-popup-maps-link { color: #276dcc; }
 .coverage-screen .coverage-catalog-map-link:hover,
-.coverage-screen .coverage-popup-maps-link:hover { color: #1855a9; }
+.coverage-screen .coverage-popup-maps-link:hover { color: #1c58a9; }
+.coverage-screen .coverage-selected-actions button,
+.coverage-screen .coverage-popup-action,
+.coverage-screen .coverage-google-link,
+.coverage-screen .coverage-map-pin,
+.coverage-screen .coverage-map-pin.active {
+  border-color: #276dcc !important;
+  background: #276dcc !important;
+}
+.coverage-screen .coverage-selected-actions button:hover,
+.coverage-screen .coverage-popup-action:hover,
+.coverage-screen .coverage-google-link:hover { border-color: #1c58a9 !important; background: #1c58a9 !important; }
+.coverage-screen .coverage-selected-tipo,
+.coverage-screen .coverage-popup-tipo { color: #276dcc !important; background: #eaf2ff !important; }
+.coverage-screen .coverage-map-legend > div:nth-child(2) { background: rgba(39,109,204,.24) !important; }
+.coverage-screen .coverage-map-legend > div:nth-child(2) strong { color: #dceaff !important; }
 .coverage-screen .coverage-catalog-status.status-ocupado { background: #eef1f4; color: #485b6d; }
+.coverage-screen .coverage-catalog-status.status-mantenimiento { background: #eef1f4; color: #485b6d; }
 .coverage-screen .coverage-selected-card { border-color: #dce2e8 !important; background: #fff !important; }
 
 .campaign-request-wait {

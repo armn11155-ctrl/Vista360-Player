@@ -115,7 +115,7 @@
 
 .coverage-catalog { padding-top: 56px; scroll-margin-top: 24px; }
 .coverage-catalog-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 25px; }
-.coverage-catalog-section-label { color: #39739a; }
+.coverage-catalog-section-label { color: #276dcc; }
 .coverage-catalog-heading h2 { margin: 9px 0 8px; color: #0a1d2e; font-size: clamp(28px, 3vw, 42px); line-height: 1.1; letter-spacing: -.045em; }
 .coverage-catalog-heading p { margin: 0; color: #607386; font-size: 13px; line-height: 1.5; }
 .coverage-catalog-total { flex: 0 0 auto; padding-bottom: 5px; color: #547087; font-size: 12px; font-weight: 700; }
@@ -123,7 +123,7 @@
 .coverage-catalog-search,
 .coverage-catalog-select { display: flex; align-items: center; min-height: 48px; border: 1px solid #d6e0e8; border-radius: 9px; background: #fff; }
 .coverage-catalog-search:focus-within,
-.coverage-catalog-select:focus-within { border-color: #3279ad; box-shadow: 0 0 0 3px rgba(50,121,173,.12); }
+.coverage-catalog-select:focus-within { border-color: #276dcc; box-shadow: 0 0 0 3px rgba(39,109,204,.14); }
 .coverage-catalog-search { gap: 10px; padding: 0 14px; }
 .coverage-catalog-search svg { flex: 0 0 17px; width: 17px; height: 17px; stroke: #6e8799; stroke-width: 1.8; stroke-linecap: round; }
 .coverage-catalog-search input,
@@ -145,8 +145,8 @@
   cursor: pointer;
   transition: border-color .18s, background .18s, color .18s;
 }
-.coverage-catalog-chips button:hover { border-color: #96b9d0; color: #173c59; }
-.coverage-catalog-chips button.is-active { border-color: #0b2c47; background: #0b2c47; color: #fff; }
+.coverage-catalog-chips button:hover { border-color: #276dcc; color: #276dcc; }
+.coverage-catalog-chips button.is-active { border-color: #276dcc; background: #276dcc; color: #fff; }
 .coverage-catalog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .coverage-catalog-card { min-width: 0; overflow: hidden; border: 1px solid #dce4eb; border-radius: 16px; background: #fff; box-shadow: 0 20px 38px -36px #1c405c; transition: transform .2s, box-shadow .2s; }
 .coverage-catalog-card:hover { transform: translateY(-3px); box-shadow: 0 26px 50px -36px #1c405c; }
@@ -155,13 +155,13 @@
 .coverage-catalog-card-media img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
 .coverage-catalog-card:hover .coverage-catalog-card-media img { transform: scale(1.025); }
 .coverage-catalog-card-reference { left: 16px; right: auto; bottom: 15px; }
-.coverage-catalog-status { position: absolute; z-index: 2; top: 15px; right: 15px; padding: 7px 11px; border-radius: 6px; background: #effaf4; color: #176044; font-size: 10px; font-weight: 850; box-shadow: 0 5px 14px rgba(0,0,0,.12); }
-.coverage-catalog-status.status-ocupado { background: #e9f0f8; color: #244c75; }
-.coverage-catalog-status.status-mantenimiento { background: #fff7e5; color: #795a12; }
+.coverage-catalog-status { position: absolute; z-index: 2; top: 15px; right: 15px; padding: 7px 11px; border-radius: 6px; background: #eaf2ff; color: #276dcc; font-size: 10px; font-weight: 850; box-shadow: 0 5px 14px rgba(0,0,0,.12); }
+.coverage-catalog-status.status-ocupado { background: #eef1f4; color: #485b6d; }
+.coverage-catalog-status.status-mantenimiento { background: #eef1f4; color: #485b6d; }
 .coverage-catalog-status.status-activo,
-.coverage-catalog-status.status-programado { background: #102a46; color: #fff; }
+.coverage-catalog-status.status-programado { background: #276dcc; color: #fff; }
 .coverage-catalog-card-content { display: flex; flex-direction: column; min-height: 216px; padding: 20px 23px 22px; }
-.coverage-catalog-card-kicker { color: #397099; font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.coverage-catalog-card-kicker { color: #276dcc; font-size: 10px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
 .coverage-catalog-card-kicker i { padding: 0 5px; color: #a8bac8; font-style: normal; }
 .coverage-catalog-card h3 { margin: 8px 0 10px; color: #0b263e; font-size: clamp(20px, 2vw, 26px); font-weight: 780; line-height: 1.15; letter-spacing: -.035em; }
 .coverage-catalog-card-address { display: flex; align-items: flex-start; gap: 7px; min-height: 19px; margin: 0; color: #5e7488; font-size: 12px; line-height: 1.5; }
@@ -171,16 +171,16 @@
 .coverage-catalog-card-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 11px; margin-top: auto; padding-top: 20px; }
 .coverage-catalog-primary,
 .coverage-catalog-map-link { display: inline-flex; align-items: center; justify-content: space-between; gap: 15px; min-height: 40px; border-radius: 7px; font: inherit; font-size: 11px; font-weight: 820; cursor: pointer; }
-.coverage-catalog-primary { padding: 0 14px; border: 1px solid #123d60; background: #123d60; color: #fff; }
-.coverage-catalog-primary:hover { background: #092c48; }
-.coverage-catalog-map-link { padding: 0 2px; border: 0; background: none; color: #285d82; text-decoration: underline; text-underline-offset: 3px; }
-.coverage-catalog-map-link:hover { color: #0a3554; }
+.coverage-catalog-primary { padding: 0 14px; border: 1px solid #276dcc; background: #276dcc; color: #fff; }
+.coverage-catalog-primary:hover { border-color: #1c58a9; background: #1c58a9; }
+.coverage-catalog-map-link { padding: 0 2px; border: 0; background: none; color: #276dcc; text-decoration: underline; text-underline-offset: 3px; }
+.coverage-catalog-map-link:hover { color: #1c58a9; }
 .coverage-catalog-primary span,
 .coverage-catalog-map-link span { font-size: 15px; font-weight: 400; }
 .coverage-catalog-note { margin: 14px 0 0; color: #718596; font-size: 10px; line-height: 1.5; }
 .coverage-catalog-empty { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 12px; min-height: 150px; padding: 28px; border: 1px dashed #c6d7e2; border-radius: 13px; background: #fff; color: #557086; font-size: 13px; }
 .coverage-catalog-empty strong { color: #163750; font-size: 16px; }
-.coverage-catalog-empty button { border: 0; background: none; padding: 0; color: #266f9e; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+.coverage-catalog-empty button { border: 0; background: none; padding: 0; color: #276dcc; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
 .coverage-screen .coverage-workspace { display: flex !important; flex-direction: column !important; gap: 14px !important; padding-top: 56px; scroll-margin-top: 20px; }
 .coverage-screen .coverage-map-heading { font-size: 16px !important; }
 .coverage-screen .coverage-map-heading span { font-size: 16px !important; }

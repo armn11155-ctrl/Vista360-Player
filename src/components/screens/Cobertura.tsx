@@ -92,9 +92,9 @@ export function estadoTexto(panel: PanelConUso) {
 // queda de ella es informativo, solo dentro del popup (fecha en que
 // "Finalizó" + botón "Volver a contratar") -- eso no pasa por acá.
 function estadoColor(label: string) {
-  if (label === "Activo") return "#315f9d";
-  if (label === "Programado") return "#4f6d9b";
-  if (label === "Disponible") return "#6a7788";
+  if (label === "Activo") return "#276dcc";
+  if (label === "Programado") return "#276dcc";
+  if (label === "Disponible") return "#276dcc";
   if (label === "Ocupado") return "#111827";
   if (label === "Mantenimiento") return "#65748b";
   return "#526176";
