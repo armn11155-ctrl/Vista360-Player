@@ -114,6 +114,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // fin se calcula sola a partir del inicio.
   const [meses, setMeses] = useState(3);
   const [enviando, setEnviando] = useState(false);
+  const [esperaLarga, setEsperaLarga] = useState(false);
   const [error, setError] = useState("");
   // Se muestra después de enviar en vez de saltar directo a "Mis
   // campañas" en silencio -- se pidió un mensaje claro de que el
@@ -124,6 +125,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   const [enviadoYaExistia, setEnviadoYaExistia] = useState(false);
 
   async function enviar() {
+    if (enviando) return;
     setError("");
     const quiereAlternativas = Boolean(panelFijo && !esRenovacion && tipoConsulta === "alternativas");
     const notaAlternativas = quiereAlternativas ? `Prefiero recibir alternativas similares en ${ciudad || "la ciudad indicada"}.` : "";
@@ -144,6 +146,8 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     if (!cloudFunctions) { setError("Sin conexión. Intenta de nuevo."); return; }
     if (fechaInicio < hoyStr) { setError("La fecha de inicio no puede ser anterior a hoy."); return; }
     setEnviando(true);
+    setEsperaLarga(false);
+    const avisoEspera = window.setTimeout(() => setEsperaLarga(true), 7000);
     try {
       // Antes esto era un addDoc directo a Firestore -- dejó de
       // funcionar ("No tienes permiso para hacer esto.") en cuanto el
@@ -159,7 +163,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           panelSolicitadoId?: string; panelSolicitadoNombre?: string;
         },
         { ok: boolean; id: string; yaExistia?: boolean }
-      >(cloudFunctions, "crearSolicitudCampana");
+      >(cloudFunctions, "crearSolicitudCampana", { timeout: 30000 });
       const res = await fn({
         clienteId,
         nombre: formatCampaignName(nombre),
@@ -173,8 +177,13 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       setEnviadoYaExistia(Boolean(res.data.yaExistia));
       setEnviado(true);
     } catch (error) {
-      setError(mensajeDeError(error, "No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo."));
+      const codigo = (error as { code?: string })?.code;
+      setError(codigo?.endsWith("deadline-exceeded")
+        ? "No pudimos confirmar el envío. Puedes intentarlo otra vez: si ya se registró, no se duplicará."
+        : mensajeDeError(error, "No se pudo enviar la solicitud. Revisa tu conexión e intenta de nuevo."));
     } finally {
+      window.clearTimeout(avisoEspera);
+      setEsperaLarga(false);
       setEnviando(false);
     }
   }
@@ -448,6 +457,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
           <button type="button" className="campaign-request-submit" onClick={enviar} disabled={enviando}>
             {enviando ? "Enviando…" : "Enviar solicitud"}
           </button>
+          {enviando && <p className="campaign-request-wait" role="status">{esperaLarga ? "El servidor está tardando más de lo habitual. Seguimos confirmando tu solicitud." : "Guardando tu solicitud…"}</p>}
           <p className="campaign-request-privacy">La solicitud no reserva el espacio. Te confirmaremos la disponibilidad.</p>
         </div>
       </div>

@@ -1,0 +1,115 @@
+/* Cobertura entra directamente al catálogo y usa tinta para las acciones. */
+.coverage-screen .coverage-premium-area { padding-top: 25px !important; }
+.coverage-screen .coverage-catalog { padding-top: 0; }
+.coverage-screen .coverage-catalog-section-label,
+.coverage-screen .coverage-catalog-card-kicker { color: #405466; }
+.coverage-screen .coverage-catalog-heading h2,
+.coverage-screen .coverage-catalog-card h3 { color: #111820; }
+.coverage-screen .coverage-catalog-search:focus-within,
+.coverage-screen .coverage-catalog-select:focus-within {
+  border-color: #0b2c47;
+  box-shadow: 0 0 0 3px rgba(11,44,71,.12);
+}
+.coverage-screen .coverage-catalog-primary {
+  border-color: #111820;
+  background: #111820;
+  color: #fff;
+}
+.coverage-screen .coverage-catalog-primary:hover { border-color: #0b2c47; background: #0b2c47; }
+.coverage-screen .coverage-catalog-map-link,
+.coverage-screen .coverage-popup-maps-link { color: #276dcc; }
+.coverage-screen .coverage-catalog-map-link:hover,
+.coverage-screen .coverage-popup-maps-link:hover { color: #1855a9; }
+.coverage-screen .coverage-catalog-status.status-ocupado { background: #eef1f4; color: #485b6d; }
+.coverage-screen .coverage-selected-card { border-color: #dce2e8 !important; background: #fff !important; }
+
+.campaign-request-wait {
+  margin: 10px 0 0;
+  color: #405466;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Acceso: nueva fotografía y consola oscura con el azul como acento. */
+.login-shell,
+.login-shell::before,
+.login-shell::after,
+.login-experience { background: #0b1d31 !important; }
+.login-left-panel {
+  background: #0b1d31 url('/editorial/vista360-acceso-nocturno.jpg') 63% center / cover no-repeat !important;
+}
+.login-left-panel::before { content: none !important; display: none !important; }
+.login-left-panel::after {
+  content: "" !important;
+  display: block !important;
+  opacity: 1 !important;
+  background: linear-gradient(90deg, rgba(5,14,27,.74), rgba(5,14,27,.30) 58%, rgba(5,14,27,.08)) !important;
+}
+.login-network-copy::after,
+.login-network-message::before { content: none !important; display: none !important; }
+.login-network-kicker,
+.login-network-live { color: #dce6ef !important; }
+.login-network-kicker > span,
+.login-network-live > i { background: #82abe1 !important; box-shadow: none !important; }
+.login-network-live > i::after { border-color: rgba(130,171,225,.35) !important; }
+.login-network-copy h1,
+.login-network-copy h1 strong { color: #fff !important; }
+.login-network-message > p { color: #dce6ef !important; }
+.login-right-panel {
+  border-color: #30445a !important;
+  background: #0c1726 !important;
+  color: #fff !important;
+}
+.login-right-panel .login-logo img { filter: brightness(0) invert(1) !important; }
+.login-right-panel .login-logo .login-tagline { color: #b8c5d4 !important; }
+.login-access-kicker,
+.login-access-kicker span { color: #b8c5d4 !important; }
+.login-access-kicker::before { background: #82abe1 !important; box-shadow: none !important; }
+.login-access-kicker strong { color: #82abe1 !important; }
+.login-title { color: #fff !important; }
+.login-sub,
+.login-remember-label,
+.login-foot { color: #b8c5d4 !important; }
+.login-card .form-label { color: #dce6ef !important; }
+.login-card .form-input {
+  border-color: #718194 !important;
+  background: #fff !important;
+  color: #111820 !important;
+}
+.login-card .form-input:focus { border-color: #82abe1 !important; box-shadow: 0 0 0 3px rgba(130,171,225,.2) !important; }
+.login-remember-box { border-color: #8a9aac !important; background: transparent !important; }
+.login-remember-box.checked { border-color: #276dcc !important; background: #276dcc !important; }
+.login-right-panel .login-btn,
+.login-right-panel .login-btn:hover:not(:disabled),
+.login-right-panel .login-btn:active:not(:disabled) {
+  border-color: #fff !important;
+  background: #fff !important;
+  color: #111820 !important;
+  box-shadow: none !important;
+}
+.login-right-panel .login-btn:hover:not(:disabled) { background: #e9f0f7 !important; }
+.login-secondary-link { color: #b8c5d4 !important; }
+.login-foot a { color: #b8c5d4 !important; }
+
+@media (min-width: 900px) {
+  .login-left-panel { background-position: 63% center !important; }
+  .login-network-copy {
+    top: auto !important;
+    right: auto !important;
+    bottom: clamp(42px, 7vh, 76px) !important;
+    left: clamp(34px, 4vw, 62px) !important;
+    width: min(440px, 72%) !important;
+    text-align: left !important;
+  }
+  .login-network-kicker { justify-content: flex-start !important; }
+  .login-network-message > p { margin-left: 0 !important; margin-right: auto !important; }
+}
+
+@media (max-width: 899px) {
+  .coverage-screen .coverage-premium-area { padding-top: 14px !important; }
+  .login-left-panel { background-position: 66% center !important; }
+  .login-left-panel::after {
+    background: linear-gradient(90deg, rgba(5,14,27,.77), rgba(5,14,27,.30) 62%, rgba(5,14,27,.12)) !important;
+  }
+}
