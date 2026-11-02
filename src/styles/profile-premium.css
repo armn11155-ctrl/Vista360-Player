@@ -1,0 +1,252 @@
+/* Perfil de clientes y equipo: identidad clara, datos legibles y acciones discretas. */
+.profile-screen,
+.profile-content,
+.admin-tool-screen:has(.admin-perfil-hero),
+.admin-tool-screen:has(.admin-perfil-hero) > .admin-perfil-content {
+  background: #f6f8fb !important;
+}
+
+.profile-top {
+  min-height: 0 !important;
+  background: linear-gradient(115deg, #060b13 0%, #0d1a2d 69%, #142a49 100%) !important;
+  border: 0 !important;
+}
+
+.profile-top-bar {
+  margin-bottom: 30px !important;
+}
+
+.profile-hero-company {
+  max-width: 1120px !important;
+  gap: 22px !important;
+}
+
+.profile-company-copy h1 {
+  margin: 0 0 7px !important;
+  font-size: clamp(29px, 3vw, 39px) !important;
+  font-weight: 740 !important;
+  letter-spacing: -.045em !important;
+  overflow-wrap: anywhere;
+}
+
+.profile-company-copy p {
+  margin: 0 0 14px !important;
+  color: #bcc9da !important;
+  font-weight: 500 !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+}
+
+.profile-hero-eyebrow,
+.admin-perfil-eyebrow {
+  margin-bottom: 10px !important;
+  color: #a6c0e4 !important;
+  font-size: 10px !important;
+  letter-spacing: .14em !important;
+}
+
+.profile-verified,
+.admin-perfil-hero .profile-verified {
+  min-height: 25px;
+  padding: 3px 9px !important;
+  color: #dbe9fb !important;
+  border: 1px solid rgba(182, 207, 241, .24) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, .065) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+}
+
+.profile-verified-mark,
+.profile-verified-mark img {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+.profile-hero-metrics {
+  align-self: center !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.profile-hero-metrics .profile-metric-row {
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  padding: 10px 13px !important;
+  border: 1px solid rgba(184, 209, 242, .17) !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, .055) !important;
+}
+
+.profile-screen .profile-hero-metrics .profile-metric-icon { display: none !important; }
+.profile-hero-metrics .profile-metric-label { color: #c9d6e8 !important; font-size: 11px !important; font-weight: 560 !important; }
+.profile-hero-metrics .profile-metric-row strong { color: #fff !important; font-size: 20px !important; line-height: 1 !important; font-variant-numeric: tabular-nums; }
+
+.profile-content {
+  width: min(100%, 1216px) !important;
+  max-width: 1216px !important;
+  align-content: start !important;
+  gap: 18px 24px !important;
+}
+
+.profile-section h2,
+.admin-perfil-content .profile-section h2 {
+  margin: 0 0 12px !important;
+  color: #1d2d42 !important;
+  font-size: 13px !important;
+  font-weight: 760 !important;
+  letter-spacing: -.01em !important;
+  text-transform: none !important;
+}
+
+.profile-card-list,
+.profile-metric-card,
+.admin-maintenance-panel {
+  border: 1px solid #e1e7ee !important;
+  border-radius: 14px !important;
+  background: #fff !important;
+  box-shadow: 0 12px 30px -26px rgba(9, 25, 46, .5) !important;
+}
+
+.profile-row {
+  min-height: 59px !important;
+  gap: 13px !important;
+  padding: 12px 17px !important;
+  color: #18273b !important;
+  border-color: #edf0f4 !important;
+}
+
+.profile-row-label { font-size: 13px !important; font-weight: 650 !important; }
+.profile-row-value { color: #526276 !important; font-size: 13px !important; font-weight: 520 !important; text-align: right; }
+.profile-row-icon,
+.profile-metric-row .profile-metric-icon {
+  color: #557097 !important;
+  border: 1px solid #e7edf4 !important;
+  background: #f3f6fa !important;
+}
+
+.profile-row.clickable:hover { background: #f8fafc !important; }
+.profile-row.clickable:hover .profile-row-icon { color: #315f9d !important; }
+.profile-row.danger .profile-row-label,
+.profile-row.danger .profile-row-icon { color: #9d4c55 !important; }
+.profile-row:focus-visible,
+.profile-avatar-hover-btn:focus-visible { outline: 2px solid #4d8ad8 !important; outline-offset: 2px !important; }
+
+/* La identidad del personal es una sola unidad, sin elementos dispersos. */
+.admin-perfil-content {
+  display: grid !important;
+  width: min(100%, 1150px) !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, .8fr) !important;
+  gap: 18px 24px !important;
+  align-content: start !important;
+  margin: 0 auto !important;
+  padding: 26px clamp(20px, 3vw, 36px) 48px !important;
+}
+
+.admin-perfil-content > .admin-perfil-hero {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  grid-column: 1 / -1 !important;
+  gap: 23px !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 160px !important;
+  margin: 0 !important;
+  padding: 26px 30px !important;
+  border: 1px solid #1c314f !important;
+  border-radius: 16px !important;
+  background: linear-gradient(115deg, #060b13 0%, #0d1a2d 69%, #142a49 100%) !important;
+  box-shadow: 0 20px 40px -34px rgba(5, 15, 30, .8) !important;
+}
+
+.admin-perfil-avatar-wrap {
+  flex: none !important;
+  width: 76px !important;
+  height: 76px !important;
+  margin: 0 !important;
+}
+
+.admin-perfil-identity { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.admin-perfil-nombre {
+  display: block;
+  min-width: 0;
+  margin: 0 0 4px !important;
+  color: #fff !important;
+  font-size: clamp(28px, 3vw, 36px) !important;
+  font-weight: 740 !important;
+  line-height: 1.08 !important;
+  letter-spacing: -.045em !important;
+  overflow-wrap: anywhere;
+}
+.admin-perfil-email { margin: 0 0 12px !important; color: #becbdd !important; font-size: 13px !important; overflow-wrap: anywhere; }
+
+.admin-perfil-content > .admin-perfil-storage,
+.admin-perfil-content > .admin-perfil-security,
+.admin-perfil-content > .admin-perfil-account {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  align-self: start !important;
+  margin: 0 !important;
+}
+.admin-tool-screen:has(.admin-perfil-hero) .admin-perfil-content > .profile-section { margin: 0 !important; }
+.admin-perfil-storage { grid-column: 1; grid-row: 2 / span 2; }
+.admin-perfil-security { grid-column: 2; grid-row: 2; }
+.admin-perfil-account { grid-column: 2; grid-row: 3; }
+
+.admin-perfil-content .profile-metric-card { padding: 5px !important; }
+.admin-perfil-content .profile-metric-row { border-color: transparent !important; }
+.admin-perfil-content .profile-metric-label { color: #34455b !important; font-size: 13px !important; }
+.admin-perfil-content .profile-metric-row strong { color: #15263c !important; font-size: 19px !important; }
+.admin-perfil-content .admin-maintenance-panel { margin-top: 12px !important; overflow: hidden; }
+.admin-perfil-content .admin-maintenance-panel > summary { min-height: 60px; }
+.admin-perfil-content .profile-section > p { color: #69798d !important; }
+
+@media (min-width: 900px) {
+  .profile-top { padding-top: 26px !important; padding-bottom: 36px !important; }
+  .profile-hero-company { grid-template-columns: 82px minmax(0, 1fr) 288px !important; grid-template-areas: "avatar identity metrics" !important; }
+  .profile-content { grid-template-columns: minmax(0, 1.45fr) minmax(300px, .8fr) !important; padding-top: 28px !important; }
+  .profile-content > .profile-section-company { grid-column: 1 !important; grid-row: 1 / span 2 !important; }
+  .profile-content > .profile-section-security { grid-column: 2 !important; grid-row: 1 !important; }
+  .profile-content > .profile-section-account { grid-column: 2 !important; grid-row: 2 !important; }
+  .profile-content:not(:has(.profile-section-security)) > .profile-section-account { grid-row: 1 !important; }
+}
+
+@media (max-width: 899px) {
+  .profile-top { padding: calc(17px + env(safe-area-inset-top)) 20px 23px !important; border-radius: 0 0 22px 22px !important; }
+  .profile-top-bar { margin-bottom: 22px !important; }
+  .profile-hero-company { grid-template-columns: 58px minmax(0, 1fr) !important; column-gap: 13px !important; row-gap: 0 !important; }
+  .profile-avatar-wrap,
+  .profile-avatar-wrap > *,
+  .profile-avatar-wrap .brand-thumb { width: 58px !important; height: 58px !important; min-width: 58px !important; border-radius: 14px !important; }
+  .profile-company-copy h1 { font-size: clamp(22px, 5vw, 28px) !important; line-height: 1.1 !important; }
+  .profile-company-copy p { margin-bottom: 8px !important; font-size: 11px !important; }
+  .profile-hero-eyebrow { font-size: 8px !important; }
+  .profile-hero-metrics { grid-column: 1 / -1 !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 7px !important; margin-top: 21px !important; padding: 0 !important; border: 0 !important; }
+  .profile-hero-metrics .profile-metric-row { display: flex !important; flex-direction: column-reverse !important; align-items: flex-start !important; justify-content: center !important; min-height: 69px !important; gap: 5px !important; padding: 10px !important; border: 1px solid rgba(184, 209, 242, .17) !important; }
+  .profile-hero-metrics .profile-metric-row strong { font-size: 21px !important; }
+  .profile-hero-metrics .profile-metric-label { font-size: 9px !important; line-height: 1.2 !important; }
+  .profile-content { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; gap: 17px !important; padding: 22px 18px 36px !important; }
+  .profile-content > .profile-section { grid-column: 1 !important; grid-row: auto !important; margin: 0 !important; }
+  .profile-row { min-height: 56px !important; }
+  .profile-row-label, .profile-row-value { font-size: 12px !important; }
+  .admin-perfil-content { grid-template-columns: minmax(0, 1fr) !important; gap: 18px !important; padding: 18px 18px 36px !important; }
+  .admin-perfil-content > .admin-perfil-hero { grid-column: 1 !important; min-height: 0 !important; gap: 14px !important; padding: 19px !important; border-radius: 15px !important; }
+  .admin-perfil-avatar-wrap,
+  .admin-perfil-hero .profile-avatar-hover-btn,
+  .admin-perfil-hero .profile-avatar-hover-btn > div { width: 58px !important; height: 58px !important; border-radius: 14px !important; }
+  .admin-perfil-content > .admin-perfil-hero > .admin-perfil-avatar-wrap { width: 58px !important; height: 58px !important; margin: 0 !important; }
+  .admin-perfil-nombre { font-size: clamp(21px, 5vw, 27px) !important; }
+  .admin-perfil-eyebrow { margin-bottom: 5px !important; font-size: 8px !important; }
+  .admin-perfil-email { margin-bottom: 7px !important; font-size: 11px !important; }
+  .admin-perfil-storage, .admin-perfil-security, .admin-perfil-account { grid-column: 1 !important; grid-row: auto !important; }
+}
+
+@media (max-width: 370px) {
+  .profile-hero-metrics { gap: 5px !important; }
+  .profile-hero-metrics .profile-metric-row { padding: 8px 7px !important; }
+  .profile-hero-metrics .profile-metric-label { font-size: 8px !important; }
+}
