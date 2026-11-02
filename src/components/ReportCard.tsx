@@ -38,6 +38,12 @@ function fechaCorta(date: Date) {
   return `${date.getDate()} de ${meses[date.getMonth()]} de ${date.getFullYear()}`;
 }
 
+function fechaDeCreacionReporte(valor: InformeCliente["createdAt"]): Date | null {
+  if (!valor) return null;
+  const fecha = typeof valor === "string" ? new Date(valor) : valor.toDate();
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
+}
+
 function formatoBytes(bytes?: number) {
   if (!bytes || bytes <= 0) return null;
   // Base decimal (1000), no binaria (1024) -- ver nota en
@@ -143,6 +149,7 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
   const emailSubject = `Reporte ${informe.mesLabel} - Vista360`;
   const emailTo = cliente?.email ?? "";
   const tamano = formatoBytes(informe.digitalBytes);
+  const fechaCreacion = fechaDeCreacionReporte(informe.createdAt);
 
   /** Precarga el PDF apenas se puede (no en el clic) -- ver el
    *  comentario largo en utils/compartirArchivo.ts sobre por qué.
@@ -417,6 +424,7 @@ export function ReportCard({ informe, cliente, clienteId, nombreCampanaActual, i
         <div className="report-card-copy">
           <div className="report-kicker">{nombreCampanaActual ?? informe.contratoNombre ?? "Reporte mensual"}</div>
           <div className="report-title">{informe.mesLabel}</div>
+          {fechaCreacion && <div className="report-meta report-meta-generated">Generado el {fechaCorta(fechaCreacion)}</div>}
           {tamano && <div className="report-meta report-meta-size">Tamaño: {tamano}</div>}
           {isAdmin && (
             <div className={`report-meta report-seen-status ${informe.vistoPorCliente ? "is-seen" : "is-unseen"}`}>

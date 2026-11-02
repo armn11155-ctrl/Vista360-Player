@@ -1,3 +1,6 @@
+/* El azul de Descargar es la referencia para las acciones del portal. */
+:root { --v360-brand-gradient: linear-gradient(135deg, #357bd1 0%, #1f60b8 100%); }
+
 /* Acceso: fotografía de marca y formulario claro. */
 .login-shell,
 .login-shell::before,
@@ -33,11 +36,11 @@
 .login-right-panel .login-btn,
 .login-right-panel .login-btn:active:not(:disabled) {
   border-color: #276dcc !important;
-  background: #276dcc !important;
+  background: var(--v360-brand-gradient) !important;
   color: #fff !important;
   box-shadow: 0 14px 28px -20px rgba(39, 109, 204, .66) !important;
 }
-.login-right-panel .login-btn:hover:not(:disabled) { border-color: #1c58a9 !important; background: #1c58a9 !important; }
+.login-right-panel .login-btn:hover:not(:disabled) { border-color: #276dcc !important; background: var(--v360-brand-gradient) !important; filter: brightness(1.07); }
 .login-secondary-link,
 .login-foot a { color: #315f9d !important; }
 @media (max-width: 899px) {
@@ -59,9 +62,9 @@
   max-width: 900px !important;
   margin: 0 auto 5px !important;
   padding: 5px !important;
-  border: 1px solid #d6e2ef !important;
+  border: 1px solid #dce4ef !important;
   border-radius: 12px !important;
-  background: #eaf1f9 !important;
+  background: #fff !important;
   box-shadow: none !important;
 }
 .mis-campanas-list > .campanas-filter-bar .campanas-filter-tab {
@@ -76,7 +79,7 @@
   box-shadow: none !important;
 }
 .mis-campanas-list > .campanas-filter-bar .campanas-filter-tab.active {
-  background: #173e68 !important;
+  background: var(--v360-brand-gradient) !important;
   color: #fff !important;
   font-weight: 800 !important;
 }
@@ -339,12 +342,12 @@
   padding: 0 17px;
   border: 1px solid #276dcc !important;
   border-radius: 9px !important;
-  background: #276dcc !important;
+  background: var(--v360-brand-gradient) !important;
   color: #fff !important;
   font-size: 12px;
   font-weight: 780;
 }
-.facturas-screen .factura-upload-btn:hover:not(:disabled) { border-color: #3f82dc !important; background: #3f82dc !important; }
+.facturas-screen .factura-upload-btn:hover:not(:disabled) { border-color: #276dcc !important; background: var(--v360-brand-gradient) !important; filter: brightness(1.07); }
 .facturas-screen .factura-upload-send { grid-column: 2; }
 .facturas-screen .factura-upload-msg { color: #d8e9ff !important; }
 @media (max-width: 640px) {
@@ -372,6 +375,44 @@
   background: rgba(255, 255, 255, .08) !important;
   color: #e9f2ff !important;
 }
+:is(.client-screen-header, .admin-tool-screen > .detail-header, .quotes-header, .inicio-header)
+  :is(.back-btn, .client-screen-notification-btn, .mobile-sidebar-header-btn, .inicio-header-icon-btn, .quotes-header-inner > button) svg,
+:is(.client-screen-header, .admin-tool-screen > .detail-header, .quotes-header, .inicio-header)
+  :is(.back-btn, .client-screen-notification-btn, .mobile-sidebar-header-btn, .inicio-header-icon-btn, .quotes-header-inner > button) svg * {
+  color: #fff !important;
+  stroke: #fff !important;
+}
+.admin-tool-screen > .detail-header .back-btn svg,
+.admin-tool-screen > .detail-header .back-btn svg * { color: #fff !important; stroke: #fff !important; }
+.inicio-header .inicio-profile-top-btn svg,
+.inicio-header .inicio-profile-top-btn svg *,
+.profile-top .profile-bell svg,
+.profile-top .profile-bell svg * { color: #fff !important; stroke: #fff !important; }
+
+/* Las acciones azules comparten un solo degradado; las señales de estado conservan su significado. */
+.inicio-welcome-actions .inicio-welcome-primary,
+.report-admin-content .report-generate-btn,
+.report-admin-content .report-campaign-panel-add,
+.report-admin-content .report-admin-controls > button,
+.mis-campanas-cta button,
+.coverage-screen .coverage-catalog-primary,
+.coverage-screen .coverage-selected-actions button,
+.coverage-screen .coverage-popup-action,
+.coverage-screen .coverage-google-link,
+.report-admin-controls > button,
+.solicitudes-screen .solicitud-action.primary,
+.solicitudes-screen .solicitudes-card button[style*="var(--accent)"],
+.accesos-screen .accesos-create-btn.is-primary,
+.campaign-renewal-button,
+.notifications-screen .notification-push-card button {
+  border-color: #276dcc !important;
+  background: var(--v360-brand-gradient) !important;
+  color: #fff !important;
+}
+.coverage-screen .coverage-catalog-primary:hover,
+.coverage-screen .coverage-selected-actions button:hover,
+.coverage-screen .coverage-popup-action:hover,
+.coverage-screen .coverage-google-link:hover { border-color: #276dcc !important; background: var(--v360-brand-gradient) !important; filter: brightness(1.07); }
 
 /* Archivo del cliente: la tarjeta termina donde terminan sus acciones. */
 .reports-list.reports-list-client > .report-card {
@@ -385,6 +426,7 @@
   padding: 22px !important;
   margin: 0 !important;
 }
+.reports-list.reports-list-client > .report-card:not(.factura-card) { gap: 0 !important; }
 .reports-list.reports-list-client > .report-card:last-child:nth-child(odd) {
   grid-column: 1 / -1 !important;
   justify-self: center !important;
