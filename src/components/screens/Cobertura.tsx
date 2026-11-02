@@ -519,7 +519,6 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
   // distancia real entre ellos, y se recalcula solo cada vez que
   // cambia el zoom.
   const panelesActivos = useMemo(() => conCoordenadas.filter(esPanelActivoCliente).length, [conCoordenadas]);
-  const contratadosCatalogo = useMemo(() => lista.filter(esPanelActivoCliente).length, [lista]);
   const panelesDisponiblesAhora = useMemo(() => conCoordenadas.filter(esPanelDisponibleAhora).length, [conCoordenadas]);
   // Cuántos paneles están ocupados por OTRO cliente (ni son míos ni
   // están libres) -- para la fila nueva de la leyenda con el pin azul.
@@ -936,24 +935,6 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
       />
 
       <div className="content-area coverage-premium-area">
-        <header className="coverage-catalog-hero">
-          <div className="coverage-catalog-hero-copy">
-            <span className="coverage-catalog-eyebrow"><span /> VISTA360 · RED DE PUBLICIDAD EXTERIOR</span>
-            <h2>El lugar correcto<br /><em>cambia todo.</em></h2>
-            <p>Descubre nuestros espacios publicitarios, explora cada ubicación y encuentra el punto para tu próxima campaña.</p>
-            <a href="#catalogo-paneles" className="coverage-catalog-hero-link">Explorar espacios <span aria-hidden="true">↗</span></a>
-            <div className="coverage-catalog-hero-metrics" aria-label="Resumen del catálogo">
-              <span><strong>{datosListos ? lista.length : "—"}</strong> {lista.length === 1 ? "espacio" : "espacios"}</span>
-              <span><strong>{datosListos ? ciudades.length : "—"}</strong> {ciudades.length === 1 ? "ciudad" : "ciudades"}</span>
-              <span><strong>{datosListos ? contratadosCatalogo : "—"}</strong> {contratadosCatalogo === 1 ? "contratado" : "contratados"}</span>
-            </div>
-          </div>
-          <div className="coverage-catalog-hero-media" aria-hidden="true">
-            <img src="/editorial/vista360-avenida-referencial.jpg" alt="" />
-            <span>IMAGEN REFERENCIAL</span>
-          </div>
-        </header>
-
         <section id="catalogo-paneles" className="coverage-catalog" aria-labelledby="coverage-catalog-title">
           <div className="coverage-catalog-heading">
             <div>

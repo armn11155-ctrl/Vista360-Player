@@ -145,29 +145,35 @@ export const crearSolicitudCampana = onCall<CrearSolicitudCampanaData>(async (re
     ...(panelSolicitadoId ? { panelSolicitadoId, panelSolicitadoNombre: panelSolicitadoNombre || panelSolicitadoId } : {}),
   });
 
-  // El resumen del cliente incluye sus solicitudes.
-  await regenerarResumenCliente(db, clienteId);
-
-  // Aviso directo: evita depender del trigger de Eventarc que no está
-  // disponible en producción. Solo se ejecuta para una solicitud NUEVA;
-  // la salida temprana de duplicados de arriba no vuelve a notificar.
-  try {
-    const [clienteSnap, moduloPush] = await Promise.all([
-      db.doc(`clientes/${clienteId}`).get(),
-      import("./notificacionesPush.js"),
-    ]);
-    const nombreCliente = String(clienteSnap.data()?.empresa || "Un cliente");
-    const esRenovacion = nombre.startsWith("Renovación");
-    await moduloPush.enviarPushAAdmin({
-      title: esRenovacion ? "Solicitud de renovación" : "Nueva solicitud de campaña",
-      body: esRenovacion
-        ? `${nombreCliente} quiere renovar: ${nombre.replace(/^Renovación\s*—\s*/, "")}.`
-        : `${nombreCliente} solicitó una campaña nueva: ${nombre}.`,
-      url: "/",
-    });
-  } catch (error) {
-    console.error("La solicitud se guardó, pero no se pudo avisar al Gerente.", error);
-  }
+  // El resumen y el aviso usan la solicitud ya guardada, pero no dependen
+  // entre sí. Ejecutarlos juntos reduce el tiempo en que el botón muestra
+  // «Enviando» sin perder ninguna de las dos operaciones.
+  await Promise.all([
+    regenerarResumenCliente(db, clienteId).catch((error) => {
+      console.error("La solicitud se guardó, pero no se pudo actualizar el resumen del cliente.", error);
+    }),
+    (async () => {
+      // Aviso directo: Eventarc no está disponible en producción. Solo
+      // corre para una solicitud NUEVA; duplicados no vuelven a avisar.
+      try {
+        const [clienteSnap, moduloPush] = await Promise.all([
+          db.doc(`clientes/${clienteId}`).get(),
+          import("./notificacionesPush.js"),
+        ]);
+        const nombreCliente = String(clienteSnap.data()?.empresa || "Un cliente");
+        const esRenovacion = nombre.startsWith("Renovación");
+        await moduloPush.enviarPushAAdmin({
+          title: esRenovacion ? "Solicitud de renovación" : "Nueva solicitud de campaña",
+          body: esRenovacion
+            ? `${nombreCliente} quiere renovar: ${nombre.replace(/^Renovación\s*—\s*/, "")}.`
+            : `${nombreCliente} solicitó una campaña nueva: ${nombre}.`,
+          url: "/",
+        });
+      } catch (error) {
+        console.error("La solicitud se guardó, pero no se pudo avisar al Gerente.", error);
+      }
+    })(),
+  ]);
 
   return { ok: true, id: ref.id, yaExistia: false };
 });
