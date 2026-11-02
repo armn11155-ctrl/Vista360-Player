@@ -150,6 +150,7 @@
   flex-direction: row !important;
   align-items: center !important;
   grid-column: 1 / -1 !important;
+  grid-row: 1 !important;
   gap: 23px !important;
   width: 100% !important;
   max-width: none !important;
@@ -193,9 +194,9 @@
   margin: 0 !important;
 }
 .admin-tool-screen:has(.admin-perfil-hero) .admin-perfil-content > .profile-section { margin: 0 !important; }
-.admin-perfil-storage { grid-column: 1; grid-row: 2 / span 2; }
-.admin-perfil-security { grid-column: 2; grid-row: 2; }
-.admin-perfil-account { grid-column: 2; grid-row: 3; }
+.admin-perfil-content > .admin-perfil-storage { grid-column: 1 !important; grid-row: 2 / span 2 !important; }
+.admin-perfil-content > .admin-perfil-security { grid-column: 2 !important; grid-row: 2 !important; }
+.admin-perfil-content > .admin-perfil-account { grid-column: 2 !important; grid-row: 3 !important; }
 
 .admin-perfil-content .profile-metric-card { padding: 5px !important; }
 .admin-perfil-content .profile-metric-row { border-color: transparent !important; }
@@ -242,7 +243,9 @@
   .admin-perfil-nombre { font-size: clamp(21px, 5vw, 27px) !important; }
   .admin-perfil-eyebrow { margin-bottom: 5px !important; font-size: 8px !important; }
   .admin-perfil-email { margin-bottom: 7px !important; font-size: 11px !important; }
-  .admin-perfil-storage, .admin-perfil-security, .admin-perfil-account { grid-column: 1 !important; grid-row: auto !important; }
+  .admin-perfil-content > .admin-perfil-storage,
+  .admin-perfil-content > .admin-perfil-security,
+  .admin-perfil-content > .admin-perfil-account { grid-column: 1 !important; grid-row: auto !important; }
 }
 
 @media (max-width: 370px) {
