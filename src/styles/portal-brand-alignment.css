@@ -37,7 +37,7 @@
 .login-shell::after,
 .login-experience { background: #0b1d31 !important; }
 .login-left-panel {
-  background: #0b1d31 url('/editorial/vista360-acceso-nocturno.jpg') 63% center / cover no-repeat !important;
+  background: #0b1d31 url('/editorial/vista360-acceso-panel-logo.jpg') 63% center / cover no-repeat !important;
 }
 .login-left-panel::before { content: none !important; display: none !important; }
 .login-left-panel::after {
