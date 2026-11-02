@@ -146,7 +146,7 @@ export default function CrearCliente({ cliente, clienteId, onBack }: Props) {
                 placeholder="Déjalo vacío para generar una"
               />
             </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div className="create-client-contact-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <label style={{ fontSize: 12, color: "#475569", fontWeight: 700 }}>
                 Contacto
                 <input style={{ ...inputStyle, marginTop: 6 }} value={contacto} onChange={(e) => setContacto(e.target.value)} maxLength={80} placeholder="Nombre" />

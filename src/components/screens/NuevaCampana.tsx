@@ -89,6 +89,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
   // vez sobra -- y peor, si eligiera una distinta contradiría al panel.
   const panelFijo = prefill?.panelNombre ? { id: prefill.panelId ?? "", nombre: prefill.panelNombre } : null;
   const esRenovacion = panelFijo && prefill?.motivo === "renovacion";
+  const [tipoConsulta, setTipoConsulta] = useState<"espacio" | "alternativas">("espacio");
   const tituloSolicitud = panelFijo
     ? esRenovacion ? "Solicitar renovación" : "Solicitar disponibilidad"
     : "Nueva campaña";
@@ -124,6 +125,9 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
 
   async function enviar() {
     setError("");
+    const quiereAlternativas = Boolean(panelFijo && !esRenovacion && tipoConsulta === "alternativas");
+    const notaAlternativas = quiereAlternativas ? `Prefiero recibir alternativas similares en ${ciudad || "la ciudad indicada"}.` : "";
+    const comentariosSolicitud = [notaAlternativas, comentarios.trim()].filter(Boolean).join("\n");
     if (!nombre.trim()) { setError("Ponle un nombre a tu campaña."); return; }
     // Topes de largo -- el maxLength de los inputs es solo comodidad (se
     // salta pegando texto por consola o con el navegador en modo
@@ -133,7 +137,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
     if (nombre.trim().length > MAX_NOMBRE) {
       setError(`El nombre no puede pasar de ${MAX_NOMBRE} caracteres.`); return;
     }
-    if (comentarios.trim().length > MAX_COMENTARIOS) {
+    if (comentariosSolicitud.length > MAX_COMENTARIOS) {
       setError(`Los comentarios no pueden pasar de ${MAX_COMENTARIOS} caracteres.`); return;
     }
     if (!clienteId) { setError("Error: no se identificó tu cuenta. Cierra sesión y vuelve a entrar."); return; }
@@ -160,11 +164,11 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         clienteId,
         nombre: formatCampaignName(nombre),
         ciudades: ciudad ? [ciudad] : [],
-        comentarios: comentarios.trim(),
+        comentarios: comentariosSolicitud,
         fechaInicioDeseada: fechaInicio,
         fechaFinDeseada: sumarMeses(fechaInicio, meses),
         mesesDeseados: meses,
-        ...(panelFijo ? { panelSolicitadoId: panelFijo.id, panelSolicitadoNombre: panelFijo.nombre } : {}),
+        ...(panelFijo && !quiereAlternativas ? { panelSolicitadoId: panelFijo.id, panelSolicitadoNombre: panelFijo.nombre } : {}),
       });
       setEnviadoYaExistia(Boolean(res.data.yaExistia));
       setEnviado(true);
@@ -292,7 +296,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
                 })}
               </div>
             </Field>
-            <div style={{ display: "flex", gap: 10 }}>
+            <div className="new-campaign-admin-dates" style={{ display: "flex", gap: 10 }}>
               {/* minWidth: 0 en cada columna -- sin esto, un <input type="date">
                   adentro de un hijo flex puede pedir mas ancho del que le toca
                   (el minimo por defecto de un item flex es el de su contenido,
@@ -314,7 +318,7 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
         </div>
 
         <div style={{ padding: "12px 16px calc(20px + env(safe-area-inset-bottom))", background: "#fff", borderTop: "1px solid #F3F4F6", flexShrink: 0 }}>
-          <button type="button" onClick={crearContrato} disabled={creando} style={{
+          <button type="button" className="campaign-admin-submit" onClick={crearContrato} disabled={creando} style={{
             width: "100%", padding: "14px", background: creando ? "#93C5FD" : "#0877FF", color: "#fff",
             fontWeight: 700, fontSize: 14, border: "none", borderRadius: 16, cursor: creando ? "default" : "pointer",
           }}>
@@ -371,19 +375,14 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
       </div>
 
       <div className="campaign-request-scroll">
-        <div className="campaign-request-intro">
-          <span>{panelFijo ? "SOLICITUD COMERCIAL · VISTA360" : "TU PRÓXIMA CAMPAÑA · VISTA360"}</span>
-          <h1>{panelFijo ? esRenovacion ? "Sigamos presentes en este espacio." : "Hablemos de este espacio." : "Tu próxima campaña comienza aquí."}</h1>
-          <p>{panelFijo
-            ? "Indícanos la fecha y el plazo que tienes en mente. Nuestro equipo confirmará la disponibilidad y te acompañará con los siguientes pasos."
-            : "Cuéntanos qué tienes en mente y nuestro equipo te ayudará a encontrar la mejor ubicación."}</p>
-        </div>
-        <CampaignFormProgress />
         <div className="campaign-request-card">
           <div className="campaign-request-card-heading">
-            <span>01 / DETALLES DE TU SOLICITUD</span>
-            <h2>Cuéntanos lo esencial.</h2>
-            <p>Solo necesitamos unos datos para preparar una respuesta útil.</p>
+            <h1>{tituloSolicitud}</h1>
+            <p>{panelFijo
+              ? esRenovacion
+                ? "Indícanos cuándo quieres continuar. Confirmaremos las fechas y los siguientes pasos."
+                : "Cuéntanos cuándo te gustaría empezar. Confirmaremos el espacio y te enviaremos los siguientes pasos."
+              : "Cuéntanos qué tienes en mente. Te ayudaremos a encontrar una ubicación adecuada."}</p>
           </div>
 
           {error && (
@@ -392,69 +391,65 @@ export default function NuevaCampana({ clienteId, onBack, onEnviada, isAdmin, pr
             </div>
           )}
 
+          {panelFijo ? (
+            <div className="campaign-request-panel" aria-label="Espacio seleccionado">
+              <span><strong>{panelFijo.nombre}</strong><small>{ciudad || "Ubicación seleccionada"}</small></span>
+              <b>Ubicación elegida</b>
+            </div>
+          ) : null}
+          {panelFijo && !esRenovacion && (
+            <Field label="¿Qué necesitas?">
+              <div className="campaign-request-choices" role="group" aria-label="Tipo de solicitud">
+                <button type="button" className={tipoConsulta === "espacio" ? "is-active" : ""} aria-pressed={tipoConsulta === "espacio"} onClick={() => setTipoConsulta("espacio")}>
+                  <span className="campaign-request-choice-mark" aria-hidden="true">{tipoConsulta === "espacio" ? "✓" : ""}</span>
+                  <span><strong>Este espacio</strong><small>Consultar fechas para este mural.</small></span>
+                </button>
+                <button type="button" className={tipoConsulta === "alternativas" ? "is-active" : ""} aria-pressed={tipoConsulta === "alternativas"} onClick={() => setTipoConsulta("alternativas")}>
+                  <span className="campaign-request-choice-mark" aria-hidden="true">{tipoConsulta === "alternativas" ? "✓" : ""}</span>
+                  <span><strong>Ver alternativas</strong><small>Recibir opciones similares en {ciudad || "esta ciudad"}.</small></span>
+                </button>
+              </div>
+            </Field>
+          )}
           <Field label="Nombre de la campaña">
             <input style={inputStyle} maxLength={MAX_NOMBRE} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Lanzamiento de temporada" />
           </Field>
-          {panelFijo ? (
-            <Field label="Panel solicitado">
-              <div className="campaign-request-panel">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" style={{ flexShrink: 0 }}>
-                  <path d="M12 21s6-5.15 6-11a6 6 0 1 0-12 0c0 5.85 6 11 6 11Z" />
-                  <circle cx="12" cy="10" r="1.8" />
-                </svg>
-                <span><strong>{panelFijo.nombre}</strong><small>{ciudad || "Ubicación seleccionada"}</small></span>
-                <b>Seleccionado</b>
-              </div>
-            </Field>
-          ) : (
+          {!panelFijo && (
             <Field label="Ciudad">
               <select style={selectStyle} value={ciudad} onChange={(e) => setCiudad(e.target.value)}>
                 {CIUDADES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
           )}
-          <Field label="Fecha de inicio deseada">
-            <input
-              style={inputStyle}
-              type="date"
-              min={hoyStr}
-              value={fechaInicio}
-              onChange={(e) => setFechaInicio(e.target.value)}
-            />
-          </Field>
-          <Field label="¿Por cuánto tiempo?">
-            <div className="campaign-request-duration" role="group" aria-label="Duración de la campaña">
-              {[3, 6, 12].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setMeses(n)}
-                  className={meses === n ? "is-active" : ""}
-                  aria-pressed={meses === n}
-                >
-                  <strong>{n}</strong><span>{n === 1 ? "mes" : "meses"}</span>
-                </button>
-              ))}
-            </div>
-          </Field>
+          <div className="campaign-request-field-row">
+            <Field label="Inicio deseado">
+              <input style={inputStyle} type="date" min={hoyStr} value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} />
+            </Field>
+            <Field label="Duración">
+              <div className="campaign-request-duration" role="group" aria-label="Duración de la campaña">
+                {[3, 6, 12].map((n) => (
+                  <button key={n} type="button" onClick={() => setMeses(n)} className={meses === n ? "is-active" : ""} aria-pressed={meses === n}>
+                    {n} meses
+                  </button>
+                ))}
+              </div>
+            </Field>
+          </div>
           <div className="campaign-request-hint">
             El plazo mínimo es de 3 meses.
             {fechaInicio && (
               <> Periodo estimado hasta el <strong>{fechaLarga(sumarMeses(fechaInicio, meses))}</strong>.</>
             )}
           </div>
-          <Field label="Comentarios adicionales">
-            <textarea style={inputStyle} maxLength={MAX_COMENTARIOS} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Objetivo, formato o detalles que debamos conocer" />
+          <Field label="Detalles adicionales">
+            <textarea style={inputStyle} maxLength={MAX_COMENTARIOS} value={comentarios} onChange={(e) => setComentarios(e.target.value)} placeholder="Objetivo, fechas flexibles o consultas…" />
           </Field>
+          <div className="campaign-request-summary" aria-live="polite"><span>Resumen</span><strong>{panelFijo ? tipoConsulta === "alternativas" && !esRenovacion ? `Alternativas en ${ciudad || "tu ciudad"}` : panelFijo.nombre : ciudad} · {meses} meses</strong></div>
+          <button type="button" className="campaign-request-submit" onClick={enviar} disabled={enviando}>
+            {enviando ? "Enviando…" : "Enviar solicitud"}
+          </button>
+          <p className="campaign-request-privacy">La solicitud no reserva el espacio. Te confirmaremos la disponibilidad.</p>
         </div>
-        <p className="campaign-request-privacy">Tu solicitud llegará al equipo de Vista360. Confirmaremos fechas y disponibilidad contigo antes de avanzar.</p>
-      </div>
-
-      <div className="campaign-request-footer">
-        <button type="button" className="campaign-request-submit" onClick={enviar} disabled={enviando}>
-          {enviando ? "Enviando…" : panelFijo ? esRenovacion ? "Enviar solicitud de renovación" : "Consultar disponibilidad" : "Enviar solicitud"}
-          {!enviando && <span aria-hidden="true">↗</span>}
-        </button>
       </div>
     </div>
   );

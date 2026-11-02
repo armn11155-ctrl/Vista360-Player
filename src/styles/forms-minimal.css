@@ -1,0 +1,309 @@
+/* Formularios Vista360: blanco, tinta y azul oscuro con significado. */
+.campaign-request-screen {
+  background: #f6f8fa;
+  color: #111820;
+}
+
+.campaign-request-header {
+  border-bottom: 1px solid #dce2e8 !important;
+  background: #fff !important;
+  color: #111820 !important;
+}
+.campaign-request-header .simple-title { color: #111820 !important; }
+.campaign-request-header .back-btn {
+  border-color: #dce2e8 !important;
+  background: #fff !important;
+  color: #111820 !important;
+}
+.campaign-request-header .back-btn svg { stroke: #111820 !important; }
+.campaign-request-scroll { padding: 26px 16px 44px; }
+.campaign-request-scroll > * { width: min(100%, 736px); }
+.campaign-request-card {
+  padding: clamp(22px, 4vw, 38px);
+  border: 1px solid #dce2e8;
+  border-radius: 16px;
+  box-shadow: none;
+}
+.campaign-request-card-heading {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border: 0;
+}
+.campaign-request-card-heading h1 {
+  margin: 0 0 8px;
+  color: #111820;
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 750;
+  line-height: 1.14;
+  letter-spacing: -.035em;
+}
+.campaign-request-card-heading p {
+  max-width: 540px;
+  color: #526170;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.campaign-request-card-heading + .campaign-field { margin-top: 26px; }
+.campaign-request-panel {
+  min-height: 0;
+  margin: 25px 0 26px;
+  padding: 14px 0;
+  border: 0;
+  border-top: 1px solid #dce2e8;
+  border-bottom: 1px solid #dce2e8;
+  border-radius: 0;
+  background: transparent;
+  color: #111820;
+}
+.campaign-request-panel strong { color: #111820; font-size: 14px; font-weight: 750; }
+.campaign-request-panel small { margin-top: 1px; color: #526170; font-size: 12px; }
+.campaign-request-panel b {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #526170;
+  font-size: 11px;
+  font-weight: 700;
+}
+.campaign-request-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.campaign-request-choices button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 68px;
+  padding: 13px;
+  border: 1px solid #dce2e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #111820;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.campaign-request-choices button.is-active {
+  border-color: #111820;
+  box-shadow: inset 0 0 0 1px #111820;
+}
+.campaign-request-choice-mark {
+  display: grid;
+  flex: 0 0 17px;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  border: 1px solid #b9c3cd;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+}
+.campaign-request-choices button.is-active .campaign-request-choice-mark {
+  border-color: #111820;
+  background: #111820;
+  color: #fff;
+}
+.campaign-request-choices strong { display: block; font-size: 12px; font-weight: 750; }
+.campaign-request-choices small { display: block; margin-top: 5px; color: #526170; font-size: 11px; line-height: 1.35; }
+.campaign-field { margin-bottom: 19px; }
+.campaign-field-label,
+.panel-form-field,
+.create-client-card label,
+.quotes-form-card label,
+.premium-form-field,
+.premium-password-field {
+  color: #111820 !important;
+  font-size: 12px !important;
+  font-weight: 750 !important;
+  letter-spacing: 0;
+}
+.campaign-request-field-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.campaign-request-card :is(input, select, textarea),
+.new-campaign-admin-card :is(input:not([type="checkbox"]), select, textarea),
+.create-client-card :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+.panel-form-card :is(input:not([type="checkbox"]), select, textarea),
+.quotes-form-card :is(input:not([type="checkbox"]), select, textarea),
+.report-admin-content :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+.facturas-screen-body :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+.admin-tool-screen :is(input:not([type="checkbox"]):not([type="file"]):not([type="range"]), select, textarea),
+.profile-screen input:not([type="checkbox"]),
+.mis-campanas-screen input:not([type="checkbox"]),
+.campaign-edit-dialog :is(input, select, textarea) {
+  min-height: 46px;
+  border: 1px solid #dce2e8 !important;
+  border-radius: 9px !important;
+  background-color: #fff !important;
+  color: #111820 !important;
+  font-size: 14px !important;
+  box-shadow: none !important;
+  color-scheme: light;
+}
+.campaign-request-card :is(input, select, textarea):focus,
+.new-campaign-admin-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.create-client-card :is(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus,
+.panel-form-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.quotes-form-card :is(input:not([type="checkbox"]), select, textarea):focus,
+.report-admin-content :is(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus,
+.facturas-screen-body :is(input:not([type="checkbox"]):not([type="file"]), select, textarea):focus,
+.admin-tool-screen :is(input:not([type="checkbox"]):not([type="file"]):not([type="range"]), select, textarea):focus,
+.profile-screen input:not([type="checkbox"]):focus,
+.mis-campanas-screen input:not([type="checkbox"]):focus,
+.campaign-edit-dialog :is(input, select, textarea):focus {
+  border-color: #0b2c47 !important;
+  box-shadow: 0 0 0 3px rgba(11,44,71,.12) !important;
+}
+.campaign-request-card :is(input, textarea)::placeholder,
+.quotes-form-card :is(input, textarea)::placeholder,
+.panel-form-card input::placeholder { color: #7b8996; }
+.campaign-request-card textarea { min-height: 76px !important; }
+.campaign-request-duration { gap: 7px; }
+.campaign-request-duration button {
+  min-height: 46px;
+  align-items: center;
+  border-color: #dce2e8;
+  border-radius: 9px;
+  color: #111820;
+  font-size: 12px;
+  font-weight: 500;
+}
+.campaign-request-duration button:hover { border-color: #6a7885; }
+.campaign-request-duration button.is-active {
+  border-color: #111820;
+  background: #fff;
+  color: #111820;
+  box-shadow: inset 0 0 0 1px #111820;
+  font-weight: 750;
+}
+.campaign-request-hint { margin: -8px 0 19px; color: #526170; font-size: 11px; }
+.campaign-request-hint strong { color: #111820; }
+.campaign-request-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 4px 0 19px;
+  padding-top: 15px;
+  border-top: 1px solid #dce2e8;
+  color: #526170;
+  font-size: 12px;
+}
+.campaign-request-summary strong { color: #111820; font-weight: 750; text-align: right; }
+.campaign-request-submit,
+.campaign-admin-submit,
+.create-client-submit,
+.panel-form-submit,
+.quotes-primary-btn {
+  min-height: 48px;
+  border: 1px solid #111820 !important;
+  border-radius: 9px !important;
+  background: #111820 !important;
+  color: #fff !important;
+  font-size: 13px !important;
+  font-weight: 750 !important;
+  box-shadow: none !important;
+}
+.campaign-request-submit:hover:not(:disabled),
+.campaign-admin-submit:hover:not(:disabled),
+.create-client-submit:hover:not(:disabled),
+.panel-form-submit:hover:not(:disabled),
+.quotes-primary-btn:hover:not(:disabled) { background: #0b2c47 !important; }
+.campaign-request-submit:disabled,
+.campaign-admin-submit:disabled,
+.create-client-submit:disabled,
+.panel-form-submit:disabled,
+.quotes-primary-btn:disabled { opacity: .56; cursor: progress; }
+.campaign-request-privacy { margin: 11px 0 0; color: #526170; font-size: 11px; }
+.campaign-request-success-card { border-color: #dce2e8; box-shadow: none; }
+.campaign-request-success-title { color: #111820; }
+.campaign-request-success-message { color: #526170; }
+.campaign-request-footer { border-color: #dce2e8; box-shadow: none; }
+
+/* Formularios internos: mismos controles, sin franjas ni acentos decorativos. */
+.new-campaign-admin-card,
+.create-client-card,
+.panel-form-card,
+.quotes-form-card {
+  border-color: #dce2e8 !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+.new-campaign-admin-card::before { display: none; }
+.new-campaign-admin-kicker { color: #526170 !important; }
+.new-campaign-admin-title,
+.panel-form-card > div:first-child { color: #111820 !important; }
+.new-campaign-admin-sub { color: #526170 !important; }
+.new-campaign-admin-hint { border: 0; background: #f6f8fa; color: #526170; }
+.new-campaign-panel-list { border-color: #dce2e8; background: #fff; }
+.new-campaign-panel-list label:has(input:checked) { background: #f6f8fa !important; }
+.new-campaign-panel-list input { accent-color: #111820 !important; }
+.create-client-progress > div.is-active { color: #111820; }
+.create-client-progress > div.is-active > span { border-color: #111820; background: #111820; color: #fff; }
+.create-client-progress.is-complete > i { background: #111820; }
+.panel-form-type-button { border-color: #dce2e8 !important; background: #fff !important; }
+.panel-form-type-button[aria-pressed="true"] {
+  border-color: #111820 !important;
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px #111820;
+}
+.panel-form-type-button[aria-pressed="true"] > span:first-child { color: #111820 !important; }
+.quotes-form-card .quotes-card-heading { border-color: #dce2e8; }
+.quotes-form-card .quotes-card-icon { display: none; }
+.quotes-form-card .quotes-card-heading-copy { gap: 0; }
+.quotes-form-card .quotes-card-heading-copy > div > span { color: #526170 !important; }
+.quotes-form-card .quotes-card-heading h2 { color: #111820 !important; }
+.quotes-form-card .quotes-card-heading > b {
+  border-color: #dce2e8 !important;
+  background: #f6f8fa !important;
+  color: #526170 !important;
+}
+.quotes-form-card .quotes-check input { accent-color: #111820; }
+.quotes-form-card .quotes-check span { color: #111820 !important; }
+.quotes-form-card .quotes-period-summary {
+  border: 0;
+  border-top: 1px solid #dce2e8;
+  border-bottom: 1px solid #dce2e8;
+  border-radius: 0;
+  background: transparent;
+}
+.quotes-form-card .quotes-period-summary span { color: #526170; }
+.quotes-form-card .quotes-period-summary strong { color: #111820; }
+.campaign-edit-save { border-color: #111820 !important; background: #111820 !important; }
+
+.campaign-request-screen :is(button, input, select, textarea):focus-visible,
+.panel-form-card :is(button, input, select, textarea):focus-visible,
+.new-campaign-admin-card :is(button, input, select, textarea):focus-visible,
+.create-client-card :is(button, input, select, textarea):focus-visible,
+.quotes-form-card :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid #0b2c47;
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .campaign-request-scroll { padding: 14px 14px 30px; }
+  .campaign-request-card { padding: 21px 16px; border-radius: 13px; }
+  .campaign-request-panel { align-items: flex-start; flex-direction: column; gap: 8px; margin: 20px 0; }
+  .campaign-request-panel b { display: block; }
+  .campaign-request-choices,
+  .campaign-request-field-row { grid-template-columns: 1fr; }
+  .campaign-request-summary { align-items: flex-start; flex-direction: column; }
+  .campaign-request-summary strong { text-align: left; }
+  .new-campaign-admin-dates { flex-direction: column; }
+  .create-client-contact-grid { grid-template-columns: 1fr !important; }
+  .campaign-request-card :is(input, select, textarea),
+  .new-campaign-admin-card :is(input:not([type="checkbox"]), select, textarea),
+  .create-client-card :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+  .panel-form-card :is(input:not([type="checkbox"]), select, textarea),
+  .quotes-form-card :is(input:not([type="checkbox"]), select, textarea),
+  .report-admin-content :is(input:not([type="checkbox"]):not([type="file"]), select, textarea),
+  .facturas-screen-body :is(input:not([type="checkbox"]):not([type="file"]), select, textarea) { font-size: 16px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campaign-request-choices button { transition: none; }
+}
