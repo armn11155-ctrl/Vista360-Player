@@ -1085,7 +1085,7 @@ function AuthenticatedApp({
             totalNotifs={totalNotifs}
             onSolicitarPanel={(panel, tipo) => {
               setPrefillNueva({
-                nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : `Consulta - ${panel.nombre}`,
+                nombre: tipo === "renovacion" ? `Renovación - ${panel.nombre}` : "",
                 ciudad: panel.ciudad,
                 panelId: panel.id,
                 panelNombre: panel.nombre,
@@ -1093,7 +1093,7 @@ function AuthenticatedApp({
                 comentarios:
                   tipo === "renovacion"
                     ? `Quiero renovar mi campaña en el panel "${panel.nombre}" (${panel.ciudad}).`
-                    : `Consulta de disponibilidad para el panel "${panel.nombre}" (${panel.ciudad}).`,
+                    : "",
               });
               setView("nueva");
             }}
