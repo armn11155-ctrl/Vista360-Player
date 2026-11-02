@@ -235,7 +235,7 @@
   .profile-row { min-height: 56px !important; }
   .profile-row-label, .profile-row-value { font-size: 12px !important; }
   .admin-perfil-content { grid-template-columns: minmax(0, 1fr) !important; gap: 18px !important; padding: 18px 18px 36px !important; }
-  .admin-perfil-content > .admin-perfil-hero { grid-column: 1 !important; min-height: 0 !important; gap: 14px !important; padding: 19px !important; border-radius: 15px !important; }
+  .admin-perfil-content > .admin-perfil-hero { grid-column: 1 !important; min-height: 128px !important; height: auto !important; gap: 14px !important; padding: 19px !important; border-radius: 15px !important; }
   .admin-perfil-avatar-wrap,
   .admin-perfil-hero .profile-avatar-hover-btn,
   .admin-perfil-hero .profile-avatar-hover-btn > div { width: 58px !important; height: 58px !important; border-radius: 14px !important; }
