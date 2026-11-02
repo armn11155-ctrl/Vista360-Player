@@ -150,6 +150,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
   }
 
   const empresa = cliente?.empresa ?? "Cliente";
+  const correoDeAcceso = cliente?.email || (!esInterno ? email : "");
   const ruc = rucCliente(cliente);
   const facturasState = useFacturas(ruc, cliente?.id);
   const activas = contratos.filter((contrato) => estadoCampana(contrato) === "Activa").length;
@@ -517,6 +518,7 @@ export default function Perfil({ cliente, contratos = [], email, isAdmin, esInte
         )}
 
         <ProfileSection title="Cuenta" className="profile-section-account">
+          {correoDeAcceso && <ProfileRow icon="contacts" label="Correo de acceso" value={correoDeAcceso} />}
           <ProfileRow icon="logout" label="Cerrar sesión" danger onClick={() => logout()} />
         </ProfileSection>
       </main>

@@ -22,6 +22,7 @@ import "./styles/portal-clarity.css";
 import "./styles/forms-minimal.css";
 import "./styles/portal-brand-alignment.css";
 import "./styles/profile-premium.css";
+import "./styles/portal-visual-polish.css";
 import { setupRealViewportHeight } from "./utils/viewport-height";
 import { bloquearZoomDeNavegador } from "./utils/bloquear-zoom-navegador";
 import { mantenerOrientacionVertical } from "./utils/orientacion-vertical";

@@ -1014,7 +1014,11 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
         <section className="coverage-workspace" ref={mapaSeccionRef} aria-label="Mapa de ubicaciones">
           <div className="coverage-map-column">
         <div className="coverage-map-heading">
-          <span>02 / Explora las ubicaciones en el mapa</span>
+          <div className="coverage-map-heading-copy">
+            <span className="coverage-map-eyebrow">02 / MAPA DE COBERTURA</span>
+            <h2>Explora las ubicaciones</h2>
+            <p>Selecciona un punto para ver el espacio y abrir su ubicación.</p>
+          </div>
           <small>{conCoordenadas.length} {conCoordenadas.length === 1 ? "punto localizado" : "puntos localizados"}</small>
         </div>
         <div className="coverage-map-real coverage-map-osm">
@@ -1036,25 +1040,6 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
               </span>
               <span>Paneles ubicados</span>
               <strong>{conCoordenadas.length}</strong>
-            </div>
-          )}
-          {mapReady && !mapError && datosListos && (
-            <div className="coverage-map-legend" aria-label="Leyenda del mapa">
-              <div>
-                <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Disponibles</span>
-                <strong>{panelesDisponiblesAhora}</strong>
-              </div>
-              <div>
-                <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
-                <span>Contratados</span>
-                <strong>{panelesActivos}</strong>
-              </div>
-              <div>
-                <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
-                <span>No disponibles</span>
-                <strong>{panelesOcupadosPorOtros}</strong>
-              </div>
             </div>
           )}
           {!mapReady && !mapError && (
@@ -1100,6 +1085,26 @@ export default function Cobertura({ contratos, contratosListos, onBack, onMenuCl
             </div>
           )}
         </div>
+
+        {mapReady && !mapError && datosListos && (
+          <div className="coverage-map-legend" aria-label="Leyenda del mapa">
+            <div>
+              <img src="/vista360-map-marker-available.png" decoding="async" alt="" aria-hidden="true" />
+              <span>Disponibles</span>
+              <strong>{panelesDisponiblesAhora}</strong>
+            </div>
+            <div>
+              <img src="/vista360-map-marker-contratado.png" decoding="async" alt="" aria-hidden="true" />
+              <span>Contratados</span>
+              <strong>{panelesActivos}</strong>
+            </div>
+            <div>
+              <img src="/vista360-map-marker-v4.png" decoding="async" alt="" aria-hidden="true" />
+              <span>No disponibles</span>
+              <strong>{panelesOcupadosPorOtros}</strong>
+            </div>
+          </div>
+        )}
 
         {seleccionado && (
           <div className="coverage-selected-card">
