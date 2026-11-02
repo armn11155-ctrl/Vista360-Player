@@ -289,22 +289,6 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
         totalNotifs={totalNotifs}
       />
 
-      {/* Tabs */}
-      <div className="campanas-filter-bar" role="tablist" aria-label="Filtrar campañas por estado">
-        {(["Activa","Programada","Finalizada","Todas"] as const).map((f) => (
-          <button
-            key={f}
-            type="button"
-            role="tab"
-            aria-selected={filtro === f}
-            className={`campanas-filter-tab${filtro === f ? " active" : ""}`}
-            onClick={() => setFiltro(f)}
-          >
-            {f === "Activa" ? "Activas" : f === "Programada" ? "Programadas" : f === "Finalizada" ? "Finalizadas" : f}
-          </button>
-        ))}
-      </div>
-
       {/* List */}
       <div className="mis-campanas-list" style={{ flex: 1, overflowY: "auto", padding: "14px 16px 20px", background: "#F8F9FB" }}>
         <section className="campaigns-intro" aria-label="Resumen de campañas">
@@ -318,6 +302,20 @@ export default function MisCampanas({ contratos, paneles, onAbrir, onNueva, isAd
             <span>{filtro === "Activa" ? "activas" : filtro.toLowerCase()}</span>
           </div>}
         </section>
+        <div className="campanas-filter-bar" role="tablist" aria-label="Filtrar campañas por estado">
+          {(["Activa","Programada","Finalizada","Todas"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              role="tab"
+              aria-selected={filtro === f}
+              className={`campanas-filter-tab${filtro === f ? " active" : ""}`}
+              onClick={() => setFiltro(f)}
+            >
+              {f === "Activa" ? "Activas" : f === "Programada" ? "Programadas" : f === "Finalizada" ? "Finalizadas" : f}
+            </button>
+          ))}
+        </div>
         {/* Un solo cuadro para todas las campañas -- antes era un
          *  cuadro separado por cada campaña activa, y con varias
          *  campañas quedaban un montón de cajas apiladas. Ahora es UN
